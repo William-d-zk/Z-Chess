@@ -26,20 +26,11 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import org.slf4j.event.Level;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
 
@@ -51,18 +42,15 @@ import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
  *
  * @author William.d.zk
  */
-public abstract class AioManager<K extends IPipeCore>
-        implements
-        ISessionManager
+public class AioManager
+        implements ISessionManager
 {
-    protected final Logger                   _Logger = Logger.getLogger("io.queen.session."
-                                                                        + getClass().getSimpleName());
-    private final Map<Long,
-                      ISession>[]            _Index2SessionMaps;
-    private final Map<Long,
-                      Set<ISession>>[]       _Prefix2SessionMaps;
-    private final Set<ISession>[]            _SessionsSets;
-    private final IAioConfig                 _AioConfig;
+    protected final Logger                     _Logger = Logger.getLogger(
+            "io.queen.session." + getClass().getSimpleName());
+    private final   Map<Long, ISession>[]      _Index2SessionMaps;
+    private final   Map<Long, Set<ISession>>[] _Prefix2SessionMaps;
+    private final   Set<ISession>[]            _SessionsSets;
+    private final   IAioConfig                 _AioConfig;
 
     public ISocketConfig getSocketConfig(int type)
     {
@@ -78,15 +66,15 @@ public abstract class AioManager<K extends IPipeCore>
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
         Arrays.setAll(_SessionsSets,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)): null);
+                      slot->_AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)) : null);
         Arrays.setAll(_Index2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)): null);
-        Arrays.setAll(_Prefix2SessionMaps, slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23): null);
+                      slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)) : null);
+        Arrays.setAll(_Prefix2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(23) : null);
     }
 
     protected int getConfigPower(int slot)
     {
-        if (ZUID.MAX_TYPE < slot || slot < 0) { throw new IllegalArgumentException("slot: " + slot); }
+        if(ZUID.MAX_TYPE < slot || slot < 0) { throw new IllegalArgumentException("slot: " + slot); }
         return _AioConfig.getSizePower(slot);
     }
 
@@ -100,9 +88,8 @@ public abstract class AioManager<K extends IPipeCore>
     {
         int slot = getSlot(session.getIndex());
         _SessionsSets[slot].add(session);
-        if (!_Logger.isEnable(Level.DEBUG)) return;
-        _Logger.debug(String.format("%s add session -> set slot:%s", getClass().getSimpleName(), switch (slot)
-        {
+        if(!_Logger.isEnable(Level.DEBUG)) { return; }
+        _Logger.debug(String.format("%s add session -> set slot:%s", getClass().getSimpleName(), switch(slot) {
             case ZUID.TYPE_CONSUMER_SLOT -> "CONSUMER";
             case ZUID.TYPE_INTERNAL_SLOT -> "INTERNAL";
             case ZUID.TYPE_PROVIDER_SLOT -> "PROVIDER";
@@ -117,15 +104,15 @@ public abstract class AioManager<K extends IPipeCore>
         int slot = getSlot(session.getIndex());
         _SessionsSets[slot].remove(session);
         long[] prefixArray = session.getPrefixArray();
-        if (prefixArray != null) {
-            for (long prefix : prefixArray) {
+        if(prefixArray != null) {
+            for(long prefix : prefixArray) {
                 _Prefix2SessionMaps[slot].get(prefix & PREFIX_MAX)
                                          .remove(session);
             }
         }
         _Index2SessionMaps[slot].remove(session.getIndex(), session);
-        if (session.isMultiBind() && session.getBindIndex() != null) {
-            for (long i : session.getBindIndex()) {
+        if(session.isMultiBind() && session.getBindIndex() != null) {
+            for(long i : session.getBindIndex()) {
                 _Index2SessionMaps[slot].remove(i, session);
             }
         }
@@ -133,12 +120,12 @@ public abstract class AioManager<K extends IPipeCore>
 
     /**
      * @return 正常情况下返回 _Index 返回 NULL_INDEX 说明 Map 失败。 或返回被覆盖的 OLD-INDEX 需要对其进行
-     *         PortChannel 的清理操作。
+     * PortChannel 的清理操作。
      */
-    private ISession mapSession(final long _Index, ISession session)
+    private ISession mapSession(final long _NewIdx, ISession session)
     {
-        _Logger.debug("session manager map-> %#x,%s", _Index, session);
-        if (_Index == INVALID_INDEX || (_Index & INVALID_INDEX) == NULL_INDEX) {
+        _Logger.debug("session manager map-> %#x,%s", _NewIdx, session);
+        if(_NewIdx == INVALID_INDEX || (_NewIdx & INVALID_INDEX) == NULL_INDEX) {
             throw new IllegalArgumentException("invalid index");
         }
         /*
@@ -146,26 +133,26 @@ public abstract class AioManager<K extends IPipeCore>
          * 2:相同 _Index 在不同的 Session 上登录，产生覆盖
          * Session 的情况。
          */
-        long sessionIndex = session.getIndex();
-        if ((sessionIndex & INVALID_INDEX) != NULL_INDEX && sessionIndex != _Index && !session.isMultiBind()) {
+        long sessionIdx = session.getIndex();
+        if((sessionIdx & INVALID_INDEX) != NULL_INDEX && sessionIdx != _NewIdx && !session.isMultiBind()) {
             // session 已经 mapping 过了 且 不允许多绑定结构
-            _Index2SessionMaps[getSlot(sessionIndex)].remove(sessionIndex);
+            _Index2SessionMaps[getSlot(sessionIdx)].remove(sessionIdx);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
-        ISession oldSession = _Index2SessionMaps[getSlot(_Index)].put(_Index, session);
-        if ((sessionIndex & INVALID_INDEX) == NULL_INDEX || !session.isMultiBind()) {
+        ISession oldSession = _Index2SessionMaps[getSlot(_NewIdx)].put(_NewIdx, session);
+        if((sessionIdx & INVALID_INDEX) == NULL_INDEX || !session.isMultiBind()) {
             //首次登陆 或 执行唯一登陆逻辑[覆盖]
-            session.setIndex(_Index);
+            session.setIndex(_NewIdx);
         }
         else {
             //session 持有multi-bind 特征，且已经index绑定过了
-            session.bindIndex(_Index);
+            session.bindIndex(_NewIdx);
         }
-        if (oldSession != null) {
+        if(oldSession != null) {
             // 已经发生覆盖
             long oldIndex = oldSession.getIndex();
-            if (oldIndex == _Index) {
-                if (oldSession != session) {
+            if(oldIndex == _NewIdx) {
+                if(oldSession != session) {
                     // 相同 _Index 登录在不同 Session 上登录
                     /*
                         被覆盖的 session 在 read EOF/TimeOut 时启动 Close
@@ -174,7 +161,7 @@ public abstract class AioManager<K extends IPipeCore>
                         但持有type信息的情况下，multi-bind.index依然可以有效映射
                      */
                     oldSession.setIndex(oldIndex & ZUID.TYPE_MASK);
-                    if (oldSession.isValid()) {
+                    if(oldSession.isValid()) {
                         _Logger.warning("覆盖在线session: %s", oldSession);
                         return oldSession;
                     }
@@ -183,23 +170,23 @@ public abstract class AioManager<K extends IPipeCore>
             }
             else {
                 // 被覆盖的 session 持有不同的 _Index
-                if (oldSession.isMultiBind()) {
+                if(oldSession.isMultiBind()) {
                     //old-session 是允许多绑定场景时，发生的是multi-bind自身的迁移情况
-                    oldSession.unbindIndex(_Index);
+                    oldSession.unbindIndex(_NewIdx);
                 }
                 else {
                     _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d",
-                                  _Index,
+                                  _NewIdx,
                                   oldIndex);
                     ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
                     /*
                      * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
                      * 由于MapSession是线程安全的，并不应该出现此种情况
                      */
-                    if (oldMappedSession == oldSession) {
+                    if(oldMappedSession == oldSession) {
                         _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore
                     }
-                    else if (oldMappedSession == null) {
+                    else if(oldMappedSession == null) {
                         _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
                     }
 
@@ -210,32 +197,30 @@ public abstract class AioManager<K extends IPipeCore>
     }
 
     @Override
-    public ISession mapSession(long index, ISession session, long... prefixArray)
+    public ISession mapSession(final long _NewIdx, ISession session, long... prefixArray)
     {
-        ISession old = mapSession(index, session);
-        if (prefixArray != null) {
-            int slot = getSlot(index);
-            Map<Long,
-                Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[slot];
-            for (long prefix : prefixArray) {
-                if (getSlot(prefix) != slot) {
+        ISession oldSession = mapSession(_NewIdx, session);
+        if(prefixArray != null) {
+            int slot = getSlot(_NewIdx);
+            Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[slot];
+            for(long prefix : prefixArray) {
+                if(getSlot(prefix) != slot) {
                     throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error",
-                                                                     index,
+                                                                     _NewIdx,
                                                                      prefix));
                 }
-                prefix2SessionMap.computeIfAbsent(prefix, k -> new TreeSet<>())
+                prefix2SessionMap.computeIfAbsent(prefix, k->new TreeSet<>())
                                  .add(session);
                 session.bindPrefix(prefix);
             }
         }
-        return old;
+        return oldSession;
     }
 
     @Override
     public Collection<ISession> clearAllSessionByPrefix(long prefix)
     {
-        Map<Long,
-            Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
+        Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
         Set<ISession> sessions = prefix2SessionMap.get(prefix);
         sessions.forEach(this::clearSession);
         return sessions;
@@ -264,10 +249,10 @@ public abstract class AioManager<K extends IPipeCore>
     public ISession findSessionByPrefix(long prefix)
     {
         Set<ISession> sessions = _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
-        if (sessions != null) {
+        if(sessions != null) {
             Optional<ISession> optional = sessions.stream()
-                                                  .min(Comparator.comparing(session -> session.prefixLoad(prefix)));
-            if (optional.isPresent()) {
+                                                  .min(Comparator.comparing(session->session.prefixLoad(prefix)));
+            if(optional.isPresent()) {
                 ISession session = optional.get();
                 session.prefixHit(prefix);
                 return session;
@@ -281,15 +266,13 @@ public abstract class AioManager<K extends IPipeCore>
         return _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
     }
 
-    protected abstract K getCore();
-
     public Set<ISession> getSessionSetWithType(int typeSlot)
     {
-        return typeSlot > ZUID.MAX_TYPE ? null: _SessionsSets[typeSlot];
+        return typeSlot > ZUID.MAX_TYPE ? null : _SessionsSets[typeSlot];
     }
 
     public Collection<ISession> getMappedSessionsWithType(int typeSlot)
     {
-        return typeSlot > ZUID.MAX_TYPE ? null: _Index2SessionMaps[typeSlot].values();
+        return typeSlot > ZUID.MAX_TYPE ? null : _Index2SessionMaps[typeSlot].values();
     }
 }

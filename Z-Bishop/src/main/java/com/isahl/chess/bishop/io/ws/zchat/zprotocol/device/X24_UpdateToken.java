@@ -29,8 +29,7 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
  * @author william.d.zk
  */
 public class X24_UpdateToken
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x24;
 
@@ -40,7 +39,7 @@ public class X24_UpdateToken
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }

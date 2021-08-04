@@ -23,26 +23,24 @@
 
 package com.isahl.chess.bishop.io.mqtt.command;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
-
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X116_QttPubrel
-        extends
-        QttCommand
+        extends QttCommand
 {
     public final static int COMMAND = 0x116;
 
     public X116_QttPubrel()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL));
+        putCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL));
     }
 
     @Override

@@ -31,10 +31,9 @@ import com.isahl.chess.queen.io.core.inf.IVariableLength;
  * @author William.d.zk
  */
 public class WsFrame
-        implements
-        IReset,
-        IFrame,
-        IVariableLength
+        implements IReset,
+                   IFrame,
+                   IVariableLength
 {
     private final static int WEB_SOCKET_FRAME = FRAME_SERIAL + 1;
 
@@ -44,39 +43,39 @@ public class WsFrame
         return WEB_SOCKET_FRAME;
     }
 
-    public final static byte frame_op_code_ctrl_close                 = 0x08;
-    public final static byte frame_op_code_ctrl_ping                  = 0x09;
-    public final static byte frame_op_code_ctrl_pong                  = 0x0A;
-    public final static byte frame_op_code_ctrl_cluster               = 0x0B;
-    public final static byte frame_op_code_ctrl_redirect              = 0x0C;
-    public final static byte frame_op_code_ctrl_handshake             = 0x00;
-    public final static byte frame_op_code_mask                       = 0x0F;
-    public final static byte frame_fin_more                           = 0x00;
-    public final static byte frame_fin_no_more                        = (byte) 0x80;
-    public final static byte frame_rsv_1_mask                         = 0x40;
-    public final static byte frame_rsv_2_mask                         = 0x20;
-    public final static byte frame_rsv_3_mask                         = 0x10;
-    public final static byte frame_op_code_no_ctrl_count              = 0x00;
-    public final static byte frame_op_code_no_ctrl_txt                = 0x01;
-    public final static byte frame_op_code_no_ctrl_bin                = 0x02;
-    public final static byte frame_op_code_no_ctrl_json               = 0x03;
-    public final static byte frame_op_code_no_ctrl_zq                 = 0x04;
-    public final static byte frame_max_header_size                    = 14;
-    public final static int  frame_payload_length_7_no_mask_position  = 1;
-    public final static int  frame_payload_length_7_mask_position     = 5;
-    public final static int  frame_payload_length_16_no_mask_position = 3;
-    public final static int  frame_payload_length_16_mask_position    = 7;
-    public final static int  frame_payload_length_63_no_mask_position = 9;
-    public final static int  frame_payload_length_63_mask_position    = 13;
-    public byte              frame_op_code;
-    public boolean           frame_fin;
-    public boolean           frame_fragment;
-    private byte[]           mMask;
-    private byte[]           mPayload;
-    private long             mPayloadLength                           = -1;
+    public final static byte    frame_op_code_ctrl_close                 = 0x08;
+    public final static byte    frame_op_code_ctrl_ping                  = 0x09;
+    public final static byte    frame_op_code_ctrl_pong                  = 0x0A;
+    public final static byte    frame_op_code_ctrl_cluster               = 0x0B;
+    public final static byte    frame_op_code_ctrl_redirect              = 0x0C;
+    public final static byte    frame_op_code_ctrl_handshake             = 0x00;
+    public final static byte    frame_op_code_mask                       = 0x0F;
+    public final static byte    frame_fin_more                           = 0x00;
+    public final static byte    frame_fin_no_more                        = (byte) 0x80;
+    public final static byte    frame_rsv_1_mask                         = 0x40;
+    public final static byte    frame_rsv_2_mask                         = 0x20;
+    public final static byte    frame_rsv_3_mask                         = 0x10;
+    public final static byte    frame_op_code_no_ctrl_count              = 0x00;
+    public final static byte    frame_op_code_no_ctrl_txt                = 0x01;
+    public final static byte    frame_op_code_no_ctrl_bin                = 0x02;
+    public final static byte    frame_op_code_no_ctrl_json               = 0x03;
+    public final static byte    frame_op_code_no_ctrl_zq                 = 0x04;
+    public final static byte    frame_max_header_size                    = 14;
+    public final static int     frame_payload_length_7_no_mask_position  = 1;
+    public final static int     frame_payload_length_7_mask_position     = 5;
+    public final static int     frame_payload_length_16_no_mask_position = 3;
+    public final static int     frame_payload_length_16_mask_position    = 7;
+    public final static int     frame_payload_length_63_no_mask_position = 9;
+    public final static int     frame_payload_length_63_mask_position    = 13;
+    public              byte    frame_op_code;
+    public              boolean frame_fin;
+    public              boolean frame_fragment;
+    private             byte[]  mMask;
+    private             byte[]  mPayload;
+    private             long    mPayloadLength                           = -1;
     // mask | first payload_length
-    private byte mMaskCode;
-    private int  mMaskLength;
+    private             byte    mMaskCode;
+    private             int     mMaskLength;
 
     public WsFrame()
     {
@@ -115,21 +114,20 @@ public class WsFrame
 
     public void doMask()
     {
-        if (mMaskLength > 0 && mPayloadLength > 0) {
-            for (int i = 0; i < mPayloadLength; i++)
-                mPayload[i] ^= mMask[i & 3];
+        if(mMaskLength > 0 && mPayloadLength > 0) {
+            for(int i = 0; i < mPayloadLength; i++) { mPayload[i] ^= mMask[i & 3]; }
         }
     }
 
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
-        mPayloadLength = payload == null ? 0: payload.length;
+        mPayloadLength = payload == null ? 0 : payload.length;
     }
 
     public byte[] getMask()
@@ -139,7 +137,7 @@ public class WsFrame
 
     public void setMask(byte[] mask)
     {
-        if (mask != null) {
+        if(mask != null) {
             mMask = mask;
             mMaskLength = mask.length;
         }
@@ -162,19 +160,19 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if (mPayloadLength <= 0) return new byte[]{(byte) (mMask == null ? 0: 0x80)};
-        int t_size = mPayloadLength > 0xFFFF ? 9: mPayloadLength > 0x7D ? 3: 1;
+        if(mPayloadLength <= 0) { return new byte[]{ (byte) (mMask == null ? 0 : 0x80) }; }
+        int t_size = mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1;
         byte[] x = new byte[t_size];
-        if (mPayloadLength > 0xFFFF) {
+        if(mPayloadLength > 0xFFFF) {
             x[0] = 0x7F;
             IoUtil.writeLong(mPayloadLength, x, 1);
         }
-        else if (mPayloadLength > 0x7D) {
+        else if(mPayloadLength > 0x7D) {
             x[0] = 0x7E;
             IoUtil.writeShort((int) mPayloadLength, x, 1);
         }
-        else x[0] = (byte) mPayloadLength;
-        if (mMask != null) mMaskCode = x[0] |= 0x80;
+        else { x[0] = (byte) mPayloadLength; }
+        if(mMask != null) { mMaskCode = x[0] |= 0x80; }
         return x;
     }
 
@@ -205,16 +203,15 @@ public class WsFrame
     @Override
     public int dataLength()
     {
-        return 1 + mMaskLength + (int) mPayloadLength + (mPayloadLength > 0xFFFF ? 9: mPayloadLength > 0x7D ? 3: 1);
+        return 1 + mMaskLength + (int) mPayloadLength + (mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1);
 
     }
 
     @Override
     public int lackLength(int position)
     {
-        int result = (mMaskCode & 0x80) != 0 ? 4: 0;
-        return switch (mMaskCode & 0x7F)
-        {
+        int result = (mMaskCode & 0x80) != 0 ? 4 : 0;
+        return switch(mMaskCode & 0x7F) {
             case 0x7F -> 9 + result;
             case 0x7E -> 3 + result;
             default -> 1 + result;
@@ -233,8 +230,8 @@ public class WsFrame
 
     public byte getFrameFin()
     {
-        if (frame_fragment) return frame_fin ? getFragmentEndFrame(): getFragmentFrame();
-        else return getFrame(frame_op_code);
+        if(frame_fragment) { return frame_fin ? getFragmentEndFrame() : getFragmentFrame(); }
+        else { return getFrame(frame_op_code); }
     }
 
     public boolean checkRSV(byte value)
@@ -243,13 +240,13 @@ public class WsFrame
     }
 
     @Override
-    public void setCtrl(byte frame_ctrl_code)
+    public void putCtrl(byte frame_ctrl_code)
     {
         frame_op_code = frame_ctrl_code;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return (byte) (frame_op_code & 0x0F);
     }
@@ -281,8 +278,7 @@ public class WsFrame
         frame_fin = isFrameFin(attr);
         mMaskCode = data[pos++];
         int p = lackLength(pos);
-        switch (p)
-        {
+        switch(p) {
             case WsFrame.frame_payload_length_7_no_mask_position:
                 setPayloadLength(mMaskCode & 0x7F);
                 setMask(null);
@@ -326,16 +322,16 @@ public class WsFrame
     {
         pos += IoUtil.writeByte(getFrameFin(), data, pos);
         pos += IoUtil.write(getPayloadLengthArray(), data, pos);
-        if (getMaskLength() > 0) pos += IoUtil.write(getMask(), data, pos);
-        if (getPayloadLength() > 0) {
+        if(getMaskLength() > 0) { pos += IoUtil.write(getMask(), data, pos); }
+        if(getPayloadLength() > 0) {
             doMask();
-            pos += IoUtil.write(getPayload(), data, pos);
+            pos += IoUtil.write(payload(), data, pos);
         }
         return pos;
     }
 
     public int command()
     {
-        return getPayload()[1] & 0xFF;
+        return payload()[1] & 0xFF;
     }
 }

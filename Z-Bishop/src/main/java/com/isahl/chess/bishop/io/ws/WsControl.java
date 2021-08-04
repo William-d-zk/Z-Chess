@@ -22,32 +22,29 @@
  */
 package com.isahl.chess.bishop.io.ws;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author William.d.zk
  */
 public abstract class WsControl
-        implements
-        IControl
+        implements IControl
 {
 
-    private final byte[] _Payload;
-    private final int    _Command;
-    private final byte   _CtrlCode;
-    private ISession     mSession;
-    private WsContext    mContext;
+    private final byte[]    _Payload;
+    private final int       _Command;
+    private final byte      _CtrlCode;
+    private       ISession  mSession;
+    private       WsContext mContext;
 
-    public WsControl(byte code,
-                     int command,
-                     byte[] payload)
+    public WsControl(byte code, int command, byte[] payload)
     {
         _CtrlCode = code;
         _Command = command;
@@ -63,15 +60,15 @@ public abstract class WsControl
     @Override
     public void reset()
     {
-        setSession(null);
+        putSession(null);
     }
 
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return _Payload;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         throw new UnsupportedOperationException();
     }
@@ -90,13 +87,13 @@ public abstract class WsControl
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return _CtrlCode;
     }
@@ -108,13 +105,13 @@ public abstract class WsControl
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
@@ -122,7 +119,7 @@ public abstract class WsControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(_Payload) ? _Payload.length: 0;
+        return Objects.nonNull(_Payload) ? _Payload.length : 0;
     }
 
     @Override
@@ -131,7 +128,7 @@ public abstract class WsControl
         int command = serial();
         return String.format("cmd: %#x, %s",
                              command,
-                             _Payload == null ? "[NULL] payload": new String(_Payload, StandardCharsets.UTF_8));
+                             _Payload == null ? "[NULL] payload" : new String(_Payload, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -147,7 +144,7 @@ public abstract class WsControl
 
     @Override
     @SuppressWarnings("unchecked")
-    public WsContext getContext()
+    public WsContext context()
     {
         return mContext;
     }

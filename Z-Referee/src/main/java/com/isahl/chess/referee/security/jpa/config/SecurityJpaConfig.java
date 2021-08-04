@@ -23,21 +23,52 @@
 
 package com.isahl.chess.referee.security.jpa.config;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
+import javax.sql.DataSource;
 
 /**
  * @author william.d.zk
  * @date 2021/2/5
  */
 @Configuration("security_jpa_config")
-@EnableJpaRepositories({"com.isahl.chess.referee.security.jpa.repository"})
-@EntityScan({"com.isahl.chess.referee.security.jpa.model"})
+@EnableJpaRepositories(basePackages = { "com.isahl.chess.referee.security.jpa.repository" },
+                       entityManagerFactoryRef = "security-entity-manager",
+                       transactionManagerRef = "security-transaction-manager")
 public class SecurityJpaConfig
-        extends
-        BaseJpaConfig
+        extends BaseJpaConfig
 {
+    @Bean("security-entity-manager")
+    public LocalContainerEntityManagerFactoryBean createSecurityEntityManager(
+            @Qualifier("primary-data-source")
+                    DataSource dataSource,
+            @Qualifier("primary-jpa-properties")
+                    JpaProperties jpaProperties,
+            @Qualifier("primary-jpa-hibernate-properties")
+                    HibernateProperties hibernateProperties)
+    {
+        return getEntityManager(dataSource,
+                                jpaProperties,
+                                hibernateProperties,
+                                "com.isahl.chess.referee.security.jpa.model");
+    }
+
+    @Bean("security-transaction-manager")
+    public PlatformTransactionManager createSecurityTransactionManager(
+            @Qualifier("security-entity-manager")
+                    LocalContainerEntityManagerFactoryBean factory)
+    {
+        JpaTransactionManager tm = new JpaTransactionManager();
+        tm.setEntityManagerFactory(factory.getObject());
+        return tm;
+    }
 }

@@ -23,10 +23,9 @@
 
 package com.isahl.chess.referee.security.jpa.repository;
 
-import org.springframework.stereotype.Repository;
-
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk
@@ -34,8 +33,7 @@ import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
  */
 @Repository
 public interface IPermissionRepository
-        extends
-        BaseRepository<PermissionEntity>
+        extends BaseLongRepository<PermissionEntity>
 {
     PermissionEntity findByUrl(String url);
 }

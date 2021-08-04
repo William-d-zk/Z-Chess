@@ -23,9 +23,13 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.inf.IRaftModify;
+import com.isahl.chess.knight.raft.model.RaftConfig;
+import com.isahl.chess.knight.raft.model.RaftNode;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
@@ -33,48 +37,34 @@ import java.util.List;
  * @author william.d.zk
  */
 public interface IRaftConfig
+        extends IRaftModify
 {
     /**
      * 当前集群的节点列表
-     * 
-     * @return
+     *
+     * @return cluster peer topology
      */
 
-    List<IPair> getPeers();
-
-    /**
-     * 与其他独region 进行通讯的网关
-     * 
-     * @return
-     */
-    List<IPair> getGates();
+    List<RaftNode> getPeers();
 
     /**
      * 集群服务绑定的服务地址 host:port
-     * 
-     * @return
+     *
+     * @return local peer bind
      */
-    IPair getPeerBind();
-
-    /**
-     * 集群服务绑定的分区节点地址 host:port
-     * 
-     * @return
-     */
-    IPair getGateBind();
+    RaftNode getPeerBind();
 
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
-     * 
+     *
+     * @return cluster uid setting
      * @see ZUID
-     * 
-     * @return
      */
-    Uid getUid();
-
     boolean isInCongress();
 
     boolean isGateNode();
+
+    Uid getUid();
 
     ZUID createZUID();
 
@@ -90,53 +80,73 @@ public interface IRaftConfig
 
     long getSnapshotFragmentMaxSize();
 
+    List<RaftNode> getGates();
+
+    long getMaxSegmentSize();
+
     boolean isClusterMode();
 
+    RaftConfig getConfig();
+
+    void update(RaftConfig source) throws IOException;
+
+    RaftNode findById(long peerId);
+
     class Uid
+            implements IReset
     {
-        private int nodeId;
-        private int idcId;
-        private int clusterId;
-        private int type;
+        private int mNodeId    = -1;
+        private int mIdcId     = -1;
+        private int mClusterId = -1;
+        private int mType      = -1;
+
+        @Override
+        public void reset()
+        {
+            mType = -1;
+            mIdcId = -1;
+            mClusterId = -1;
+            mNodeId = -1;
+        }
 
         public int getNodeId()
         {
-            return nodeId;
+            return mNodeId;
         }
 
         public void setNodeId(int nodeId)
         {
-            this.nodeId = nodeId;
+            this.mNodeId = nodeId;
         }
 
         public int getIdcId()
         {
-            return idcId;
+            return mIdcId;
         }
 
         public void setIdcId(int idcId)
         {
-            this.idcId = idcId;
+            this.mIdcId = idcId;
         }
 
         public int getClusterId()
         {
-            return clusterId;
+            return mClusterId;
         }
 
         public void setClusterId(int clusterId)
         {
-            this.clusterId = clusterId;
+            this.mClusterId = clusterId;
         }
 
         public int getType()
         {
-            return type;
+            return mType;
         }
 
         public void setType(int type)
         {
-            this.type = type;
+            this.mType = type;
         }
     }
 }

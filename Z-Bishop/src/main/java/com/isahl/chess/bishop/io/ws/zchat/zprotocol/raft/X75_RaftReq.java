@@ -29,14 +29,11 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/11
  */
 public class X75_RaftReq
-        extends
-        ZCommand
-        implements
-        IConsistent
+        extends ZCommand
+        implements IConsistent
 {
     public final static int COMMAND = 0x75;
 
@@ -50,19 +47,19 @@ public class X75_RaftReq
         super(COMMAND, msgId);
     }
 
-    private long    mClientId;
-    private int     mPayloadSerial;
-    private long    mOrigin;
-    private boolean mPublic;
+    private long mClientId;
+    private int  mSubSerial;
+    private long mOrigin;
 
-    public int getPayloadSerial()
+    @Override
+    public int subSerial()
     {
-        return mPayloadSerial;
+        return mSubSerial;
     }
 
-    public void setPayloadSerial(int payloadSerial)
+    public void setSubSerial(int serial)
     {
-        mPayloadSerial = payloadSerial;
+        mSubSerial = serial;
     }
 
     public void setOrigin(long origin)
@@ -81,8 +78,7 @@ public class X75_RaftReq
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
-        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeShort(mSubSerial, data, pos);
         return pos;
     }
 
@@ -93,8 +89,7 @@ public class X75_RaftReq
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPublic = data[pos++] > 0;
-        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        mSubSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         return pos;
     }
@@ -102,7 +97,7 @@ public class X75_RaftReq
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 19;
+        return super.dataLength() + 18;
     }
 
     public long getClientId()
@@ -122,24 +117,12 @@ public class X75_RaftReq
     }
 
     @Override
-    public boolean isPublic()
-    {
-        return mPublic;
-    }
-
-    public void setPublic(boolean pub)
-    {
-        mPublic = pub;
-    }
-
-    @Override
     public String toString()
     {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s }",
+        return String.format(" X75_RaftRequest { client:%#x, origin:%#x,sub-serial:%#x,payload[%d] }",
                              mClientId,
                              mOrigin,
-                             mPayloadSerial,
-                             getPayload() == null ? 0: getPayload().length,
-                             mPublic ? "all": "one");
+                             mSubSerial,
+                             payload() == null ? 0 : payload().length);
     }
 }

@@ -29,11 +29,10 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author William.d.zk
  */
 public class X01_EncryptRequest
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND  = 0x01;
-    public int              pubKeyId = -1;
+    public              int pubKeyId = -1;
 
     public X01_EncryptRequest()
     {

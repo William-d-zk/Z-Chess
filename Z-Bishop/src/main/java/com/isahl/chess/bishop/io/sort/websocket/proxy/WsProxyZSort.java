@@ -35,16 +35,13 @@ import com.isahl.chess.queen.io.core.inf.INetworkOption;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 
 public class WsProxyZSort<A extends IPContext>
-        extends
-        BaseSort<WsProxyContext<A>>
+        extends BaseSort<WsProxyContext<A>>
 {
 
     private final IAioSort<A>                          _ActingSort;
     private final WsHandShakeFilter<WsProxyContext<A>> _Head = new WsHandShakeFilter<>();
 
-    public WsProxyZSort(Mode mode,
-                        Type type,
-                        IAioSort<A> actingSort)
+    public WsProxyZSort(Mode mode, Type type, IAioSort<A> actingSort)
     {
         super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;

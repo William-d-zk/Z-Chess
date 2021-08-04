@@ -31,21 +31,18 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X11E_QttDisconnect
-        extends
-        QttControl
-        implements
-        IConsistent
+        extends QttControl
+        implements IConsistent
 {
     public final static int COMMAND = 0x11E;
 
     public X11E_QttDisconnect()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
     }
 
     @Override
@@ -57,6 +54,6 @@ public class X11E_QttDisconnect
     @Override
     public long getOrigin()
     {
-        return getSession().getIndex();
+        return session().getIndex();
     }
 }

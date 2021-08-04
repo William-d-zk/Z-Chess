@@ -1,5 +1,3 @@
-# Z-Chess
-Z-Chess for distributed system with high performance IO throughput and RAFT consistent cluster
 ```
 MIT License                                                                   
                                                                               
@@ -22,3 +20,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+# Z-Chess
+Z-Chess for distributed system with high performance IO throughput and RAFT consistent cluster

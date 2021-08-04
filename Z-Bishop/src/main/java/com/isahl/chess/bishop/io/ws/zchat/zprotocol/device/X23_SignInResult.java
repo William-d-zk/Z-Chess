@@ -30,8 +30,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X23_SignInResult
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x23;
 
@@ -41,7 +40,7 @@ public class X23_SignInResult
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
@@ -67,10 +66,7 @@ public class X23_SignInResult
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(isSuccess() ? 1
-                                            : 0,
-                                data,
-                                pos);
+        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
         pos += IoUtil.writeLong(invalidTime, data, pos);
         return pos;
     }

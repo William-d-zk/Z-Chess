@@ -23,25 +23,13 @@
 
 package com.isahl.chess.king.base.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -53,10 +41,19 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.isahl.chess.king.base.log.Logger;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class JsonUtil
 {
     private final static Logger       _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     static {
         String STANDARD_PATTERN = "yyyy-MM-dd HH:mm:ss";
         String DATE_PATTERN = "yyyy-MM-dd";
@@ -89,16 +86,14 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
-        catch (JsonParseException |
-               JsonMappingException e)
-        {
+        catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
         }
         return null;
@@ -106,16 +101,14 @@ public class JsonUtil
 
     public static <T> T readValue(String input, Class<T> clazz)
     {
-        if (IoUtil.isBlank(input)) return null;
+        if(IoUtil.isBlank(input)) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
-        catch (JsonParseException |
-               JsonMappingException e)
-        {
+        catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read json[%s] error with %s", input, clazz, e);
         }
         return null;
@@ -123,16 +116,14 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
-        catch (JsonParseException |
-               JsonMappingException e)
-        {
+        catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
         }
         return null;
@@ -140,16 +131,14 @@ public class JsonUtil
 
     public static <T> T readValue(String input, TypeReference<T> type)
     {
-        if (IoUtil.isBlank(input)) return null;
+        if(IoUtil.isBlank(input)) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
-        catch (JsonParseException |
-               JsonMappingException e)
-        {
+        catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read json[%s] error with %s", input, type, e);
         }
         return null;
@@ -157,16 +146,14 @@ public class JsonUtil
 
     public static <T> T readValue(InputStream input, TypeReference<T> type)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
-        catch (JsonParseException |
-               JsonMappingException e)
-        {
+        catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read json error with %s", type, e);
         }
         return null;
@@ -174,11 +161,11 @@ public class JsonUtil
 
     public static JsonNode readTree(byte[] input)
     {
-        if (input == null) return OBJECT_MAPPER.nullNode();
+        if(input == null) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -186,11 +173,11 @@ public class JsonUtil
 
     public static JsonNode readTree(String input)
     {
-        if (IoUtil.isBlank(input)) return OBJECT_MAPPER.nullNode();
+        if(IoUtil.isBlank(input)) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read tree input[%s] error", input, e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -198,11 +185,11 @@ public class JsonUtil
 
     public static JsonNode readTree(InputStream input)
     {
-        if (input == null) return OBJECT_MAPPER.nullNode();
+        if(input == null) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e) {
+        catch(IOException e) {
             _Logger.warning("read tree input stream error", e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -215,11 +202,11 @@ public class JsonUtil
 
     public static <T> byte[] writeValueAsBytes(T input)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
-        catch (JsonProcessingException e) {
+        catch(Throwable e) {
             _Logger.warning("write json error", e);
         }
         return null;
@@ -227,11 +214,11 @@ public class JsonUtil
 
     public static <T> String writeValueAsString(T input)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsString(input);
         }
-        catch (JsonProcessingException e) {
+        catch(JsonProcessingException e) {
             _Logger.warning("write json error", e);
         }
         return null;
@@ -239,15 +226,26 @@ public class JsonUtil
 
     public static byte[] writeNodeAsBytes(JsonNode input)
     {
-        if (input == null) return null;
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
-        catch (JsonProcessingException e) {
+        catch(JsonProcessingException e) {
             _Logger.warning("write json error", e);
         }
         return null;
-
     }
 
+    public static void writeValueWithFile(Object input, File file)
+    {
+        if(input == null || file == null || file.isDirectory()) {return;}
+        try {
+            if((file.exists() || file.createNewFile()) && file.canWrite()) {
+                OBJECT_MAPPER.writeValue(file, input);
+            }
+        }
+        catch(IOException e) {
+            _Logger.warning("write json  %s,", e, file.getName());
+        }
+    }
 }

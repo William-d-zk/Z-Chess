@@ -97,7 +97,7 @@ public class ConsumerController
                         @RequestParam(name = "client_id") long clientId)
     {
         X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
-        x50.setPayload(msg.getBytes());
+        x50.putPayload(msg.getBytes());
         _ClientPool.sendLocal(clientId, x50);
         return "ws_x50";
     }

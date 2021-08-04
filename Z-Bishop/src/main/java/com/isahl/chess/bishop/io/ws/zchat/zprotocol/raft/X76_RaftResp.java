@@ -25,15 +25,11 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 public class X76_RaftResp
-        extends
-        ZCommand
-        implements
-        ITraceable,
-        IConsistentNotify
+        extends ZCommand
+        implements IConsistent
 {
 
     public final static int COMMAND = 0x76;
@@ -49,28 +45,28 @@ public class X76_RaftResp
     }
 
     private long mClientId;
-    private int  mPayloadSerial;
+    private int  mSubSerial;
     private long mOrigin;
     private byte mCode;
 
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x,payload_serial:%#x,origin:%#x }",
+        return String.format("X76_RaftResp { client:%#x,origin:%#x,payload-serial:%#x }",
                              mClientId,
-                             mPayloadSerial,
-                             mOrigin);
+                             mOrigin,
+                             mSubSerial);
     }
 
     @Override
-    public int getPayloadSerial()
+    public int subSerial()
     {
-        return mPayloadSerial;
+        return mSubSerial;
     }
 
-    public void setPayloadSerial(int payloadSerial)
+    public void setSubSerial(int subSerial)
     {
-        mPayloadSerial = payloadSerial;
+        mSubSerial = subSerial;
     }
 
     public void setOrigin(long origin)
@@ -99,7 +95,7 @@ public class X76_RaftResp
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeShort(mSubSerial, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
@@ -111,7 +107,7 @@ public class X76_RaftResp
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        mSubSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         mCode = data[pos++];
         return pos;
@@ -139,15 +135,4 @@ public class X76_RaftResp
         return true;
     }
 
-    @Override
-    public boolean byLeader()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean doNotify()
-    {
-        return true;
-    }
 }

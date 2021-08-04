@@ -27,12 +27,10 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/6
  */
 public class X109_Consensus
-        extends
-        ZCommand
+        extends ZCommand
 {
 
     public final static int COMMAND = 0x109;

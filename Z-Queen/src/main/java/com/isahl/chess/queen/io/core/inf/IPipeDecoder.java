@@ -90,7 +90,7 @@ public interface IPipeDecoder
                         case HANDLED:
                             IControl cmd = pipeFilter.pipeDecode(context, protocol);
                             if (cmd != null) {
-                                cmd.setSession(session);
+                                cmd.putSession(session);
                                 if (commands == null) {
                                     commands = new IControl[]{cmd};
                                 }

@@ -27,44 +27,32 @@ import com.isahl.chess.queen.io.core.inf.ICommand;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-08-04
  */
 public interface IRouter
 {
-    /**
-     * generate message id
-     * 
-     * @return id
-     */
-    long nextId();
 
     /**
      * register message with state for session by id
-     * 
-     * @param stateMessage
-     *            message with state
-     * @param session
-     *            session index
+     *
+     * @param stateMessage message with state
+     * @param session      session index
      */
     void register(ICommand stateMessage, long session);
 
     /**
      * feed back message state
-     * 
-     * @param stateMessage
-     *            message with state
-     * @param session
-     *            session index
+     *
+     * @param stateMessage message with state
+     * @param session      session index
      * @return 是否对消息完成了ack动作
      */
     boolean ack(ICommand stateMessage, long session);
 
     /**
      * clean session state machine for message stack
-     * 
-     * @param session
-     *            session index
+     *
+     * @param session session index
      */
     void clean(long session);
 

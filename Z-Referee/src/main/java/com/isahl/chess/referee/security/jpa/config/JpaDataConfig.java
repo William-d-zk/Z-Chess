@@ -63,40 +63,41 @@ public class JpaDataConfig
         _PasswordEncoder = passwordEncoder;
     }
 
+    //TODO 修改为DDL模版存储在rook/referee里
     @PostConstruct
     private void initJpaData()
     {
         List<RoleEntity> roles = _RoleRepository.findAll();
         List<UserEntity> users = _UserRepository.findAll();
         List<PermissionEntity> permissions = _PermissionRepository.findAll();
-        if (roles.stream()
-                 .noneMatch(role -> role.getName()
-                                        .equals("root")))
+        if(roles.stream()
+                .noneMatch(role->role.getName()
+                                     .equals("root")))
         {
             RoleEntity role = new RoleEntity();
             role.setName("root");
             _RoleRepository.save(role);
         }
-        if (roles.stream()
-                 .noneMatch(role -> role.getName()
-                                        .equals("admin")))
+        if(roles.stream()
+                .noneMatch(role->role.getName()
+                                     .equals("admin")))
         {
             RoleEntity role = new RoleEntity();
             role.setName("admin");
             _RoleRepository.save(role);
         }
-        if (roles.stream()
-                 .noneMatch(role -> role.getName()
-                                        .equals("user")))
+        if(roles.stream()
+                .noneMatch(role->role.getName()
+                                     .equals("user")))
         {
             RoleEntity role = new RoleEntity();
             role.setName("user");
             _RoleRepository.save(role);
         }
 
-        if (users.stream()
-                 .noneMatch(user -> user.getUsername()
-                                        .equals("root")))
+        if(users.stream()
+                .noneMatch(user->user.getUsername()
+                                     .equals("root")))
         {
             UserEntity user = new UserEntity();
             user.setUsername("root");
@@ -111,9 +112,9 @@ public class JpaDataConfig
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
-        if (users.stream()
-                 .noneMatch(user -> user.getUsername()
-                                        .equals("user")))
+        if(users.stream()
+                .noneMatch(user->user.getUsername()
+                                     .equals("user")))
         {
             UserEntity user = new UserEntity();
             user.setUsername("user");
@@ -125,9 +126,9 @@ public class JpaDataConfig
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
-        if (permissions.stream()
-                       .noneMatch(permission -> permission.getName()
-                                                          .equals("common")))
+        if(permissions.stream()
+                      .noneMatch(permission->permission.getName()
+                                                       .equals("common")))
         {
             PermissionEntity permission = new PermissionEntity();
             permission.setName("common");
@@ -147,9 +148,9 @@ public class JpaDataConfig
                 .add(permission);
             _RoleRepository.save(role);
         }
-        if (permissions.stream()
-                       .noneMatch(permission -> permission.getName()
-                                                          .equals("admin")))
+        if(permissions.stream()
+                      .noneMatch(permission->permission.getName()
+                                                       .equals("admin")))
         {
             PermissionEntity permission = new PermissionEntity();
             permission.setName("admin");
@@ -162,9 +163,9 @@ public class JpaDataConfig
             _RoleRepository.save(role);
         }
 
-        if (permissions.stream()
-                       .noneMatch(permission -> permission.getName()
-                                                          .equals("root")))
+        if(permissions.stream()
+                      .noneMatch(permission->permission.getName()
+                                                       .equals("root")))
         {
             PermissionEntity permission = new PermissionEntity();
             permission.setName("root");

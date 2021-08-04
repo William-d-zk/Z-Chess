@@ -23,37 +23,35 @@
 
 package com.isahl.chess.pawn.endpoint.device.jpa.generator;
 
-import java.io.Serializable;
-
-import javax.annotation.PostConstruct;
-
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import javax.annotation.PostConstruct;
+import java.io.Serializable;
 
 /**
- * 
  * JPA 会优先初始化
  * 且会给每一个表的都创建一个IdentifierGenerator，
  * ZUid 是一个全局生成器，ZClusterConfig 在 spring 中是 single instance创建的
  * 程序启动时装载 bean 也是沿用了single instance的模式，所以在init时正式注入 ZUid
  * 通过static 同步给所有 JPA 的所有引用。
- * 
+ *
  * @author william.d.zk
  */
 @Component
 public class ZMessageGenerator
-        implements
-        IdentifierGenerator
+        implements IdentifierGenerator
 {
-    private static ZUID       _ZUID;
-    private final Logger      _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private static ZUID _ZUID;
+
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+
     private final ZRaftConfig _ZClusterConfig;
 
     @Autowired
@@ -70,7 +68,7 @@ public class ZMessageGenerator
     @PostConstruct
     public void init()
     {
-        if (_ZClusterConfig == null) return;
+        if(_ZClusterConfig == null) { return; }
         _ZUID = _ZClusterConfig.createZUID();
     }
 

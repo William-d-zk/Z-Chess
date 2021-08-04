@@ -23,31 +23,28 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
-import java.nio.charset.StandardCharsets;
-
-import javax.net.ssl.SSLEngineResult;
-
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 
+import javax.net.ssl.SSLEngineResult;
+import java.nio.charset.StandardCharsets;
+
 public class X105_SslHandShake
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x105;
 
     public X105_SslHandShake(byte[] hello)
     {
         super(COMMAND, false);
-        setPayload(hello);
+        putPayload(hello);
     }
 
     private byte mHandshakeStatus;
 
     public SSLEngineResult.HandshakeStatus getHandshakeStatus()
     {
-        return switch (mHandshakeStatus)
-        {
+        return switch(mHandshakeStatus) {
             case 1 -> SSLEngineResult.HandshakeStatus.FINISHED;
             case 2 -> SSLEngineResult.HandshakeStatus.NEED_TASK;
             case 3 -> SSLEngineResult.HandshakeStatus.NEED_WRAP;
@@ -59,8 +56,7 @@ public class X105_SslHandShake
 
     public void setHandshakeStatus(SSLEngineResult.HandshakeStatus handshakeStatus)
     {
-        switch (handshakeStatus)
-        {
+        switch(handshakeStatus) {
             case FINISHED -> mHandshakeStatus = 1;
             case NEED_TASK -> mHandshakeStatus = 2;
             case NEED_WRAP -> mHandshakeStatus = 3;
@@ -76,7 +72,7 @@ public class X105_SslHandShake
         mHandshakeStatus = data[pos++];
         byte[] payload = new byte[data.length - pos];
         pos += IoUtil.write(data, pos, payload, 0, payload.length);
-        setPayload(payload);
+        putPayload(payload);
         return pos;
     }
 
@@ -84,8 +80,8 @@ public class X105_SslHandShake
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeByte(mHandshakeStatus, data, pos);
-        if (getPayload() != null) {
-            pos += IoUtil.write(getPayload(), 0, data, pos, getPayload().length);
+        if(payload() != null) {
+            pos += IoUtil.write(payload(), 0, data, pos, payload().length);
         }
         return pos;
     }
@@ -93,7 +89,7 @@ public class X105_SslHandShake
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 1 + (getPayload() != null ? getPayload().length: 0);
+        return super.dataLength() + 1 + (payload() != null ? payload().length : 0);
     }
 
     @Override
@@ -101,7 +97,7 @@ public class X105_SslHandShake
     {
         return String.format("X105_SslHandShake{HandshakeStatus=%s;[HELLO]:%s}",
                              getHandshakeStatus(),
-                             getPayload() != null ? new String(getPayload(), StandardCharsets.UTF_8): "NULL");
+                             payload() != null ? new String(payload(), StandardCharsets.UTF_8) : "NULL");
     }
 
     @Override

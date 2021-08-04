@@ -23,14 +23,11 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
-import static com.isahl.chess.king.base.inf.IError.Type.PASSIVE_CLOSE;
-
-import java.nio.channels.AsynchronousSocketChannel;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -43,39 +40,47 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
+import java.nio.channels.AsynchronousSocketChannel;
+
+import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
+import static com.isahl.chess.king.base.inf.IError.Type.PASSIVE_CLOSE;
+
 /**
  * @author william.d.zk
  */
 public class IoDispatcher
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>   _IoWrote;
     private final RingBuffer<QEvent>   _Cluster;
     private final RingBuffer<QEvent>[] _Workers;
     private final int                  _WorkerMask;
+    private final IHealth              _Health = new Health(-1);
 
     @SafeVarargs
-    public IoDispatcher(RingBuffer<QEvent> cluster,
-                        RingBuffer<QEvent> wrote,
-                        RingBuffer<QEvent>... read)
+    public IoDispatcher(RingBuffer<QEvent> cluster, RingBuffer<QEvent> wrote, RingBuffer<QEvent>... read)
     {
         _Cluster = cluster;
         _IoWrote = wrote;
         _Workers = read;
         _WorkerMask = _Workers.length - 1;
-        if (Integer.bitCount(_Workers.length) != 1) {
+        if(Integer.bitCount(_Workers.length) != 1) {
             throw new IllegalArgumentException("workers' length must be a power of 2");
         }
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
+    public IHealth getHealth()
+    {
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence) throws Exception
     {
         IError.Type errorType = event.getErrorType();
-        switch (errorType)
-        {
+        switch(errorType) {
             case ACCEPT_FAILED:
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
@@ -87,17 +92,14 @@ public class IoDispatcher
                       event.getEventOp());
                 break;
             case NO_ERROR:
-                switch (event.getEventType())
-                {
+                switch(event.getEventType()) {
                     case CONNECTED:
                     case ACCEPTED:
                         _Logger.trace("connected");
                         IPair connectContent = event.getContent();
                         connectActive = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
-                        IOperator<IConnectActivity,
-                                  AsynchronousSocketChannel,
-                                  ITriple> connectOperator = event.getEventOp();
+                        IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
                         publish(getNextPipe(connectActive.getMode()),
                                 event.getEventType(),
                                 new Pair<>(connectActive, channel),
@@ -107,18 +109,21 @@ public class IoDispatcher
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession session = readContent.getSecond();
-                        publish(dispatchWorker(session.hashCode()), OperatorType.DECODE, readContent, event.getEventOp());
+                        publish(dispatchWorker(session.hashCode()),
+                                OperatorType.DECODE,
+                                readContent,
+                                event.getEventOp());
                         break;
                     case WROTE:
                         _Logger.trace("wrote");
                         IPair wroteContent = event.getContent();
-                        publish(_IoWrote, OperatorType. WROTE, wroteContent, event.getEventOp());
+                        publish(_IoWrote, OperatorType.WROTE, wroteContent, event.getEventOp());
                         break;
                     case LOCAL_CLOSE:
                         _Logger.trace("local close");
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
-                        if (!session.isClosed()) {
+                        if(!session.isClosed()) {
                             error(getNextPipe(session.getMode()),
                                   INITIATIVE_CLOSE,
                                   new Pair<>(QueenCode.LOCAL_CLOSE, session),
@@ -132,9 +137,7 @@ public class IoDispatcher
                 break;
             default:
                 /* 未指定类型的错误 来自Decoded/Encoded Dispatcher */
-                IOperator<Throwable,
-                          ISession,
-                          IPair> errorOperator = event.getEventOp();
+                IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
                 throwable = errorContent.getFirst();
                 ISession session = errorContent.getSecond();
@@ -142,7 +145,7 @@ public class IoDispatcher
                                 throwable,
                                 errorType.getMsg(),
                                 session.summary());
-                if (!session.isClosed()) {
+                if(!session.isClosed()) {
                     IPair result = errorOperator.handle(throwable, session);
                     error(getNextPipe(session.getMode()),
                           PASSIVE_CLOSE,
@@ -161,7 +164,7 @@ public class IoDispatcher
 
     protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
     {
-        return mode == ISort.Mode.CLUSTER ? _Cluster: null;
+        return mode == ISort.Mode.CLUSTER ? _Cluster : null;
     }
 
     @Override

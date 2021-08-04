@@ -30,8 +30,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X21_SignUpResult
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x21;
 
@@ -41,7 +40,7 @@ public class X21_SignUpResult
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
@@ -78,10 +77,7 @@ public class X21_SignUpResult
     @Override
     public int dataLength()
     {
-        return super.dataLength()
-               + 9
-               + (isSuccess() ? 32
-                              : 0);
+        return super.dataLength() + 9 + (isSuccess() ? 32 : 0);
     }
 
     @Override
@@ -90,7 +86,7 @@ public class X21_SignUpResult
         success = data[pos++] > 0;
         passwordId = IoUtil.readLong(data, pos);
         pos += 8;
-        if (success) {
+        if(success) {
             token = new byte[32];
             pos = IoUtil.read(data, pos, token);
         }
@@ -100,12 +96,9 @@ public class X21_SignUpResult
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(isSuccess() ? 1
-                                            : 0,
-                                data,
-                                pos);
+        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
         pos += IoUtil.writeLong(passwordId, data, pos);
-        if (isSuccess()) {
+        if(isSuccess()) {
             pos += IoUtil.write(token, data, pos);
         }
         return pos;

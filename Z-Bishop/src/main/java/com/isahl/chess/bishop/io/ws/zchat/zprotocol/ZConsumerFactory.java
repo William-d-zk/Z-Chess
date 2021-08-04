@@ -23,38 +23,30 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X21_SignUpResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X23_SignInResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X25_AuthorisedToken;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X30_EventMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X32_MsgStatus;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X51_DeviceMsgAck;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZConsumerFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame, ZContext>
 {
 
     @Override
-    public ICommand create(IFrame frame)
+    public ICommand create(IFrame frame, ZContext context)
     {
-        return create(frame.getPayload()[1] & 0xFF);
+        return create(frame.payload()[1] & 0xFF, frame.payload(), context);
     }
 
     @Override
-    public ICommand create(int serial)
+    public ICommand create(int serial, byte[] data, ZContext context)
     {
-        return switch (serial)
-        {
+        ICommand command = switch(serial) {
             case X21_SignUpResult.COMMAND -> new X21_SignUpResult();
             case X23_SignInResult.COMMAND -> new X23_SignInResult();
             case X25_AuthorisedToken.COMMAND -> new X25_AuthorisedToken();
@@ -63,5 +55,9 @@ public class ZConsumerFactory
             case X51_DeviceMsgAck.COMMAND -> new X51_DeviceMsgAck();
             default -> null;
         };
+        if(command != null) {
+            command.decode(data, context);
+        }
+        return command;
     }
 }

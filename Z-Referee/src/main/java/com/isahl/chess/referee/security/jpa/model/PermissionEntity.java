@@ -27,12 +27,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -40,21 +35,24 @@ import java.io.Serializable;
  * @date 2021/3/5
  */
 @Entity(name = "permission")
-@Table(indexes = {@Index(name = "name_idx", columnList = "name"),
-                  @Index(name = "url_idx", columnList = "url")})
+@Table(indexes = { @Index(name = "name_idx",
+                          columnList = "name"),
+                   @Index(name = "url_idx",
+                          columnList = "url")
+})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PermissionEntity
-        extends
-        AuditModel
-        implements
-        Serializable
+        extends AuditModel
+        implements Serializable
 {
     @Id
     @GeneratedValue
     private long   id;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false,
+            unique = true)
     private String name;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false,
+            unique = true)
     private String url;
     @Column(nullable = false)
     private String description;

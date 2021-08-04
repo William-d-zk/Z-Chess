@@ -40,15 +40,12 @@ import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 public class ZlsZSort
-        extends
-        BaseSort<EZContext<WsContext>>
+        extends BaseSort<EZContext<WsContext>>
 {
     private final IAioSort<WsContext>            _ActingSort;
     private final ZEFilter<EZContext<WsContext>> _Head = new ZEFilter<>();
 
-    public ZlsZSort(Mode mode,
-                    Type type,
-                    IAioSort<WsContext> actingSort)
+    public ZlsZSort(Mode mode, Type type, IAioSort<WsContext> actingSort)
     {
         super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
@@ -57,8 +54,9 @@ public class ZlsZSort
              .linkFront(new WsControlFilter<>())
              .linkFront(new ZCommandFilter<>(mode == Mode.CLUSTER ? new ZClusterFactory()
                                                                   : type == Type.SERVER ? new ZServerFactory()
-                                                                                        : type == Type.SYMMETRY ? new ZSymmetryFactory()
-                                                                                                                : new ZConsumerFactory()));
+                                                                                        : type == Type.SYMMETRY
+                                                                                          ? new ZSymmetryFactory()
+                                                                                          : new ZConsumerFactory()));
     }
 
     @Override

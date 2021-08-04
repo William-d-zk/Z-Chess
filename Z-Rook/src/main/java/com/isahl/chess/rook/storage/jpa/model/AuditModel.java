@@ -31,9 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.model.JsonProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -46,34 +44,37 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
  * @author william.d.zk
  */
-@TypeDefs({@TypeDef(name = "string-array", typeClass = StringArrayType.class),
-           @TypeDef(name = "int-array", typeClass = IntArrayType.class),
-           @TypeDef(name = "list-array", typeClass = ListArrayType.class)})
+@TypeDefs({ @TypeDef(name = "string-array",
+                     typeClass = StringArrayType.class),
+            @TypeDef(name = "int-array",
+                     typeClass = IntArrayType.class),
+            @TypeDef(name = "list-array",
+                     typeClass = ListArrayType.class)
+})
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = {"created_at",
-                               "updated_at"},
+@JsonIgnoreProperties(value = { "created_at", "updated_at" },
                       allowGetters = true)
 public abstract class AuditModel
-        implements
-        IProtocol,
-        Serializable
+        extends JsonProtocol
+        implements Serializable
 {
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at",
+            nullable = false,
+            updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at",
+            nullable = false)
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
@@ -111,35 +112,11 @@ public abstract class AuditModel
         return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
     }
 
-    @Transient
-    private int mLength;
-
-    @Override
-    public byte[] encode()
-    {
-        byte[] b = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(b);
-        mLength = b.length;
-        return b;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
-
     @Override
     public int superSerial()
     {
         return AUDIT_MODEL_SERIAL;
     }
 
-    public final static int AUDIT_MODEL_SERIAL = IStorage.DB_SERIAL + 100;
+    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 100;
 }

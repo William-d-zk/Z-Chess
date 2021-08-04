@@ -26,9 +26,8 @@ package com.isahl.chess.queen.io.core.inf;
  * @author William.d.zk
  */
 public interface IQoS
-        extends
-        ISequence,
-        Comparable<IQoS>
+        extends ISequence,
+                Comparable<IQoS>
 {
     int QOS_PRIORITY_00_NETWORK_CONTROL    = 4 << 0;
     int QOS_PRIORITY_01_CLUSTER_CONTROL    = 4 << 1;
@@ -47,17 +46,14 @@ public interface IQoS
     int QOS_PRIORITY_14_NO_CONFIRM_MESSAGE = 4 << 14;
     int QOS_PRIORITY_15_INNER_CMD          = 4 << 15;
 
-    int getPriority();
+    int priority();
 
     @Override
     default int compareTo(IQoS o)
     {
         long seqDiff = getSequence() - o.getSequence();
-        int priorityDiff = getPriority() - o.getPriority();
-        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode()
-                                                 : (seqDiff > 0 ? 1
-                                                                : -1))
-                                 : priorityDiff;
+        int priorityDiff = priority() - o.priority();
+        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode() : (seqDiff > 0 ? 1 : -1)) : priorityDiff;
     }
 
     Level getLevel();
@@ -69,18 +65,19 @@ public interface IQoS
     {
 
         /**
-         * 只传输1次
-         * 不确保送达
-         * 类似UDP
-         */
-        ALMOST_ONCE(0),
-        /**
          * 最多传输成功1次
          * 确保送达
          * 但不确认接收方是否完成处理
          * 近似TCP
          */
         AT_LEAST_ONCE(1),
+        /**
+         * 只传输1次
+         * 不确保送达
+         * 类似UDP
+         */
+        ALMOST_ONCE(0),
+
         /**
          * 至少成功传输1次
          * 确保送达
@@ -107,8 +104,7 @@ public interface IQoS
 
         public static Level valueOf(int level)
         {
-            return switch (level)
-            {
+            return switch(level) {
                 case 0 -> ALMOST_ONCE;
                 case 1 -> AT_LEAST_ONCE;
                 case 2 -> EXACTLY_ONCE;

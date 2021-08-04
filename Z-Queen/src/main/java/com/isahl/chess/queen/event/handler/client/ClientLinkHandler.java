@@ -23,13 +23,11 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-import static com.isahl.chess.king.base.inf.IError.Type.CONNECT_FAILED;
-
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IBatchEventHandler;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -39,22 +37,33 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.lmax.disruptor.EventHandler;
+
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
+
+import static com.isahl.chess.king.base.inf.IError.Type.CONNECT_FAILED;
 
 /**
  * @author william.d.zk
  */
 public class ClientLinkHandler
-        implements
-        EventHandler<QEvent>
+        implements IBatchEventHandler<QEvent>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
+    private final IHealth _Health = new Health(-1);
+
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public IHealth getHealth()
     {
-        if (event.hasError()) {
-            if (event.getErrorType() == CONNECT_FAILED) {
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence) throws Exception
+    {
+        if(event.hasError()) {
+            if(event.getErrorType() == CONNECT_FAILED) {
                 /* 多路连接不执行 retry */
                 event.ignore();
             }
@@ -63,35 +72,29 @@ public class ClientLinkHandler
                 IPair errorContent = event.getContent();
                 ISession session = errorContent.getSecond();
                 ISessionDismiss dismiss = session.getDismissCallback();
-                IOperator<Void,
-                          ISession,
-                          Void> closeOperator = event.getEventOp();
-                if (!session.isClosed()) {
+                IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
+                if(!session.isClosed()) {
                     closeOperator.handle(null, session);
                     dismiss.onDismiss(session);
                 }
             }
         }
         else {
-            if (event.getEventType() == OperatorType.CONNECTED) {
+            if(event.getEventType() == OperatorType.CONNECTED) {
                 try {
                     IPair connectedContent = event.getContent();
                     IConnectActivity connectActivity = connectedContent.getFirst();
                     AsynchronousSocketChannel channel = connectedContent.getSecond();
-                    IOperator<IConnectActivity,
-                              AsynchronousSocketChannel,
-                              ITriple> connectedOperator = event.getEventOp();
+                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     // connectedHandled 不可能为 null
                     IControl[] waitToSend = connectedHandled.getFirst();
                     ISession session = connectedHandled.getSecond();
-                    IOperator<IControl[],
-                              ISession,
-                              List<ITriple>> sendTransferOperator = connectedHandled.getThird();
+                    IOperator<IControl[], ISession, List<ITriple>> sendTransferOperator = connectedHandled.getThird();
                     event.produce(OperatorType.WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
                     _Logger.debug(String.format("link mappingHandle %s,connected", session));
                 }
-                catch (Exception e) {
+                catch(Exception e) {
                     _Logger.fetal("client session create failed", e);
                 }
             }

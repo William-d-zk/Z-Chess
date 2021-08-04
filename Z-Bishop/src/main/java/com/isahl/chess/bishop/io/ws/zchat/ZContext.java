@@ -29,34 +29,26 @@ import com.isahl.chess.queen.io.core.inf.ISort;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateOf;
+import static com.isahl.chess.king.base.schedule.inf.ITask.*;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 /**
  * @author William.d.zk
- * 
  * @date 2017-02-10
  */
 public abstract class ZContext
-        extends
-        AioContext<INetworkOption>
-        implements
-        IPContext
+        extends AioContext<INetworkOption>
+        implements IPContext
 {
-    protected final AtomicInteger _EncodeState = new AtomicInteger(ENCODE_NULL);
-    protected final AtomicInteger _DecodeState = new AtomicInteger(DECODE_NULL);
+    protected final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
+    protected final AtomicInteger _DecodeState      = new AtomicInteger(DECODE_NULL);
     protected final ISort.Mode    _Mode;
     protected final ISort.Type    _Type;
     /*----------------------------------------------------------------------------------------------------------------*/
-    private int    mDecodingPosition = -1, mLackData = 1;
+    private         int           mDecodingPosition = -1, mLackData = 1;
     private Object mCarrier;
 
-    public ZContext(INetworkOption option,
-                    ISort.Mode mode,
-                    ISort.Type type)
+    public ZContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
         super(option);
         _Mode = mode;

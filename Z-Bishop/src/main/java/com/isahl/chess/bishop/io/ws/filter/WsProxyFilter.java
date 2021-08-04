@@ -23,30 +23,22 @@
 
 package com.isahl.chess.bishop.io.ws.filter;
 
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.IFrame;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.inf.*;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-07
  */
 public class WsProxyFilter<A extends IPContext>
-        extends
-        AioFilterChain<WsProxyContext<A>,
-                       IPacket,
-                       WsFrame>
+        extends AioFilterChain<WsProxyContext<A>, IPacket, WsFrame>
 {
 
     public WsProxyFilter()
@@ -59,26 +51,25 @@ public class WsProxyFilter<A extends IPContext>
     public WsFrame encode(WsProxyContext<A> context, IPacket output)
     {
         WsFrame frame = new WsFrame();
-        frame.setPayload(output.getBuffer()
+        frame.putPayload(output.getBuffer()
                                .array());
-        frame.setCtrl(WsFrame.frame_op_code_no_ctrl_bin);
+        frame.putCtrl(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
     }
 
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return new AioPacket(ByteBuffer.wrap(input.getPayload()));
+        return new AioPacket(ByteBuffer.wrap(input.payload()));
     }
 
     @Override
-    public <O extends IProtocol> Pair<ResultType,
-                                      IPContext> pipeSeek(IPContext context, O output)
+    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.PACKET_SERIAL)) {
+        if(checkType(output, IProtocol.PACKET_SERIAL)) {
             IPContext acting = context;
-            while (acting.isProxy()) {
-                if (acting instanceof IWsContext && acting.isOutConvert()) {
+            while(acting.isProxy()) {
+                if(acting instanceof IWsContext && acting.isOutConvert()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
                 acting = ((IProxyContext<?>) acting).getActingContext();
@@ -88,13 +79,12 @@ public class WsProxyFilter<A extends IPContext>
     }
 
     @Override
-    public <I extends IProtocol> Pair<ResultType,
-                                      IPContext> pipePeek(IPContext context, I input)
+    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
+        if(checkType(input, IProtocol.FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
             IPContext acting = context;
-            while (acting.isProxy()) {
-                if (acting instanceof IWsContext && acting.isInConvert()) {
+            while(acting.isProxy()) {
+                if(acting instanceof IWsContext && acting.isInConvert()) {
                     return new Pair<>(ResultType.PROXY, acting);
                 }
                 acting = ((IProxyContext<?>) acting).getActingContext();
@@ -105,16 +95,14 @@ public class WsProxyFilter<A extends IPContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> I pipeEncode(IPContext context, O output)
+    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((WsProxyContext<A>) context, (IPacket) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> O pipeDecode(IPContext context, I input)
+    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((WsProxyContext<A>) context, (WsFrame) input);
     }

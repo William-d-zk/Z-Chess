@@ -30,8 +30,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X31_ConfirmMsg
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x31;
 
@@ -46,7 +45,7 @@ public class X31_ConfirmMsg
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }

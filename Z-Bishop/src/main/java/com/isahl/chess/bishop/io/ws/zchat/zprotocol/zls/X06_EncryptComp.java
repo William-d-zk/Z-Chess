@@ -30,11 +30,10 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author William.d.zk
  */
 public class X06_EncryptComp
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x06;
-    private int             code;
+    private             int code;
 
     public X06_EncryptComp()
     {

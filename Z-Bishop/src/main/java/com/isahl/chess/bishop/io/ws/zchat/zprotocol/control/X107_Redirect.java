@@ -31,8 +31,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X107_Redirect
-        extends
-        WsControl
+        extends WsControl
 {
     public final static int COMMAND = 0x107;
 
@@ -43,17 +42,17 @@ public class X107_Redirect
 
     public String getHost()
     {
-        return IoUtil.readIpAdr(getPayload());
+        return IoUtil.readIpAdr(payload());
     }
 
     public int getPort()
     {
-        return IoUtil.readUnsignedShort(getPayload(), 4);
+        return IoUtil.readUnsignedShort(payload(), 4);
     }
 
     @Override
     public X107_Redirect duplicate()
     {
-        return new X107_Redirect(getPayload());
+        return new X107_Redirect(payload());
     }
 }

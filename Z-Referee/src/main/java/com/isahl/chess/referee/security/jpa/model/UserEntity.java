@@ -33,14 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -54,14 +47,14 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
  * @date 2021/3/5
  */
 @Entity(name = "user")
-@Table(indexes = {@Index(name = "username_idx", columnList = "username")})
+@Table(indexes = { @Index(name = "username_idx",
+                          columnList = "username")
+})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserEntity
-        extends
-        AuditModel
-        implements
-        UserDetails,
-        Serializable
+        extends AuditModel
+        implements UserDetails,
+                   Serializable
 {
     @Serial
     private static final long serialVersionUID = -9149289160528408957L;
@@ -69,11 +62,13 @@ public class UserEntity
     @Id
     @GeneratedValue
     private long          id;
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false,
+            updatable = false)
     private String        username;
     @Column(nullable = false)
     private String        password;
-    @Column(name = "invalid_at", nullable = false)
+    @Column(name = "invalid_at",
+            nullable = false)
     private LocalDateTime invalidAt;
     @Column(nullable = false)
     private Status        status = COMMON;

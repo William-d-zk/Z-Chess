@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -38,22 +37,19 @@ import com.isahl.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  */
 public class ClientDecodeHandler
-        extends
-        DecodeHandler
+        extends DecodeHandler
 {
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public ClientDecodeHandler(IEncryptHandler encryptHandler, int slot)
     {
-        super(encryptHandler);
+        super(encryptHandler, slot);
     }
 
     @Override
     protected void transfer(QEvent event,
                             IControl[] commands,
                             ISession session,
-                            IOperator<IControl[],
-                                      ISession,
-                                      ITriple> operator)
+                            IOperator<IControl[], ISession, ITriple> operator)
     {
         event.produce(OperatorType.LOGIC, new Pair<>(commands, session), operator);
     }

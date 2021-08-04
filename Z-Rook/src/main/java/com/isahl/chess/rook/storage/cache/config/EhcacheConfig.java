@@ -25,8 +25,6 @@ package com.isahl.chess.rook.storage.cache.config;
 
 import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.ExpiryPolicyBuilder;
-import org.ehcache.jsr107.Eh107Configuration;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
@@ -34,9 +32,11 @@ import org.springframework.context.annotation.PropertySource;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-import java.net.URL;
 import java.time.Duration;
 import java.util.Objects;
+
+import static org.ehcache.config.builders.ExpiryPolicyBuilder.timeToIdleExpiration;
+import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguration;
 
 /**
  * @author william.d.zk
@@ -44,37 +44,32 @@ import java.util.Objects;
  */
 @Configuration
 @EnableCaching
-@PropertySource({"classpath:cache.properties"})
+@PropertySource({ "classpath:cache.properties" })
 public class EhcacheConfig
 {
 
     private final Logger _Logger = Logger.getLogger("rook.cache." + getClass().getSimpleName());
 
-    private static XmlConfiguration _RookConfig;
-    private static final String     DEFAULT_TEMPLATE_NAME = "rook-default";
+    private static       XmlConfiguration _RookConfig;
+    private static final String           DEFAULT_TEMPLATE_NAME = "rook-default";
 
     public EhcacheConfig()
     {
-        URL ehcaheUrl = Objects.requireNonNull(getClass().getResource("/ehcache.xml"));
-        _RookConfig = new XmlConfiguration(ehcaheUrl);
+        _RookConfig = new XmlConfiguration(Objects.requireNonNull(getClass().getResource("/ehcache.xml")));
     }
 
-    public static <K,
-                   V> Cache<K,
-                            V> createCache(CacheManager cacheManager,
-                                           String cacheName,
-                                           Class<K> keyType,
-                                           Class<V> valueType,
-                                           Duration expiry) throws ClassNotFoundException,
-                                                            InstantiationException,
-                                                            IllegalAccessException
+    public static <K, V> Cache<K, V> createCache(CacheManager cacheManager,
+                                                 String cacheName,
+                                                 Class<K> keyType,
+                                                 Class<V> valueType,
+                                                 Duration expiry) throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        CacheConfigurationBuilder<K,
-                                  V> builder = _RookConfig.newCacheConfigurationBuilderFromTemplate(DEFAULT_TEMPLATE_NAME,
-                                                                                                    keyType,
-                                                                                                    valueType);
+        CacheConfigurationBuilder<K, V> builder = _RookConfig.newCacheConfigurationBuilderFromTemplate(
+                DEFAULT_TEMPLATE_NAME,
+                keyType,
+                valueType);
         return cacheManager.createCache(cacheName,
-                                        Eh107Configuration.fromEhcacheCacheConfiguration(builder.withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(expiry))
-                                                                                                .build()));
+                                        fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
+                                                                             .build()));
     }
 }

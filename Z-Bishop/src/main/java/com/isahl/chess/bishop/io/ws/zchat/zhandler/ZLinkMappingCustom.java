@@ -32,14 +32,11 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/20
  */
 public class ZLinkMappingCustom
-        extends
-        ZBaseMappingCustom<ILinkCustom>
-        implements
-        ILinkCustom
+        extends ZBaseMappingCustom<ILinkCustom>
+        implements ILinkCustom
 {
 
     public ZLinkMappingCustom(ILinkCustom then)
@@ -48,41 +45,28 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl request, long origin)
+    public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
     {
-        return _Then != null ? _Then.notify(manager, request, origin): null;
+        return _Then != null ? _Then.notify(manager, response, origin) : null;
     }
 
     @Override
     public void close(ISession session)
     {
-        if (_Then != null) {
+        if(_Then != null) {
             _Then.close(session);
         }
     }
 
     @Override
-    public void adjudge(IProtocol consensus)
+    public <T extends IProtocol> IOperator<IConsistent, ISession, T> getOperator()
     {
-        if (_Then != null) {
-            _Then.adjudge(consensus);
-        }
+        return this::adjudge;
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> IOperator<T,
-                                                        Throwable,
-                                                        Void> getOperator()
+    public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
     {
-        return this::resolve;
-    }
-
-    @Override
-    public <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable)
-    {
-        if (_Then != null) {
-            _Then.resolve(request, throwable);
-        }
-        return null;
+        return _Then != null ? _Then.adjudge(consistency, session) : null;
     }
 }

@@ -23,46 +23,42 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X20_SignUp;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X24_UpdateToken;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X31_ConfirmMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X32_MsgStatus;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X50_DeviceMsg;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZServerFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame, ZContext>
 {
 
     @Override
-    public ICommand create(IFrame frame)
+    public ICommand create(IFrame frame, ZContext context)
     {
-        return create(frame.getPayload()[1] & 0xFF);
+        return create(frame.payload()[1] & 0xFF, frame.payload(), context);
     }
 
     @Override
-    public ICommand create(int serial)
+    public ICommand create(int serial, byte[] data, ZContext context)
     {
-        return switch (serial)
-        {
+        ICommand command = switch(serial) {
             case X20_SignUp.COMMAND -> new X20_SignUp();
             case X22_SignIn.COMMAND -> new X22_SignIn();
             case X24_UpdateToken.COMMAND -> new X24_UpdateToken();
             case X31_ConfirmMsg.COMMAND -> new X31_ConfirmMsg();
             case X32_MsgStatus.COMMAND -> new X32_MsgStatus();
             case X50_DeviceMsg.COMMAND -> new X50_DeviceMsg();
-            default -> throw new UnsupportedOperationException();
+            default -> null;
         };
+        if(command != null) {
+            command.decode(data, context);
+        }
+        return command;
     }
 
 }

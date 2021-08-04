@@ -23,26 +23,24 @@
 
 package com.isahl.chess.bishop.io.mqtt.command;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X114_QttPuback
-        extends
-        QttCommand
+        extends QttCommand
 {
     public final static int COMMAND = 0x114;
 
     public X114_QttPuback()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBACK));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBACK));
     }
 
     @Override

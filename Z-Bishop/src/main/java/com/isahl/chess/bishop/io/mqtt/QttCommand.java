@@ -28,14 +28,11 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-25
  */
 public abstract class QttCommand
-        extends
-        MqttProtocol
-        implements
-        ICommand
+        extends MqttProtocol
+        implements ICommand
 {
 
     private final int _Command;
@@ -45,12 +42,12 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private long       mMsgId = -1;
-    private ISession   mSession;
-    private byte[]     mPayload;
+    private long     mMsgId = -1;
+    private ISession mSession;
+    private byte[]   mPayload;
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setOpCode(ctrl);
     }
@@ -68,19 +65,19 @@ public abstract class QttCommand
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getOpCode();
     }
@@ -104,19 +101,19 @@ public abstract class QttCommand
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
@@ -139,12 +136,12 @@ public abstract class QttCommand
     @Override
     public int dataLength()
     {
-        return 2 + (mPayload == null ? 0: mPayload.length);
+        return 2 + (mPayload == null ? 0 : mPayload.length);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public QttContext getContext()
+    public QttContext context()
     {
         return mContext;
     }

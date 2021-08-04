@@ -23,17 +23,16 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.device;
 
-import java.util.Objects;
-
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+
+import java.util.Objects;
 
 /**
  * @author william.d.zk
  */
 public class X22_SignIn
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x22;
 
@@ -43,7 +42,7 @@ public class X22_SignIn
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }
@@ -60,10 +59,7 @@ public class X22_SignIn
     @Override
     public int dataLength()
     {
-        return super.dataLength()
-               + 33
-               + (Objects.nonNull(password) ? password.getBytes().length
-                                            : 0);
+        return super.dataLength() + 33 + (Objects.nonNull(password) ? password.getBytes().length : 0);
     }
 
     @Override

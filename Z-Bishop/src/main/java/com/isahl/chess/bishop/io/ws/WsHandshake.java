@@ -28,12 +28,9 @@ import java.nio.charset.StandardCharsets;
  * @author William.d.zk
  */
 public abstract class WsHandshake
-        extends
-        WsControl
+        extends WsControl
 {
-    public WsHandshake(int command,
-                       String msg,
-                       int code)
+    public WsHandshake(int command, String msg, int code)
     {
         super(WsFrame.frame_op_code_ctrl_handshake, command, msg.getBytes(StandardCharsets.UTF_8));
         _Code = code;
@@ -42,7 +39,7 @@ public abstract class WsHandshake
     @Override
     public String toString()
     {
-        return String.format("%s", new String(getPayload(), StandardCharsets.UTF_8));
+        return String.format("%s", new String(payload(), StandardCharsets.UTF_8));
     }
 
     private final int _Code;

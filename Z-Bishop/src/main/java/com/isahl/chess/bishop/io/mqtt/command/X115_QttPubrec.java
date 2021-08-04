@@ -30,19 +30,17 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X115_QttPubrec
-        extends
-        QttCommand
+        extends QttCommand
 {
     public final static int COMMAND = 0x115;
 
     public X115_QttPubrec()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC));
     }
 
     @Override
