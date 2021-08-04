@@ -21,4 +21,5 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 mvn -P dev clean package
+cp libsqlitejdbc.so ~/Z-Chess/Z-Arena/target/.
 docker build -f ./Dockerfile -t img.z-chess.arena ~/Z-Chess

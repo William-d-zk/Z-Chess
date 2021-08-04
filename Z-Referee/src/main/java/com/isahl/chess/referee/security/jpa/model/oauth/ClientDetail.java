@@ -57,7 +57,8 @@ public class ClientDetail
     @Column(name = "resource_ids",
             columnDefinition = "text[]")
     private String[] resourceIds       = {};
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "app_secret")
     private String   appSecret;
     @Column(nullable = false)
     private String   scope;
@@ -65,7 +66,8 @@ public class ClientDetail
     @Column(name = "grant_types",
             columnDefinition = "text[]")
     private String[] grantTypes;
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "redirect_url")
     private String   redirectUrl;
     @Type(type = "string-array")
     @Column(name = "authorities",
