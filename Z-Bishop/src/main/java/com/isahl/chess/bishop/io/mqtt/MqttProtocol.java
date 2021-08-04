@@ -64,7 +64,7 @@ public abstract class MqttProtocol
         byte ctrl = 0;
         ctrl |= dup ? DUPLICATE_FLAG : 0;
         ctrl |= retain ? RETAIN_FLAG : 0;
-        ctrl |= qosLevel.ordinal() << 1;
+        ctrl |= qosLevel.getValue() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
     }
@@ -104,7 +104,7 @@ public abstract class MqttProtocol
 
     public void setLevel(Level level)
     {
-        mQosLevel = (byte) level.ordinal();
+        mQosLevel = (byte) level.getValue();
         mFrameOpCode &= ~QOS_MASK;
         mFrameOpCode |= mQosLevel << 1;
         if(mQosLevel == 0) {
@@ -163,7 +163,7 @@ public abstract class MqttProtocol
     public void putContext(QttContext context)
     {
         mContext = context;
-        mVersion = context.getVersion();
+        if(context != null) {mVersion = context.getVersion();}
     }
 
 }

@@ -155,7 +155,7 @@ public class X111_QttConnect
         mFlagWill = (code & Flag.Will.getMask()) != 0;
         mFlagWillQoS = Level.valueOf((byte) ((code & Flag.WillQoS.getMask()) >> 3));
         mFlagWillRetain = (code & Flag.WillRetain.getMask()) != 0;
-        if(!mFlagWill && (mFlagWillRetain || mFlagWillQoS.ordinal() > Level.EXACTLY_ONCE.ordinal())) {
+        if(!mFlagWill && (mFlagWillRetain || mFlagWillQoS.getValue() > Level.EXACTLY_ONCE.getValue())) {
             throw new IllegalArgumentException("no will flag, will retain or will qos not 0");
         }
         mFlagPassword = (code & Flag.Password.getMask()) != 0;
@@ -175,7 +175,7 @@ public class X111_QttConnect
         byte code = 0;
         code |= mFlagClean ? Flag.Clean.getMask() : 0;
         code |= mFlagWill ? Flag.Will.getMask() : 0;
-        code |= mFlagWill ? mFlagWillQoS.ordinal() << 3 : 0;
+        code |= mFlagWill ? mFlagWillQoS.getValue() << 3 : 0;
         code |= mFlagWill && mFlagWillRetain ? Flag.WillRetain.getMask() : 0;
         code |= mFlagPassword ? Flag.Password.getMask() : 0;
         code |= mFlagUserName ? Flag.UserName.getMask() : 0;

@@ -187,6 +187,7 @@ public class MQttAccessPlugin
                 X112_QttConnack x112 = new X112_QttConnack();
                 QttContext qttContext = session.getContext(QttContext.class);
                 qttContext.setVersion(x111.getVersion());
+                x112.putContext(qttContext);
                 x112.responseOk();
                 if(QttContext.isNoSupportVersion(x111.getVersion())) {
                     x112.rejectUnsupportedVersion();
@@ -271,8 +272,9 @@ public class MQttAccessPlugin
                     _QttStorage.sessionOnLogin(origin, this, x111);
                 }
                 if(session != null) {
-                    QttContext qttContext = session.getContext(QttContext.class);
                     X112_QttConnack x112 = new X112_QttConnack();
+                    QttContext context = session.getContext(QttContext.class);
+                    x112.putContext(context);
                     if(isConsistency) {
                         x112.responseOk();
                     }
@@ -536,7 +538,7 @@ public class MQttAccessPlugin
                 n113.putSession(session);
                 n113.setLevel(lv);
                 if(lv.getValue() > 0) {
-                    x113.setMsgId(_QttStorage.generateMsgId(kIdx));
+                    n113.setMsgId(_QttStorage.generateMsgId(kIdx));
                 }
                 pushList.add(n113);
                 register(n113, kIdx);

@@ -244,7 +244,7 @@ public class QttStorageService
     @Override
     public void cleanSession(long session)
     {
-        _SessionRepository.deleteById(session);
+        if(_SessionRepository.existsById(session)) {_SessionRepository.deleteById(session);}
     }
 
     @Cacheable(key = "#key",
