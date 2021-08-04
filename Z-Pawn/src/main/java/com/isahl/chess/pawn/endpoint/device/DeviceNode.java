@@ -31,7 +31,6 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftMachine;
@@ -46,6 +45,7 @@ import com.isahl.chess.queen.io.core.async.BaseAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
 import com.isahl.chess.queen.io.core.executor.ServerCore;
+import com.isahl.chess.queen.io.core.inf.IClusterPeer;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.manager.MixManager;
@@ -67,11 +67,11 @@ public class DeviceNode
         implements ISessionDismiss,
                    IClusterNode
 {
+    private final IClusterPeer     _ClusterPeer;
     private final List<IAioServer> _AioServers;
     private final IAioClient       _PeerClient;
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
-    private final ZUID             _ZUid;
     private final X103_Ping        _PeerPing, _GatePing;
 
     @Override
@@ -86,17 +86,18 @@ public class DeviceNode
                       IAioConfig bizIoConfig,
                       IRaftConfig raftConfig,
                       IMixConfig serverConfig,
-                      TimeWheel timeWheel) throws IOException
+                      TimeWheel timeWheel,
+                      IClusterPeer clusterPeer) throws IOException
     {
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
-        _ZUid = raftConfig.createZUID();
+        _ClusterPeer = clusterPeer;
         if(raftConfig.isInCongress()) {
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
             final int _PeerBindPort = peerBind.getPort();
             hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
+            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _PeerBindHost, _PeerBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
         }
         else {
@@ -107,7 +108,7 @@ public class DeviceNode
             final String _GateBindHost = gateBind.getGateHost();
             final int _GateBindPort = gateBind.getGatePort();
             hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _GateBindHost, _GateBindPort)
+            _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _GateBindHost, _GateBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
         }
         else {
@@ -124,8 +125,8 @@ public class DeviceNode
                                                   _Holder,
                                                   DeviceNode.this,
                                                   DeviceNode.this,
-                                                  _ZUid,
-                                                  multiBind);
+                                                  multiBind,
+                                                  _ClusterPeer);
                            })
                            .collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
@@ -168,7 +169,9 @@ public class DeviceNode
         _Logger.debug("Device Node Bean Load");
     }
 
-    public void start(ILogicHandler.factory logicFactory, ILinkCustom linkCustom, IClusterCustom<RaftMachine> clusterCustom)
+    public void start(ILogicHandler.factory logicFactory,
+                      ILinkCustom linkCustom,
+                      IClusterCustom<RaftMachine> clusterCustom)
     {
         build(logicFactory, linkCustom, clusterCustom, EncryptHandler::new);
         for(IAioServer server : _AioServers) {
@@ -191,7 +194,13 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _PeerClient.connect(buildConnector(host, port, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ZUid));
+        _PeerClient.connect(buildConnector(host,
+                                           port,
+                                           socketConfig,
+                                           _PeerClient,
+                                           DeviceNode.this,
+                                           _Holder,
+                                           _ClusterPeer));
     }
 
     @Override
@@ -199,7 +208,13 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _GateClient.connect(buildConnector(host, port, socketConfig, _GateClient, DeviceNode.this, _Holder, _ZUid));
+        _GateClient.connect(buildConnector(host,
+                                           port,
+                                           socketConfig,
+                                           _GateClient,
+                                           DeviceNode.this,
+                                           _Holder,
+                                           _ClusterPeer));
     }
 
     private void peerHeartbeat(ISession session)
@@ -212,12 +227,6 @@ public class DeviceNode
     {
         _Logger.debug("gate_cluster heartbeat => %s ", session.getRemoteAddress());
         send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
-    }
-
-    @Override
-    public long getZUid()
-    {
-        return _ZUid.getId();
     }
 
 }

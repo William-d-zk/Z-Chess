@@ -25,6 +25,8 @@ package com.isahl.chess.rook.storage.jpa.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -70,6 +72,20 @@ public class BaseJpaConfig
         return new JpaProperties();
     }
 
+    @Bean("primary-jpa-hibernate-properties")
+    @ConfigurationProperties(prefix = "z.rook.primary.jpa.hibernate")
+    public HibernateProperties primaryJpaHibernateProperties()
+    {
+        return new HibernateProperties();
+    }
+
+    @Bean("secondary-jpa-hibernate-properties")
+    @ConfigurationProperties(prefix = "z.rook.secondary.jpa.hibernate")
+    public HibernateProperties secondaryJpaHibernateProperties()
+    {
+        return new HibernateProperties();
+    }
+
     @Bean("secondary-jpa-properties")
     @ConfigurationProperties(prefix = "z.rook.secondary.jpa")
     public JpaProperties secondaryJpaProperties()
@@ -79,6 +95,7 @@ public class BaseJpaConfig
 
     protected LocalContainerEntityManagerFactoryBean getEntityManager(DataSource dataSource,
                                                                       JpaProperties jpaProperties,
+                                                                      HibernateProperties hibernateProperties,
                                                                       String... packagesToScan)
     {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
@@ -88,7 +105,8 @@ public class BaseJpaConfig
         jpaVendorAdapter.setGenerateDdl(jpaProperties.isGenerateDdl());
         jpaVendorAdapter.setDatabase(jpaProperties.getDatabase());
         em.setJpaVendorAdapter(jpaVendorAdapter);
-        em.setJpaPropertyMap(jpaProperties.getProperties());
+        em.setJpaPropertyMap(hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                              new HibernateSettings()));
         em.setPackagesToScan(packagesToScan);
         return em;
     }

@@ -96,7 +96,7 @@ public class X111_QttConnect
                 getControlCode(),
                 getClientId(),
                 isClean(),
-                getWillQoS(),
+                getWillLevel(),
                 isWillRetain(),
                 getWillTopic(),
                 Objects.nonNull(getWillMessage()) ? new String(getWillMessage(), StandardCharsets.UTF_8) : null,
@@ -219,7 +219,7 @@ public class X111_QttConnect
         mFlagWillQoS = level;
     }
 
-    public Level getWillQoS()
+    public Level getWillLevel()
     {
         return mFlagWillQoS;
     }

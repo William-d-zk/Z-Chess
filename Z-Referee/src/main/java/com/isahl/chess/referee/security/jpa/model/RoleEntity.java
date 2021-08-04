@@ -28,14 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
@@ -45,25 +38,26 @@ import java.util.List;
  * @date 2021/3/5
  */
 @Entity(name = "role")
-@Table(indexes = {@Index(name = "role_name_idx", columnList = "name")})
+@Table(indexes = { @Index(name = "role_name_idx",
+                          columnList = "name")
+})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RoleEntity
-        extends
-        AuditModel
-        implements
-        GrantedAuthority,
-        Serializable
+        extends AuditModel
+        implements GrantedAuthority,
+                   Serializable
 {
 
     @Serial
-    private static final long      serialVersionUID = -8748613422660526254L;
+    private static final long                   serialVersionUID = -8748613422660526254L;
     @Id
     @GeneratedValue
-    private long                   id;
-    @Column(nullable = false, unique = true)
-    private String                 name;
+    private              long                   id;
+    @Column(nullable = false,
+            unique = true)
+    private              String                 name;
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<PermissionEntity> permissions;
+    private              List<PermissionEntity> permissions;
 
     public void setId(long id)
     {

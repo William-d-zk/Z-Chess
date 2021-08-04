@@ -23,7 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZLinkMappingCustom;
@@ -31,14 +30,13 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.service.RaftCustom;
-import com.isahl.chess.knight.raft.service.RaftService;
+import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
+import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
@@ -63,24 +61,22 @@ public class NodeService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final DeviceNode              _DeviceNode;
-    private final ILinkCustom             _LinkCustom;
-    private final RaftCustom<DeviceNode>  _RaftCustom;
-    private final RaftPeer<DeviceNode>    _RaftPeer;
-    private final RaftService<DeviceNode> _RaftService;
-    private final ILogicHandler.factory   _LogicFactory;
+    private final DeviceNode            _DeviceNode;
+    private final ILinkCustom           _LinkCustom;
+    private final RaftCustom            _RaftCustom;
+    private final RaftPeer              _RaftPeer;
+    private final ILogicHandler.factory _LogicFactory;
 
     @Autowired
     NodeService(MixConfig deviceConfig,
                 @Qualifier("pawn_io_config")
                         IAioConfig ioConfig,
-                IRaftConfig raftConfig,
+                TimeWheel timeWheel,
                 IMixConfig mixConfig,
+                IRaftConfig raftConfig,
+                IRaftMapper raftMapper,
                 ILinkCustom linkCustom,
-                IRaftMapper raftDao,
-                IQttRouter qttRouter,
-                IMessageService messageService,
-                TimeWheel timeWheel) throws IOException
+                List<IAccessService> accessAdapters) throws IOException
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
@@ -99,51 +95,51 @@ public class NodeService
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);
                                           })
                                           .collect(Collectors.toList());
-        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel);
+        _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
+        _RaftCustom = new RaftCustom(_RaftPeer);
+        _DeviceNode = new DeviceNode(hosts,
+                                     deviceConfig.isMultiBind(),
+                                     ioConfig,
+                                     raftConfig,
+                                     mixConfig,
+                                     timeWheel,
+                                     _RaftPeer);
         _LinkCustom = linkCustom;
-        _RaftPeer = new RaftPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
-        _RaftCustom = new RaftCustom<>(_RaftPeer);
-        _LogicFactory = new ILogicHandler.factory()
-        {
-            @Override
-            public ILogicHandler create(int slot)
-            {
-                return new LogicHandler<>(_DeviceNode, qttRouter, _RaftPeer, messageService, slot);
-            }
-        };
-        _RaftService = new RaftService<>(_DeviceNode, _RaftPeer);
+        _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters);
     }
 
     @PostConstruct
     private void start()
     {
         _DeviceNode.start(_LogicFactory, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
-        _RaftPeer.start();
+        _RaftPeer.start(_DeviceNode);
         _Logger.info(" device service start ");
     }
 
+    /**
+     * @return DeviceNode
+     * → NodeService
+     * → ConsistencyOpenService
+     */
     @Bean
     public DeviceNode getDeviceNode()
     {
         return _DeviceNode;
     }
 
-    @Bean
-    public RaftService<DeviceNode> getRaftNode()
-    {
-        return _RaftService;
-    }
-
     /**
-     * for consensus open service
-     *
-     * @return raft peer
+     * @return RaftPeer
+     * → ConsistencyOpenService
      */
     @Bean
-    public RaftPeer<DeviceNode> getRaftPeer() {return _RaftPeer;}
+    public RaftPeer getRaftPeer() {return _RaftPeer;}
 
+    /**
+     * @return RaftCustom
+     * → ConsistencyOpenService
+     */
     @Bean
-    public RaftCustom<DeviceNode> getConsistencyCustom()
+    public RaftCustom get_RaftCustom()
     {
         return _RaftCustom;
     }

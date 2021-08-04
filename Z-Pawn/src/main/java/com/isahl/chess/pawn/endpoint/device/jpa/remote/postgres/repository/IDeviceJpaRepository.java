@@ -26,7 +26,7 @@ package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 import org.springframework.stereotype.Repository;
 
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
 
 /**
  * @author william.d.zk
@@ -35,8 +35,7 @@ import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
  */
 @Repository
 public interface IDeviceJpaRepository
-        extends
-        BaseRepository<DeviceEntity>
+        extends BaseLongRepository<DeviceEntity>
 {
     DeviceEntity findByToken(String token);
 

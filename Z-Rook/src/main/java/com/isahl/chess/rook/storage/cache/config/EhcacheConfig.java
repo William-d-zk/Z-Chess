@@ -25,8 +25,6 @@ package com.isahl.chess.rook.storage.cache.config;
 
 import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.ExpiryPolicyBuilder;
-import org.ehcache.jsr107.Eh107Configuration;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +34,9 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import java.time.Duration;
 import java.util.Objects;
+
+import static org.ehcache.config.builders.ExpiryPolicyBuilder.timeToIdleExpiration;
+import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguration;
 
 /**
  * @author william.d.zk
@@ -68,8 +69,7 @@ public class EhcacheConfig
                 keyType,
                 valueType);
         return cacheManager.createCache(cacheName,
-                                        Eh107Configuration.fromEhcacheCacheConfiguration(builder.withExpiry(
-                                                ExpiryPolicyBuilder.timeToIdleExpiration(expiry))
-                                                                                                .build()));
+                                        fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
+                                                                             .build()));
     }
 }

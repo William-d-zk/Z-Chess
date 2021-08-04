@@ -21,10 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.knight.raft.service;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
@@ -34,16 +35,22 @@ import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.inf.IRaftMessage;
+import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.event.QEvent;
+import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
 import com.isahl.chess.queen.io.core.inf.*;
+import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,30 +65,31 @@ import static java.lang.Math.min;
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class RaftPeer<M extends IClusterPeer & IClusterTimer>
-        implements IValid
+public class RaftPeer
+        implements IValid,
+                   IRaftService,
+                   IClusterTimer
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final ZUID                         _ZUid;
-    private final IRaftConfig                  _RaftConfig;
-    private final M                            _ClusterPeer;
-    private final IRaftMapper                  _RaftMapper;
-    private final TimeWheel                    _TimeWheel;
-    private final RaftGraph                    _RaftGraph;
-    private final RaftMachine                  _SelfMachine;
-    private final Queue<LogEntry>              _LogQueue = new LinkedList<>();
-    private final Random                       _Random   = new Random();
-    private final long                         _SnapshotFragmentMaxSize;
-    private final ScheduleHandler<RaftPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
+    private final ZUID                      _ZUid;
+    private final IRaftConfig               _RaftConfig;
+    private final IRaftMapper               _RaftMapper;
+    private final TimeWheel                 _TimeWheel;
+    private final RaftGraph                 _RaftGraph;
+    private final RaftMachine               _SelfMachine;
+    private final Queue<LogEntry>           _LogQueue = new LinkedList<>();
+    private final Random                    _Random   = new Random();
+    private final long                      _SnapshotFragmentMaxSize;
+    private final ScheduleHandler<RaftPeer> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
 
-    private ICancelable mElectTask, mHeartbeatTask, mTickTask;
+    private ILocalPublisher mClusterPublisher;
+    private ICancelable     mElectTask, mHeartbeatTask, mTickTask;
 
-    public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftMapper, M manager)
+    public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftMapper)
     {
         _TimeWheel = timeWheel;
         _RaftConfig = raftConfig;
-        _ClusterPeer = manager;
         _ZUid = raftConfig.createZUID();
         _RaftMapper = raftMapper;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::stepDown);
@@ -96,7 +104,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     private void heartbeat()
     {
-        _ClusterPeer.timerEvent(_SelfMachine.createLeader());
+        timerEvent(_SelfMachine.createLeader());
     }
 
     private void init()
@@ -138,9 +146,10 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         _Logger.info("raft node init -> %s", _SelfMachine);
     }
 
-    public void start()
+    public void start(final IClusterNode _Node)
     {
         init();
+        mClusterPublisher = _Node;
         if(_RaftConfig.isClusterMode()) {
             // 启动集群连接
             if(_SelfMachine.getPeerSet() != null) {
@@ -153,7 +162,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                     // 仅连接NodeId<自身的节点
                     if(peerId < _SelfMachine.getPeerId()) {
                         try {
-                            _ClusterPeer.setupPeer(remote.getHost(), remote.getPort());
+                            _Node.setupPeer(remote.getHost(), remote.getPort());
                             _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
                         }
                         catch(Exception e) {
@@ -167,7 +176,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                     long gateId = remote.getId();
                     if(_ZUid.isTheGate(gateId)) {
                         try {
-                            _ClusterPeer.setupGate(remote.getGateHost(), remote.getGatePort());
+                            _Node.setupGate(remote.getGateHost(), remote.getGatePort());
                             _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
                         }
                         catch(Exception e) {
@@ -249,7 +258,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         catch(InterruptedException e) {
             // ignore
         }
-        _ClusterPeer.timerEvent(_SelfMachine.createCandidate());
+        timerEvent(_SelfMachine.createCandidate());
     }
 
     private X71_RaftBallot ballot()
@@ -318,7 +327,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     private void stepDown()
     {
-        _ClusterPeer.timerEvent(_SelfMachine.createFollower());
+        timerEvent(_SelfMachine.createFollower());
     }
 
     private IControl follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
@@ -975,22 +984,76 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return true;
     }
 
-    public long generateId()
-    {
-        return _ZUid.getId();
-    }
-
     public long getPeerId()
     {
         return _ZUid.getPeerId();
     }
 
+    @Override
+    public long generateId()
+    {
+        return _ZUid.getId();
+    }
+
+    @Override
     public RaftNode getLeader()
     {
         if(getMachine().getLeader() != INVALID_PEER_ID) {
             return _RaftConfig.findById(getMachine().getLeader());
         }
         return null;
+    }
+
+    @Override
+    public void changeTopology(RaftNode delta, IStorage.Operation operation)
+    {
+        _RaftConfig.changeTopology(delta, operation);
+        final RingBuffer<QEvent> _ConsensusApiEvent = mClusterPublisher.getPublisher(OperatorType.CLUSTER_TOPOLOGY);
+        final ReentrantLock _ConsensusApiLock = mClusterPublisher.getLock(OperatorType.CLUSTER_TOPOLOGY);
+        _ConsensusApiLock.lock();
+        try {
+            long sequence = _ConsensusApiEvent.next();
+            try {
+                QEvent event = _ConsensusApiEvent.get(sequence);
+                event.produce(OperatorType.CLUSTER_TOPOLOGY, new Pair<>(delta, operation), null);
+            }
+            finally {
+                _ConsensusApiEvent.publish(sequence);
+            }
+        }
+        finally {
+            _ConsensusApiLock.unlock();
+        }
+    }
+
+    @Override
+    public <T extends IStorage> void timerEvent(T content)
+    {
+        final RingBuffer<QEvent> _ConsensusEvent = mClusterPublisher.getPublisher(OperatorType.CLUSTER_TIMER);
+        final ReentrantLock _ConsensusLock = mClusterPublisher.getLock(OperatorType.CLUSTER_TIMER);
+        /*
+        通过 Schedule thread-pool 进行 timer 执行, 排队执行。
+         */
+        _ConsensusLock.lock();
+        try {
+            long sequence = _ConsensusEvent.next();
+            try {
+                QEvent event = _ConsensusEvent.get(sequence);
+                event.produce(OperatorType.CLUSTER_TIMER, new Pair<>(content, null), null);
+            }
+            finally {
+                _ConsensusEvent.publish(sequence);
+            }
+        }
+        finally {
+            _ConsensusLock.unlock();
+        }
+    }
+
+    @Override
+    public List<RaftNode> getTopology()
+    {
+        return _RaftConfig.getPeers();
     }
 
     private X79_RaftAdjudge createAdjudge(LogEntry raftLog)

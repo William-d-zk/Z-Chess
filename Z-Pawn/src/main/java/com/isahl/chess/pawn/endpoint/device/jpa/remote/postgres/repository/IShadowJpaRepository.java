@@ -24,7 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,8 +38,8 @@ import javax.transaction.Transactional;
  */
 @Repository
 public interface IShadowJpaRepository
-        extends
-        BaseRepository<ShadowEntity> {
+        extends BaseLongRepository<ShadowEntity>
+{
     @Transactional
     @Modifying
     @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)

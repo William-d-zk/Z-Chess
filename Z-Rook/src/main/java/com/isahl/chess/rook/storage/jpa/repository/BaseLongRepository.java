@@ -21,31 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi;
+package com.isahl.chess.rook.storage.jpa.repository;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.util.List;
-import java.util.Optional;
-
-/**
- * @author william.d.zk
- * 
- * @date 2020/2/21
- */
-public interface IMessageService
-{
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
-
-    long generateMsgId(long origin, long destination);
-
-    void handleMessage(MessageEntity msgEntity);
-
-    Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
-
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
-}
+public interface BaseLongRepository<T>
+        extends JpaRepository<T, Long>,
+                JpaSpecificationExecutor<T>
+{}

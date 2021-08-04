@@ -24,7 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 @Repository("remote-message-jpa-repository")
 public interface IMessageJpaRepository
-        extends BaseRepository<MessageEntity>
+        extends BaseLongRepository<MessageEntity>
 {
 
     List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);

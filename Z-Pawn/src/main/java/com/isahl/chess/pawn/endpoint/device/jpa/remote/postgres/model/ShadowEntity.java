@@ -26,7 +26,8 @@ package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.pawn.endpoint.device.model.Subscribe;
+import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
+import com.isahl.chess.bishop.io.mqtt.model.SubscribeEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -58,18 +59,24 @@ public class ShadowEntity
     @GeneratedValue
     @Column(name = "shadow_id")
     @JsonIgnore
-    private long      shadowId;
-    @Column(unique = true)
-    private long      deviceId;
+    private long            shadowId;
+    @Column(name = "device_id",
+            unique = true)
+    private long            deviceId;
+    @Type(type = "jsonb")
+    @Column(name = "subscribes",
+            columnDefinition = "jsonb")
+    private DeviceSubscribe subscribes;
     @Type(type = "jsonb")
     @Column(name = "will_subscribe",
             columnDefinition = "jsonb")
-    private Subscribe willSubscribe;
+    private SubscribeEntry  willSubscribe;
     @Column(name = "will_payload")
     @Type(type = "org.hibernate.type.BinaryType")
-    private byte[]    willPayload;
-    @Column(length = 32)
-    private String    username;
+    private byte[]          willPayload;
+    @Column(length = 32,
+            name = "username")
+    private String          username;
 
     public ShadowEntity()
     {
@@ -100,12 +107,12 @@ public class ShadowEntity
         this.deviceId = deviceId;
     }
 
-    public Subscribe getWillSubscribe()
+    public SubscribeEntry getWillSubscribe()
     {
         return willSubscribe;
     }
 
-    public void setWillSubscribe(Subscribe willSubscribe)
+    public void setWillSubscribe(SubscribeEntry willSubscribe)
     {
         this.willSubscribe = willSubscribe;
     }
@@ -166,5 +173,15 @@ public class ShadowEntity
     public void setUsername(String username)
     {
         this.username = username;
+    }
+
+    public DeviceSubscribe getSubscribes()
+    {
+        return subscribes;
+    }
+
+    public void setSubscribes(DeviceSubscribe subscribes)
+    {
+        this.subscribes = subscribes;
     }
 }

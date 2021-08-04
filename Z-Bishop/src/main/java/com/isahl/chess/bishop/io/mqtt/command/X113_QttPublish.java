@@ -108,4 +108,14 @@ public class X113_QttPublish
                              getTopic(),
                              this.payload() == null ? "NULL" : new String(this.payload(), StandardCharsets.UTF_8));
     }
+
+    @Override
+    public X113_QttPublish duplicate()
+    {
+        X113_QttPublish n113 = new X113_QttPublish();
+        n113.setTopic(getTopic());
+        n113.setLevel(getLevel());
+        n113.putPayload(payload());
+        return n113;
+    }
 }

@@ -24,7 +24,7 @@
 package com.isahl.chess.referee.security.jpa.repository;
 
 import com.isahl.chess.referee.security.jpa.model.RoleEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -33,8 +33,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface IRoleRepository
-        extends
-        BaseRepository<RoleEntity>
+        extends BaseLongRepository<RoleEntity>
 {
     RoleEntity findByName(String name);
 }

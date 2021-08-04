@@ -49,7 +49,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     }
 
     @Override
-    public IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception
+    public IPair handle(ISessionManager manager, ISession session, IControl content)
     {
         _Logger.debug("mapping receive %s", content);
         switch(content.serial()) {

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,48 +21,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.handler;
+package com.isahl.chess.pawn.endpoint.device.api;
 
-import com.isahl.chess.bishop.io.IRouter;
-import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * @author william.d.zk
- * @date 2019-07-09
- */
-public interface IQttRouter
-        extends IRouter
+public interface IDeviceService
 {
 
-    void retain(String topic, MqttProtocol msg);
+    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
-    /**
-     * 向特定主题发送消息
-     *
-     * @param topic
-     * @return
-     */
-    Map<Long, IQoS.Level> broker(final String topic);
+    DeviceEntity findByToken(String token) throws ZException;
 
-    /**
-     * 注册单个主题
-     *
-     * @param topic
-     * @param level
-     * @param session
-     * @return
-     */
-    IQoS.Level subscribe(String topic, IQoS.Level level, long session);
+    DeviceEntity findBySn(String sn) throws ZException;
 
-    /**
-     * 注销主题
-     *
-     * @param topic
-     * @param session
-     */
-    void unsubscribe(String topic, long session);
+    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
+
+    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
+
+    DeviceEntity getOneDevice(long id);
+
+    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
 
 }
