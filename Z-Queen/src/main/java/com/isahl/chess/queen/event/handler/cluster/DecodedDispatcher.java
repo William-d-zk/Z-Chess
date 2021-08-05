@@ -108,7 +108,6 @@ public class DecodedDispatcher
 
     protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
-        _Logger.debug("decoded: %s | %s", cmd, mode);
         return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, OperatorType.CLUSTER)
                                                              : new Pair<>(dispatchWorker(cmd), OperatorType.LOGIC);
     }

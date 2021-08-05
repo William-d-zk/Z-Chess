@@ -120,9 +120,6 @@ public class WriteDispatcher
                                         triple.getThird());
                             }
                         }
-                        _Logger.debug("write_dispatcher, source %s, transfer:%d",
-                                      event.getEventType(),
-                                      commands.length);
                     }
                     break;
                 case WROTE:// from io-wrote
