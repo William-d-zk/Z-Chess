@@ -64,11 +64,11 @@ public class SessionEntity
     @Enumerated(EnumType.STRING)
     private IQoS.Level willLevel;
     @JsonIgnore
-    private byte[]  willPayload;
+    private byte[]     willPayload;
     @JsonIgnore
-    private boolean willRetain;
+    private boolean    willRetain;
     @JsonIgnore
-    private String  subscribes;
+    private String     subscribes;
 
     @Transient
     public DeviceSubscribe getDeviceSubscribe()
@@ -144,8 +144,9 @@ public class SessionEntity
 
     public void afterQuery()
     {
-        Map<String, IQoS.Level> subscribes =
-                IoUtil.isBlank(this.subscribes) ? new TreeMap<>() : JsonUtil.readValue(this.subscribes, TYPE_SUBSCRIBES);
+        Map<String, IQoS.Level> subscribes = IoUtil.isBlank(this.subscribes) ? new TreeMap<>()
+                                                                             : JsonUtil.readValue(this.subscribes,
+                                                                                                  TYPE_SUBSCRIBES);
         mDeviceSubscribe = new DeviceSubscribe(subscribes);
         mDeviceSubscribe.setWillTopic(willTopic);
         mDeviceSubscribe.setWillPayload(willPayload);
@@ -155,7 +156,12 @@ public class SessionEntity
 
     public void beforeSave()
     {
-        subscribes = JsonUtil.writeValueAsString(mDeviceSubscribe.getSubscribes());
+        if(mDeviceSubscribe != null) {
+            subscribes = JsonUtil.writeValueAsString(mDeviceSubscribe.getSubscribes());
+        }
+        else {
+            subscribes = "{}";
+        }
     }
 
     @Column(name = "subscribes")
