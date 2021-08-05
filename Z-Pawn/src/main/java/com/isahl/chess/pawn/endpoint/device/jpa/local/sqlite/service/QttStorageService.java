@@ -207,10 +207,12 @@ public class QttStorageService
         }
         else {
             SessionEntity sessionEntity = new SessionEntity();
+            sessionEntity.setId(session);
             sessionEntity.setWillRetain(x111.isWillRetain());
             sessionEntity.setWillTopic(x111.getWillTopic());
             sessionEntity.setWillLevel(x111.getWillLevel());
             sessionEntity.setWillPayload(x111.getWillMessage());
+            sessionEntity.beforeSave();
             _SessionRepository.save(sessionEntity);
         }
     }
@@ -221,6 +223,7 @@ public class QttStorageService
         Optional<SessionEntity> sessionEntityOptional = _SessionRepository.findById(session);
         if(sessionEntityOptional.isPresent()) {
             SessionEntity sessionEntity = sessionEntityOptional.get();
+            sessionEntity.afterQuery();
             sessionEntity.getDeviceSubscribe()
                          .subscribe(topic, level);
             sessionEntity.beforeSave();
@@ -234,6 +237,7 @@ public class QttStorageService
         Optional<SessionEntity> sessionEntityOptional = _SessionRepository.findById(session);
         if(sessionEntityOptional.isPresent()) {
             SessionEntity sessionEntity = sessionEntityOptional.get();
+            sessionEntity.afterQuery();
             sessionEntity.getDeviceSubscribe()
                          .unsubscribe(topic);
             sessionEntity.beforeSave();
@@ -276,7 +280,7 @@ public class QttStorageService
                                               .minusHours(1);
         try {
             List<BrokerMsgEntity> idleHours = self._MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->{
-                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("create_at"), idleTime))
+                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("created_at"), idleTime))
                                     .getRestriction();
             });
             self._MessageRepository.deleteAll(idleHours);
