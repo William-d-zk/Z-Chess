@@ -127,6 +127,7 @@ public class MQttAccessPlugin
                         x115.setMsgId(x113.getMsgId());
                         x115.putSession(session);
                         pushList.add(x115);
+                        register(x115, session.getIndex());
                         _QttStorage.receivedStorage((int) x113.getMsgId(),
                                                     x113.getTopic(),
                                                     x113.payload(),
@@ -153,7 +154,7 @@ public class MQttAccessPlugin
                 _QttStorage.deleteMessage((int) x115.getMsgId(), session.getIndex());
                 break;
             case X116_QttPubrel.COMMAND:
-                //x113 → server → x115 → client → x116 , 服务端收到 x116,需要注意
+                //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
@@ -289,8 +290,7 @@ public class MQttAccessPlugin
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
                 if(subscribes != null && isConsistency) {
-                    X119_QttSuback x119 = new X119_QttSuback();
-                    x119.setMsgId(x118.getMsgId());
+
                     subscribes.forEach((topic, level)->{
                         Subscribe subscribe = subscribe(topic, level, origin);
                         if(subscribe != null) {
@@ -298,6 +298,13 @@ public class MQttAccessPlugin
                             _QttStorage.sessionOnSubscribe(origin, topic, level);
                         }
                     });
+                    if(session != null) {
+                        X119_QttSuback x119 = new X119_QttSuback();
+                        x119.setMsgId(x118.getMsgId());
+                        x119.putSession(session);
+                        _Logger.info("subscribe topic:%s", x118.getSubscribes());
+                        return Collections.singletonList(new Triple<>(x119, session, session.getEncoder()));
+                    }
                 }
             }
             case X11A_QttUnsubscribe.COMMAND -> {
@@ -526,11 +533,6 @@ public class MQttAccessPlugin
                              Map<Long, IQoS.Level> routes,
                              List<ICommand> pushList)
     {
-        pushList.forEach(control->{
-            register(control,
-                     control.session()
-                            .getIndex());
-        });
         routes.forEach((kIdx, lv)->{
             ISession session = manager.findSessionByIndex(kIdx);
             if(session != null) {

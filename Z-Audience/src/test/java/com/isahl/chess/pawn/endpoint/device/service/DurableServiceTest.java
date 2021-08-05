@@ -54,5 +54,10 @@ class DurableServiceTest
         ObjectMapper mapper = new ObjectMapper();
         DeviceSubscribe subscribe = mapper.readValue(json, DeviceSubscribe.class);
         System.out.println(subscribe);
+
+        String subMap = mapper.writeValueAsString(new HashMap<>());
+        System.out.println(subMap);
     }
+
+
 }
