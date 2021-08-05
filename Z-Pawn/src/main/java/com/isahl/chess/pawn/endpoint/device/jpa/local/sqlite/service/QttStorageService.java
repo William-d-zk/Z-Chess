@@ -276,7 +276,7 @@ public class QttStorageService
                                               .minusHours(1);
         try {
             List<BrokerMsgEntity> idleHours = self._MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->{
-                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("create_at"), idleTime))
+                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("created_at"), idleTime))
                                     .getRestriction();
             });
             self._MessageRepository.deleteAll(idleHours);
