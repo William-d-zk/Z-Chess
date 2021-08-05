@@ -36,6 +36,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.config.QueenCode;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
+import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
@@ -91,10 +92,23 @@ public class IoDispatcher
                       new Pair<>(throwable, connectActive),
                       event.getEventOp());
                 break;
+            case CONSISTENCY_REJECT:
+                IPair consistencyRejected = event.getContent();
+                IControl reject = consistencyRejected.getFirst();
+                _Logger.debug("consistency reject: %s", consistencyRejected);
+                ISession session = consistencyRejected.getSecond();
+                IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
+                if(!session.isClosed()) {
+                    IPair result = errorOperator.handle(null, session);
+                    error(getNextPipe(session.getMode()),
+                          INITIATIVE_CLOSE,
+                          new Pair<>(QueenCode.ERROR_CLOSE, session),
+                          result.getSecond());
+                }
+                break;
             case NO_ERROR:
                 switch(event.getEventType()) {
-                    case CONNECTED:
-                    case ACCEPTED:
+                    case CONNECTED, ACCEPTED -> {
                         _Logger.trace("connected");
                         IPair connectContent = event.getContent();
                         connectActive = connectContent.getFirst();
@@ -104,22 +118,22 @@ public class IoDispatcher
                                 event.getEventType(),
                                 new Pair<>(connectActive, channel),
                                 connectOperator);
-                        break;
-                    case READ:
+                    }
+                    case READ -> {
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
-                        ISession session = readContent.getSecond();
+                        session = readContent.getSecond();
                         publish(dispatchWorker(session.hashCode()),
                                 OperatorType.DECODE,
                                 readContent,
                                 event.getEventOp());
-                        break;
-                    case WROTE:
+                    }
+                    case WROTE -> {
                         _Logger.trace("wrote");
                         IPair wroteContent = event.getContent();
                         publish(_IoWrote, OperatorType.WROTE, wroteContent, event.getEventOp());
-                        break;
-                    case LOCAL_CLOSE:
+                    }
+                    case LOCAL_CLOSE -> {
                         _Logger.trace("local close");
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
@@ -129,18 +143,16 @@ public class IoDispatcher
                                   new Pair<>(QueenCode.LOCAL_CLOSE, session),
                                   event.getEventOp());
                         }
-                        break;
-                    default:
-                        _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
-                        break;
+                    }
+                    default -> _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
                 }
                 break;
             default:
                 /* 未指定类型的错误 来自Decoded/Encoded Dispatcher */
-                IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
+                errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
                 throwable = errorContent.getFirst();
-                ISession session = errorContent.getSecond();
+                session = errorContent.getSecond();
                 _Logger.warning("error %s @ %s, → mapping handler [close] \n",
                                 throwable,
                                 errorType.getMsg(),
