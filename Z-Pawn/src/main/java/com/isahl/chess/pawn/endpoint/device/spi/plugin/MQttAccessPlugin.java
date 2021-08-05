@@ -37,15 +37,12 @@ import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.inf.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +55,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 
 /**
  * @author william.d.zk
@@ -107,11 +102,6 @@ public class MQttAccessPlugin
                 if(x113.isRetain()) {
                     retain(x113.getTopic(), x113);
                 }
-                MessageEntity msgEntity = new MessageEntity();
-                msgEntity.setOrigin(session.getIndex());
-                msgEntity.setTopic(x113.getTopic());
-                msgEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.payload())));
-                msgEntity.setOperation(OP_INSERT);
                 pushList = new LinkedList<>();
                 switch(x113.getLevel()) {
                     case AT_LEAST_ONCE:
@@ -541,9 +531,9 @@ public class MQttAccessPlugin
                 n113.setLevel(lv);
                 if(lv.getValue() > 0) {
                     n113.setMsgId(_QttStorage.generateMsgId(kIdx));
+                    register(n113, kIdx);
                 }
                 pushList.add(n113);
-                register(n113, kIdx);
                 _QttStorage.brokerStorage((int) n113.getMsgId(), n113.getTopic(), n113.payload(), kIdx);
             }
         });

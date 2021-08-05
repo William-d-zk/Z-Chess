@@ -100,7 +100,7 @@ public class X113_QttPublish
     @Override
     public String toString()
     {
-        return String.format("[publish | dup:%s,retain:%s,qos:%s | msg-id:%d topic:\"%s\" payload: \"%s\" ]",
+        return String.format("[X113 publish | dup:%s,retain:%s,qos:%s | msg-id:%d topic:\"%s\" payload: \"%s\" ]",
                              isDuplicate(),
                              isRetain(),
                              getLevel(),
