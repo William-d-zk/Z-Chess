@@ -110,6 +110,12 @@ public class LinkCustom
                 service.onOffline(session);
             }
         }
+        try {
+            session.close();
+        }
+        catch(Throwable e) {
+            _Logger.warning("session[ %#x ] close", session.getIndex(), e);
+        }
     }
 
     @Override

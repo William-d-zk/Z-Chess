@@ -58,8 +58,8 @@ public class QttStorageService
         implements IQttStorage,
                    IValid
 {
-    private final Logger                             _Logger = Logger.getLogger(
-            "endpoint.pawn." + getClass().getName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
+
     private final IMessageJpaRepository              _MessageRepository;
     private final ISessionRepository                 _SessionRepository;
     private final CacheManager                       _CacheManager;
@@ -280,7 +280,7 @@ public class QttStorageService
                                               .minusHours(1);
         try {
             List<BrokerMsgEntity> idleHours = self._MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->{
-                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("created_at"), idleTime))
+                return criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
                                     .getRestriction();
             });
             self._MessageRepository.deleteAll(idleHours);

@@ -40,8 +40,6 @@ public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    void handleMessage(MessageEntity msgEntity);
-
     Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
 
     List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
