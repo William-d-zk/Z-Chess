@@ -39,7 +39,6 @@ import java.util.*;
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.queen.db.inf.IStorage.Operation.*;
-import static java.lang.Long.min;
 
 /**
  * @author william.d.zk
@@ -306,91 +305,45 @@ public class RaftMachine
     private void appendGraph(Set<RaftNode> set, RaftNode... a)
     {
         Objects.requireNonNull(set);
-        if(a == null || a.length == 0) { return; }
+        if(a == null || a.length == 0) {return;}
         mPeerSet.addAll(Arrays.asList(a));
     }
 
     @Override
-    public void apply(IRaftMapper dao)
-    {
-        if(mIndex != mApplied) {
-            if(mIndex < mApplied) {
-                _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
-            }
-            mApplied = min(mIndex, mCommit);
-            dao.updateLogApplied(mApplied);
-            _Logger.debug("apply : %d | [index %d commit %d]", mApplied, mIndex, mCommit);
-        }
-        //ignore
-    }
-
-    @Override
-    public void commit(long index, IRaftMapper dao)
-    {
-        /*
-         * 只有Leader 能执行此操作
-         */
-        mCommit = index;
-        dao.updateLogCommit(mCommit);
-        mApplied = mCommit;
-        dao.updateLogApplied(mApplied);
-        dao.flush();
-    }
-
-    @Override
-    public void beLeader(IRaftMapper dao)
+    public void beLeader(IRaftMapper mapper)
     {
         mState = LEADER.getCode();
         mLeader = _PeerId;
-        mCandidate = _PeerId;
         mMatchIndex = mCommit;
-        dao.updateTerm(mTerm);
-        dao.updateCandidate(_PeerId);
+        mapper.updateTerm(mTerm);
+        mapper.updateCandidate(mCandidate = _PeerId);
     }
 
     @Override
-    public void beCandidate(IRaftMapper dao)
+    public void beCandidate(IRaftMapper mapper)
     {
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
-        mCandidate = _PeerId;
-        dao.updateTerm(++mTerm);
-        dao.updateCandidate(_PeerId);
+        mapper.updateTerm(++mTerm);
+        mapper.updateCandidate(mCandidate = _PeerId);
     }
 
     @Override
-    public void beElector(long candidate, long term, IRaftMapper dao)
+    public void beElector(long candidate, long term, IRaftMapper mapper)
     {
         mState = ELECTOR.getCode();
         mLeader = INVALID_PEER_ID;
-        mCandidate = candidate;
-        mTerm = term;
-        dao.updateTerm(mTerm);
-        dao.updateCandidate(mCandidate);
+        mapper.updateTerm(mTerm = term);
+        mapper.updateCandidate(mCandidate = candidate);
     }
 
     @Override
-    public void follow(long leader, long term, long commit, IRaftMapper dao)
+    public void beFollower(long term, IRaftMapper mapper)
     {
         mState = FOLLOWER.getCode();
-        mTerm = term;
-        mLeader = leader;
-        mCandidate = leader;
-        mCommit = commit;
-        dao.updateTerm(mTerm);
-        dao.updateCandidate(mLeader);
-        dao.updateLogCommit(mCommit);
-    }
-
-    @Override
-    public void follow(long term, IRaftMapper dao)
-    {
-        mState = FOLLOWER.getCode();
-        mTerm = term;
         mLeader = INVALID_PEER_ID;
-        mCandidate = INVALID_PEER_ID;
-        dao.updateTerm(mTerm);
-        dao.updateCandidate(mCandidate);
+        mapper.updateTerm(mTerm = term);
+        mapper.updateCandidate(mCandidate = INVALID_PEER_ID);
     }
 
     @Override
@@ -458,6 +411,35 @@ public class RaftMachine
     }
 
     @Override
+    public void follow(long term, long leader, IRaftMapper mapper)
+    {
+        mState = FOLLOWER.getCode();
+        mTerm = term;
+        mLeader = leader;
+        mCandidate = leader;
+        mapper.updateCandidate(mLeader);
+        mapper.updateTerm(mTerm);
+    }
+
+    @Override
+    public void apply(IRaftMapper mapper)
+    {
+        mapper.updateLogApplied(mApplied = mIndex);
+        _Logger.debug("apply : %d | [index %d commit %d]", mApplied, mIndex, mCommit);
+    }
+
+    @Override
+    public void commit(long index, IRaftMapper mapper)
+    {
+        if(mCommit != index) {
+            mCommit = index;
+            mapper.updateLogCommit(mCommit);
+            mapper.flush();
+            _Logger.debug("%s commit[%d] ", getState(), mCommit);
+        }
+    }
+
+    @Override
     public void append(long index, long indexTerm, IRaftMapper mapper)
     {
         mIndex = index;
@@ -470,8 +452,8 @@ public class RaftMachine
     public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
         append(index, indexTerm, mapper);
-        mApplied = min(index, mCommit);
-        mapper.updateLogApplied(mApplied);
+        apply(mapper);
+        commit(index, mapper);
     }
 
     @Override

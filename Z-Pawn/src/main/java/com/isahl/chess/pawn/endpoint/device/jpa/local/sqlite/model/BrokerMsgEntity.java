@@ -25,7 +25,6 @@ package com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import org.hibernate.annotations.Type;
@@ -42,8 +41,7 @@ import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_L
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BrokerMsgEntity
         extends AuditModel
-        implements IValid,
-                   ICancelable
+        implements ICancelable
 {
     @Serial
     private static final long serialVersionUID = -7454808074804600508L;
@@ -108,6 +106,12 @@ public class BrokerMsgEntity
     public boolean isValid()
     {
         return valid;
+    }
+
+    @Transient
+    public boolean isInvalid()
+    {
+        return !valid;
     }
 
     public void cancel()

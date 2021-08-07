@@ -23,12 +23,14 @@
 
 package com.isahl.chess.king.base.schedule.inf;
 
+import com.isahl.chess.king.base.inf.IValid;
+
 /**
  * @author william.d.zk
- * 
  * @date 2020/3/18
  */
 public interface ICancelable
+        extends IValid
 {
     void cancel();
 }

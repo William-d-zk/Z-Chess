@@ -37,7 +37,6 @@ import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.io.core.inf.*;
@@ -96,16 +95,17 @@ public class RaftCustom
             case X71_RaftBallot.COMMAND -> {
                 X71_RaftBallot x71 = (X71_RaftBallot) content;
                 return _RaftPeer.ballot(x71.getTerm(),
-                                        x71.getIndex(),
                                         x71.getElectorId(),
+                                        x71.getIndex(),
                                         x71.getCandidateId(),
+                                        x71.getCommit(),
                                         manager);
             }
             // leader → follower
             case X72_RaftAppend.COMMAND -> {
                 X72_RaftAppend x72 = (X72_RaftAppend) content;
                 if(x72.payload() != null) {
-                    _RaftPeer.appendLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
+                    _RaftPeer.receiveLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
                 }
                 return _RaftPeer.onResponse(x72.getTerm(),
                                             x72.getPreIndex(),
@@ -116,19 +116,19 @@ public class RaftCustom
             // follower → leader
             case X73_RaftAccept.COMMAND -> {
                 X73_RaftAccept x73 = (X73_RaftAccept) content;
-                return _RaftPeer.onAccept(x73.getFollowerId(),
-                                          x73.getTerm(),
+                return _RaftPeer.onAccept(x73.getTerm(),
                                           x73.getCatchUp(),
-                                          x73.getLeaderId(),
+                                          x73.getCatchUpTerm(),
+                                          x73.getFollowerId(),
                                           manager);
             }
             // * → candidate
             case X74_RaftReject.COMMAND -> {
                 X74_RaftReject x74 = (X74_RaftReject) content;
-                return _RaftPeer.onReject(x74.getPeerId(),
-                                          x74.getTerm(),
+                return _RaftPeer.onReject(x74.getTerm(),
                                           x74.getIndex(),
                                           x74.getIndexTerm(),
+                                          x74.getPeerId(),
                                           x74.getCode(),
                                           x74.getState());
             }
@@ -138,12 +138,12 @@ public class RaftCustom
                             .getState() == LEADER)
                 {
                     X75_RaftReq x75 = (X75_RaftReq) content;
-                    return _RaftPeer.newLeaderLogEntry(x75.subSerial(),
-                                                       x75.payload(),
-                                                       x75.getClientId(),
-                                                       x75.getOrigin(),
-                                                       manager,
-                                                       x75.session());
+                    return _RaftPeer.onRequest(x75.subSerial(),
+                                               x75.payload(),
+                                               x75.getClientId(),
+                                               x75.getOrigin(),
+                                               manager,
+                                               x75.session());
                 }
                 else {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
@@ -176,7 +176,7 @@ public class RaftCustom
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
                 long newIdx = x106.getSessionIdx();
-                _Logger.debug("=========> map peerId:%#x @ %#x", peerId, newIdx);
+                _Logger.debug("===> map peerId:%#x @ %#x", peerId, newIdx);
                 manager.mapSession(newIdx, session, peerId);
             }
             default -> throw new IllegalStateException("Unexpected value: " + content.serial());
@@ -188,34 +188,24 @@ public class RaftCustom
     public List<ITriple> onTimer(ISessionManager manager, RaftMachine machine)
     {
         if(machine == null) {return null;}
-        if(machine.operation() == IStorage.Operation.OP_MODIFY) {
-            // step down → follower
-            _RaftPeer.turnToFollower(machine);
-        }
         return switch(machine.operation()) {
-            // heartbeat
-            case OP_APPEND -> _RaftPeer.checkLogAppend(machine,
-                                                       manager,
-                                                       cmd->new Triple<>(cmd,
-                                                                         cmd.session(),
-                                                                         cmd.session()
-                                                                            .getEncoder()));
+            // step down → follower
+            case OP_MODIFY -> _RaftPeer.turnToFollower(machine);
             // vote
-            case OP_INSERT -> _RaftPeer.checkVoteState(machine,
-                                                       manager,
-                                                       cmd->new Triple<>(cmd,
-                                                                         cmd.session(),
-                                                                         cmd.session()
-                                                                            .getEncoder()));
+            case OP_INSERT -> _RaftPeer.checkVoteState(machine, manager, this::tMapper);
+            // heartbeat
+            case OP_APPEND -> _RaftPeer.checkLogAppend(machine, manager, this::tMapper);
             default -> null;
         };
     }
 
-    private Triple<ZCommand, ISession, IPipeEncoder> tMapper(ZCommand in)
+    private Triple<ZCommand, ISession, IPipeEncoder> tMapper(ZCommand source)
     {
-        return new Triple<>(in, in.session(),//此处已执行完毕 manager.find
-                            in.session()
-                              .getEncoder());
+        // source 一定持有 session 在上一步完成了这个操作。
+        return new Triple<>(source,
+                            source.session(),
+                            source.session()
+                                  .getEncoder());
     }
 
     @Override
@@ -225,11 +215,7 @@ public class RaftCustom
         if(_RaftPeer.getMachine()
                     .getState() == LEADER)
         {
-            return _RaftPeer.newLocalLogEntry(request,
-                                              _RaftPeer.getMachine()
-                                                       .getPeerId(),
-                                              manager,
-                                              this::tMapper);
+            return _RaftPeer.onImmediate(request, manager, this::tMapper);
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)
@@ -262,11 +248,7 @@ public class RaftCustom
                     .getState() == LEADER)
         {
             //Accept Machine State
-            return _RaftPeer.newLocalLogEntry(topology,
-                                              _RaftPeer.getMachine()
-                                                       .getPeerId(),
-                                              manager,
-                                              this::tMapper);
+            return _RaftPeer.onImmediate(topology, manager, this::tMapper);
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)

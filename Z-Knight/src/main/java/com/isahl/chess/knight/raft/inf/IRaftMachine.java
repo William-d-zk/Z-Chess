@@ -95,23 +95,23 @@ public interface IRaftMachine
      */
     Set<RaftNode> getGateSet();
 
-    void append(long index, long indexTerm, IRaftMapper dao);
+    void append(long index, long indexTerm, IRaftMapper mapper);
 
-    void rollBack(long index, long indexTerm, IRaftMapper dao);
+    void rollBack(long index, long indexTerm, IRaftMapper mapper);
 
-    void commit(long index, IRaftMapper dao);
+    void commit(long index, IRaftMapper mapper);
 
-    void apply(IRaftMapper dao);
+    void apply(IRaftMapper mapper);
 
-    void beLeader(IRaftMapper dao);
+    void beLeader(IRaftMapper mapper);
 
-    void beCandidate(IRaftMapper dao);
+    void beCandidate(IRaftMapper mapper);
 
-    void beElector(long candidate, long term, IRaftMapper dao);
+    void beElector(long candidate, long term, IRaftMapper mapper);
 
-    void follow(long leader, long term, long commit, IRaftMapper dao);
+    void beFollower(long term, IRaftMapper mapper);
 
-    void follow(long term, IRaftMapper dao);
+    void follow(long term, long leader, IRaftMapper mapper);
 
     <T extends IRaftMachine & IStorage> T createCandidate();
 

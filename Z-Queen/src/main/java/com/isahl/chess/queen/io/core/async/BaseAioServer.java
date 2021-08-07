@@ -118,6 +118,12 @@ public abstract class BaseAioServer
     }
 
     @Override
+    public boolean isInvalid()
+    {
+        return !vValid;
+    }
+
+    @Override
     public void shutdown()
     {
         throw new UnsupportedOperationException();
