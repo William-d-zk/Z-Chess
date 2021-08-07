@@ -57,7 +57,6 @@ import java.time.LocalDateTime;
             @TypeDef(name = "list-array",
                      typeClass = ListArrayType.class)
 })
-
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

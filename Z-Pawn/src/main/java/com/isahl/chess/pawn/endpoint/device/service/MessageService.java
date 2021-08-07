@@ -24,11 +24,10 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.api.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.api.IMessageService;
-import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -55,17 +54,13 @@ public class MessageService
 {
 
     private final IMessageJpaRepository _MessageRepository;
-    private final List<IMessagePlugin>  _MessagePlugins;
     private final CacheManager          _CacheManager;
     private final Random                _Random = new Random();
 
     @Autowired
-    public MessageService(IMessageJpaRepository jpaRepository,
-                          CacheManager cacheManager,
-                          List<IMessagePlugin> messagePlugins)
+    public MessageService(IMessageJpaRepository jpaRepository, CacheManager cacheManager)
     {
         _MessageRepository = jpaRepository;
-        _MessagePlugins = messagePlugins;
         _CacheManager = cacheManager;
     }
 
@@ -95,12 +90,6 @@ public class MessageService
             return criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"), id))
                                 .getRestriction();
         });
-    }
-
-    @Override
-    public void handleMessage(MessageEntity msgEntity)
-    {
-        _MessagePlugins.forEach(plugin->plugin.handleMessage(msgEntity));
     }
 
     @Override

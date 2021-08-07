@@ -65,10 +65,6 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.gwenn</groupId>
-            <artifactId>sqlite-dialect</artifactId>
-        </dependency>
         <!--Cache-->
         <dependency>
             <groupId>org.ehcache</groupId>

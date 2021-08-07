@@ -62,7 +62,7 @@
             <repositories>
                 <repository>
                     <id>aliyun-maven-repo</id>
-                    <name>aliyun-maven</name>
+                    <name>aliyun-maven-repo</name>
                     <url>https://maven.aliyun.com/repository/central</url>
                 </repository>
             </repositories>
@@ -71,9 +71,9 @@
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
-                    <id>aliyun-maven-repo-plugin</id>
-                    <name>aliyun-maven-plugin</name>
-                    <url>https://maven.aliyun.com/repository/central</url>
+                    <id>maven-repo-plugin</id>
+                    <name>maven-repo-plugin</name>
+                    <url>https://repo1.maven.org/maven2</url>
                 </pluginRepository>
             </pluginRepositories>
         </profile>
@@ -88,7 +88,7 @@
             <repositories>
                 <repository>
                     <id>aliyun-maven-repo</id>
-                    <name>aliyun-maven</name>
+                    <name>aliyun-maven-repo</name>
                     <url>https://maven.aliyun.com/repository/central</url>
                 </repository>
             </repositories>
@@ -98,7 +98,7 @@
                         <enabled>false</enabled>
                     </snapshots>
                     <id>aliyun-maven-repo-plugin</id>
-                    <name>aliyun-maven-plugin</name>
+                    <name>aliyun-maven-repo-plugin</name>
                     <url>https://maven.aliyun.com/repository/central</url>
                 </pluginRepository>
             </pluginRepositories>
@@ -115,6 +115,16 @@
                     <url>https://maven.aliyun.com/repository/central</url>
                 </repository>
             </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>maven-repo-plugin</id>
+                    <name>maven-repo-plugin</name>
+                    <url>https://repo1.maven.org/maven2</url>
+                </pluginRepository>
+            </pluginRepositories>
             <distributionManagement>
                 <snapshotRepository>
                     <id>oss</id>
@@ -193,7 +203,7 @@
     </modules>
     <properties>
         <!--RT-->
-        <java.version>14</java.version>
+        <java.version>16</java.version>
         <java.encoding>UTF-8</java.encoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -202,7 +212,7 @@
         <slf4j.version>1.7.32</slf4j.version>
         <logback.version>1.2.5</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.5.2</spring-boot.version>
+        <spring-boot.version>2.5.3</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.11.0</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
@@ -533,9 +543,6 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.2.0</version>
             </plugin>
-            <!--
-
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
@@ -555,7 +562,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

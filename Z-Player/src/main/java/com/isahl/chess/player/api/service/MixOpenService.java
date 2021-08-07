@@ -80,7 +80,7 @@ public class MixOpenService
                                                           Triple<String, Object, Predicate.BooleanOperator>... columns)
     {
         return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder)->{
-            criteriaBuilder.greaterThan(root.get("create_at"), dateTime);
+            criteriaBuilder.greaterThan(root.get("createAt"), dateTime);
             if(columns != null && columns.length > 0) {
                 Predicate.BooleanOperator last = Predicate.BooleanOperator.AND;
                 List<Predicate> predicates = new LinkedList<>();
