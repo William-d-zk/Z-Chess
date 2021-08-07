@@ -218,8 +218,7 @@ public class TimeWheel
     private class HandleTask<V extends IValid>
             implements Callable<IWheelItem<V>>,
                        Comparable<HandleTask<V>>,
-                       ICancelable,
-                       IValid
+                       ICancelable
     {
         private final    IWheelItem<V> _Item;
         private final    int           _Slot;
@@ -284,6 +283,12 @@ public class TimeWheel
         public boolean isValid()
         {
             return !vCancel;
+        }
+
+        @Override
+        public boolean isInvalid()
+        {
+            return vCancel;
         }
 
         @Override

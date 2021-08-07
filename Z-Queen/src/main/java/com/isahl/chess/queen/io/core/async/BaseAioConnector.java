@@ -23,13 +23,6 @@
 
 package com.isahl.chess.queen.io.core.async;
 
-import static com.isahl.chess.king.base.schedule.Status.RUNNING;
-import static com.isahl.chess.king.base.schedule.Status.STOP;
-
-import java.net.InetSocketAddress;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.IFailed;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -41,20 +34,22 @@ import com.isahl.chess.queen.io.core.async.inf.IAioConnection;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
+import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.isahl.chess.king.base.schedule.Status.RUNNING;
+import static com.isahl.chess.king.base.schedule.Status.STOP;
+
 /**
  * @author william.d.zk
  */
 public abstract class BaseAioConnector
-        extends
-        AioCreator
-        implements
-        IAioConnector
+        extends AioCreator
+        implements IAioConnector
 {
 
-    protected BaseAioConnector(String host,
-                               int port,
-                               ISocketConfig socketConfig,
-                               IFailed<IAioConnector> failed)
+    protected BaseAioConnector(String host, int port, ISocketConfig socketConfig, IFailed<IAioConnector> failed)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
@@ -82,16 +77,16 @@ public abstract class BaseAioConnector
     public boolean retry()
     {
         retry:
-        for (;;) {
+        for(; ; ) {
             int c = _State.get();
             int rs = ITask.stateOf(c, RETRY_LIMIT);
-            if (rs >= STOP.getCode()) { return false; }
-            for (;;) {
+            if(rs >= STOP.getCode()) {return false;}
+            for(; ; ) {
                 int rc = ITask.countOf(c, RETRY_LIMIT);
-                if (rc >= RETRY_LIMIT) { return false; }
-                if (ITask.compareAndIncrementRetry(_State, rc)) { return true; }
+                if(rc >= RETRY_LIMIT) {return false;}
+                if(ITask.compareAndIncrementRetry(_State, rc)) {return true;}
                 c = _State.get();// reload
-                if (ITask.stateOf(c, RETRY_LIMIT) != rs) {
+                if(ITask.stateOf(c, RETRY_LIMIT) != rs) {
                     continue retry;
                 }
             }
@@ -117,17 +112,13 @@ public abstract class BaseAioConnector
     }
 
     @Override
-    public IOperator<IAioConnection,
-                     AsynchronousSocketChannel,
-                     ITriple> getConnectedOperator()
+    public IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator()
     {
         return _ConnectedOperator;
     }
 
     @Override
-    public IOperator<Throwable,
-                     IAioConnector,
-                     Void> getErrorOperator()
+    public IOperator<Throwable, IAioConnector, Void> getErrorOperator()
     {
         return _ConnectFailedOperator;
     }
@@ -154,6 +145,12 @@ public abstract class BaseAioConnector
     public boolean isValid()
     {
         return !isShutdown();
+    }
+
+    @Override
+    public boolean isInvalid()
+    {
+        return isShutdown();
     }
 
     @Override

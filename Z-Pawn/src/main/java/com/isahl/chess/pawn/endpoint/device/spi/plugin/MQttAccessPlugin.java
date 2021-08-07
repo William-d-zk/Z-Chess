@@ -280,7 +280,6 @@ public class MQttAccessPlugin
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
                 if(subscribes != null && isConsistency) {
-
                     subscribes.forEach((topic, level)->{
                         Subscribe subscribe = subscribe(topic, level, origin);
                         if(subscribe != null) {
