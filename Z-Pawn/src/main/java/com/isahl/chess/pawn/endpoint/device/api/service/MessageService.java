@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,27 +21,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.service;
+package com.isahl.chess.pawn.endpoint.device.api.service;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.api.IMessageService;
-import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.cache.CacheManager;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -54,22 +49,14 @@ public class MessageService
         implements IMessageService
 {
 
-    private final IMessageJpaRepository _MessageRepository;
-    private final List<IMessagePlugin>  _MessagePlugins;
-    private final CacheManager          _CacheManager;
-    private final Random                _Random = new Random();
+    private final CacheManager _CacheManager;
+    private final Random       _Random = new Random();
 
-    @Autowired
-    public MessageService(IMessageJpaRepository jpaRepository,
-                          CacheManager cacheManager,
-                          List<IMessagePlugin> messagePlugins)
+    public MessageService(CacheManager cacheManager)
     {
-        _MessageRepository = jpaRepository;
-        _MessagePlugins = messagePlugins;
         _CacheManager = cacheManager;
     }
 
-    @PostConstruct
     void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         EhcacheConfig.createCache(_CacheManager,
@@ -82,38 +69,33 @@ public class MessageService
     @Override
     public List<MessageBody> listByTopic(String topic, int limit) throws ZException
     {
-
-        List<MessageEntity> messageList = _MessageRepository.listByTopic(topic, limit);
-        return messageList.stream()
-                          .map(MessageEntity::getBody)
-                          .collect(Collectors.toList());
+        return null;
     }
 
     public List<MessageEntity> findAfterId(long id)
     {
+        return null;
+        /*
         return _MessageRepository.findAll((Specification<MessageEntity>) (root, criteriaQuery, criteriaBuilder)->{
             return criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"), id))
                                 .getRestriction();
         });
+         */
     }
 
     @Override
-    public void handleMessage(MessageEntity msgEntity)
+    public Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification)
     {
-        _MessagePlugins.forEach(plugin->plugin.handleMessage(msgEntity));
-    }
-
-    @Override
-    public Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification)
-    {
-        //TODO 此处直接访问DB不是个好设计，中间应该有一层Batch-Async + Cache的中间层降低DB负载
-        return _MessageRepository.findOne(specification);
+        return null;
     }
 
     @Override
     public List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable)
     {
+        return null;
+        /*
         return _MessageRepository.findAll(specification, pageable)
                                  .toList();
+         */
     }
 }

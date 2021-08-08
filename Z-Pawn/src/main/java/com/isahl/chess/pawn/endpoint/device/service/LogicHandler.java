@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
+import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -48,12 +49,14 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
     private final T                    _Manager;
     private final IHealth              _Health;
     private final List<IAccessService> _AccessService;
+    private final List<IHandleHook>    _HandleHooks;
 
-    public LogicHandler(T manager, int slot, List<IAccessService> accessAdapters)
+    public LogicHandler(T manager, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks)
     {
         _Manager = manager;
         _Health = new Health(slot);
         _AccessService = accessAdapters;
+        _HandleHooks = hooks;
     }
 
     @Override
@@ -77,6 +80,9 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
                 pushList = service.handle(manager, session, content);
                 service.clusterHandle(manager, content, _Manager, pushList);
             }
+        }
+        for(IHandleHook hook : _HandleHooks) {
+            hook.handle(content, pushList);
         }
         return (pushList == null || pushList.isEmpty()) ? null : pushList.toArray(new IControl[0]);
     }

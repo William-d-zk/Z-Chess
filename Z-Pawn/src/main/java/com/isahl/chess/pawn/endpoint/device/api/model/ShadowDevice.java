@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
 import com.isahl.chess.bishop.io.mqtt.model.SubscribeEntry;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
 
 import java.io.Serial;
 import java.io.Serializable;

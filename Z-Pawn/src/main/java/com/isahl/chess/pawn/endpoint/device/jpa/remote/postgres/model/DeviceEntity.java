@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceProfile;
+import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;

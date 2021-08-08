@@ -21,34 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi.plugin;
+package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.isahl.chess.queen.io.core.inf.IControl;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.List;
 
-@Component
-public class PersistentPlugin
-        implements IMessagePlugin
+/**
+ * @author william.d.zk
+ * @date 2021-08-07
+ */
+public interface IHandleHook
 {
-    private final IMessageJpaRepository                _Repository;
-    private final ConcurrentLinkedQueue<MessageEntity> _AsyncMessageQueue;
-
-    @Autowired
-    public PersistentPlugin(IMessageJpaRepository repository)
-    {
-        _Repository = repository;
-        _AsyncMessageQueue = new ConcurrentLinkedQueue<>();
-    }
-
-    @Override
-    public void handleMessage(MessageEntity msgEntity)
-    {
-
-        _Repository.save(msgEntity);
-    }
-
+    void handle(IControl content, List<? extends IControl> pushList);
 }

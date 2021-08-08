@@ -104,7 +104,9 @@ public class WriteDispatcher
                         for(ITriple triple : triples) {
                             ISession targetSession = triple.getSecond();
                             IControl content = triple.getFirst();
-                            _Logger.debug("write %s", content);
+                            if(content.payload() != null) {
+                                _Logger.debug("write %s", content);
+                            }
                             if(content.isShutdown()) {
                                 if(targetSession.isValid()) {
                                     error(_Error,

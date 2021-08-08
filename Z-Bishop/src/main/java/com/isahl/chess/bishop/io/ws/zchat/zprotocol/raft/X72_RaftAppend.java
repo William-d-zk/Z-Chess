@@ -163,8 +163,9 @@ public class X72_RaftAppend
     @Override
     public String toString()
     {
-        return String.format("X72_RaftAppend{ leader:%#x; term:%d, pre:%d@%d  commit:%d payload[%d]",
+        return String.format("X72_RaftAppend{%#x → %#x ; term:%d, pre:%d@%d  commit:%d payload[%d]",
                              mLeaderId,
+                             mFollowerId,
                              mTerm,
                              mPreIndex,
                              mPreIndexTerm,

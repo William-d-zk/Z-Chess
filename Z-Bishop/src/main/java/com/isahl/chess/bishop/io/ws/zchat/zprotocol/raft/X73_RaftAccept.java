@@ -47,7 +47,7 @@ public class X73_RaftAccept
     private long mFollowerId;
     private long mTerm;
     private long mCatchUp;
-    private long mCommit;
+    private long mCatchUpTerm;
     private long mLeaderId;
 
     @Override
@@ -65,7 +65,7 @@ public class X73_RaftAccept
         pos += 8;
         mCatchUp = IoUtil.readLong(data, pos);
         pos += 8;
-        mCommit = IoUtil.readLong(data, pos);
+        mCatchUpTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mLeaderId = IoUtil.readLong(data, pos);
         pos += 8;
@@ -78,7 +78,7 @@ public class X73_RaftAccept
         pos += IoUtil.writeLong(mFollowerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
-        pos += IoUtil.writeLong(mCommit, data, pos);
+        pos += IoUtil.writeLong(mCatchUpTerm, data, pos);
         pos += IoUtil.writeLong(mLeaderId, data, pos);
         return pos;
     }
@@ -93,16 +93,6 @@ public class X73_RaftAccept
         mTerm = term;
     }
 
-    public long getCommit()
-    {
-        return mCommit;
-    }
-
-    public void setCommit(long commit)
-    {
-        mCommit = commit;
-    }
-
     public long getCatchUp()
     {
         return mCatchUp;
@@ -111,6 +101,16 @@ public class X73_RaftAccept
     public void setCatchUp(long catchUp)
     {
         mCatchUp = catchUp;
+    }
+
+    public long getCatchUpTerm()
+    {
+        return mCatchUpTerm;
+    }
+
+    public void setCatchUpTerm(long catchUpTerm)
+    {
+        mCatchUpTerm = catchUpTerm;
     }
 
     public long getFollowerId()
@@ -142,11 +142,10 @@ public class X73_RaftAccept
     @Override
     public String toString()
     {
-        return String.format("X71_RaftAccept{follower:%#x, term:%d, catch_up:%d, commit:%d,leader:%#x}",
+        return String.format("X71_RaftAccept{follower:%#x@%d, catch_up:%d@%d}",
                              mFollowerId,
                              mTerm,
                              mCatchUp,
-                             mCommit,
-                             mLeaderId);
+                             mCatchUpTerm);
     }
 }

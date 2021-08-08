@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceProfile;
+import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
 import org.springframework.lang.NonNull;
 
 /**

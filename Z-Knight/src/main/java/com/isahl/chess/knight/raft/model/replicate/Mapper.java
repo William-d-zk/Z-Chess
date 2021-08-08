@@ -38,6 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +49,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
@@ -147,12 +147,7 @@ public class Mapper
         }
         else {
             //存在本地文件错误损失→重置
-            _Index2SegmentMap.clear();
-            mLogMeta.reset();
-            mSnapshotMeta.reset();
-            clearSegments();
-            loadDefaultGraphSet();
-            flushAll();
+            reset();
         }
         vValid = true;
     }
@@ -230,19 +225,17 @@ public class Mapper
     {
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
+        if(_Index2SegmentMap.isEmpty()) {return null;}
         if(index < startIndex || index > endIndex) {
-            if(startIndex > MIN_START) {
-                _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d",
-                              index,
-                              startIndex,
-                              endIndex);
-            }
+            _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
             return null;
         }
-        if(_Index2SegmentMap.isEmpty()) {return null;}
-        Segment segment = _Index2SegmentMap.floorEntry(index)
-                                           .getValue();
-        return segment.getEntry(index);
+        Map.Entry<Long, Segment> floor = _Index2SegmentMap.floorEntry(index);
+        if(floor != null) {
+            Segment segment = floor.getValue();
+            return segment.getEntry(index);
+        }
+        return null;
     }
 
     @Override
@@ -461,7 +454,7 @@ public class Mapper
     {
         long endIndex = getEndIndex();
         if(newEndIndex >= endIndex) {return null;}
-        _Logger.debug("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
+        _Logger.debug("Truncating log from old end index %d to new end index %d", endIndex, newEndIndex);
         while(!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
                                                .getValue();
@@ -538,5 +531,22 @@ public class Mapper
     public boolean isValid()
     {
         return vValid;
+    }
+
+    @Override
+    public boolean isInvalid()
+    {
+        return !vValid;
+    }
+
+    @Override
+    public void reset()
+    {
+        _Index2SegmentMap.clear();
+        mLogMeta.reset();
+        mSnapshotMeta.reset();
+        clearSegments();
+        loadDefaultGraphSet();
+        flushAll();
     }
 }
