@@ -26,41 +26,19 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
-import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
-import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionCloser;
-import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISessionError;
-import com.isahl.chess.queen.io.core.inf.ISort;
-import com.isahl.chess.queen.io.core.inf.ISslOption;
+import com.isahl.chess.queen.io.core.inf.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.Channel;
-import java.nio.channels.CompletionHandler;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.ReadPendingException;
-import java.nio.channels.ShutdownChannelGroupException;
-import java.nio.channels.WritePendingException;
+import java.nio.channels.*;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.recedeState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
+import static com.isahl.chess.king.base.schedule.inf.ITask.*;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
 import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 import static com.isahl.chess.queen.io.core.inf.ISessionManager.NULL_INDEX;
@@ -69,12 +47,11 @@ import static com.isahl.chess.queen.io.core.inf.ISessionManager.NULL_INDEX;
  * @author William.d.zk
  */
 public class AioSession<C extends IPContext>
-        extends
-        LinkedList<IPacket>
-        implements
-        ISession
+        extends LinkedList<IPacket>
+        implements ISession
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+    private final Logger                    _Logger = Logger.getLogger(
+            "io.queen.session." + getClass().getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;
@@ -94,21 +71,20 @@ public class AioSession<C extends IPContext>
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long   mIndex = INVALID_INDEX;
-    private long[] mBindIndex;
+    private long                                 mIndex = INVALID_INDEX;
+    private long[]                               mBindIndex;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
      */
-    private ByteBuffer mSending;
+    private ByteBuffer                           mSending;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[] mPrefix;
-    private int    mWroteExpect;
-    private int    mSendingBlank;
+    private long[]                               mPrefix;
+    private int                                  mWroteExpect;
+    private int                                  mSendingBlank;
     /* reader */
-    private CompletionHandler<Integer,
-                              ISession> mReader;
+    private CompletionHandler<Integer, ISession> mReader;
 
     @Override
     public String toString()
@@ -162,6 +138,12 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
+    public boolean isInvalid()
+    {
+        return isClosed();
+    }
+
+    @Override
     public boolean isMultiBind()
     {
         return _MultiBind;
@@ -199,13 +181,13 @@ public class AioSession<C extends IPContext>
     @Override
     public final void close() throws IOException
     {
-        if (isClosed()) { return; }
+        if(isClosed()) {return;}
         advanceState(_State, SESSION_CLOSE, CAPACITY);
         try {
             _Context.dispose();
         }
         finally {
-            if (_Channel != null) {
+            if(_Channel != null) {
                 _Channel.close();
             }
         }
@@ -238,7 +220,7 @@ public class AioSession<C extends IPContext>
     @Override
     public void bindIndex(long index)
     {
-        if (index != INVALID_INDEX && index != NULL_INDEX) {
+        if(index != INVALID_INDEX && index != NULL_INDEX) {
             mBindIndex = ArrayUtil.setSortAdd(index, mBindIndex);
         }
     }
@@ -246,7 +228,7 @@ public class AioSession<C extends IPContext>
     @Override
     public void unbindIndex(long index)
     {
-        if (index != INVALID_INDEX && index != NULL_INDEX) {
+        if(index != INVALID_INDEX && index != NULL_INDEX) {
             mBindIndex = ArrayUtil.setNoZeroSortRm(index, mBindIndex);
         }
     }
@@ -254,7 +236,7 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[]{prefix}: ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mPrefix = mPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 
     @Override
@@ -262,7 +244,7 @@ public class AioSession<C extends IPContext>
     {
         _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
         int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
-        if (pos < 0) {
+        if(pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }
         return mPrefix[pos] & 0xFFFFFFFFL;
@@ -273,10 +255,10 @@ public class AioSession<C extends IPContext>
     {
         _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
         int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
-        if (pos < 0) {
+        if(pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }
-        if ((mPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
+        if((mPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
             mPrefix[pos] += 1;
         }
         else {
@@ -297,12 +279,9 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final void readNext(CompletionHandler<Integer,
-                                                 ISession> readHandler) throws NotYetConnectedException,
-                                                                        ReadPendingException,
-                                                                        ShutdownChannelGroupException
+    public final void readNext(CompletionHandler<Integer, ISession> readHandler) throws NotYetConnectedException, ReadPendingException, ShutdownChannelGroupException
     {
-        if (isClosed()) { return; }
+        if(isClosed()) {return;}
         mReader = readHandler;
         _RecvBuf.clear();
         _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
@@ -317,8 +296,8 @@ public class AioSession<C extends IPContext>
     @Override
     public final ByteBuffer read(int length)
     {
-        if (length < 0) { throw new IllegalArgumentException(); }
-        if (length != _RecvBuf.position()) { throw new ArrayIndexOutOfBoundsException(); }
+        if(length < 0) {throw new IllegalArgumentException();}
+        if(length != _RecvBuf.position()) {throw new ArrayIndexOutOfBoundsException();}
         ByteBuffer read = ByteBuffer.allocate(length);
         _RecvBuf.flip();
         read.put(_RecvBuf);
@@ -335,14 +314,14 @@ public class AioSession<C extends IPContext>
     @Override
     public <T extends IPContext> T getContext(Class<T> clazz)
     {
-        if (_Context.getClass() == clazz) {
+        if(_Context.getClass() == clazz) {
             return (T) _Context;
         }
         else {
             IPContext context = _Context;
-            while (context.isProxy()) {
+            while(context.isProxy()) {
                 context = ((IProxyContext<?>) context).getActingContext();
-                if (context.getClass() == clazz) { return (T) context; }
+                if(context.getClass() == clazz) {return (T) context;}
             }
             throw new ZException("not found context instanceof %s", clazz.getSimpleName());
         }
@@ -350,20 +329,15 @@ public class AioSession<C extends IPContext>
 
     @Override
     public WRITE_STATUS write(IPacket ps,
-                              CompletionHandler<Integer,
-                                                ISession> handler) throws WritePendingException,
-                                                                   NotYetConnectedException,
-                                                                   ShutdownChannelGroupException,
-                                                                   RejectedExecutionException
+                              CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException
     {
-        if (isClosed()) { return WRITE_STATUS.CLOSED; }
+        if(isClosed()) {return WRITE_STATUS.CLOSED;}
         ps.waitSend();
-        if (size() > _QueueSizeMax) { throw new RejectedExecutionException(); }
-        if (stateLessThan(_State.get(), SESSION_FLUSHED)) {
+        if(size() > _QueueSizeMax) {throw new RejectedExecutionException();}
+        if(stateLessThan(_State.get(), SESSION_FLUSHED)) {
             // mSending 未托管给系统
-            if (isEmpty()) {
-                switch (writePacket(ps))
-                {
+            if(isEmpty()) {
+                switch(writePacket(ps)) {
                     case IGNORE:
                         return WRITE_STATUS.IGNORE;
                     case UNFINISHED:
@@ -384,23 +358,19 @@ public class AioSession<C extends IPContext>
             offer(ps);
             _Logger.debug("aio event delay, session buffed packets %d", size());
         }
-        return isEmpty() ? WRITE_STATUS.UNFINISHED: WRITE_STATUS.IN_SENDING;
+        return isEmpty() ? WRITE_STATUS.UNFINISHED : WRITE_STATUS.IN_SENDING;
     }
 
     @Override
     public WRITE_STATUS writeNext(int wroteCnt,
-                                  CompletionHandler<Integer,
-                                                    ISession> handler) throws WritePendingException,
-                                                                       NotYetConnectedException,
-                                                                       ShutdownChannelGroupException,
-                                                                       RejectedExecutionException
+                                  CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException
     {
-        if (isClosed()) { return WRITE_STATUS.CLOSED; }
+        if(isClosed()) {return WRITE_STATUS.CLOSED;}
         mWroteExpect -= wroteCnt;
-        if (mWroteExpect == 0) {
+        if(mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();
-            if (isEmpty()) {
+            if(isEmpty()) {
                 recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
             }
@@ -424,9 +394,8 @@ public class AioSession<C extends IPContext>
         Loop:
         do {
             fps = peek();
-            if (Objects.nonNull(fps)) {
-                switch (writePacket(fps))
-                {
+            if(Objects.nonNull(fps)) {
+                switch(writePacket(fps)) {
                     case IGNORE:
                         continue;
                     case UNFINISHED:
@@ -439,23 +408,23 @@ public class AioSession<C extends IPContext>
                 }
             }
         }
-        while (Objects.nonNull(fps));
+        while(Objects.nonNull(fps));
         _Logger.debug("session remain buffed %d", size());
     }
 
     private WRITE_STATUS writePacket(IPacket ps)
     {
         ByteBuffer buf = ps.getBuffer();
-        if (Objects.nonNull(buf) && buf.hasRemaining()) {
+        if(Objects.nonNull(buf) && buf.hasRemaining()) {
             int pos = mSending.limit();
             mSendingBlank = mSending.capacity() - pos;
             int size = Math.min(mSendingBlank, buf.remaining());
             mWroteExpect += size;
             mSending.limit(pos + size);
-            for (int i = 0; i < size; i++, mSendingBlank--, pos++) {
+            for(int i = 0; i < size; i++, mSendingBlank--, pos++) {
                 mSending.put(pos, buf.get());
             }
-            if (buf.hasRemaining()) {
+            if(buf.hasRemaining()) {
                 return WRITE_STATUS.UNFINISHED;
             }
             else {
@@ -469,12 +438,9 @@ public class AioSession<C extends IPContext>
         }
     }
 
-    private void flush(CompletionHandler<Integer,
-                                         ISession> handler) throws WritePendingException,
-                                                            NotYetConnectedException,
-                                                            ShutdownChannelGroupException
+    private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException
     {
-        if (stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
+        if(stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
             advanceState(_State, SESSION_FLUSHED, CAPACITY);

@@ -26,8 +26,7 @@ package com.isahl.chess.player.api.service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.MessageEntity;
 import com.isahl.chess.player.api.model.MessageDo;
 import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +45,10 @@ public class MessageOpenService
 {
     private final Logger                _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final ZUID                  _ZUID;
-    private final IMessageJpaRepository _JpaRepository;
 
     @Autowired
-    public MessageOpenService(IRaftConfig clusterConfig, IMessageJpaRepository jpaRepository)
+    public MessageOpenService(IRaftConfig clusterConfig)
     {
-        _JpaRepository = jpaRepository;
         _ZUID = clusterConfig.createZUID();
     }
 
@@ -64,7 +61,7 @@ public class MessageOpenService
                       .getValue() > OP_INSERT.getValue())
             {
                 try {
-                    entity = _JpaRepository.getById(message.getId());
+//                    entity = _JpaRepository.getById(message.getId());
                     break EXIST;
                 }
                 catch(EntityNotFoundException | LazyInitializationException | JpaObjectRetrievalFailureException e) {
@@ -75,11 +72,9 @@ public class MessageOpenService
 
             entity = new MessageEntity();
             entity.setOrigin(message.getOrigin());
-            entity.setDestination(message.getDestination());
             entity.setTopic(message.getTopic());
-            entity.setBody(message.getContent());
         }
-        entity = _JpaRepository.save(entity);
+//        entity = _JpaRepository.save(entity);
         return entity;
     }
 

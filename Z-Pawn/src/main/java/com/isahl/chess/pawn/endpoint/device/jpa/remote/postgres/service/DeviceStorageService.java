@@ -21,13 +21,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.service;
 
 /**
  * @author william.d.zk
- * 
- * @date 2019-06-15
  */
-public enum JpaStatus
-{
-}
+public class DeviceStorageService
+{}

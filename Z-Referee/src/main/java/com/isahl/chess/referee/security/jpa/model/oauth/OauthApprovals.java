@@ -58,6 +58,7 @@ public class OauthApprovals
     @Column(nullable = false)
     private String        scope;
     @Enumerated(EnumType.STRING)
+    @Column(length = 10)
     private Status        status = Status.COMMON;
     @Column(nullable = false,
             name = "invalid_at")

@@ -25,7 +25,6 @@ package com.isahl.chess.king.base.inf;
 
 /**
  * @author william.d.zk
- * 
  * @date 2016-06-01
  */
 public interface IValid
@@ -34,4 +33,6 @@ public interface IValid
     {
         return true;
     }
+
+    default boolean isInvalid() {return false;}
 }

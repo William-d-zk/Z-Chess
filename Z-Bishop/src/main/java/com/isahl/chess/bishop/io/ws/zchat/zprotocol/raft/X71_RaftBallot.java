@@ -55,12 +55,14 @@ public class X71_RaftBallot
     private long mElectorId;
     private long mTerm;
     private long mIndex;
+    private long mIndexTerm;
     private long mCandidateId;
+    private long mCommit;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 32;
+        return super.dataLength() + 48;
     }
 
     @Override
@@ -72,7 +74,11 @@ public class X71_RaftBallot
         pos += 8;
         mIndex = IoUtil.readLong(data, pos);
         pos += 8;
+        mIndexTerm = IoUtil.readLong(data, pos);
+        pos += 8;
         mCandidateId = IoUtil.readLong(data, pos);
+        pos += 8;
+        mCommit = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
     }
@@ -83,7 +89,9 @@ public class X71_RaftBallot
         pos += IoUtil.writeLong(mElectorId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mIndex, data, pos);
+        pos += IoUtil.writeLong(mIndexTerm, data, pos);
         pos += IoUtil.writeLong(mCandidateId, data, pos);
+        pos += IoUtil.writeLong(mCommit, data, pos);
         return pos;
     }
 
@@ -127,6 +135,26 @@ public class X71_RaftBallot
         mIndex = index;
     }
 
+    public long getIndexTerm()
+    {
+        return mIndexTerm;
+    }
+
+    public void setIndexTerm(long indexTerm)
+    {
+        mIndexTerm = indexTerm;
+    }
+
+    public long getCommit()
+    {
+        return mCommit;
+    }
+
+    public void setCommit(long commit)
+    {
+        mCommit = commit;
+    }
+
     @Override
     public boolean isMapping()
     {
@@ -136,10 +164,12 @@ public class X71_RaftBallot
     @Override
     public String toString()
     {
-        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d,candidate:%#x}",
+        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x,commit:%d}",
                              mElectorId,
                              mTerm,
                              mIndex,
-                             mCandidateId);
+                             mIndexTerm,
+                             mCandidateId,
+                             mCommit);
     }
 }

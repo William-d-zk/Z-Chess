@@ -80,8 +80,12 @@ public class Segment
         if(_StartIndex == 0 || mEndIndex == 0) {return null;}
         if(index < _StartIndex || index > mEndIndex) {return null;}
         int indexInList = (int) (index - _StartIndex);
-        return _Records.get(indexInList)
-                       .getEntry();
+        LogEntry logEntry = _Records.get(indexInList)
+                                    .getEntry();
+        if(logEntry.getIndex() != index) {
+            _Logger.warning("segment get log-entry %d [%s]", index, logEntry);
+        }
+        return logEntry;
     }
 
     public Segment(File file, long startIndex, long endIndex, boolean canWrite) throws IOException
@@ -173,7 +177,7 @@ public class Segment
                 if(startIndex < 0) {
                     startIndex = endIndex;
                 }
-                _Records.add(new Record(entryStart, entry));
+                _Records.add((int) (endIndex - startIndex), new Record(entryStart, entry));
             }
             offset = mRandomAccessFile.getFilePointer();
         }
@@ -227,7 +231,7 @@ public class Segment
 
     public long truncate(long newEndIndex) throws IOException
     {
-        int recordIndex = (int) (newEndIndex + 1 - getStartIndex());
+        int recordIndex = (int) (newEndIndex - getStartIndex());
         setEndIndex(newEndIndex);
         long newFileSize = getRecords().get(recordIndex)
                                        .getOffset() - 4;
