@@ -21,9 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
+package com.isahl.chess.pawn.endpoint.device.api.jpa.repository;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,34 +31,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2021/5/13
  */
-@Repository("remote-message-jpa-repository")
-public interface IMessageJpaRepository
-        extends BaseLongRepository<MessageEntity>
+@Repository
+public interface IShadowJpaRepository
+        extends BaseLongRepository<ShadowEntity>
 {
-
-    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
-
-    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
-           nativeQuery = true)
-    List<MessageEntity> listByTopic(
-            @Param("p_topic")
-                    String topic,
-            @Param("p_limit")
-                    int limit);
-
     @Transactional
     @Modifying
-    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
-           nativeQuery = true)
-    void deleteAllByDestination(
-            @Param("p_dest")
-                    long destination,
-            @Param("p_owner")
-                    String owner);
+    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)
+    void deleteByDevice(@Param("p_device_id") long deviceId);
+
+    ShadowEntity findByDeviceId(long deviceId);
 }

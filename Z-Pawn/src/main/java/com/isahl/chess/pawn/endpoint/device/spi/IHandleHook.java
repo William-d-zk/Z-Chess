@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,50 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.spi;
 
-import java.io.Serial;
-import java.io.Serializable;
+import com.isahl.chess.queen.io.core.inf.IControl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import java.util.List;
 
 /**
- * @author Idempotent
- * 
- * @date 2019/12/1
+ * @author william.d.zk
+ * @date 2021-08-07
  */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class RawContent
-        implements
-        Serializable
+public interface IHandleHook
 {
-
-    @Serial
-    private static final long serialVersionUID = 2945521462766851875L;
-
-    private String raw;
-    private byte[] payload;
-
-    public String getRaw()
-    {
-        return raw;
-    }
-
-    public void setRaw(String raw)
-    {
-        this.raw = raw;
-    }
-
-    public byte[] getPayload()
-    {
-        return payload;
-    }
-
-    public void setPayload(byte[] payload)
-    {
-        this.payload = payload;
-    }
+    void handle(IControl content, List<? extends IControl> pushList);
 }

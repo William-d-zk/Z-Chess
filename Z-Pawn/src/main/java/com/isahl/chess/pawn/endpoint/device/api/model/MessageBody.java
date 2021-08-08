@@ -21,21 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.util.JsonUtil;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
@@ -59,11 +55,10 @@ public class MessageBody
             @JsonProperty("topic")
                     String topic,
             @JsonProperty("content")
-                    JsonNode content)
+                    byte[] content)
     {
         _Topic = topic;
-        _Content = content.toString()
-                          .getBytes(StandardCharsets.UTF_8);
+        _Content = content;
     }
 
     public String getTopic()
@@ -71,41 +66,8 @@ public class MessageBody
         return _Topic;
     }
 
-    public JsonNode getContent()
+    public byte[] getContent()
     {
-        if(_Content == null || _Content.length == 0) {
-            _Logger.warning("content null");
-            return null;
-        }
-        try {
-            return JsonUtil.readTree(_Content);
-        }
-        catch(Exception e) {
-            try {
-                RawContent content = new RawContent();
-                content.setPayload(_Content);
-                try {
-                    content.setRaw(new String(_Content, StandardCharsets.UTF_8));
-                }
-                catch(Exception stre) {
-                    _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(_Content, ":")));
-                    // ignore
-                }
-                return JsonUtil.valueToTree(content);
-            }
-            catch(Exception e1) {
-                e1.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    public byte[] contentBinary()
-    {
-        if(_Content == null || _Content.length == 0) {
-            _Logger.warning("content null");
-            return null;
-        }
         return _Content;
     }
 

@@ -37,6 +37,7 @@ import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
+import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
@@ -76,7 +77,8 @@ public class NodeService
                 IRaftConfig raftConfig,
                 IRaftMapper raftMapper,
                 ILinkCustom linkCustom,
-                List<IAccessService> accessAdapters) throws IOException
+                List<IAccessService> accessAdapters,
+                List<IHandleHook> hooks) throws IOException
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
@@ -105,7 +107,7 @@ public class NodeService
                                      timeWheel,
                                      _RaftPeer);
         _LinkCustom = linkCustom;
-        _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters);
+        _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters, hooks);
     }
 
     @PostConstruct
@@ -139,7 +141,7 @@ public class NodeService
      * → ConsistencyOpenService
      */
     @Bean
-    public RaftCustom get_RaftCustom()
+    public RaftCustom getRaftCustom()
     {
         return _RaftCustom;
     }
