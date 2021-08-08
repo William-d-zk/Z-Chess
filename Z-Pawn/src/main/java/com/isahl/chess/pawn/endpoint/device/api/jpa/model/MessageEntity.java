@@ -21,18 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model;
+package com.isahl.chess.pawn.endpoint.device.api.jpa.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
 import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serial;
@@ -44,19 +42,16 @@ import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_R
  * @date 2019-07-22
  */
 @Entity(name = "message")
-@TypeDef(name = "jsonb",
-         typeClass = JsonBinaryType.class)
 @Table(indexes = { @Index(name = "origin_idx",
                           columnList = "origin"),
-                   @Index(name = "destination_idx",
-                          columnList = "destination"),
                    @Index(name = "topic_idx",
                           columnList = "topic")
 })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity
         extends AuditModel
-        implements IStorage
+        implements IStorage,
+                   ITraceable
 {
     @Serial
     private static final long serialVersionUID = -6502547239976531057L;
@@ -66,20 +61,18 @@ public class MessageEntity
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZMessageGenerator")
-    private long        id;
+    private long   id;
     @Column(updatable = false,
             nullable = false)
-    private long        origin;
-    @Column(updatable = false,
-            nullable = false)
-    private long        destination;
+    private long   origin;
     @Column(length = 511,
             nullable = false,
             updatable = false)
-    private String      topic;
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private MessageBody body;
+    private String topic;
+    @Lob
+    @Column(name = "content")
+    @Type(type = "org.hibernate.type.BinaryType")
+    private byte[] content;
 
     @JsonIgnore
     @Transient
@@ -95,16 +88,6 @@ public class MessageEntity
         this.id = id;
     }
 
-    public MessageBody getBody()
-    {
-        return body;
-    }
-
-    public void setBody(MessageBody body)
-    {
-        this.body = body;
-    }
-
     public long getOrigin()
     {
         return origin;
@@ -113,16 +96,6 @@ public class MessageEntity
     public void setOrigin(long origin)
     {
         this.origin = origin;
-    }
-
-    public long getDestination()
-    {
-        return destination;
-    }
-
-    public void setDestination(long destination)
-    {
-        this.destination = destination;
     }
 
     @Override
@@ -163,5 +136,21 @@ public class MessageEntity
     public void setTopic(String topic)
     {
         this.topic = topic;
+    }
+
+    public void setContent(byte[] data)
+    {
+        content = data;
+    }
+
+    public byte[] getContent()
+    {
+        return content;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return content;
     }
 }

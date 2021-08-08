@@ -93,7 +93,8 @@ public class SessionEntity
         return id;
     }
 
-    @Column(name = "will_level")
+    @Column(name = "will_level",
+            length = 20)
     @Enumerated(EnumType.STRING)
     @JsonIgnore
     public IQoS.Level getWillLevel()
@@ -164,7 +165,8 @@ public class SessionEntity
         }
     }
 
-    @Column(name = "subscribes")
+    @Column(name = "subscribes",
+            columnDefinition = "text")
     public String getSubscribes()
     {
         return subscribes;

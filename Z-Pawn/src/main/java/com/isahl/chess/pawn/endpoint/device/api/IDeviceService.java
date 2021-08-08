@@ -25,7 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.api;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 

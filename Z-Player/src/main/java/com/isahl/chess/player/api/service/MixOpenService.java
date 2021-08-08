@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

@@ -21,28 +21,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api;
+package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author william.d.zk
- * @date 2020/2/21
+ * @date 2021-08-07
  */
-public interface IMessageService
+@Component
+public class PersistentHook
+        implements IHandleHook
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
+    @Override
+    public void handle(IControl content, List<? extends IControl> pushList)
+    {
 
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
-
-
+    }
 }

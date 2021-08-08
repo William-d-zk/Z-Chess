@@ -43,7 +43,8 @@ import java.util.List;
 public class LinkCustom
         implements ILinkCustom
 {
-    private final Logger               _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+
     private final List<IAccessService> _AccessServices;
 
     @Autowired

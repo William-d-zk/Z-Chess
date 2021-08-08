@@ -56,6 +56,4 @@ public interface IAccessService
                        IClusterNode cluster,
                        List<? extends IControl> pushList);
 
-
-
 }

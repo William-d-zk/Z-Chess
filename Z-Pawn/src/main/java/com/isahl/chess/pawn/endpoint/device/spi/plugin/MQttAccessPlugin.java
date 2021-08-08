@@ -67,9 +67,8 @@ public class MQttAccessPlugin
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
 
-    private final IDeviceService _DeviceService;
-    private final IQttStorage    _QttStorage;
-
+    private final IDeviceService                    _DeviceService;
+    private final IQttStorage                       _QttStorage;
     /*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
     /**
      * 在 link-consumer 中处理 subscribe 和 unsubscribe
@@ -537,5 +536,5 @@ public class MQttAccessPlugin
             }
         });
     }
-
+ 
 }

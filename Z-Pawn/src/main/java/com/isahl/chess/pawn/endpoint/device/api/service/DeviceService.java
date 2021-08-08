@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.service;
+package com.isahl.chess.pawn.endpoint.device.api.service;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IValid;
@@ -32,12 +32,10 @@ import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IDeviceJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IShadowJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -53,10 +51,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
@@ -74,15 +70,13 @@ public class DeviceService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IDeviceJpaRepository    _DeviceJpaRepository;
-    private final IShadowJpaRepository    _ShadowJpaRepository;
-    private final CacheManager            _CacheManager;
-    private final CryptUtil               _CryptUtil        = new CryptUtil();
-    private final MixConfig               _MixConfig;
-    private final Map<Long, ShadowDevice> _ShadowDevices    = new HashMap<>(1 << 10);
-    private final TimeWheel               _TimeWheel;
-    private final ShadowBatch             _BatchHandleLogin = new ShadowBatch();
-    private final ShadowBatch             _BatchHandleIdle  = new ShadowBatch();
+    private final IDeviceJpaRepository _DeviceJpaRepository;
+    private final CacheManager         _CacheManager;
+    private final CryptUtil            _CryptUtil        = new CryptUtil();
+    private final MixConfig            _MixConfig;
+    private final TimeWheel            _TimeWheel;
+    private final ShadowBatch          _BatchHandleLogin = new ShadowBatch();
+    private final ShadowBatch          _BatchHandleIdle  = new ShadowBatch();
 
     private static class ShadowBatch
             extends ConcurrentLinkedQueue<ShadowEntity>
@@ -91,13 +85,11 @@ public class DeviceService
 
     @Autowired
     public DeviceService(IDeviceJpaRepository deviceRepository,
-                         IShadowJpaRepository shadowJpaRepository,
                          CacheManager cacheManager,
                          MixConfig mixConfig,
                          TimeWheel timeWheel)
     {
         _DeviceJpaRepository = deviceRepository;
-        _ShadowJpaRepository = shadowJpaRepository;
         _CacheManager = cacheManager;
         _MixConfig = mixConfig;
         _TimeWheel = timeWheel;
@@ -241,8 +233,7 @@ public class DeviceService
     public final List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification,
                                                      Pageable pageable) throws ZException
     {
-        return _ShadowJpaRepository.findAll(specification, pageable)
-                                   .toList();
+        return null;
     }
 
     @Override
@@ -259,11 +250,13 @@ public class DeviceService
             for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {
                 ShadowEntity shadow = it.next();
                 it.remove();
+                /*
                 ShadowEntity exist = _ShadowJpaRepository.findByDeviceId(shadow.getDeviceId());
                 if(exist != null) {
                     shadow.setShadowId(exist.getShadowId());
                 }
                 _ShadowJpaRepository.save(shadow);
+                */
             }
         }
         catch(Exception e) {
@@ -279,7 +272,7 @@ public class DeviceService
             for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {
                 ShadowEntity shadow = it.next();
                 it.remove();
-                _ShadowJpaRepository.deleteByDevice(shadow.getDeviceId());
+                //  _ShadowJpaRepository.deleteByDevice(shadow.getDeviceId());
             }
         }
         catch(Exception e) {
