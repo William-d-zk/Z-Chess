@@ -1,7 +1,7 @@
 version: '3'
 services:
   raft10:
-    image: img.z-chess.arena
+    image: img.z-chess.arena.amd64
     container_name: raft00
     hostname: raft00
     ports:
@@ -20,7 +20,7 @@ services:
       - "gate00:192.168.11.110"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft11:
-    image: img.z-chess.arena
+    image: img.z-chess.arena.amd64
     container_name: raft01
     hostname: raft01
     ports:
@@ -36,7 +36,7 @@ services:
       - "gate00:192.168.11.110"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft12:
-    image: img.z-chess.arena
+    image: img.z-chess.arena.amd64
     container_name: raft02
     hostname: raft02
     ports:

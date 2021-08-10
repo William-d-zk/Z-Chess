@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # MIT License
 #
@@ -20,6 +21,14 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-mvn -P dev clean package
-cp libsqlitejdbc.so ~/Z-Chess/Z-Arena/target/.
-docker build -f ./Dockerfile -t img.z-chess.arena ~/Z-Chess
+cd ..
+version="1.0.14-SNAPSHOT"
+# shellcheck disable=SC2044
+for file in $(find \./Z-* -name "pom.xml"); do
+  echo $file
+  sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" \
+    $file >$file.new
+  mv -f $file.new $file
+done
+sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" ./pom.xml >./pom.xml.new
+mv -f ./pom.xml.new ./pom.xml

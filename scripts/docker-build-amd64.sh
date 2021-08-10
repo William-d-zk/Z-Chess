@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
 #
 # MIT License
 #
-# Copyright (c) 2016~2020. Z-Chess
+# Copyright (c) 2016~2021. Z-Chess
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -21,14 +20,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
-version="1.0.14-SNAPSHOT"
-# shellcheck disable=SC2044
-for file in $(find \./Z-* -name "pom.xml"); do
-  echo $file
-  sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" \
-    $file >$file.new
-  mv -f $file.new $file
-done
-sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" ./pom.xml >./pom.xml.new
-mv -f ./pom.xml.new ./pom.xml
+cp SQLite-ABI-Alpine-amd64/libsqlitejdbc.so ~/Z-Chess/Z-Arena/target/.
+cd ..
+mvn -P dev clean package
+docker build -f ./scripts/amd64/Dockerfile -t img.z-chess.arena.amd64 ~/Z-Chess
