@@ -1,3 +1,4 @@
+cd ..
 git pull
 mvn clean install -Dmaven.test.skip=true -P run
 cd Z-Arena || exit
