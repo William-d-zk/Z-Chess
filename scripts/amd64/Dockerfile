@@ -1,4 +1,5 @@
-FROM bellsoft/liberica-openjdk-alpine-musl
+FROM bellsoft/liberica-openjdk-alpine
+ARG LANG=zh_CN.UTF-8
 RUN apk add --update --no-cache sqlite
 ARG JAR_FILE=Z-Arena/target/*.jar
 ARG SQLITE_NATIVE_FILE=Z-Arena/target/libsqlitejdbc.so
