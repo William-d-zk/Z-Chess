@@ -23,7 +23,6 @@
 
 package com.isahl.chess.rook.storage.jpa.config;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
@@ -96,19 +95,21 @@ public class BaseJpaConfig
     protected LocalContainerEntityManagerFactoryBean getEntityManager(DataSource dataSource,
                                                                       JpaProperties jpaProperties,
                                                                       HibernateProperties hibernateProperties,
+                                                                      DatabaseInitializationSettings initializationSettings,
                                                                       String... packagesToScan)
     {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource);
+        LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
+        emf.setDataSource(dataSource);
         HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         jpaVendorAdapter.setShowSql(jpaProperties.isShowSql());
         jpaVendorAdapter.setGenerateDdl(jpaProperties.isGenerateDdl());
         jpaVendorAdapter.setDatabase(jpaProperties.getDatabase());
-        em.setJpaVendorAdapter(jpaVendorAdapter);
-        em.setJpaPropertyMap(hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(),
-                                                                              new HibernateSettings()));
-        em.setPackagesToScan(packagesToScan);
-        return em;
+        emf.setJpaVendorAdapter(jpaVendorAdapter);
+        emf.setJpaPropertyMap(hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                               new HibernateSettings()));
+        emf.setPackagesToScan(packagesToScan);
+        new DataSourceScriptDatabaseInitializer(dataSource, initializationSettings).initializeDatabase();
+        return emf;
     }
 
     @Bean("primary-sql-init-settings")
@@ -125,23 +126,4 @@ public class BaseJpaConfig
         return new DatabaseInitializationSettings();
     }
 
-    @Bean("primary-sql-initializer")
-    public DataSourceScriptDatabaseInitializer getPrimarySqlInitializer(
-            @Qualifier("primary-data-source")
-                    DataSource dataSource,
-            @Qualifier("primary-sql-init-settings")
-                    DatabaseInitializationSettings settings)
-    {
-        return new DataSourceScriptDatabaseInitializer(dataSource, settings);
-    }
-
-    @Bean("secondary-sql-initializer")
-    public DataSourceScriptDatabaseInitializer getSecondarySqlInitializer(
-            @Qualifier("secondary-data-source")
-                    DataSource dataSource,
-            @Qualifier("secondary-sql-init-settings")
-                    DatabaseInitializationSettings settings)
-    {
-        return new DataSourceScriptDatabaseInitializer(dataSource, settings);
-    }
 }

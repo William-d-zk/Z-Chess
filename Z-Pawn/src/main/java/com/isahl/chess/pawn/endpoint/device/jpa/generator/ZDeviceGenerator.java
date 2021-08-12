@@ -36,23 +36,21 @@ import javax.annotation.PostConstruct;
 import java.io.Serializable;
 
 /**
- * 
  * JPA 会优先初始化
  * 且会给每一个表的都创建一个IdentifierGenerator，
  * ZUid 是一个全局生成器，ZClusterConfig 在 spring 中是 single instance创建的
  * 程序启动时装载 bean 也是沿用了single instance的模式，所以在init时正式注入 ZUid
  * 通过static 同步给所有 JPA 的所有引用。
- * 
+ *
  * @author william.d.zk
  */
 @Component
 public class ZDeviceGenerator
-        implements
-        IdentifierGenerator
+        implements IdentifierGenerator
 {
-    private static ZUID       _ZUID;
-    private final Logger      _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-    private final ZRaftConfig _ZClusterConfig;
+    private static ZUID        _ZUID;
+    private final  Logger      _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final  ZRaftConfig _ZClusterConfig;
 
     @Autowired
     public ZDeviceGenerator(ZRaftConfig config)
@@ -60,6 +58,10 @@ public class ZDeviceGenerator
         _ZClusterConfig = config;
     }
 
+    /**
+     * 不能删除，JPA 注入的时候用的是这个方法，Bean 构建之后才
+     * 正式初始化了ZUID，且ZRaftConfig中也仅持有one-instance
+     */
     public ZDeviceGenerator()
     {
         _ZClusterConfig = null;
@@ -68,7 +70,7 @@ public class ZDeviceGenerator
     @PostConstruct
     public void init()
     {
-        if (_ZClusterConfig == null) return;
+        if(_ZClusterConfig == null) {return;}
         _ZUID = _ZClusterConfig.createZUID();
     }
 
