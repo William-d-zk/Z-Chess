@@ -1,3 +1,4 @@
+cp SQLite-ABI-FreeBSD-amd64/libsqlitejdbc.so /usr/local/lib/.
 cd ..
 git pull
 mvn clean install -Dmaven.test.skip=true -P run

@@ -21,5 +21,5 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 cd ..
-mvn clean package -Dmaven.test.skip=true
+mvn clean package -Dmaven.test.skip=true -P dev
 mvn -P dev -f Z-Arena/pom.xml spring-boot:start
