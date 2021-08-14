@@ -67,34 +67,69 @@ public class JpaDataConfig
     @PostConstruct
     private void initJpaData()
     {
-        List<RoleEntity> roles = _RoleRepository.findAll();
-        List<UserEntity> users = _UserRepository.findAll();
-        List<PermissionEntity> permissions = _PermissionRepository.findAll();
-        if(roles.stream()
-                .noneMatch(role->role.getName()
-                                     .equals("root")))
-        {
-            RoleEntity role = new RoleEntity();
-            role.setName("root");
-            _RoleRepository.save(role);
+        List<RoleEntity> roles = new ArrayList<>(4);
+        List<PermissionEntity> permissions = new ArrayList<>(4);
+        PermissionEntity common_p, admin_p, root_p;
+        RoleEntity admin_r, root_r, user_r;
+        common_p = _PermissionRepository.findByName("common");
+        admin_p = _PermissionRepository.findByName("admin");
+        root_p = _PermissionRepository.findByName("root");
+
+        if(common_p == null) {
+            PermissionEntity permission = new PermissionEntity();
+            permission.setName("common");
+            permission.setUrl("/user/common");
+            permission.setDescription("common user permission");
+            common_p = _PermissionRepository.save(permission);
         }
-        if(roles.stream()
-                .noneMatch(role->role.getName()
-                                     .equals("admin")))
-        {
-            RoleEntity role = new RoleEntity();
-            role.setName("admin");
-            _RoleRepository.save(role);
-        }
-        if(roles.stream()
-                .noneMatch(role->role.getName()
-                                     .equals("user")))
-        {
-            RoleEntity role = new RoleEntity();
-            role.setName("user");
-            _RoleRepository.save(role);
+        if(admin_p == null) {
+            PermissionEntity permission = new PermissionEntity();
+            permission.setName("admin");
+            permission.setUrl("/user/admin");
+            permission.setDescription("administrator  permission");
+            admin_p = _PermissionRepository.save(permission);
         }
 
+        if(root_p == null) {
+            PermissionEntity permission = new PermissionEntity();
+            permission.setName("root");
+            permission.setUrl("/user/root");
+            permission.setDescription("root all permission");
+            root_p = _PermissionRepository.save(permission);
+        }
+        root_r = _RoleRepository.findByName("root");
+        user_r = _RoleRepository.findByName("user");
+        admin_r = _RoleRepository.findByName("admin");
+
+        if(root_r == null) {
+            RoleEntity role = new RoleEntity();
+            role.setName("root");
+            role.setPermissions(permissions);
+            permissions.add(common_p);
+            permissions.add(root_p);
+            permissions.add(admin_p);
+            root_r = _RoleRepository.save(role);
+            permissions.clear();
+        }
+        if(admin_r == null) {
+            RoleEntity role = new RoleEntity();
+            role.setName("admin");
+            role.setPermissions(permissions);
+            permissions.add(admin_p);
+            permissions.add(common_p);
+            admin_r = _RoleRepository.save(role);
+            permissions.clear();
+        }
+        if(user_r == null) {
+            RoleEntity role = new RoleEntity();
+            role.setName("user");
+            role.setPermissions(permissions);
+            permissions.add(common_p);
+            user_r = _RoleRepository.save(role);
+            permissions.clear();
+        }
+
+        List<UserEntity> users = _UserRepository.findAll();
         if(users.stream()
                 .noneMatch(user->user.getUsername()
                                      .equals("root")))
@@ -102,8 +137,9 @@ public class JpaDataConfig
             UserEntity user = new UserEntity();
             user.setUsername("root");
             List<RoleEntity> authorities = new ArrayList<>(2);
-            authorities.add(_RoleRepository.findByName("root"));
-            authorities.add(_RoleRepository.findByName("admin"));
+            authorities.add(root_r);
+            authorities.add(admin_r);
+            authorities.add(user_r);
             user.setAuthorities(authorities);
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(5));
@@ -112,13 +148,14 @@ public class JpaDataConfig
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
+
         if(users.stream()
                 .noneMatch(user->user.getUsername()
                                      .equals("user")))
         {
             UserEntity user = new UserEntity();
             user.setUsername("user");
-            user.setAuthorities(Collections.singletonList(_RoleRepository.findByName("user")));
+            user.setAuthorities(Collections.singletonList(user_r));
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(1));
             String password = CryptUtil.Password(9, 12);
@@ -126,56 +163,23 @@ public class JpaDataConfig
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
-        if(permissions.stream()
-                      .noneMatch(permission->permission.getName()
-                                                       .equals("common")))
-        {
-            PermissionEntity permission = new PermissionEntity();
-            permission.setName("common");
-            permission.setUrl("/user/common");
-            permission.setDescription("common user permission");
-            _PermissionRepository.save(permission);
-            RoleEntity role = _RoleRepository.findByName("user");
-            role.getPermissions()
-                .add(permission);
-            _RoleRepository.save(role);
-            role = _RoleRepository.findByName("root");
-            role.getPermissions()
-                .add(permission);
-            _RoleRepository.save(role);
-            role = _RoleRepository.findByName("admin");
-            role.getPermissions()
-                .add(permission);
-            _RoleRepository.save(role);
-        }
-        if(permissions.stream()
-                      .noneMatch(permission->permission.getName()
-                                                       .equals("admin")))
-        {
-            PermissionEntity permission = new PermissionEntity();
-            permission.setName("admin");
-            permission.setUrl("/user/admin");
-            permission.setDescription("administrator  permission");
-            RoleEntity role = _RoleRepository.findByName("admin");
-            role.getPermissions()
-                .add(permission);
-            _PermissionRepository.save(permission);
-            _RoleRepository.save(role);
-        }
 
-        if(permissions.stream()
-                      .noneMatch(permission->permission.getName()
-                                                       .equals("root")))
+        if(users.stream()
+                .noneMatch(user->user.getUsername()
+                                     .equals("admin")))
         {
-            PermissionEntity permission = new PermissionEntity();
-            permission.setName("root");
-            permission.setUrl("/user/root");
-            permission.setDescription("root all permission");
-            RoleEntity role = _RoleRepository.findByName("root");
-            role.getPermissions()
-                .add(permission);
-            _PermissionRepository.save(permission);
-            _RoleRepository.save(role);
+            UserEntity user = new UserEntity();
+            user.setUsername("admin");
+            List<RoleEntity> authorities = new ArrayList<>(2);
+            authorities.add(admin_r);
+            authorities.add(user_r);
+            user.setAuthorities(authorities);
+            user.setInvalidAt(LocalDateTime.now()
+                                           .plusYears(1));
+            String password = CryptUtil.Password(9, 12);
+            _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
+            user.setPassword(_PasswordEncoder.encode(password));
+            _UserRepository.save(user);
         }
     }
 }

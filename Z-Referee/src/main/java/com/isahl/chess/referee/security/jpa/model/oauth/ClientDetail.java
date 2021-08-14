@@ -32,6 +32,7 @@ import org.hibernate.annotations.Type;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -42,6 +43,7 @@ import java.io.Serializable;
 
 @Entity(name = "client_detail")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Table(schema = "z_chess_security")
 public class ClientDetail
         extends AuditModel
         implements Serializable

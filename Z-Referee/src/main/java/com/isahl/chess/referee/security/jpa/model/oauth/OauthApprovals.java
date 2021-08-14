@@ -44,6 +44,7 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "oauth_approvals")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Table(schema = "z_chess_security")
 public class OauthApprovals
         extends AuditModel
         implements Serializable

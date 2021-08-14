@@ -46,6 +46,7 @@ import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_R
 @Entity(name = "shadow")
 @TypeDef(name = "jsonb",
          typeClass = JsonBinaryType.class)
+@Table(schema = "z_chess_pawn")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ShadowEntity
         extends AuditModel

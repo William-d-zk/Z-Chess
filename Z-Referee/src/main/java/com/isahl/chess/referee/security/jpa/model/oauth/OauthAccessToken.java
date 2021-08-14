@@ -30,6 +30,7 @@ import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -39,6 +40,7 @@ import java.io.Serializable;
  */
 @Entity(name = "oauth_access_token")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Table(schema = "z_chess_security")
 public class OauthAccessToken
         extends AuditModel
         implements Serializable
