@@ -42,11 +42,12 @@ import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_R
  * @date 2019-07-22
  */
 @Entity(name = "message")
-@Table(indexes = { @Index(name = "origin_idx",
+@Table(schema = "z_chess_pawn",
+       indexes = { @Index(name = "origin_idx",
                           columnList = "origin"),
                    @Index(name = "topic_idx",
                           columnList = "topic")
-})
+       })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity
         extends AuditModel

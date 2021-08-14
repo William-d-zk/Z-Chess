@@ -36,4 +36,6 @@ public interface IPermissionRepository
         extends BaseLongRepository<PermissionEntity>
 {
     PermissionEntity findByUrl(String url);
+
+    PermissionEntity findByName(String common);
 }
