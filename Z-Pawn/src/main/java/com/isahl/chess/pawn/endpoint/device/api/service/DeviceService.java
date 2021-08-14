@@ -46,13 +46,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.cache.CacheManager;
-import javax.persistence.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
@@ -149,15 +149,11 @@ public class DeviceService
                  .getValue() > OP_INSERT.getValue())
         {   // update
             DeviceEntity exist;
-            try {
-                exist = _DeviceJpaRepository.getOne(device.primaryKey());
-            }
-            catch(EntityNotFoundException e) {
-                _Logger.warning("entity_not_found_exception", e);
-                throw new ZException(e,
-                                     device.operation()
-                                           .name());
-            }
+            Optional<DeviceEntity> result = _DeviceJpaRepository.findById(device.primaryKey());
+            exist = result.orElseThrow(()->new ZException("entity_not_found_exception %s → %#x",
+                                                          device.operation()
+                                                                .name(),
+                                                          device.primaryKey()));
             if(exist.getInvalidAt()
                     .isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId())
             {
@@ -201,10 +197,11 @@ public class DeviceService
         }
     }
 
-    @Override
     @Cacheable(value = "device_token_cache",
                key = "#token",
-               unless = "#token == null")
+               unless = "#token == null",
+               condition = "#result != null")
+    @Override
     public DeviceEntity findByToken(String token) throws ZException
     {
         return _DeviceJpaRepository.findByToken(token);
@@ -226,7 +223,8 @@ public class DeviceService
     @Override
     public DeviceEntity getOneDevice(long id)
     {
-        return _DeviceJpaRepository.getOne(id);
+        return _DeviceJpaRepository.findById(id)
+                                   .orElse(null);
     }
 
     @Override
