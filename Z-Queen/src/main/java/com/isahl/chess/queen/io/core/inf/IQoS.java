@@ -109,7 +109,9 @@ public interface IQoS
                 case 1 -> AT_LEAST_ONCE;
                 case 2 -> EXACTLY_ONCE;
                 case 0x80 -> FAILURE;
-                default -> throw new UnsupportedOperationException();
+                default -> throw new UnsupportedOperationException(String.format("wrong level code %d,%#x",
+                                                                                 level,
+                                                                                 level));
             };
         }
 
