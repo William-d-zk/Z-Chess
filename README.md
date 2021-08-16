@@ -55,16 +55,24 @@
 ## Z-Arena 网关
 
 # 安装部署注意事项
+
 ## 数据库
+
 > 需要手工创建数据库，使用 `PostgreSQL`
-> 
+>
 > 配置文件位置: `Z-Rook/src/main/resource/db.properties`
+
 ## DNS 配置
+
 需要在集群中配置resolve.conf `search:isahl.com`
-DB-Hostname:db-pg
-endpoint-Hostname:raft10,raft11,raft12
+DB-Hostname:db-pg endpoint-Hostname:raft10,raft11,raft12
 > 局域网内DNS需配置 `192.168.10.10 raft10;192.168.10.11 raft11;192.168.10.12 raft12`
 从而通过DNS进行集群IP动态自适应，从而解决在云原生环境中，主机IP迁移引起的集群拓扑变更问题。
 
 * spring.datasource.url=jdbc:postgresql://`db-pg.isahl.com`:5432/isahl.z-chess
+
 > 需要在局域网内配置 db-pg.isahl.com 域名解析 DB hostname:db-pg search: isahl.com
+
+## scripts
+
+> update_version.sh 需要在 `${base.dir}` 中执行 

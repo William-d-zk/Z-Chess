@@ -21,7 +21,6 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-cd ..
 version="1.0.14-SNAPSHOT"
 # shellcheck disable=SC2044
 for file in $(find \./Z-* -name "pom.xml"); do

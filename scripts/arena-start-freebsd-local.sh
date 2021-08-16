@@ -22,4 +22,4 @@
 #
 cd ..
 mvn clean package -Dmaven.test.skip=true -P dev
-mvn -P dev -f Z-Arena/pom.xml spring-boot:start
+mvn -P dev -f Z-Arena/pom.xml spring-boot:start -Dspring-boot.run.profiles=daily
