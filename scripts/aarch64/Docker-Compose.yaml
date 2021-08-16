@@ -18,6 +18,8 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    volumes:
+      - "~/Z-Chess/raft00:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft11:
     image: img.z-chess.arena.aarch64
@@ -34,6 +36,8 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    volumes:
+      - "~/Z-Chess/raft01:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft12:
     image: img.z-chess.arena.aarch64
@@ -50,6 +54,8 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    volumes:
+      - "~/Z-Chess/raft02:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
 networks:
   endpoint:
