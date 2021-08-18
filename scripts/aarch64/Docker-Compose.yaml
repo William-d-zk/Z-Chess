@@ -1,8 +1,26 @@
-version: '3'
+version: '3.9'
 services:
+  db-pg: 
+    image: isahl/postgres
+    container_name: db-pg
+    hostname: db-pg
+    domainname: isahl.com
+    ports: 
+      - "5432:5432"
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.254
+    volumes:
+      - "~/Services/db/postgresql:/var/lib/postgresql/data"
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgress
+      - POSTGRES_DB=postgres
   raft10:
     image: img.z-chess.arena.aarch64
     container_name: raft00
+    depends_on:
+      - db-pg
     hostname: raft00
     ports:
       - "8080:8080"
@@ -18,12 +36,15 @@ services:
       - "raft01:172.30.10.111"
       - "raft02:172.30.10.112"
       - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
     volumes:
       - "~/Z-Chess/raft00:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=online
   raft11:
     image: img.z-chess.arena.aarch64
     container_name: raft01
+    depends_on:
+      - db-pg
     hostname: raft01
     ports:
       - "1884:1883"
@@ -36,12 +57,15 @@ services:
       - "raft01:172.30.10.111"
       - "raft02:172.30.10.112"
       - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
     volumes:
       - "~/Z-Chess/raft01:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=online
   raft12:
     image: img.z-chess.arena.aarch64
     container_name: raft02
+    depends_on:
+      - db-pg
     hostname: raft02
     ports:
       - "1885:1883"
@@ -54,6 +78,7 @@ services:
       - "raft01:172.30.10.111"
       - "raft02:172.30.10.112"
       - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
     volumes:
       - "~/Z-Chess/raft02:/root/Z-Chess"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=online
