@@ -1,0 +1,1 @@
+docker compose --ansi always -p z-chess-endpoint -f aarch64/Docker-Compose.yaml  up -d
