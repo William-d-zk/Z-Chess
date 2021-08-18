@@ -66,7 +66,7 @@
 
 需要在集群中配置resolve.conf `search:isahl.com`
 DB-Hostname:db-pg endpoint-Hostname:raft10,raft11,raft12
-> 局域网内DNS需配置 `192.168.10.10 raft10;192.168.10.11 raft11;192.168.10.12 raft12`
+> 局域网内DNS需配置 `172.30.10.10 raft10;172.30.10.11 raft11;172.30.10.12 raft12`
 从而通过DNS进行集群IP动态自适应，从而解决在云原生环境中，主机IP迁移引起的集群拓扑变更问题。
 
 * spring.datasource.url=jdbc:postgresql://`db-pg.isahl.com`:5432/isahl.z-chess

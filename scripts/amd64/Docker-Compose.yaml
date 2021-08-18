@@ -10,14 +10,14 @@ services:
       - "1883:1883"
     networks:
       endpoint:
-        ipv4_address: 192.168.10.110
+        ipv4_address: 172.30.10.110
       gate:
-        ipv4_address: 192.168.11.110
+        ipv4_address: 172.30.11.110
     extra_hosts:
-      - "raft00:192.168.10.110"
-      - "raft01:192.168.10.111"
-      - "raft02:192.168.10.112"
-      - "gate00:192.168.11.110"
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft11:
     image: img.z-chess.arena.amd64
@@ -28,12 +28,12 @@ services:
       - "8100:8000"
     networks:
       endpoint:
-        ipv4_address: 192.168.10.111
+        ipv4_address: 172.30.10.111
     extra_hosts:
-      - "raft00:192.168.10.110"
-      - "raft01:192.168.10.111"
-      - "raft02:192.168.10.112"
-      - "gate00:192.168.11.110"
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft12:
     image: img.z-chess.arena.amd64
@@ -44,23 +44,23 @@ services:
       - "8200:8000"
     networks:
       endpoint:
-        ipv4_address: 192.168.10.112
+        ipv4_address: 172.30.10.112
     extra_hosts:
-      - "raft00:192.168.10.110"
-      - "raft01:192.168.10.111"
-      - "raft02:192.168.10.112"
-      - "gate00:192.168.11.110"
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
     entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
 networks:
   endpoint:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.10.0/24
-          gateway: 192.168.10.1
+        - subnet: 172.30.10.0/24
+          gateway: 172.30.10.1
   gate:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.11.0/24
-          gateway: 192.168.11.1
+        - subnet: 172.30.11.0/24
+          gateway: 172.30.11.1
