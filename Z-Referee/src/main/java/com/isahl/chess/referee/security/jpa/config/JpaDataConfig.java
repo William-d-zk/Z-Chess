@@ -24,7 +24,7 @@
 package com.isahl.chess.referee.security.jpa.config;
 
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
 import com.isahl.chess.referee.security.jpa.model.RoleEntity;
 import com.isahl.chess.referee.security.jpa.model.UserEntity;
@@ -143,7 +143,7 @@ public class JpaDataConfig
             user.setAuthorities(authorities);
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(5));
-            String password = CryptUtil.Password(17, 32);
+            String password = CryptoUtil.Password(17, 32);
             _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
@@ -158,7 +158,7 @@ public class JpaDataConfig
             user.setAuthorities(Collections.singletonList(user_r));
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(1));
-            String password = CryptUtil.Password(9, 12);
+            String password = CryptoUtil.Password(9, 12);
             _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
@@ -176,7 +176,7 @@ public class JpaDataConfig
             user.setAuthorities(authorities);
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(1));
-            String password = CryptUtil.Password(9, 12);
+            String password = CryptoUtil.Password(9, 12);
             _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);

@@ -23,7 +23,7 @@
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.I18nUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.ICommand;
@@ -162,13 +162,13 @@ public abstract class ZProtocol
 
     private int addCrc(byte[] data, int lastPos)
     {
-        lastPos += IoUtil.writeInt(CryptUtil.crc32(data, 0, lastPos), data, lastPos);
+        lastPos += IoUtil.writeInt(CryptoUtil.crc32(data, 0, lastPos), data, lastPos);
         return lastPos;
     }
 
     private int checkCrc(byte[] data, int lastPos)
     {
-        int l_crc = CryptUtil.crc32(data, 0, lastPos);
+        int l_crc = CryptoUtil.crc32(data, 0, lastPos);
         int crc = IoUtil.readInt(data, lastPos);
         if(l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
         return lastPos + 4;
