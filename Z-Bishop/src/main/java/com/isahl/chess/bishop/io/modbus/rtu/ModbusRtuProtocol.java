@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.modbus.rtu;
 
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
@@ -59,7 +59,7 @@ public abstract class ModbusRtuProtocol
         pos += IoUtil.writeByte(mAddress, data, pos);
         pos += IoUtil.writeByte(mCtrl, data, pos);
         pos += IoUtil.write(mPayload, data, pos);
-        pos += IoUtil.writeShort(mCrc = CryptUtil.crc16_modbus(data, off, pos - off), data, pos);
+        pos += IoUtil.writeShort(mCrc = CryptoUtil.crc16_modbus(data, off, pos - off), data, pos);
         return pos;
     }
 

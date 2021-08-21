@@ -24,7 +24,7 @@ package com.isahl.chess.bishop.io.ws;
 
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.inf.INetworkOption;
 import com.isahl.chess.queen.io.core.inf.ISort;
 
@@ -56,7 +56,7 @@ public class WsContext
             byte[] seed = new byte[17];
             r.nextBytes(seed);
             _SecKey = Base64.getEncoder()
-                            .encodeToString(CryptUtil.SHA1(seed));
+                            .encodeToString(CryptoUtil.SHA1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
             _Mask = new byte[4];
             r.nextBytes(_Mask);

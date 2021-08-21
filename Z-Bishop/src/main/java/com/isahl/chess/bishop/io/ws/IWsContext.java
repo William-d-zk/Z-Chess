@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws;
 
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.inf.IControl;
 
 import java.util.Base64;
@@ -52,7 +52,7 @@ public interface IWsContext
     default String getSecAccept(String secKey)
     {
         return Base64.getEncoder()
-                     .encodeToString(CryptUtil.SHA1((secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
+                     .encodeToString(CryptoUtil.SHA1((secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
     }
 
     String getSeKey();

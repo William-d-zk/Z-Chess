@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.io.ws.zchat.zfilter;
 
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.inf.*;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
@@ -36,8 +36,8 @@ public class EZContext<A extends IPContext>
         implements IEContext,
                    IProxyContext<A>
 {
-    private final CryptUtil _CryptUtil = new CryptUtil();
-    private final A         _ActingContext;
+    private final CryptoUtil _CryptoUtil = new CryptoUtil();
+    private final A          _ActingContext;
 
     private int     mPubKeyId = -2;
     private boolean mUpdateKeyIn, mUpdateKeyOut;
@@ -219,9 +219,9 @@ public class EZContext<A extends IPContext>
         mEncryptHandler = handler;
     }
 
-    public CryptUtil getCryptUtil()
+    public CryptoUtil getCryptUtil()
     {
-        return _CryptUtil;
+        return _CryptoUtil;
     }
 
     @Override

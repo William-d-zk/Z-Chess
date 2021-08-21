@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zcrypt;
 
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.NtruUtil;
 import com.isahl.chess.king.base.util.Pair;
@@ -50,9 +50,9 @@ public class EncryptHandler
     private final        int        _VersionMask              = ((1 << _VersionWidth) - 1) << _TotalSizeWidth;
     private final        NtruUtil   _Ntru                     = new NtruUtil();
     private final        Random     _Random                   = new Random();
-    private final        byte[][][] _PublicKeyPair            = new byte[_PairSize][][];
-    private final        CryptUtil  cryptUtil                 = new CryptUtil();
-    private              int        mIndexAdd;
+    private final byte[][][] _PublicKeyPair = new byte[_PairSize][][];
+    private final CryptoUtil cryptoUtil     = new CryptoUtil();
+    private       int        mIndexAdd;
 
     private boolean isPubKeyAvailable(int _ReqPubKeyId)
     {
@@ -150,7 +150,7 @@ public class EncryptHandler
     @Override
     public byte[] getSymmetricKeySign(byte[] symmetricKey)
     {
-        return cryptUtil.sha256(symmetricKey);
+        return cryptoUtil.sha256(symmetricKey);
     }
 
     @Override

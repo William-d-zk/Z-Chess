@@ -30,16 +30,16 @@ import org.junit.jupiter.api.Test;
  * 
  * @date 2020/7/12
  */
-class CryptUtilTest
+class CryptoUtilTest
 {
 
-    private CryptUtil cryptUtil = new CryptUtil();
+    private CryptoUtil cryptoUtil = new CryptoUtil();
 
     @Test
     void randomPassword()
     {
         for (int i = 0; i < 100; i++) {
-            String passwd = cryptUtil.randomPassword(17, 31);
+            String passwd = cryptoUtil.randomPassword(17, 31);
             System.out.println(passwd);
         }
     }
@@ -48,9 +48,9 @@ class CryptUtilTest
     void crcTest()
     {
         byte[] input = IoUtil.hex2bin("ABC0");
-        int crc16 = CryptUtil.crc16(input, 0, input.length);
+        int crc16 = CryptoUtil.crc16(input, 0, input.length);
         System.out.println(IoUtil.long2Hex(IoUtil.swapLhb(crc16), ":"));
-        int crc32 = CryptUtil.crc32(input, 0, input.length);
+        int crc32 = CryptoUtil.crc32(input, 0, input.length);
         System.out.println(IoUtil.long2Hex(crc32, ":"));
     }
 }

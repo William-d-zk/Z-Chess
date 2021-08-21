@@ -25,7 +25,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 
 /**
  * @author william.d.zk
@@ -36,8 +36,8 @@ public class TestAccountAuth
 {
     public static void main(String[] args)
     {
-        CryptUtil _CryptUtil = new CryptUtil();
-        System.out.println(_CryptUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
+        CryptoUtil _CryptoUtil = new CryptoUtil();
+        System.out.println(_CryptoUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
         String src = "+/#/#/+";
         src = src.replaceAll("\\++", "+");
         src = src.replaceAll("#+", "#");
