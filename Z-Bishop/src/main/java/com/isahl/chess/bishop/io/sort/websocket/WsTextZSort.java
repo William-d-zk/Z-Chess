@@ -29,8 +29,8 @@ import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsTextFilter;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 
 /**
  * @author william.d.zk

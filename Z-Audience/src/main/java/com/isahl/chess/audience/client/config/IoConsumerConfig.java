@@ -23,15 +23,14 @@
 
 package com.isahl.chess.audience.client.config;
 
-import java.util.Map;
-
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.queen.config.IAioConfig;
+import com.isahl.chess.queen.config.ISocketConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.ISocketConfig;
+import java.util.Map;
 
 /**
  * @author william.d.zk

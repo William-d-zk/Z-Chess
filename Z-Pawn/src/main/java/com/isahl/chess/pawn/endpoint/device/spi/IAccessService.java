@@ -23,13 +23,13 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.util.List;
 

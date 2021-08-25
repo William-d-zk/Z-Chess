@@ -23,11 +23,11 @@
 
 package com.isahl.chess.king.base.crypt.util;
 
+import com.isahl.chess.king.base.crypt.features.ISymmetric;
+import com.isahl.chess.king.base.util.ArrayUtil;
+
 import java.nio.ByteBuffer;
 import java.util.Random;
-
-import com.isahl.chess.king.base.crypt.inf.ISymmetric;
-import com.isahl.chess.king.base.util.ArrayUtil;
 
 /**
  * @author William.d.zk

@@ -24,9 +24,9 @@
 package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.api.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.api.db.model.MessageEntity;
 import com.isahl.chess.player.api.model.MessageDo;
 import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 
 /**
  * @author william.d.zk

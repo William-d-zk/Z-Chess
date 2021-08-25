@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.features.model.ITriple;
 
 import java.util.Objects;
 

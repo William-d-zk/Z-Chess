@@ -25,9 +25,9 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.model.JsonProtocol;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+import com.isahl.chess.queen.messages.JsonProtocol;
 
 /**
  * @author william.d.zk

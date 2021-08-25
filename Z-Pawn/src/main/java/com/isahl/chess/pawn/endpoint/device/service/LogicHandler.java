@@ -23,18 +23,18 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
-import com.isahl.chess.king.base.disruptor.processor.Health;
+import com.isahl.chess.king.base.disruptor.components.Health;
+import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
-import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.io.core.inf.IActivity;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.events.server.ILogicHandler;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 import java.util.List;
 

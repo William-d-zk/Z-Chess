@@ -23,28 +23,16 @@
 
 package com.isahl.chess.audience.client.config;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.time.Duration;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.springframework.util.unit.DataSize;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.config.ISocketConfig;
+import org.springframework.util.unit.DataSize;
+
+import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.time.Duration;
 
 public class SocketConfig
         implements

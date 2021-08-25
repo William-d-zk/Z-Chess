@@ -23,21 +23,26 @@
 
 package com.isahl.chess.bishop.io.sort;
 
-import com.isahl.chess.queen.event.operator.*;
-import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.events.functions.*;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionCloser;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionError;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 public abstract class BaseSort<C extends IPContext>
         implements IAioSort<C>
 {
     private final AioWriter      _AioWriter     = new AioWriter();
-    private final ISessionCloser _CloseOperator = new CloseOperator();
-    private final ISessionError  _ErrorOperator = new ErrorOperator();
+    private final ISessionCloser _CloseOperator = new SessionCloser();
+    private final ISessionError  _ErrorOperator = new SessionError();
     private final IPipeEncoder   _Encoder       = new PipeEncoder(_AioWriter);
-    private final IPipeTransfer  _Transfer      = new TransferOperator();
-    private final IPipeDecoder   _Decoder       = new PipeDecoder();
-    private final IgnoreOperator _Ignore        = new IgnoreOperator();
-    private final Mode           _Mode;
+    private final IPipeTransfer  _Transfer      = new PipeTransfer();
+    private final IPipeDecoder  _Decoder = new PipeDecoder();
+    private final SessionIgnore _Ignore  = new SessionIgnore();
+    private final Mode          _Mode;
     private final Type           _Type;
     private final String         _Protocol;
 
@@ -91,7 +96,7 @@ public abstract class BaseSort<C extends IPContext>
     }
 
     @Override
-    public IgnoreOperator getIgnore()
+    public SessionIgnore getIgnore()
     {
         return _Ignore;
     }

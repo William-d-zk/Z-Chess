@@ -23,13 +23,18 @@
 
 package com.isahl.chess.bishop.io.mqtt.filter;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.command.QttCommand;
+import com.isahl.chess.bishop.io.mqtt.model.QttContext;
+import com.isahl.chess.bishop.io.mqtt.model.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.factory.QttFactory;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IFrame;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
 /**
  * @author william.d.zk
@@ -56,7 +61,7 @@ public class QttCommandFilter
     @Override
     public QttCommand decode(QttContext context, QttFrame input)
     {
-        IControl qttCommand = QttCommandFactory.CREATE(input, context);
+        IControl qttCommand = QttFactory.CREATE(input, context);
         if(qttCommand == null) {throw new IllegalArgumentException("MQTT type error");}
         return (QttCommand) qttCommand;
     }

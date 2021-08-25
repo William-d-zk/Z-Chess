@@ -25,42 +25,47 @@ package com.isahl.chess.audience.client.component;
 
 import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.bishop.io.ws.IWsContext;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
-import com.isahl.chess.bishop.io.ws.control.X102_Close;
-import com.isahl.chess.bishop.io.ws.control.X103_Ping;
-import com.isahl.chess.bishop.io.ws.control.X104_Pong;
-import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
-import com.isahl.chess.king.base.disruptor.processor.Health;
+import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.*;
+import com.isahl.chess.bishop.io.ws.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.X03_Cipher;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.X05_EncryptStart;
+import com.isahl.chess.king.base.cron.ScheduleHandler;
+import com.isahl.chess.king.base.cron.TimeWheel;
+import com.isahl.chess.king.base.cron.features.ICancelable;
+import com.isahl.chess.king.base.disruptor.components.Health;
+import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.schedule.ScheduleHandler;
-import com.isahl.chess.king.base.schedule.TimeWheel;
-import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.event.QEvent;
-import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.io.core.async.AioManager;
-import com.isahl.chess.queen.io.core.async.AioSession;
-import com.isahl.chess.queen.io.core.async.BaseAioConnector;
-import com.isahl.chess.queen.io.core.async.inf.IAioClient;
-import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
-import com.isahl.chess.queen.io.core.executor.ClientCore;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.queen.events.server.ILogicHandler;
+import com.isahl.chess.queen.io.core.tasks.ClientCore;
+import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.net.socket.AioManager;
+import com.isahl.chess.queen.io.core.net.socket.AioSession;
+import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
+import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -79,7 +84,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
+import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 
 /**
  * @author william.d.zk
@@ -146,7 +151,7 @@ public class ClientPool
                 IControl[] commands;
                 final ISession session;
                 if(event.getEventType() ==
-                   OperatorType.LOGIC)
+                   IOperator.Type.LOGIC)
                 {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
                     IPair logicContent = event.getContent();
                     commands = logicContent.getFirst();
@@ -187,8 +192,7 @@ public class ClientPool
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
                                                      _Logger.debug("x30 payload: %s",
-                                                                   new String(x30.payload(),
-                                                                              StandardCharsets.UTF_8));
+                                                                   new String(x30.payload(), StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
@@ -220,13 +224,13 @@ public class ClientPool
                     session = null;
                 }
                 if(Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
-                    event.produce(OperatorType.WRITE, new Pair<>(commands, session), session.getTransfer());
+                    event.produce(IOperator.Type.WRITE, new Pair<>(commands, session), session.getTransfer());
                 }
                 else {
                     event.ignore();
                 }
             }
-        }, EncryptHandler::new);
+        }, Encryptor::new);
         _Logger.debug("device consumer created");
     }
 
@@ -363,14 +367,14 @@ public class ClientPool
 
     private void heartbeat(ISession session)
     {
-        _ClientCore.send(session, OperatorType.BIZ_LOCAL, _Ping);
+        _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, _Ping);
     }
 
     public final void sendLocal(long sessionIndex, IControl... toSends)
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(Objects.nonNull(session)) {
-            _ClientCore.send(session, OperatorType.BIZ_LOCAL, toSends);
+            _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -381,7 +385,7 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(Objects.nonNull(session)) {
-            _ClientCore.close(session, OperatorType.BIZ_LOCAL);
+            _ClientCore.close(session, IOperator.Type.BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");

@@ -23,10 +23,9 @@
 
 package com.isahl.chess.queen.config;
 
-import java.time.Duration;
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
+import java.time.Duration;
 
 /**
  * @author william.d.zk

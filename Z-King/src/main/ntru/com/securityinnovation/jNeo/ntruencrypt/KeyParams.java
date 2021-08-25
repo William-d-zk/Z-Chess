@@ -20,15 +20,15 @@
  *********************************************************************************/
 package com.securityinnovation.jNeo.ntruencrypt;
 
-import static com.securityinnovation.jNeo.digest.DigestAlgorithm.sha1;
-import static com.securityinnovation.jNeo.digest.DigestAlgorithm.sha256;
-
 import com.securityinnovation.jNeo.OID;
 import com.securityinnovation.jNeo.OIDMap;
 import com.securityinnovation.jNeo.ParamSetNotSupportedException;
 import com.securityinnovation.jNeo.digest.DigestAlgorithm;
 import com.securityinnovation.jNeo.math.PolynomialInverter;
 import com.securityinnovation.jNeo.math.PolynomialInverterModPowerOfPrime;
+
+import static com.securityinnovation.jNeo.digest.DigestAlgorithm.sha1;
+import static com.securityinnovation.jNeo.digest.DigestAlgorithm.sha256;
 
 /**
  * <p>

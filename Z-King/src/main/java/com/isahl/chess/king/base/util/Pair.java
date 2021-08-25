@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.features.model.IPair;
 
 import java.util.Objects;
 

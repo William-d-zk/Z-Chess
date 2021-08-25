@@ -28,9 +28,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.model.JsonProtocol;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+import com.isahl.chess.queen.messages.JsonProtocol;
 
 import java.io.Serial;
 import java.io.Serializable;

@@ -22,17 +22,19 @@
  */
 package com.isahl.chess.bishop.io.ws;
 
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.ctrl.WsHandshake;
+import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.CryptoUtil;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
 import java.util.Base64;
 import java.util.Random;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
+import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
 
 /**
  * @author William.d.zk

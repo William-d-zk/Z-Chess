@@ -23,12 +23,12 @@
 
 package com.isahl.chess.knight.cluster.inf;
 
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.queen.event.QEvent;
-import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
+import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,14 +38,14 @@ public interface IConsistencyService
     default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyCustom custom)
     {
         if(consistency == null || node == null || custom == null) { return; }
-        final ReentrantLock _Lock = node.getLock(OperatorType.CONSISTENCY);
-        final RingBuffer<QEvent> _Publish = node.getPublisher(OperatorType.CONSISTENCY);
+        final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY);
+        final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY);
         _Lock.lock();
         try {
             long sequence = _Publish.next();
             try {
                 QEvent event = _Publish.get(sequence);
-                event.produce(OperatorType.CONSISTENCY,
+                event.produce(IOperator.Type.CONSISTENCY,
                               new Pair<>(consistency, consistency.getOrigin()),
                               custom.getOperator());
             }

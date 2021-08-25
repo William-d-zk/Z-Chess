@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 import java.util.List;
 

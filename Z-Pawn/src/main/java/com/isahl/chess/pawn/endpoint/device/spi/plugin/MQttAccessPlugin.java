@@ -23,28 +23,33 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
-import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.io.mqtt.model.QttContext;
 import com.isahl.chess.bishop.io.mqtt.command.*;
-import com.isahl.chess.bishop.io.mqtt.control.*;
-import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
+import com.isahl.chess.bishop.io.mqtt.ctrl.*;
+import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.io.mqtt.service.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.service.IQttStorage;
-import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
-import com.isahl.chess.bishop.io.ws.control.X102_Close;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.bishop.io.mqtt.v5.ctrl.X11F_QttAuth;
+import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X108_Shutdown;
+import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.ICommand;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

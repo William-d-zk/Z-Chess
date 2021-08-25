@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
-import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.model.IStorage;
 
 /**
  * @author william.d.zk

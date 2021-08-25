@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io;
 
-import com.isahl.chess.queen.io.core.inf.ICommand;
+import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 
 /**
  * @author william.d.zk

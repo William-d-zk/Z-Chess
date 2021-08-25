@@ -23,11 +23,11 @@
 
 package com.isahl.chess.king.base.log;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @author William.d.zk

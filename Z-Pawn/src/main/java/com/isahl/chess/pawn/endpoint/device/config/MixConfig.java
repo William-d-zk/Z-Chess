@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
-import com.isahl.chess.king.base.schedule.TimeWheel;
+import com.isahl.chess.king.base.cron.TimeWheel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

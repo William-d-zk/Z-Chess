@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.config.SocketConfig;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;

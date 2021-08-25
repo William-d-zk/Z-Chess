@@ -24,8 +24,8 @@
 package com.isahl.chess.bishop.io.mqtt.service;
 
 import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.bishop.io.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 /**
  * @author william.d.zk
