@@ -24,16 +24,22 @@
 package com.isahl.chess.knight.cluster;
 
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.async.AioSession;
-import com.isahl.chess.queen.io.core.async.BaseAioConnector;
-import com.isahl.chess.queen.io.core.async.BaseAioServer;
-import com.isahl.chess.queen.io.core.async.inf.IAioClient;
-import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
-import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
+import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.net.socket.AioSession;
+import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
+import com.isahl.chess.queen.io.core.net.socket.BaseAioServer;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
+import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
+import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;

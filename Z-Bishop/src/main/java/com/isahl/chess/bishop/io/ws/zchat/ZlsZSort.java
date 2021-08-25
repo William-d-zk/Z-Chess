@@ -28,16 +28,16 @@ import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
-import com.isahl.chess.bishop.io.ws.zchat.zfilter.EZContext;
-import com.isahl.chess.bishop.io.ws.zchat.zfilter.ZCommandFilter;
-import com.isahl.chess.bishop.io.ws.zchat.zfilter.ZEFilter;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZConsumerFactory;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZSymmetryFactory;
-import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.bishop.io.ws.zchat.filter.EZContext;
+import com.isahl.chess.bishop.io.ws.zchat.filter.ZCommandFilter;
+import com.isahl.chess.bishop.io.ws.zchat.filter.ZEFilter;
+import com.isahl.chess.bishop.io.ws.zchat.factory.ZClusterFactory;
+import com.isahl.chess.bishop.io.ws.zchat.factory.ZConsumerFactory;
+import com.isahl.chess.bishop.io.ws.zchat.factory.ZServerFactory;
+import com.isahl.chess.bishop.io.ws.zchat.factory.ZSymmetryFactory;
+import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 public class ZlsZSort
         extends BaseSort<EZContext<WsContext>>

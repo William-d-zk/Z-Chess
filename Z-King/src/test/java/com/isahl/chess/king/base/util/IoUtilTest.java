@@ -23,9 +23,9 @@
 
 package com.isahl.chess.king.base.util;
 
-import java.nio.ByteBuffer;
-
 import org.junit.jupiter.api.Test;
+
+import java.nio.ByteBuffer;
 
 public class IoUtilTest
 {

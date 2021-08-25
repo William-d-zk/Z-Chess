@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.inf.ISquare;
+import com.isahl.chess.king.base.features.model.ISquare;
 
 import java.util.Objects;
 

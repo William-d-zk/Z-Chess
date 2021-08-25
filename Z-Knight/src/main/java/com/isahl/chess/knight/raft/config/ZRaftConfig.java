@@ -23,13 +23,13 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import com.isahl.chess.king.base.inf.IReset;
+import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
-import com.isahl.chess.queen.db.inf.IStorage.Operation;
+import com.isahl.chess.queen.db.model.IStorage.Operation;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;

@@ -23,7 +23,7 @@
 
 package com.isahl.chess.king.config;
 
-import com.isahl.chess.king.base.inf.ICode;
+import com.isahl.chess.king.base.features.ICode;
 
 import java.util.Objects;
 

@@ -21,10 +21,10 @@
 
 package com.securityinnovation.jNeo.inputstream;
 
+import com.securityinnovation.jNeo.digest.DigestAlgorithm;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import com.securityinnovation.jNeo.digest.DigestAlgorithm;
 
 /**
  * This class implements the IGF2 Index Generation Function defined in the

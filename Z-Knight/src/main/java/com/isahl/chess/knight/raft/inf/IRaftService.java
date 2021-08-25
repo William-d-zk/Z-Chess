@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.io.core.inf.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 
 import java.util.List;
 

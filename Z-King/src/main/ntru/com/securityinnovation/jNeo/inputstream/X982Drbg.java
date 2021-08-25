@@ -21,10 +21,10 @@
 
 package com.securityinnovation.jNeo.inputstream;
 
-import java.io.InputStream;
-
 import com.securityinnovation.jNeo.digest.Digest;
 import com.securityinnovation.jNeo.digest.DigestAlgorithm;
+
+import java.io.InputStream;
 
 /**
  * This class implements an InputStream whose output conforms to

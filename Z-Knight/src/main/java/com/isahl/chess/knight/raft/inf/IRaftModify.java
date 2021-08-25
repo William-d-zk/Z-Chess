@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.model.IStorage;
 
 public interface IRaftModify
 {

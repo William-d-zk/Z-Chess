@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
-import com.isahl.chess.king.base.inf.IStatus;
+import com.isahl.chess.king.base.features.IStatus;
 
 /**
  * @author william.d.zk

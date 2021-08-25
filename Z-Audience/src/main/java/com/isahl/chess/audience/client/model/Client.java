@@ -23,15 +23,11 @@
 
 package com.isahl.chess.audience.client.model;
 
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Client

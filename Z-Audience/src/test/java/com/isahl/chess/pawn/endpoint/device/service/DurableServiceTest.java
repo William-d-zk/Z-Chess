@@ -25,9 +25,9 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
-import com.isahl.chess.bishop.io.mqtt.model.SubscribeEntry;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.io.mqtt.model.data.SubscribeEntry;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;

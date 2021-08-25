@@ -23,15 +23,14 @@
 
 package com.isahl.chess.test.start;
 
+import com.isahl.chess.king.base.content.ZProgress;
+import com.isahl.chess.king.base.content.ZResponse;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.response.ZProgress;
-import com.isahl.chess.king.base.response.ZResponse;
-import com.isahl.chess.king.base.util.JsonUtil;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

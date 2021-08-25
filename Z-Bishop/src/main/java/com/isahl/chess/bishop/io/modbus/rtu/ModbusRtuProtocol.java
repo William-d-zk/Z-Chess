@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.io.modbus.rtu;
 
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 /**
  * @author william.d.zk

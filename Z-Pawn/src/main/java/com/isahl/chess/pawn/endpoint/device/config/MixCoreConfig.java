@@ -23,11 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
+import com.isahl.chess.queen.config.IMixConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.isahl.chess.queen.config.IMixConfig;
 
 @Configuration("pawn_core_config")
 @ConfigurationProperties(prefix = "z.chess.pawn.core")

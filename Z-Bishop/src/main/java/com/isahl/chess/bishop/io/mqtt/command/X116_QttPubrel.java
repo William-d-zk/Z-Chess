@@ -23,10 +23,9 @@
 
 package com.isahl.chess.bishop.io.mqtt.command;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.bishop.io.mqtt.QttType;
+import com.isahl.chess.bishop.io.mqtt.model.QttType;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
 
 /**
  * @author william.d.zk

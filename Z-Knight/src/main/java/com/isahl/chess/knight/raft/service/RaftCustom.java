@@ -24,22 +24,26 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.bishop.io.ws.zchat.model.ZCommand;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.*;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.events.cluster.IClusterCustom;
+import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 
 import java.util.Collections;
 import java.util.List;

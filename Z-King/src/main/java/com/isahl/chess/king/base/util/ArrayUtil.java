@@ -22,10 +22,10 @@
  */
 package com.isahl.chess.king.base.util;
 
-import static java.lang.System.arraycopy;
-
 import java.util.Arrays;
 import java.util.Objects;
+
+import static java.lang.System.arraycopy;
 
 /**
  * @author William.d.zk

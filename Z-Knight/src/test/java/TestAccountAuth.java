@@ -22,10 +22,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import com.isahl.chess.king.base.util.CryptoUtil;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.isahl.chess.king.base.util.CryptoUtil;
 
 /**
  * @author william.d.zk

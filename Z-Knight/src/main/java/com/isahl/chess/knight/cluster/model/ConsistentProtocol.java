@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.model.JsonProtocol;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.messages.JsonProtocol;
 
 import java.nio.charset.StandardCharsets;
 

@@ -23,12 +23,11 @@
 
 package com.isahl.chess.bishop.io.json;
 
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.king.base.response.ZResponse;
+import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
+import org.junit.jupiter.api.Test;
 
 class JsonUtilTest
 {

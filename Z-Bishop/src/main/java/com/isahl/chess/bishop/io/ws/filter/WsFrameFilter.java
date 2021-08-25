@@ -22,16 +22,16 @@
  */
 package com.isahl.chess.bishop.io.ws.filter;
 
-import com.isahl.chess.bishop.io.ws.IWsContext;
-import com.isahl.chess.bishop.io.ws.WsFrame;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
+import com.isahl.chess.bishop.io.ws.model.WsFrame;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
+import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 import java.nio.ByteBuffer;
 

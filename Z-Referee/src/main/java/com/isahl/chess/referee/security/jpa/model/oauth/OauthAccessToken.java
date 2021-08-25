@@ -25,7 +25,7 @@ package com.isahl.chess.referee.security.jpa.model.oauth;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

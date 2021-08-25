@@ -23,8 +23,8 @@
 
 package com.isahl.chess.knight.raft.inf;
 
-import com.isahl.chess.king.base.inf.IReset;
-import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.model.replicate.LogMeta;
 import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;

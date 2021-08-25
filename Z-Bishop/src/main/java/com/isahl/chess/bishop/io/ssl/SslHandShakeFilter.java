@@ -23,15 +23,15 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X105_SslHandShake;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
+import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 import javax.net.ssl.SSLEngineResult;
 import java.nio.ByteBuffer;
