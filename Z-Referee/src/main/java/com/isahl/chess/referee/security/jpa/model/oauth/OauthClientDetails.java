@@ -23,7 +23,10 @@
 
 package com.isahl.chess.referee.security.jpa.model.oauth;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 /**
@@ -33,6 +36,7 @@ import javax.persistence.Id;
 public class OauthClientDetails
 {
     @Id
+    @GeneratedValue
     private String   clientId;
     private String[] resourceIds;
     private String   scope;
@@ -44,6 +48,7 @@ public class OauthClientDetails
     private boolean  refreshTokenValidity;
     @Column(length = 4096,
             nullable = false)
+    @Type(type = "org.hibernate.type.BinaryType")
     private byte[]   additionalInformation;
     private String   autoapprove;
 

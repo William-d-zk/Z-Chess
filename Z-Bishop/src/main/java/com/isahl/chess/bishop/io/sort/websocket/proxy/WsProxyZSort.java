@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,15 +24,15 @@
 package com.isahl.chess.bishop.io.sort.websocket.proxy;
 
 import com.isahl.chess.bishop.io.sort.BaseSort;
-import com.isahl.chess.bishop.io.ws.WsProxyContext;
+import com.isahl.chess.bishop.io.ws.proxy.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsProxyFilter;
-import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 public class WsProxyZSort<A extends IPContext>
         extends BaseSort<WsProxyContext<A>>

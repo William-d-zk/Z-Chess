@@ -23,19 +23,19 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.bishop.io.ws.zchat.model.ZCommand;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.*;
+import com.isahl.chess.king.base.cron.ScheduleHandler;
+import com.isahl.chess.king.base.cron.TimeWheel;
+import com.isahl.chess.king.base.cron.features.ICancelable;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.schedule.ScheduleHandler;
-import com.isahl.chess.king.base.schedule.TimeWheel;
-import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
@@ -44,10 +44,14 @@ import com.isahl.chess.knight.raft.inf.IRaftMessage;
 import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.QEvent;
-import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
+import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
@@ -55,7 +59,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.INDEX_NAN;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 import static com.isahl.chess.knight.raft.model.RaftCode.*;
@@ -1022,14 +1026,14 @@ public class RaftPeer
     public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
         _RaftConfig.changeTopology(delta, operation);
-        final RingBuffer<QEvent> _ConsensusApiEvent = mClusterPublisher.getPublisher(OperatorType.CLUSTER_TOPOLOGY);
-        final ReentrantLock _ConsensusApiLock = mClusterPublisher.getLock(OperatorType.CLUSTER_TOPOLOGY);
+        final RingBuffer<QEvent> _ConsensusApiEvent = mClusterPublisher.getPublisher(IOperator.Type.CLUSTER_TOPOLOGY);
+        final ReentrantLock _ConsensusApiLock = mClusterPublisher.getLock(IOperator.Type.CLUSTER_TOPOLOGY);
         _ConsensusApiLock.lock();
         try {
             long sequence = _ConsensusApiEvent.next();
             try {
                 QEvent event = _ConsensusApiEvent.get(sequence);
-                event.produce(OperatorType.CLUSTER_TOPOLOGY, new Pair<>(delta, operation), null);
+                event.produce(IOperator.Type.CLUSTER_TOPOLOGY, new Pair<>(delta, operation), null);
             }
             finally {
                 _ConsensusApiEvent.publish(sequence);
@@ -1043,8 +1047,8 @@ public class RaftPeer
     @Override
     public <T extends IStorage> void trigger(T content)
     {
-        final RingBuffer<QEvent> _ConsensusEvent = mClusterPublisher.getPublisher(OperatorType.CLUSTER_TIMER);
-        final ReentrantLock _ConsensusLock = mClusterPublisher.getLock(OperatorType.CLUSTER_TIMER);
+        final RingBuffer<QEvent> _ConsensusEvent = mClusterPublisher.getPublisher(IOperator.Type.CLUSTER_TIMER);
+        final ReentrantLock _ConsensusLock = mClusterPublisher.getLock(IOperator.Type.CLUSTER_TIMER);
         /*
         通过 Schedule thread-pool 进行 timer 执行, 排队执行。
          */
@@ -1053,7 +1057,7 @@ public class RaftPeer
             long sequence = _ConsensusEvent.next();
             try {
                 QEvent event = _ConsensusEvent.get(sequence);
-                event.produce(OperatorType.CLUSTER_TIMER, new Pair<>(content, null), null);
+                event.produce(IOperator.Type.CLUSTER_TIMER, new Pair<>(content, null), null);
             }
             finally {
                 _ConsensusEvent.publish(sequence);

@@ -1,9 +1,9 @@
 
 /*
  * MIT License
- * 
- * Copyright (c) 2016~2020. Z-Chess
- * 
+ *
+ * Copyright (c) 2016~2021. Z-Chess
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -22,10 +22,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import com.isahl.chess.king.base.util.CryptoUtil;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.isahl.chess.king.base.util.CryptUtil;
 
 /**
  * @author william.d.zk
@@ -36,8 +36,8 @@ public class TestAccountAuth
 {
     public static void main(String[] args)
     {
-        CryptUtil _CryptUtil = new CryptUtil();
-        System.out.println(_CryptUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
+        CryptoUtil _CryptoUtil = new CryptoUtil();
+        System.out.println(_CryptoUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
         String src = "+/#/#/+";
         src = src.replaceAll("\\++", "+");
         src = src.replaceAll("#+", "#");

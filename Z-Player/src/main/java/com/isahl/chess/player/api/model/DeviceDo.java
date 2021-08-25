@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import org.springframework.lang.NonNull;
 
 /**

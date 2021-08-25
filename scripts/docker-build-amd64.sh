@@ -20,7 +20,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-cp SQLite-ABI-Alpine-amd64/libsqlitejdbc.so ~/Z-Chess/Z-Arena/target/.
+cp SQLite-ABI-Linux-Alpine-amd64/libsqlitejdbc.so ~/Z-Chess/.
 cd ..
-mvn -P dev clean package
+mvn -P dev clean package -Dmaven.test.skip=true
 docker build -f ./scripts/amd64/Dockerfile -t img.z-chess.arena.amd64 ~/Z-Chess

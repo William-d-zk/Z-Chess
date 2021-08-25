@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,9 +23,9 @@
 
 package com.isahl.chess.king.base.util;
 
-import java.nio.ByteBuffer;
-
 import org.junit.jupiter.api.Test;
+
+import java.nio.ByteBuffer;
 
 public class IoUtilTest
 {

@@ -20,14 +20,14 @@
  *********************************************************************************/
 package com.securityinnovation.jNeo.ntruencrypt.encoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
 import com.securityinnovation.jNeo.ParamSetNotSupportedException;
 import com.securityinnovation.jNeo.math.BitPack;
 import com.securityinnovation.jNeo.math.FullPolynomial;
 import com.securityinnovation.jNeo.math.MGF_TP_1;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 class PrivKeyFormatter_PrivateKeyPackedFv1
         implements

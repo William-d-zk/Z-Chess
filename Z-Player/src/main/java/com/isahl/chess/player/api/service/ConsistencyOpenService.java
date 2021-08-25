@@ -29,7 +29,7 @@ import com.isahl.chess.knight.cluster.inf.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
-import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
+import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

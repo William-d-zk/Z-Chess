@@ -24,7 +24,7 @@
 package com.isahl.chess.referee.security.jpa.repository;
 
 import com.isahl.chess.referee.security.jpa.model.UserEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseLongRepository;
+import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 

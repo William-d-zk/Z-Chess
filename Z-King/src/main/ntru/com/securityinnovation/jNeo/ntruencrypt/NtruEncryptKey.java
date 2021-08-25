@@ -20,20 +20,7 @@
  *********************************************************************************/
 package com.securityinnovation.jNeo.ntruencrypt;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
-import com.securityinnovation.jNeo.CiphertextBadLengthException;
-import com.securityinnovation.jNeo.DecryptionFailureException;
-import com.securityinnovation.jNeo.FormatNotSupportedException;
-import com.securityinnovation.jNeo.NoPrivateKeyException;
-import com.securityinnovation.jNeo.OID;
-import com.securityinnovation.jNeo.ObjectClosedException;
-import com.securityinnovation.jNeo.ParamSetNotSupportedException;
-import com.securityinnovation.jNeo.PlaintextBadLengthException;
-import com.securityinnovation.jNeo.Random;
-import com.securityinnovation.jNeo.RandomExtractor;
+import com.securityinnovation.jNeo.*;
 import com.securityinnovation.jNeo.inputstream.IGF2;
 import com.securityinnovation.jNeo.inputstream.MGF1;
 import com.securityinnovation.jNeo.math.BPGM3;
@@ -42,6 +29,10 @@ import com.securityinnovation.jNeo.math.FullPolynomial;
 import com.securityinnovation.jNeo.math.MGF_TP_1;
 import com.securityinnovation.jNeo.ntruencrypt.encoder.NtruEncryptKeyNativeEncoder;
 import com.securityinnovation.jNeo.ntruencrypt.encoder.RawKeyData;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * This class represents NtruEncrypt keys. An instance may hold

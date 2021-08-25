@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,13 +23,18 @@
 
 package com.isahl.chess.bishop.io.mqtt.filter;
 
-import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.QttControl;
-import com.isahl.chess.bishop.io.mqtt.QttFrame;
-import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.model.QttContext;
+import com.isahl.chess.bishop.io.mqtt.ctrl.QttControl;
+import com.isahl.chess.bishop.io.mqtt.model.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.ctrl.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.factory.QttFactory;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IFrame;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
 /**
  * @author william.d.zk
@@ -67,7 +72,7 @@ public class QttControlFilter
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        IControl control = QttCommandFactory.CREATE(input, context);
+        IControl control = QttFactory.CREATE(input, context);
         if(control != null) {
             /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理

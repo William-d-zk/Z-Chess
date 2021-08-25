@@ -26,17 +26,13 @@ package com.isahl.chess.audience.client.api;
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.control.X102_Close;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X20_SignUp;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X50_DeviceMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X01_EncryptRequest;
+import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.X20_SignUp;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.X22_SignIn;
+import com.isahl.chess.bishop.io.ws.zchat.model.command.X50_DeviceMsg;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.X01_EncryptRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
