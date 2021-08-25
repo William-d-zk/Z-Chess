@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.referee.security.jpa.model.Status;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.*;
 import java.io.Serial;
@@ -44,6 +44,7 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "oauth_approvals")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Table(schema = "z_chess_security")
 public class OauthApprovals
         extends AuditModel
         implements Serializable

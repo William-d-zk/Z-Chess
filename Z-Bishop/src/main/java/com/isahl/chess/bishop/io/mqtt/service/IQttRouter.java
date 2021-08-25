@@ -24,8 +24,8 @@
 package com.isahl.chess.bishop.io.mqtt.service;
 
 import com.isahl.chess.bishop.io.IRouter;
-import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;

@@ -25,38 +25,45 @@ package com.isahl.chess.referee.security.jpa.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author william.d.zk
  * @date 2021/3/5
  */
 @Entity(name = "permission")
-@Table(indexes = { @Index(name = "name_idx",
+@Table(schema = "z_chess_security",
+       indexes = { @Index(name = "name_idx",
                           columnList = "name"),
                    @Index(name = "url_idx",
                           columnList = "url")
-})
+       })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PermissionEntity
         extends AuditModel
         implements Serializable
 {
     @Id
-    @GeneratedValue
-    private long   id;
+    @GeneratedValue(generator = "permission_seq")
+    @SequenceGenerator(name = "permission_seq",
+                       schema = "z_chess_security",
+                       sequenceName = "permission_sequence")
+    private long             id;
     @Column(nullable = false,
             unique = true)
-    private String name;
+    private String           name;
     @Column(nullable = false,
             unique = true)
-    private String url;
+    private String           url;
     @Column(nullable = false)
-    private String description;
-    private int    priority;
+    private String           description;
+    private int              priority;
+    @ManyToMany(mappedBy = "permissions")
+    private List<RoleEntity> roles;
 
     public void setId(long id)
     {
@@ -116,4 +123,13 @@ public class PermissionEntity
         this.priority = priority;
     }
 
+    public List<RoleEntity> getRoles()
+    {
+        return roles;
+    }
+
+    public void setRoles(List<RoleEntity> roles)
+    {
+        this.roles = roles;
+    }
 }

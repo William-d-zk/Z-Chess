@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,15 +23,14 @@
 
 package com.isahl.chess.audience.client.config;
 
-import java.util.Map;
-
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.queen.config.IAioConfig;
+import com.isahl.chess.queen.config.ISocketConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.ISocketConfig;
+import java.util.Map;
 
 /**
  * @author william.d.zk

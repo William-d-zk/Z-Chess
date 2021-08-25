@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,14 +23,14 @@
 
 package com.isahl.chess.king.base.util;
 
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.ICode;
+import com.isahl.chess.king.config.Code;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.inf.ICode;
-import com.isahl.chess.king.config.Code;
 
 /**
  * @author william.d.zk

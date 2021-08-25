@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,20 +23,24 @@
 
 package com.isahl.chess.bishop.io.ws.filter;
 
-import com.isahl.chess.bishop.io.ws.IWsContext;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
-import com.isahl.chess.bishop.io.ws.WsHandshake;
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.ctrl.WsHandshake;
+import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
+import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static com.isahl.chess.bishop.io.ws.IWsContext.*;
+import static com.isahl.chess.bishop.io.ws.features.IWsContext.*;
 
 /**
  * @author William.d.zk

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,25 +22,21 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.features.model.IPair;
 
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public class Pair<FIRST,
-                  SECOND>
-        implements
-        IPair,
-        Comparable<Pair<FIRST,
-                        SECOND>>
+public class Pair<FIRST, SECOND>
+        implements IPair,
+                   Comparable<Pair<FIRST, SECOND>>
 {
     private FIRST  first;
     private SECOND second;
 
-    public Pair(FIRST first,
-                SECOND second)
+    public Pair(FIRST first, SECOND second)
     {
         this.first = first;
         this.second = second;
@@ -61,20 +57,21 @@ public class Pair<FIRST,
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public FIRST getFirst()
     {
         return first;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SECOND getSecond()
     {
         return second;
     }
 
     @Override
-    public Pair<FIRST,
-                SECOND> clone()
+    public Pair<FIRST, SECOND> clone()
     {
         return new Pair<>(first, second);
     }
@@ -82,12 +79,10 @@ public class Pair<FIRST,
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Pair)) { return false; }
-        if (this != obj) {
+        if(!(obj instanceof Pair)) {return false;}
+        if(this != obj) {
             @SuppressWarnings("unchecked")
-            Pair<FIRST,
-                 SECOND> other = (Pair<FIRST,
-                                       SECOND>) obj;
+            Pair<FIRST, SECOND> other = (Pair<FIRST, SECOND>) obj;
             return first.equals(other.first) && second.equals(other.second);
         }
         return true;
@@ -106,13 +101,12 @@ public class Pair<FIRST,
     }
 
     @Override
-    public int compareTo(Pair<FIRST,
-                              SECOND> o)
+    public int compareTo(Pair<FIRST, SECOND> o)
     {
         int a = first.toString()
                      .compareTo(o.first.toString());
         int b = second.toString()
                       .compareTo(o.second.toString());
-        return a == 0 ? b: a;
+        return a == 0 ? b : a;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,9 +25,9 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
-import com.isahl.chess.bishop.io.mqtt.model.SubscribeEntry;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.io.mqtt.model.data.SubscribeEntry;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;

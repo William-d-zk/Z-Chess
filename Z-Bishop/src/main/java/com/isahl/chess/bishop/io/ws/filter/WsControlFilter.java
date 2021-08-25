@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,22 +22,22 @@
  */
 package com.isahl.chess.bishop.io.ws.filter;
 
-import com.isahl.chess.bishop.io.ws.IWsContext;
-import com.isahl.chess.bishop.io.ws.WsControl;
-import com.isahl.chess.bishop.io.ws.WsFrame;
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
-import com.isahl.chess.bishop.io.ws.control.X102_Close;
-import com.isahl.chess.bishop.io.ws.control.X103_Ping;
-import com.isahl.chess.bishop.io.ws.control.X104_Pong;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
+import com.isahl.chess.bishop.io.ws.model.WsControl;
+import com.isahl.chess.bishop.io.ws.model.WsFrame;
+import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X107_Redirect;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X107_Redirect;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.IFrame;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
+import com.isahl.chess.queen.io.core.features.model.content.IFrame;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
 /**
  * @author William.d.zk

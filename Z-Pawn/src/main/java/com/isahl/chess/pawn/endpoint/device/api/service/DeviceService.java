@@ -23,19 +23,19 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.service;
 
+import com.isahl.chess.king.base.cron.ScheduleHandler;
+import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.schedule.ScheduleHandler;
-import com.isahl.chess.king.base.schedule.TimeWheel;
-import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.api.jpa.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IDeviceJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IDeviceJpaRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -55,9 +55,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
+import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
@@ -71,9 +71,9 @@ public class DeviceService
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final IDeviceJpaRepository _DeviceJpaRepository;
-    private final CacheManager         _CacheManager;
-    private final CryptUtil            _CryptUtil        = new CryptUtil();
-    private final MixConfig            _MixConfig;
+    private final CacheManager _CacheManager;
+    private final CryptoUtil   _CryptoUtil = new CryptoUtil();
+    private final MixConfig    _MixConfig;
     private final TimeWheel            _TimeWheel;
     private final ShadowBatch          _BatchHandleLogin = new ShadowBatch();
     private final ShadowBatch          _BatchHandleIdle  = new ShadowBatch();
@@ -157,7 +157,7 @@ public class DeviceService
             if(exist.getInvalidAt()
                     .isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId())
             {
-                exist.setPassword(_CryptUtil.randomPassword(17, 32));
+                exist.setPassword(_CryptoUtil.randomPassword(17, 32));
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_MixConfig.getPasswordInvalidDays()));
@@ -180,7 +180,7 @@ public class DeviceService
                                               Instant.now()
                                                      .toEpochMilli());
                 _Logger.debug("new device %s ", source);
-                entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
+                entity.setToken(IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setSn(device.getSn());
                 entity.setUsername(device.getUsername());
                 entity.setProfile(device.getProfile());
@@ -188,7 +188,7 @@ public class DeviceService
             if(exist == null || exist.getInvalidAt()
                                      .isBefore(LocalDateTime.now()))
             {
-                entity.setPassword(_CryptUtil.randomPassword(17, 32));
+                entity.setPassword(_CryptoUtil.randomPassword(17, 32));
                 entity.increasePasswordId();
                 entity.setInvalidAt(LocalDateTime.now()
                                                  .plus(_MixConfig.getPasswordInvalidDays()));

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
@@ -47,9 +47,10 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
  * @date 2021/3/5
  */
 @Entity(name = "user")
-@Table(indexes = { @Index(name = "username_idx",
+@Table(schema = "z_chess_security",
+       indexes = { @Index(name = "username_idx",
                           columnList = "username")
-})
+       })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserEntity
         extends AuditModel
@@ -60,7 +61,10 @@ public class UserEntity
     private static final long serialVersionUID = -9149289160528408957L;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "user_seq")
+    @SequenceGenerator(name = "user_seq",
+                       schema = "z_chess_security",
+                       sequenceName = "user_sequence")
     private long          id;
     @Column(nullable = false,
             updatable = false)
@@ -74,6 +78,10 @@ public class UserEntity
     private Status        status = COMMON;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+               schema = "z_chess_security",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<RoleEntity> authorities;
 
     public void setId(long id)

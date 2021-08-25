@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,11 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
+import com.isahl.chess.queen.config.IMixConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.isahl.chess.queen.config.IMixConfig;
 
 @Configuration("pawn_core_config")
 @ConfigurationProperties(prefix = "z.chess.pawn.core")

@@ -23,6 +23,8 @@
 
 package com.isahl.chess.referee.security.jpa.model.oauth;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 
@@ -42,6 +44,7 @@ public class OauthClientToken
     @Id
     private String authenticationId;
     @Column(length = 4096)
+    @Type(type = "org.hibernate.type.BinaryType")
     private byte[] token;
     private String tokenId;
     private String username;

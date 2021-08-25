@@ -26,12 +26,13 @@ package com.isahl.chess.referee.security.jpa.model.oauth;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -42,6 +43,7 @@ import java.io.Serializable;
 
 @Entity(name = "client_detail")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Table(schema = "z_chess_security")
 public class ClientDetail
         extends AuditModel
         implements Serializable

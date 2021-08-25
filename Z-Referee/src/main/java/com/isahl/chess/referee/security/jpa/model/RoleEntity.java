@@ -25,7 +25,7 @@ package com.isahl.chess.referee.security.jpa.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -38,9 +38,10 @@ import java.util.List;
  * @date 2021/3/5
  */
 @Entity(name = "role")
-@Table(indexes = { @Index(name = "role_name_idx",
+@Table(schema = "z_chess_security",
+       indexes = { @Index(name = "role_name_idx",
                           columnList = "name")
-})
+       })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RoleEntity
         extends AuditModel
@@ -51,13 +52,22 @@ public class RoleEntity
     @Serial
     private static final long                   serialVersionUID = -8748613422660526254L;
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "role_seq")
+    @SequenceGenerator(name = "role_seq",
+                       schema = "z_chess_security",
+                       sequenceName = "role_sequence")
     private              long                   id;
     @Column(nullable = false,
             unique = true)
     private              String                 name;
     @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "role_permission",
+               schema = "z_chess_security",
+               joinColumns = @JoinColumn(name = "role_id"),
+               inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private              List<PermissionEntity> permissions;
+    @ManyToMany(mappedBy = "authorities")
+    private              List<UserEntity>       users;
 
     public void setId(long id)
     {
@@ -101,5 +111,15 @@ public class RoleEntity
     public void setPermissions(List<PermissionEntity> permissions)
     {
         this.permissions = permissions;
+    }
+
+    public List<UserEntity> getUsers()
+    {
+        return users;
+    }
+
+    public void setUsers(List<UserEntity> users)
+    {
+        this.users = users;
     }
 }

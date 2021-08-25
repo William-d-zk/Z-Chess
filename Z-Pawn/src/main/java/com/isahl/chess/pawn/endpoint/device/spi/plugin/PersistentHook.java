@@ -24,7 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
-import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

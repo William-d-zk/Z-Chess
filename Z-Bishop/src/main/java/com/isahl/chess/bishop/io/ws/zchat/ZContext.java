@@ -22,15 +22,15 @@
  */
 package com.isahl.chess.bishop.io.ws.zchat;
 
-import com.isahl.chess.queen.io.core.async.AioContext;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.net.socket.AioContext;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.*;
-import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
+import static com.isahl.chess.king.base.cron.features.ITask.*;
+import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
 
 /**
  * @author William.d.zk

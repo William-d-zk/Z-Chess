@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -32,13 +32,13 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.knight.raft.inf.IRaftMapper;
-import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.model.IStorage;
 
 import java.util.*;
 
-import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.*;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
 
 /**
  * @author william.d.zk

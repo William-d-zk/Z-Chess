@@ -22,5 +22,5 @@
 #
 cd ..
 mvn -P dev clean package -Dmaven.test.skip=true
-cp scripts/SQLite-ABI-Linux-Alpine-arm64/libsqlitejdbc.so ~/Z-Chess/Z-Arena/target/.
+cp scripts/SQLite-ABI-Linux-Alpine-arm64/libsqlitejdbc.so ~/Z-Chess/.
 docker build -f ./scripts/aarch64/Dockerfile -t img.z-chess.arena.aarch64 ~/Z-Chess

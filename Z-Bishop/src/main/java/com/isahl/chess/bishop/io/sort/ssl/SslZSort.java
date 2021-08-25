@@ -27,11 +27,11 @@ import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
-import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.ISslOption;
+import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 import java.security.NoSuchAlgorithmException;
 

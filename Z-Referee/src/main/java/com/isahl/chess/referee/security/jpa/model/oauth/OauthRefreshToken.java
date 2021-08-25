@@ -23,6 +23,8 @@
 
 package com.isahl.chess.referee.security.jpa.model.oauth;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 
 /**
@@ -33,7 +35,9 @@ public class OauthRefreshToken
 {
 
     @Column(length = 4096)
+    @Type(type = "org.hibernate.type.BinaryType")
     private byte[] authentication;
+    @Type(type = "org.hibernate.type.BinaryType")
     private byte[] token;
     private String tokenId;
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,10 +23,9 @@
 
 package com.isahl.chess.bishop.io.mqtt.command;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.bishop.io.mqtt.QttType;
+import com.isahl.chess.bishop.io.mqtt.model.QttType;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk

@@ -23,18 +23,18 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
-import com.isahl.chess.bishop.io.ws.control.X103_Ping;
-import com.isahl.chess.bishop.io.ws.control.X104_Pong;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X105_SslHandShake;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
