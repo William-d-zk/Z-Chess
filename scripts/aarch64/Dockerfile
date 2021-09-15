@@ -19,9 +19,8 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-FROM bellsoft/liberica-openjdk-alpine-musl
-ENV LANG=zh_CN.UTF-8
-ENV LANGUAGE=zh_CN.UTF-8
+#FROM bellsoft/liberica-openjdk-alpine-musl
+FROM isahl/openjdk16
 ENV TZ=Asia/Shanghai
 RUN set -eux &&\
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&\
