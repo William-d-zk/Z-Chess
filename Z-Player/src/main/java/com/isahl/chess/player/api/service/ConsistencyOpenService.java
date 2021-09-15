@@ -25,7 +25,7 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.knight.cluster.inf.IConsistencyService;
+import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;

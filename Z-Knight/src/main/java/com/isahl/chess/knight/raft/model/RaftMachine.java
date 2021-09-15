@@ -30,8 +30,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.inf.IRaftMachine;
-import com.isahl.chess.knight.raft.inf.IRaftMapper;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
+import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.db.model.IStorage;
 
 import java.util.*;

@@ -26,7 +26,7 @@ package com.isahl.chess.player.api.controller;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.inf.IRaftService;
+import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.player.api.model.ClusterDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
