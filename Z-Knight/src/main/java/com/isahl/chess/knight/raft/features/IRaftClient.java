@@ -21,21 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.inf;
-
-import com.isahl.chess.knight.raft.model.RaftState;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+package com.isahl.chess.knight.raft.features;
 
 /**
  * @author william.d.zk
- * @date 2020/1/4
+ * @date 2020/2/5
  */
-public interface IRaftMessage
-        extends IControl
+public interface IRaftClient
 {
-    long getPeerId();
-
-    long getTerm();
-
-    RaftState getState();
+    void setConsistentData(byte[] payload);
 }

@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.inf;
+package com.isahl.chess.knight.raft.features;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;

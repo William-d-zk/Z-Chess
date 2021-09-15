@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.knight.cluster.inf.IConsistencyService;
+import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;

@@ -21,13 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.inf;
+package com.isahl.chess.knight.raft.features;
 
 /**
  * @author william.d.zk
- * @date 2020/2/5
  */
-public interface IRaftClient
+public interface IRaftLearner
 {
-    void setConsistentData(byte[] payload);
+
 }

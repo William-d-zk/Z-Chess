@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.inf;
+package com.isahl.chess.knight.raft.features;
 
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
