@@ -220,11 +220,12 @@ public class TimeWheel
                        Comparable<HandleTask<V>>,
                        ICancelable
     {
-        private final    IWheelItem<V> _Item;
-        private final    int           _Slot;
-        private final    int           _Loop;
-        private          int           loop;
-        private volatile boolean       vCancel;
+        private final IWheelItem<V> _Item;
+        private final int           _Slot;
+        private final int           _Loop;
+
+        private          int     loop;
+        private volatile boolean vCancel;
 
         HandleTask(IWheelItem<V> wheelItem)
         {
@@ -320,6 +321,21 @@ public class TimeWheel
     {
         item.attach(attach);
         return acquire(item);
+    }
+
+    @Override
+    public void shutdown()
+    {
+        for(TickSlot<?> tickSlot : _ModHashEntryArray) {
+            for(Iterator<? extends HandleTask<?>> it = tickSlot.iterator(); it.hasNext(); ) {
+                HandleTask<?> handleTask = it.next();
+                if(handleTask.getLoop() == getCurrentLoop()) {
+                    handleTask.cancel();
+                    it.remove();
+                }
+            }
+        }
+        super.shutdown();
     }
 
 }
