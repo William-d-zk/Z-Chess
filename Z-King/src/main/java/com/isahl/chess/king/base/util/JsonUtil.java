@@ -114,6 +114,21 @@ public class JsonUtil
         return null;
     }
 
+    public static <T> T readValue(File file, Class<T> clazz)
+    {
+        if(file == null || file.isDirectory() || !file.exists()) {return null;}
+        try {
+            return OBJECT_MAPPER.readValue(file, clazz);
+        }
+        catch(JsonParseException | JsonMappingException e) {
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            _Logger.warning("read json[%s] error with %s", file, clazz, e);
+        }
+        return null;
+    }
+
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
         if(input == null) {return null;}
@@ -149,6 +164,21 @@ public class JsonUtil
         if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
+        }
+        catch(JsonParseException | JsonMappingException e) {
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            _Logger.warning("read json error with %s", type, e);
+        }
+        return null;
+    }
+
+    public static <T> T readValue(File file, TypeReference<T> type)
+    {
+        if(file == null) {return null;}
+        try {
+            return OBJECT_MAPPER.readValue(file, type);
         }
         catch(JsonParseException | JsonMappingException e) {
             e.printStackTrace();

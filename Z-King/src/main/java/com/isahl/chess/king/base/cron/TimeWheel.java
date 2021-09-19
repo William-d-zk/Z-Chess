@@ -267,6 +267,9 @@ public class TimeWheel
                         TimeWheel.this.acquire(HandleTask.this);
                     }
                 }
+                else {
+                    _Logger.debug("valid:%s,%s", isValid(), attach);
+                }
                 return _Item;
             }
             finally {
