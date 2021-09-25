@@ -60,7 +60,7 @@ public class RemoteJpaConfig
                                 jpaProperties,
                                 hibernateProperties,
                                 initializationSettings,
-                                "com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model");
+                                "com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model");
     }
 
     @Bean("remote-transaction-manager")
