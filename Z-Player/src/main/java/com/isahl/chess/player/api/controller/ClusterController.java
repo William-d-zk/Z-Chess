@@ -29,16 +29,14 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.player.api.model.ClusterDo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author william.d.zk
  * @date 2021/6/11
  */
-@RestController("cluster")
+@RequestMapping("cluster")
+@RestController
 public class ClusterController
 {
     private final IRaftService _RaftService;
