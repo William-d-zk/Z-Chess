@@ -250,17 +250,13 @@ public class MixMappingHandler<T extends IStorage>
                     */
                     IConsistent request = event.getContent()
                                                .getFirst();
-                    session = event.getContent()
-                                   .getSecond();
-                    IOperator<IConsistent, ISession, IPair> consistencyOp = event.getEventOp();
+                    long origin = event.getContent()
+                                       .getSecond();
+                    IOperator<IConsistent, Long, IPair> consistencyOp = event.getEventOp();
                     try {
-                        List<ITriple> contents = _ClusterCustom.consistent(_SessionManager, request);
-                        _Logger.debug("consistency request: %s ; cluster: %s ", request, contents);
-                        if(contents != null) {publish(_Writer, contents);}
-                        else {
-                            IPair resp = consistencyOp.handle(request, session);
-                            error(_Error, IError.Type.CONSISTENCY_REJECT, resp, session.getError());
-                        }
+                        _Logger.debug("consistency request: %s ; origin: %#x ", request, origin);
+                        IPair resp = consistencyOp.handle(request, origin);
+                        //                        error(_Error, IError.Type.CONSISTENCY_REJECT, resp, session.getError());
                     }
                     catch(Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
@@ -280,7 +276,7 @@ public class MixMappingHandler<T extends IStorage>
                         _Logger.warning("cluster inner service api ");
                     }
                     break;
-                case CONSISTENT_RESULT:
+                case CONSISTENT_RESULT://Cluster（cluster-client） → Linker ｜ Linker notify → device.session
                     IConsistent consistency = event.getContent()
                                                    .getFirst();
                     session = event.getContent()
