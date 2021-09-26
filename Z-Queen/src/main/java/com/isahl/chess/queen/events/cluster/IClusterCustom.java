@@ -39,25 +39,6 @@ public interface IClusterCustom<T extends IStorage>
         extends IMappingCustom,
                 IConsistencyCustom
 {
-    /*
-     *
-     * @param manager
-     *
-     * @param session
-     *
-     * @param content
-     *
-     * @return pair
-     * first: to_send_array 1:N
-     * second: to_transfer
-     * Cluster->Link,consensus_result
-     *
-     * @throws Exception
-     *
-     * @see IPair handle(ISessionManager<C> manager, ISession<C> session,
-     * IControl<C> content) throws Exception;
-     */
-
     /**
      * Cluster.Leader heartbeat timeout event
      * Cluster.Follower check leader available,timeout -> start vote

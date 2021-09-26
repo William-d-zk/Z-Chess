@@ -24,39 +24,19 @@
 package com.isahl.chess.knight.cluster.features;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.lmax.disruptor.RingBuffer;
 
-import java.util.concurrent.locks.ReentrantLock;
+/**
+ * @author william.d.zk
+ */
 
-public interface IConsistencyService
+public interface IConsistencyHandler
 {
-    default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyHandler custom)
+    default <T> IOperator<IConsistent, T, IPair> getOperator()
     {
-        if(consistency == null || node == null || custom == null) {return;}
-        final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY);
-        final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY);
-        _Lock.lock();
-        try {
-            long sequence = _Publish.next();
-            try {
-                QEvent event = _Publish.get(sequence);
-                event.produce(IOperator.Type.CONSISTENCY,
-                              new Pair<>(consistency, consistency.getOrigin()),
-                              custom.getOperator());
-            }
-            finally {
-                _Publish.publish(sequence);
-            }
-        }
-        finally {
-            _Lock.unlock();
-        }
-
+        return this::resolve;
     }
 
-    void submit(String content, long origin);
+    <T> IPair resolve(IConsistent request, T context);
 }
