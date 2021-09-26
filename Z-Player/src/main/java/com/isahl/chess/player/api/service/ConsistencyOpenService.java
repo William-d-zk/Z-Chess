@@ -25,11 +25,11 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
-import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,16 +42,14 @@ public class ConsistencyOpenService
 
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final DeviceNode         _DeviceNode;
-    private final RaftPeer           _RaftPeer;
-    private final IConsistencyCustom _ConsistencyCustom;
+    private final DeviceNode _DeviceNode;
+    private final RaftPeer   _RaftPeer;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer, IConsistencyCustom consistentCustom)
+    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
-        _ConsistencyCustom = consistentCustom;
     }
 
     @Override
@@ -61,7 +59,7 @@ public class ConsistencyOpenService
         ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                                 _RaftPeer.generateId(),
                                                                 origin);
-        submit(consistency, _DeviceNode, _ConsistencyCustom);
+        submit(consistency, _DeviceNode, Pair::new);
         _Logger.debug("consistent submit %s", consistency);
     }
 }

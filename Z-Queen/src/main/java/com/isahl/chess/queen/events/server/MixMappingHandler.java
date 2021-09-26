@@ -244,7 +244,7 @@ public class MixMappingHandler<T extends IStorage>
                         }
                     }
                     break;
-                case CONSISTENCY://Cluster Processor
+                case CONSISTENCY:
                     /*
                         core.LinkProcessor → core._ClusterEvent → core.ClusterProcessor → _ClusterCustom
                     */
