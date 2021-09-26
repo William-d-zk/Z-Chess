@@ -61,7 +61,7 @@ public class MessageEntity
     @JsonIgnore
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
-                      strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZMessageGenerator")
+                      strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator")
     private long   id;
     @Column(updatable = false,
             nullable = false)

@@ -21,13 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.inf;
+package com.isahl.chess.knight.raft.features;
 
-/**
- * @author william.d.zk
- * @date 2020/2/5
- */
-public interface IRaftClient
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.queen.db.model.IStorage;
+
+public interface IRaftModify
 {
-    void setConsistentData(byte[] payload);
+
+    /**
+     * raft
+     * 调整拓扑结构
+     *
+     * @param delta     变化的节点
+     *                  state == GATE，进行 网关节点操作，
+     *                  state.code < GATE.code 进行节点操作，一般使用 FOLLOWER
+     * @param operation OP_APPEND,增加节点
+     *                  OP_REMOVE,减少节点
+     *                  OP_MODIFY,变更listen的端口
+     */
+    void changeTopology(RaftNode delta, IStorage.Operation operation);
+
 }

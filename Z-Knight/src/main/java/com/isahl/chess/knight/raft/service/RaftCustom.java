@@ -273,25 +273,13 @@ public class RaftCustom
         return _RaftPeer.isInCongress();
     }
 
-    /*
-    device → LINK → ClusterEvent → ClusterProcessor (MixMapping.CLUSTER) →
-    {
-
-    }
-
-    1: throwable
-    2: ISessionError
-    3: List<ITriple> 集群广播数据
-     */
-
     @Override
     public IPair resolve(IConsistent request, ISession session)
     {
-        X76_RaftResp x76 = _RaftPeer.raftResp(WAL_FAILED,
-                                              _RaftPeer.getPeerId(),
-                                              request.getOrigin(),
-                                              request.serial(),
-                                              request.encode());
-        return new Pair<>(x76, session);
+        return new Pair<>(_RaftPeer.raftResp(WAL_FAILED,
+                                             _RaftPeer.getPeerId(),
+                                             request.getOrigin(),
+                                             request.serial(),
+                                             request.encode()), session);
     }
 }

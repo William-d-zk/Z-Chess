@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

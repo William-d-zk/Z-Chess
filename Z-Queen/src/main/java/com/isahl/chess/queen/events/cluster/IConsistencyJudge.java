@@ -39,9 +39,9 @@ public interface IConsistencyJudge
     }
 
     /**
-     * @param consistency
+     * @param consistency 需要进行一致处理的内容
      * @param session   cluster 通讯用的
-     * @return
+     * @return 一致性结果
      */
     <T extends IProtocol> T adjudge(IConsistent consistency, ISession session);
 }

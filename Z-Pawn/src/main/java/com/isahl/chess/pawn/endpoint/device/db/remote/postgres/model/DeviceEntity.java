@@ -77,7 +77,7 @@ public class DeviceEntity
     @JsonIgnore
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
-                      strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZDeviceGenerator")
+                      strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator")
     private long          id;
     @Column(length = 32,
             nullable = false,

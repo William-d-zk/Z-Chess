@@ -213,7 +213,7 @@ public class ServerCore
      * ┃                                                                                                                       ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
      * ┃                                                                                                                       ┃       ║                 ┏━>_ClusterEvent   ━>┛ ┃
      * ┃                                                                                                                       ┃    ┏>━║_LinkProcessor━━━╋━>_ErrorEvent     ━>━━┛
-     * ┃                                                                               Api   ━━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent ━━━>━━║                  ┏━>_EncodedEvents[0]{_EncoderProcessors[0]}|║
+     * ┃                                                                               Api   ━━> _ConsensusApiEvent ━━━━━━━━━━━┫    ┃  ║                 ┗━>_LinkWriteEvent ━━━>━━║                  ┏━>_EncodedEvents[0]{_EncoderProcessors[0]}|║
      * ┃  ━> _AioProducerEvents━║                                                      Timer ━━> _ConsensusEvent    ━━━━━━━━━━━┫    ┣━━<━━━━━<━━━━━━━━━━━━━━━━━━━━━━━━━━<━━━<━┓   ║                  ┃  _EncodedEvents[1]{_EncoderProcessors[1]}|║
      * ┃  ━> _ClusterLocalClose━║                ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━━>_BizLocalSendEvent ━╋>━━║━_WriteDispatcher━┫  _EncodedEvents[2]{_EncoderProcessors[2]}|║_EncodedProcessor┳━━>║[Event Done]
      * ┃  ━> _BizLocalClose    ━║                ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_NotifyEvent ━━━━━┛   ║                  ┃  _EncodedEvents[.]{_EncoderProcessors[.]}|║                 ┗━━>_ErrorEvent━┓
@@ -280,15 +280,15 @@ public class ServerCore
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
         final RingBuffer<QEvent> _LinkDecoded = createPipelineLite(_LinkQueueSize);
-        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{ _LinkIoEvent,
-                                                                   _LinkDecoded,
-                                                                   _ConsensusApiEvent,
-                                                                   _NotifyEvent
+        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{
+                _LinkIoEvent,
+                _LinkDecoded,
+                _NotifyEvent
         };
-        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{ _LinkIoEvent.newBarrier(),
-                                                                       _LinkDecoded.newBarrier(),
-                                                                       _ConsensusApiEvent.newBarrier(),
-                                                                       _NotifyEvent.newBarrier()
+        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{
+                _LinkIoEvent.newBarrier(),
+                _LinkDecoded.newBarrier(),
+                _NotifyEvent.newBarrier()
         };
         final Z2Processor<QEvent> _LinkProcessor = new Z2Processor<>(_LinkEvents,
                                                                      _LinkBarriers,
@@ -306,15 +306,19 @@ public class ServerCore
         /* 集群处理 */
         /* 所有已解码完毕的集群通讯都进入这个 Pipeline -> _ClusterDecoded */
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize);
-        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{ _ClusterIoEvent,
-                                                                      _ClusterDecoded,
-                                                                      _ConsensusEvent,
-                                                                      _ClusterEvent
+        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{
+                _ClusterIoEvent,
+                _ClusterDecoded,
+                _ConsensusEvent,
+                _ConsensusApiEvent,
+                _ClusterEvent
         };
-        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{ _ClusterIoEvent.newBarrier(),
-                                                                          _ClusterDecoded.newBarrier(),
-                                                                          _ConsensusEvent.newBarrier(),
-                                                                          _ClusterEvent.newBarrier()
+        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{
+                _ClusterIoEvent.newBarrier(),
+                _ClusterDecoded.newBarrier(),
+                _ConsensusEvent.newBarrier(),
+                _ConsensusApiEvent.newBarrier(),
+                _ClusterEvent.newBarrier()
         };
         final Z2Processor<QEvent> _ClusterProcessor = new Z2Processor<>(_ClusterEvents,
                                                                         _ClusterBarriers,
@@ -459,7 +463,7 @@ public class ServerCore
         return switch(type) {
             case BIZ_LOCAL -> _LocalLock;
             case CLUSTER_LOCAL -> _ClusterLock;
-            case CLUSTER_TOPOLOGY -> _ConsensusApiLock;
+            case CLUSTER_TOPOLOGY, CONSISTENCY -> _ConsensusApiLock;
             case CLUSTER_TIMER -> _ConsensusLock;
             default -> throw new IllegalArgumentException(String.format("error type:%s", type));
         };
@@ -471,7 +475,7 @@ public class ServerCore
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalSendEvent;
             case CLUSTER_LOCAL -> _ClusterLocalSendEvent;
-            case CLUSTER_TOPOLOGY -> _ConsensusApiEvent;
+            case CLUSTER_TOPOLOGY, CONSISTENCY -> _ConsensusApiEvent;
             case CLUSTER_TIMER -> _ConsensusEvent;
             default -> throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
         };

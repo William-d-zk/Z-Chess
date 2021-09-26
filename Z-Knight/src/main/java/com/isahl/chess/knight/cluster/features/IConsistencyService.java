@@ -21,12 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.cluster.inf;
+package com.isahl.chess.knight.cluster.features;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.lmax.disruptor.RingBuffer;
@@ -35,9 +34,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyCustom custom)
+    default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyHandler custom)
     {
-        if(consistency == null || node == null || custom == null) { return; }
+        if(consistency == null || node == null || custom == null) {return;}
         final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY);
         final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY);
         _Lock.lock();

@@ -20,39 +20,35 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.knight.cluster.features.IConsistencyService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+package com.isahl.chess.knight.raft.features;
 
-import java.time.Instant;
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019/12/01
+ * @date 2020/2/20
  */
-@RestController
-public class ConsistencyController
+public interface IRaftService
+        extends IRaftModify,
+                IClusterPeer
 {
+    /**
+     * 获取集群的leader信息
+     *
+     * @return leader peer_id
+     */
+    RaftNode getLeader();
 
-    private final IConsistencyService _ConsistencyService;
+    /**
+     * 获取集群拓扑
+     *
+     * @return peers
+     */
+    List<RaftNode> getTopology();
 
-    @Autowired
-    public ConsistencyController(IConsistencyService consistentService)
-    {
-        _ConsistencyService = consistentService;
-    }
-
-    @PostMapping("/consistent")
-    public @ResponseBody
-    Object consistency(String input)
-    {
-        _ConsistencyService.submit(input,
-                                   Instant.now()
-                                          .toEpochMilli());
-        return input;
-    }
+    
 }
