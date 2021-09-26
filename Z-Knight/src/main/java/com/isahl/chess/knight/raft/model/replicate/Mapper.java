@@ -28,7 +28,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
-import com.isahl.chess.knight.raft.inf.IRaftMapper;
+import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
+import static com.isahl.chess.knight.raft.features.IRaftMachine.TERM_NAN;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
 

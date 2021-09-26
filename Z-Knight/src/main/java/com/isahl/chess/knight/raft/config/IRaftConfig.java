@@ -25,7 +25,7 @@ package com.isahl.chess.knight.raft.config;
 
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.inf.IRaftModify;
+import com.isahl.chess.knight.raft.features.IRaftModify;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 

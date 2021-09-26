@@ -61,7 +61,7 @@ public class LocalJpaConfig
                                 jpaProperties,
                                 hibernateProperties,
                                 initializationSettings,
-                                "com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model");
+                                "com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model");
     }
 
     @Bean("local-transaction-manager")
