@@ -34,21 +34,18 @@ import java.util.regex.Pattern;
 /**
  * session port prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
- * -2bit-
- * 00 Client manager service
- * 01 Internal message queue broker
- * 10 Device consumer connection
- * 11 Cluster symmetry communication
- * -4bit-
- * Cluster region
- * -3bit-
- * Cluster set identity
- * -7bit-
- * Endpoint identity
- * -38bit-
- * Timestamp gap 2021-06-01 00:00:00.000
- * -10bit-
- * sequence in one millisecond
+ * [02bit] cluster-type
+ * <p>
+ * {00} Client manager service
+ * {01} Internal message queue broker
+ * {10} Device consumer connection
+ * {11} Cluster symmetry communication
+ * </p>
+ * [04bit] cluster-region
+ * [03bit] cluster-set identity
+ * [07bit] cluster-node identity
+ * [38bit] timestamp gap 2021-06-01 00:00:00.000
+ * [10bit] sequence in one millisecond
  */
 public class ZUID
 {
@@ -82,6 +79,7 @@ public class ZUID
     public static final  long           TYPE_CLUSTER       = 3L << TYPE_SHIFT;
     public static final  long           CLUSTER_MASK       =
             (((1L << IDC_BITS) - 1) << IDC_SHIFT) | (((1L << CLUSTER_BITS) - 1) << CLUSTER_SHIFT);
+    public static final  long           PEER_MASK          = CLUSTER_MASK | (((1L << NODE_BITS) - 1) << NODE_SHIFT);
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
     public static final  int            TYPE_PROVIDER_SLOT = 2;
@@ -214,5 +212,10 @@ public class ZUID
     {
         return "ZUID{" + "IdcId=" + _IdcId + ", ClusterId=" + _ClusterId + ", NodeId=" + _NodeId + ", Type=" + _Type +
                ", sequence=" + mSequence + '}';
+    }
+
+    public static boolean isTypeOfCluster(long id)
+    {
+        return (id & TYPE_MASK) == TYPE_CLUSTER;
     }
 }

@@ -22,19 +22,21 @@
  */
 package com.isahl.chess.player.api.controller;
 
+import com.isahl.chess.king.base.content.ZResponse;
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.Instant;
 
 /**
  * @author william.d.zk
  * @date 2019/12/01
  */
 @RestController
+@RequestMapping("api")
 public class ConsistencyController
 {
 
@@ -46,13 +48,12 @@ public class ConsistencyController
         _ConsistencyService = consistentService;
     }
 
-    @PostMapping("/consistent")
+    @GetMapping("/consistent")
     public @ResponseBody
-    Object consistency(String input)
+    ZResponse<?> consistency(String input)
     {
-        _ConsistencyService.submit(input,
-                                   Instant.now()
-                                          .toEpochMilli());
-        return input;
+        ICode result = _ConsistencyService.submit(input);
+
+        return ZResponse.of(result, input, "consistency submit");
     }
 }

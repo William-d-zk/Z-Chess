@@ -24,29 +24,42 @@
 package com.isahl.chess.knight.cluster.features;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.cluster.IClusterNode;
+import com.isahl.chess.knight.cluster.config.CodeKnight;
+import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyHandler custom)
+    default <T extends IProtocol> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
     {
-        if(consistency == null || node == null || custom == null) {return;}
-        final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY);
-        final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY);
+        if(request == null || node == null) {
+            return CodeKing.MISS;
+        }
+        if(!node.getPeer()
+                .isInCongress())
+        {
+            return CodeKnight.CLUSTER_NO_IN_CONGRESS;
+        }
+        final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY_SERVICE);
+        final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY_SERVICE);
         _Lock.lock();
         try {
             long sequence = _Publish.next();
             try {
                 QEvent event = _Publish.get(sequence);
-                event.produce(IOperator.Type.CONSISTENCY,
-                              new Pair<>(consistency, consistency.getOrigin()),
-                              custom.getOperator());
+                event.produce(IOperator.Type.CONSISTENCY_SERVICE,
+                              new Pair<>(request,
+                                         node.getPeer()
+                                             .getPeerId()),
+                              reject.getOperator());
             }
             finally {
                 _Publish.publish(sequence);
@@ -55,8 +68,8 @@ public interface IConsistencyService
         finally {
             _Lock.unlock();
         }
-
+        return CodeKing.SUCCESS;
     }
 
-    void submit(String content, long origin);
+    ICode submit(String content);
 }

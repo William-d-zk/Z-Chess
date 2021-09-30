@@ -21,32 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.knight.cluster.config;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.isahl.chess.queen.config.QueenCode;
 
-/**
- * @author william.d.zk
- */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+public interface KnightCode
+        extends QueenCode
 {
+    int CLUSTER_NO_IN_CONGRESS = 0x00700;
+    int CLUSTER_ELECTING       = 0x00701;
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
-
-    @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    static String codeOf(int code)
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
+        return switch(code) {
+            case CLUSTER_NO_IN_CONGRESS -> "node.%#x is not in congress";
+            case CLUSTER_ELECTING -> "cluster is electing!";
+            default -> QueenCode.codeOf(code);
+        };
     }
 
-    @Override
-    public String getName()
-    {
-        return "operator.accept-failed";
-    }
 }

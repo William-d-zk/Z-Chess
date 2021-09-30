@@ -47,19 +47,15 @@ import java.util.Objects;
  * @author William.d.zk
  */
 public class AioWorker
-        extends
-        Thread
+        extends Thread
 {
 
-    private final Logger                         _Logger = Logger.getLogger("io.queen.operator."
-                                                                            + getClass().getSimpleName());
+    private final Logger                         _Logger = Logger.getLogger(
+            "io.queen.operator." + getClass().getSimpleName());
     private final IAvailable<RingBuffer<QEvent>> _Available;
     private final RingBuffer<QEvent>             _Producer;
 
-    public AioWorker(Runnable r,
-                     String name,
-                     IAvailable<RingBuffer<QEvent>> available,
-                     RingBuffer<QEvent> producer)
+    public AioWorker(Runnable r, String name, IAvailable<RingBuffer<QEvent>> available, RingBuffer<QEvent> producer)
     {
         super(r, name);
         _Available = available;
@@ -73,32 +69,28 @@ public class AioWorker
         try {
             super.run();
         }
-        catch (Error e) {
+        catch(Error e) {
             _Logger.fetal("AioWorker Work UnCatchEx", e);
-            if (Objects.nonNull(_Available)) {
+            if(Objects.nonNull(_Available)) {
                 _Available.available(_Producer);
             }
             throw e;
         }
     }
 
-    public <T,
-            A,
-            R> void publish(RingBuffer<QEvent> producer,
-                            final IOperator<T,
-                                            A,
-                                            R> op,
-                            final IError.Type eType,
-                            final IOperator.Type type,
-                            IPair content)
+    public <T, A, R> void publish(RingBuffer<QEvent> producer,
+                                  final IOperator<T, A, R> op,
+                                  final IError.Type eType,
+                                  final IOperator.Type type,
+                                  IPair content)
     {
-        if (producer.remainingCapacity() == 0) {
+        if(producer.remainingCapacity() == 0) {
             _Logger.warning("aio worker %s block", getName());
         }
         long sequence = producer.next();
         try {
             QEvent event = producer.get(sequence);
-            if (eType.equals(IError.Type.NO_ERROR)) {
+            if(eType.equals(IError.Type.NO_ERROR)) {
                 event.produce(type, content, op);
             }
             else {
@@ -110,11 +102,7 @@ public class AioWorker
         }
     }
 
-    public void publishRead(final IOperator<IPacket,
-                                            ISession,
-                                            ITriple> op,
-                            IPacket pack,
-                            final ISession session)
+    public void publishRead(final IOperator<IPacket, ISession, ITriple> op, IPacket pack, final ISession session)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
     }
@@ -132,9 +120,7 @@ public class AioWorker
         publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
     }
 
-    public void publishConnected(final IOperator<IAioConnection,
-                                                 AsynchronousSocketChannel,
-                                                 ITriple> op,
+    public void publishConnected(final IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> op,
                                  final IConnectActivity activity,
                                  final IOperator.Type type,
                                  final AsynchronousSocketChannel channel)
@@ -142,18 +128,14 @@ public class AioWorker
         publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
     }
 
-    public void publishConnectingError(final IOperator<Throwable,
-                                                       IAioConnector,
-                                                       Void> op,
+    public void publishConnectingError(final IOperator<Throwable, IAioConnection, Void> op,
                                        final Throwable e,
                                        final IAioConnector cActive)
     {
         publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public void publishAcceptError(final IOperator<Throwable,
-                                                   IAioServer,
-                                                   Void> op,
+    public void publishAcceptError(final IOperator<Throwable, IAioConnection, Void> op,
                                    final Throwable e,
                                    final IAioServer cActive)
     {

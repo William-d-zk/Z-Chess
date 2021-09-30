@@ -37,8 +37,7 @@ import com.lmax.disruptor.RingBuffer;
  * @author william.d.zk
  */
 public class MixDecodedDispatcher
-        extends
-        DecodedDispatcher
+        extends DecodedDispatcher
 {
     private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent> _Link;
@@ -55,12 +54,12 @@ public class MixDecodedDispatcher
     @Override
     protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
-        if (mode == ISort.Mode.LINK) {
-            if (cmd.isMapping()) {
+        if(mode == ISort.Mode.LINK) {
+            if(cmd.isMapping()) {
                 return new Pair<>(_Link, IOperator.Type.LINK);
             }
             else {
-                return new Pair<>(dispatchWorker(cmd),IOperator.Type. LOGIC);
+                return new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
             }
         }
         return super.getNextPipe(mode, cmd);

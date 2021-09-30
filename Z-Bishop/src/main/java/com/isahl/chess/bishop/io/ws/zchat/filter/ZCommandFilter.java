@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.*;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.config.Code;
+import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -83,7 +83,7 @@ public class ZCommandFilter<T extends ZContext>
                     IEContext ec = (IEContext) context;
                     X01_EncryptRequest x01 = (X01_EncryptRequest) command;
                     IEncryptor encryptHandler = ec.getEncryptHandler();
-                    if(encryptHandler == null) {return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());}
+                    if(encryptHandler == null) {return new X06_EncryptComp(CodeKing.PLAIN_UNSUPPORTED.getCode());}
                     Pair<Integer, byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                     if(keyPair != null) {
                         X02_AsymmetricPub x02 = new X02_AsymmetricPub();
@@ -129,7 +129,7 @@ public class ZCommandFilter<T extends ZContext>
                         ec.reRollKey(symmetricKey);
                         X04_EncryptConfirm x04 = new X04_EncryptConfirm();
                         x04.symmetricKeyId = x03.symmetricKeyId;
-                        x04.code = Code.SYMMETRIC_KEY_OK.getCode();
+                        x04.code = CodeKing.SYMMETRIC_KEY_OK.getCode();
                         x04.setSign(encryptHandler.getSymmetricKeySign(symmetricKey));
                         return x04;
                     }

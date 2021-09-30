@@ -21,32 +21,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.player.api.component;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import org.springframework.stereotype.Component;
 
-/**
- * @author william.d.zk
- */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+@Component
+public class ConsistencyHandler
+        implements IConsistencyHandler
 {
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
-
     @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    public boolean onConsistencyCall(IConsistent result)
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
-    }
-
-    @Override
-    public String getName()
-    {
-        return "operator.accept-failed";
+        return false;
     }
 }

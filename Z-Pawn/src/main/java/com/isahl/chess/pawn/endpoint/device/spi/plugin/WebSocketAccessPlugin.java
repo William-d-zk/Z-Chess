@@ -27,14 +27,12 @@ import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
 import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X105_SslHandShake;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -67,7 +65,7 @@ public class WebSocketAccessPlugin
     }
 
     @Override
-    public IPair onLink(ISessionManager manager, ISession session, IControl input)
+    public ITriple onLink(ISessionManager manager, ISession session, IControl input)
     {
         return null;
     }
@@ -79,20 +77,12 @@ public class WebSocketAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistentNotify(ISessionManager manager,
-                                            long origin,
-                                            IProtocol consensusBody,
-                                            boolean isConsistency)
+    public List<ITriple> onConsistencyNotify(ISessionManager manager,
+                                             long origin,
+                                             IProtocol consensusBody,
+                                             boolean isConsistency)
     {
         return null;
     }
 
-    @Override
-    public void clusterHandle(ISessionManager manager,
-                              IControl content,
-                              IClusterNode cluster,
-                              List<? extends IControl> pushList)
-    {
-
-    }
 }

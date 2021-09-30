@@ -28,5 +28,34 @@ package com.isahl.chess.king.config;
  */
 public interface KingCode
 {
-    int LOCAL_FILE_SYSTEM_WRITE_ERROR = 9010;
+    int SUCCESS                        = 0x00000;
+    int ERROR                          = 0xF0000;
+    int SYMMETRIC_KEY_OK               = 0x00100;
+    int PLAIN_UNSUPPORTED              = 0x001F0;
+    int PLAIN_VERSION_LOWER            = 0x001F1;
+    int SYMMETRIC_KEY_REROLL           = 0x001F2;
+    int MISS                           = 0xF0001;
+    int UNKNOWN                        = 0xFFFFF;
+    int ILLEGAL_PARAM                  = 0xF0002;
+    int FORBIDDEN                      = 0xF0003;
+    int UNAUTHORIZED                   = 0xF0004;
+    int LOCAL_FILE_SYSTEM_WRITE_FAILED = 0xF1000;
+
+    static String codeOf(int code)
+    {
+        return switch(code) {
+            case SUCCESS -> "SUCCESS";
+            case ERROR -> "ERROR";
+            case SYMMETRIC_KEY_OK -> "SYMMETRIC_KEY_OK";
+            case PLAIN_UNSUPPORTED -> "PLAIN_UNSUPPORTED";
+            case PLAIN_VERSION_LOWER -> "PLAIN_VERSION_LOWER";
+            case SYMMETRIC_KEY_REROLL -> "SYMMETRIC_KEY_REROLL";
+            case MISS -> "MISS";
+            case ILLEGAL_PARAM -> "ILLEGAL_PARAM";
+            case FORBIDDEN -> "FORBIDDEN";
+            case UNAUTHORIZED -> "UNAUTHORIZED";
+            case LOCAL_FILE_SYSTEM_WRITE_FAILED -> "LOCAL_FILE_SYSTEM_WRITE_FAILED";
+            default -> "UNKNOWN";
+        };
+    }
 }

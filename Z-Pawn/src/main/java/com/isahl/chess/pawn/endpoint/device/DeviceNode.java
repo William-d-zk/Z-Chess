@@ -31,6 +31,7 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftMachine;
@@ -41,14 +42,14 @@ import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
-import com.isahl.chess.queen.io.core.tasks.ServerCore;
+import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
+import com.isahl.chess.queen.io.core.tasks.ServerCore;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -229,4 +230,15 @@ public class DeviceNode
         send(session, IOperator.Type.CLUSTER_LOCAL, _GatePing);
     }
 
+    @Override
+    public boolean isOwnedBy(long origin)
+    {
+        return _ClusterPeer.getPeerId() == (origin & ZUID.PEER_MASK);
+    }
+
+    @Override
+    public IClusterPeer getPeer()
+    {
+        return _ClusterPeer;
+    }
 }

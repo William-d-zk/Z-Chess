@@ -27,6 +27,8 @@ import com.isahl.chess.bishop.io.ws.zchat.model.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
+import static com.isahl.chess.king.config.CodeKing.SUCCESS;
+
 public class X76_RaftResp
         extends ZCommand
         implements IConsistent
@@ -135,4 +137,9 @@ public class X76_RaftResp
         return true;
     }
 
+    @Override
+    public boolean isConsistency()
+    {
+        return getCode() == SUCCESS.getCode();
+    }
 }
