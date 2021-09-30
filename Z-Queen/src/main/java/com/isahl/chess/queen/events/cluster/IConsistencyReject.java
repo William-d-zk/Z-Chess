@@ -21,32 +21,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.queen.events.cluster;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+public interface IConsistencyReject
 {
-
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
-
-    @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    default IOperator<IProtocol, Long, ITriple> getOperator()
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
+        return this::resolve;
     }
 
-    @Override
-    public String getName()
-    {
-        return "operator.accept-failed";
-    }
+    /**
+     * @param request 需要一致性处理的内容
+     * @param origin  cluster - client - origin
+     * @return content, first: request second: response third: operator
+     */
+    ITriple resolve(IProtocol request, long origin);
 }

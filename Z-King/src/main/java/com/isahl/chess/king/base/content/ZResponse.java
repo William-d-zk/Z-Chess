@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.config.Code;
+import com.isahl.chess.king.config.CodeKing;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -42,9 +42,8 @@ import java.time.LocalDateTime;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ZResponse<T>
-        implements
-        ICode,
-        Serializable
+        implements ICode,
+                   Serializable
 {
     private final int           _Code;
     private final String        _Message;
@@ -78,7 +77,13 @@ public class ZResponse<T>
     @Override
     public String format(Object... args)
     {
-        return _Formatter == null ? null: String.format(_Formatter, args);
+        return _Formatter == null ? null : String.format(_Formatter, args);
+    }
+
+    @Override
+    public String formatter()
+    {
+        return _Formatter;
     }
 
     public String getMessage()
@@ -100,34 +105,34 @@ public class ZResponse<T>
 
     public static <E> ZResponse<E> success(E e)
     {
-        return new ZResponse<>(Code.SUCCESS.getCode(),
-                               Code.SUCCESS.format(),
+        return new ZResponse<>(CodeKing.SUCCESS.getCode(),
+                               CodeKing.SUCCESS.format(),
                                e,
-                               Code.SUCCESS.getFormatter(),
+                               CodeKing.SUCCESS.formatter(),
                                LocalDateTime.now());
     }
 
     public static <E> ZResponse<E> forbid(E e)
     {
-        return new ZResponse<>(Code.FORBIDDEN.getCode(),
-                               Code.FORBIDDEN.format(e),
+        return new ZResponse<>(CodeKing.FORBIDDEN.getCode(),
+                               CodeKing.FORBIDDEN.format(e),
                                e,
-                               Code.FORBIDDEN.getFormatter(),
+                               CodeKing.FORBIDDEN.formatter(),
                                LocalDateTime.now());
     }
 
     public static <E> ZResponse<E> unauthorized(E e)
     {
-        return new ZResponse<>(Code.UNAUTHORIZED.getCode(),
-                               Code.UNAUTHORIZED.format(e),
+        return new ZResponse<>(CodeKing.UNAUTHORIZED.getCode(),
+                               CodeKing.UNAUTHORIZED.format(e),
                                e,
-                               Code.UNAUTHORIZED.getFormatter(),
+                               CodeKing.UNAUTHORIZED.formatter(),
                                LocalDateTime.now());
     }
 
     public static ZResponse<Void> error(String message)
     {
-        return error(Code.ERROR.getCode(), message, null, null);
+        return error(CodeKing.ERROR.getCode(), message, null, null);
     }
 
     public static ZResponse<Void> error(int code, String message)
@@ -138,6 +143,11 @@ public class ZResponse<T>
     public static <E> ZResponse<E> error(int code, String message, E detail, String formatter)
     {
         return new ZResponse<>(code, message, detail, formatter, LocalDateTime.now());
+    }
+
+    public static <E> ZResponse<E> of(ICode code, E e, String message)
+    {
+        return new ZResponse<>(code.getCode(), code.format(e, message), e, code.formatter(), LocalDateTime.now());
     }
 
     public int getCode()

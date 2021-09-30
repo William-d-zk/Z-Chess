@@ -87,58 +87,52 @@ public class WriteDispatcher
         }
         else {
             switch(event.getEventType()) {
-                case NULL:// 在前一个处理器event.reset().
-                case IGNORE:// 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
-                    break;
-                case BIZ_LOCAL:// from biz local
-                case CLUSTER_LOCAL:// from cluster local
-                case WRITE:// from LinkIo/Cluster
-                case LOGIC:// from read->logic
+                case NULL,// 在前一个处理器event.reset().
+                        IGNORE // 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+                        -> {
+                }
+                case BIZ_LOCAL, // from biz local
+                        CLUSTER_LOCAL,// from cluster local
+                        WRITE// from LinkIo/Cluster
+                        -> {
                     IPair writeContent = event.getContent();
-                    IControl[] commands = writeContent.getFirst();
+                    _Logger.debug("content:%s,%s", writeContent, event.getEventType());
+                    IControl cmd = writeContent.getFirst();
                     ISession session = writeContent.getSecond();
-                    IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
-                    if(commands != null && commands.length > 0) {
-                        List<ITriple> triples = transferOperator.handle(commands, session);
-                        for(ITriple triple : triples) {
-                            ISession targetSession = triple.getSecond();
-                            IControl content = triple.getFirst();
-                            if(content.payload() != null) {
-                                _Logger.debug("write %s", content);
-                            }
-                            if(content.isShutdown()) {
-                                if(targetSession.isValid()) {
-                                    error(_Error,
-                                          INITIATIVE_CLOSE,
-                                          new Pair<>(new ZException("session to shutdown"), targetSession),
-                                          targetSession.getError());
-                                }
-                            }
-                            else {
-                                publish(dispatchEncoder(targetSession.hashCode()),
-                                        IOperator.Type.WRITE,
-                                        new Pair<>(content, targetSession),
-                                        triple.getThird());
-                            }
+                    if(cmd.isShutdown()) {
+                        if(!session.isValid()) {
+                            error(_Error,
+                                  INITIATIVE_CLOSE,
+                                  new Pair<>(new ZException("session to shutdown"), session),
+                                  session.getError());
                         }
                     }
-                    break;
-                case WROTE:// from io-wrote
+                    else {
+                        publish(dispatchEncoder(session.hashCode()),
+                                IOperator.Type.WRITE,
+                                new Pair<>(cmd, session),
+                                session.getEncoder());
+
+                    }
+                }
+                case WROTE// from io-wrote
+                        -> {
                     IPair wroteContent = event.getContent();
                     int wroteCount = wroteContent.getFirst();
-                    session = wroteContent.getSecond();
+                    ISession session = wroteContent.getSecond();
                     if(session.isValid()) {
                         publish(dispatchEncoder(session.hashCode()),
                                 IOperator.Type.WROTE,
                                 new Pair<>(wroteCount, session),
                                 event.getEventOp());
                     }
-                    break;
-                case DISPATCH:
+                }
+                case LOGIC,// from read->logic
+                        DISPATCH -> {
                     List<ITriple> writeContents = event.getContentList();
                     for(ITriple content : writeContents) {
                         IControl command = content.getFirst();
-                        session = content.getSecond();
+                        ISession session = content.getSecond();
                         if(command.isShutdown()) {
                             if(session != null && session.isValid()) {
                                 error(_Error,
@@ -162,8 +156,8 @@ public class WriteDispatcher
                                     content.getThird());
                         }
                     }
-                default:
-                    break;
+                }
+                default -> {}
             }
         }
         event.reset();

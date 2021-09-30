@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.messages.JsonProtocol;
 
 import java.nio.charset.StandardCharsets;
@@ -39,12 +38,10 @@ import java.nio.charset.StandardCharsets;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConsistentProtocol
         extends JsonProtocol
-        implements IConsistent
 {
     public final static int _SERIAL = CONSISTENT_SERIAL + 1;
 
     private final byte[] _Content;
-    private final long   _Origin;
     private final long   _Uid;
 
     private transient byte[] tPayload;
@@ -54,12 +51,9 @@ public class ConsistentProtocol
             @JsonProperty("content")
                     byte[] content,
             @JsonProperty("uid")
-                    long uid,
-            @JsonProperty("origin")
-                    long origin)
+                    long uid)
     {
         _Content = content;
-        _Origin = origin;
         _Uid = uid;
     }
 
@@ -86,12 +80,6 @@ public class ConsistentProtocol
     }
 
     @Override
-    public long getOrigin()
-    {
-        return _Origin;
-    }
-
-    @Override
     public byte[] payload()
     {
         return tPayload;
@@ -106,9 +94,8 @@ public class ConsistentProtocol
     @Override
     public String toString()
     {
-        return String.format("ConsistentProtocol{content:%s,origin:%#x,uid:%#x||%d}",
+        return String.format("ConsistentProtocol{content:%s,uid:%#x||%d}",
                              new String(_Content, StandardCharsets.UTF_8),
-                             _Origin,
                              _Uid,
                              _Uid);
     }

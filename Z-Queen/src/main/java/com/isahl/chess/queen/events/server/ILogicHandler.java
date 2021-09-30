@@ -26,14 +26,16 @@ package com.isahl.chess.queen.events.server;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.IError;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.messages.JsonProtocol;
 
-import java.util.Objects;
+import java.util.List;
 
 public interface ILogicHandler
         extends IBatchHandler<QEvent>
@@ -45,33 +47,49 @@ public interface ILogicHandler
     @Override
     default void onEvent(QEvent event, long sequence)
     {
-        if(event.getEventType() == IOperator.Type.LOGIC) {
-            IControl content = event.getContent()
-                                    .getFirst();
-            ISession session = event.getContent()
-                                    .getSecond();
-            if(content != null) {
+        switch(event.getEventType()) {
+            case SERVICE -> {
+                JsonProtocol request = event.getContent()
+                                            .getFirst();
                 try {
-                    IControl[] response = handle(getISessionManager(), session, content);
-                    if(Objects.nonNull(response) && response.length > 0) {
-                        event.produce(IOperator.Type.LOGIC, new Pair<>(response, session), session.getTransfer());
-                    }
-                    else {
-                        event.ignore();
-                    }
+                    serviceHandle(request);
                 }
                 catch(Exception e) {
-                    getLogger().warning("logic handler interface", e);
-                    event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
+                    getLogger().warning("service handler interface", e);
+
                 }
-            }
-            else {
                 event.ignore();
+            }
+            case LOGIC -> {
+                IControl content = event.getContent()
+                                        .getFirst();
+                ISession session = event.getContent()
+                                        .getSecond();
+                if(content != null) {
+                    try {
+                        List<ITriple> responses = logicHandle(getISessionManager(), session, content);
+                        if(responses != null && !responses.isEmpty()) {
+                            event.produce(IOperator.Type.DISPATCH, responses);
+                        }
+                        else {
+                            event.ignore();
+                        }
+                    }
+                    catch(Exception e) {
+                        getLogger().warning("logic handler interface", e);
+                        event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
+                    }
+                }
+                else {
+                    event.ignore();
+                }
             }
         }
     }
 
-    IControl[] handle(ISessionManager manager, ISession session, IControl content) throws Exception;
+    List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws Exception;
+
+    void serviceHandle(JsonProtocol request) throws Exception;
 
     interface factory
     {

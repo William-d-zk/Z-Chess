@@ -21,22 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.cluster.features;
+package com.isahl.chess.queen.events.cluster;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-
-/**
- * @author william.d.zk
- */
 
 public interface IConsistencyHandler
 {
-    default <T> IOperator<IConsistent, T, IPair> getOperator()
-    {
-        return this::resolve;
-    }
-
-    <T> IPair resolve(IConsistent request, T context);
+    /**
+     * @param result consistent protocol - request/response
+     * @return flag:done
+     */
+    boolean onConsistencyCall(IConsistent result);
 }

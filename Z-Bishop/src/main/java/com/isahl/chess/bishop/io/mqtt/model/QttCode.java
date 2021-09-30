@@ -99,6 +99,12 @@ public enum QttCode
         return null;
     }
 
+    @Override
+    public String formatter()
+    {
+        return null;
+    }
+
     public static QttCode valueOf(int code, int version)
     {
         return switch(version) {

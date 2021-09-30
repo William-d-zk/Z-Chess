@@ -26,8 +26,6 @@ package com.isahl.chess.bishop.io.mqtt.ctrl;
 import com.isahl.chess.bishop.io.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.model.QttType;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -41,7 +39,6 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT
  */
 public class X118_QttSubscribe
         extends QttCommand
-        implements IConsistent
 {
 
     public final static int COMMAND = 0x118;
@@ -134,9 +131,4 @@ public class X118_QttSubscribe
                              mSubscribes != null ? mSubscribes.toString() : null);
     }
 
-    @Override
-    public long getOrigin()
-    {
-        return session() == null ? ZUID.INVALID_PEER_ID : session().getIndex();
-    }
 }

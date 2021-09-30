@@ -23,10 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
-import com.isahl.chess.bishop.io.mqtt.model.QttContext;
 import com.isahl.chess.bishop.io.mqtt.command.*;
 import com.isahl.chess.bishop.io.mqtt.ctrl.*;
+import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.io.mqtt.model.QttContext;
 import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.io.mqtt.service.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.service.IQttStorage;
@@ -40,16 +40,15 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,6 +59,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
 /**
  * @author william.d.zk
@@ -173,7 +174,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public IPair onLink(ISessionManager manager, ISession session, IControl input)
+    public ITriple onLink(ISessionManager manager, ISession session, IControl input)
     {
         switch(input.serial()) {
             case X102_Close.COMMAND -> session.innerClose();
@@ -218,23 +219,23 @@ public class MQttAccessPlugin
                         X108_Shutdown x108 = new X108_Shutdown();
                         x108.putSession(old);
                         _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
-                        return new Pair<>(new X108_Shutdown[]{ x108 }, x111);
+                        return new Triple<>(x108, x111, SINGLE);
                     }
                     else {
                         _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
-                        return new Pair<>(null, x111);
+                        return new Triple<>(null, x111, SINGLE);
                     }
                 }
                 else {
                     _Logger.info("reject %s",
                                  x112.getCode()
                                      .name());
-                    return new Pair<>(new X112_QttConnack[]{ x112 }, null);
+                    return new Triple<>(x112, null, SINGLE);
                 }
             }
             case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND, X11E_QttDisconnect.COMMAND -> {
                 _Logger.info("%s ,wait for consistent notify", input);
-                return new Pair<>(null, input);
+                return new Triple<>(null, input, SINGLE);
             }
             case X11F_QttAuth.COMMAND -> {
 
@@ -250,10 +251,10 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistentNotify(ISessionManager manager,
-                                            long origin,
-                                            IProtocol consensusBody,
-                                            boolean isConsistency)
+    public List<ITriple> onConsistencyNotify(ISessionManager manager,
+                                             long origin,
+                                             IProtocol consensusBody,
+                                             boolean isConsistency)
     {
         ISession session = manager.findSessionByIndex(origin);
         switch(consensusBody.serial()) {
@@ -335,15 +336,6 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public void clusterHandle(ISessionManager manager,
-                              IControl content,
-                              IClusterNode cluster,
-                              List<? extends IControl> pushList)
-    {
-
-    }
-
-    @Override
     public void register(ICommand stateMessage, long session)
     {
         int msgId = (int) stateMessage.getMsgId();
@@ -369,7 +361,10 @@ public class MQttAccessPlugin
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         int msgId = (int) stateMessage.getMsgId();
-        boolean[] acked = { true, true };
+        boolean[] acked = {
+                true,
+                true
+        };
         if(acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
             acked[1] = old.remove(msgId) != null;
@@ -541,5 +536,5 @@ public class MQttAccessPlugin
             }
         });
     }
- 
+
 }

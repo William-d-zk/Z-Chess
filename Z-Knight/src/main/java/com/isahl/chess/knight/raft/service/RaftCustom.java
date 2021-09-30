@@ -24,46 +24,46 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.bishop.io.ws.zchat.model.ZCommand;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.*;
-import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.events.cluster.IConsistencyCustom;
+import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
+import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
-import static com.isahl.chess.knight.raft.model.RaftCode.SUCCESS;
-import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 
 public class RaftCustom
-        implements IClusterCustom<RaftMachine>,
-                   IConsistencyCustom
+        implements IClusterCustom<RaftMachine>
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>() {};
     private final RaftPeer                      _RaftPeer;
+    private final List<IConsistencyHandler>     _HandlerList                 = new LinkedList<>();
+    private final IConsistencyReject            _Reject;
 
-    public RaftCustom(RaftPeer raftPeer)
+    public RaftCustom(RaftPeer raftPeer, IConsistencyReject reject)
     {
         _RaftPeer = raftPeer;
+        _Reject = reject;
     }
 
     /**
@@ -71,12 +71,12 @@ public class RaftCustom
      * @param session 来源 session
      * @param content 需要 raft custom 处理的内容
      * @return IPair
-     * first : list of command implements 'IControl',broadcast to all
-     * cluster peers
-     * second : command implements 'IConsistentNotify',
+     * first : list of command implements 'IControl',broadcast to all cluster peers
+     * second : command implements 'IConsistent',
+     * third : operator. type
      */
     @Override
-    public IPair handle(ISessionManager manager, ISession session, IControl content)
+    public ITriple handle(ISessionManager manager, ISession session, IControl content)
     {
         /*
          * leader -> follow, self::follow
@@ -159,21 +159,12 @@ public class RaftCustom
             case X76_RaftResp.COMMAND -> {
                 X76_RaftResp x76 = (X76_RaftResp) content;
                 _Logger.debug("received: %s, %s", x76, RaftCode.valueOf(x76.getCode()));
-                return new Pair<>(null, x76);
+                return new Triple<>(null, x76, WRITE);
             }
             // leader → client
             case X77_RaftNotify.COMMAND -> {
                 X77_RaftNotify x77 = (X77_RaftNotify) content;
-                LogEntry entry = _RaftPeer.getLogEntry(x77.getIndex());
-                if(entry != null) {
-                    X76_RaftResp x76 = _RaftPeer.raftResp(SUCCESS,
-                                                          entry.getClient(),
-                                                          entry.getOrigin(),
-                                                          entry.subSerial(),
-                                                          entry.getContent());
-                    return new Pair<>(null, x76);
-                }
-                return null;
+                return _RaftPeer.onNotify(x77.getIndex());
             }
             // peer *, behind in config → previous in config
             case X106_Identity.COMMAND -> {
@@ -196,30 +187,21 @@ public class RaftCustom
             // step down → follower
             case OP_MODIFY -> _RaftPeer.turnToFollower(machine);
             // vote
-            case OP_INSERT -> _RaftPeer.checkVoteState(machine, manager, this::tMapper);
+            case OP_INSERT -> _RaftPeer.checkVoteState(machine, manager);
             // heartbeat
-            case OP_APPEND -> _RaftPeer.checkLogAppend(machine, manager, this::tMapper);
+            case OP_APPEND -> _RaftPeer.checkLogAppend(machine, manager);
             default -> null;
         };
     }
 
-    private Triple<ZCommand, ISession, IPipeEncoder> tMapper(ZCommand source)
-    {
-        // source 一定持有 session 在上一步完成了这个操作。
-        return new Triple<>(source,
-                            source.session(),
-                            source.session()
-                                  .getEncoder());
-    }
-
     @Override
-    public <E extends IConsistent> List<ITriple> consistent(ISessionManager manager, E request)
+    public <E extends IProtocol> List<ITriple> consistent(ISessionManager manager, E request, long origin)
     {
         _Logger.debug("cluster consensus %s", request);
         if(_RaftPeer.getMachine()
                     .getState() == LEADER)
         {
-            return _RaftPeer.onImmediate(request, manager, this::tMapper);
+            return _RaftPeer.onImmediate(request, manager, origin);
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)
@@ -231,7 +213,7 @@ public class RaftCustom
                 X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
                 x75.setSubSerial(request.serial());
                 x75.putPayload(request.encode());
-                x75.setOrigin(request.getOrigin());
+                x75.setOrigin(origin);
                 x75.setClientId(_RaftPeer.getMachine()
                                          .getPeerId());
                 return Collections.singletonList(new Triple<>(x75, leaderSession, leaderSession.getEncoder()));
@@ -252,7 +234,7 @@ public class RaftCustom
                     .getState() == LEADER)
         {
             //Accept Machine State
-            return _RaftPeer.onImmediate(topology, manager, this::tMapper);
+            return _RaftPeer.onImmediate(topology, manager, _RaftPeer.getPeerId());
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)
@@ -269,17 +251,25 @@ public class RaftCustom
     @Override
     public boolean waitForCommit()
     {
-        //TODO learner 的情景需要处理
         return _RaftPeer.isInCongress();
     }
 
     @Override
-    public IPair resolve(IConsistent request, ISession session)
+    public boolean onConsistentCall(IConsistent result)
     {
-        return new Pair<>(_RaftPeer.raftResp(WAL_FAILED,
-                                             _RaftPeer.getPeerId(),
-                                             request.getOrigin(),
-                                             request.serial(),
-                                             request.encode()), session);
+        return !_HandlerList.isEmpty() && _HandlerList.stream()
+                                                      .anyMatch(handler->handler.onConsistencyCall(result));
+    }
+
+    @Override
+    public IConsistencyReject getReject()
+    {
+        return _Reject;
+    }
+
+    @Override
+    public void register(IConsistencyHandler handler)
+    {
+        _HandlerList.add(handler);
     }
 }

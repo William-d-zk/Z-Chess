@@ -24,7 +24,6 @@
 package com.isahl.chess.bishop.io.mqtt.ctrl;
 
 import com.isahl.chess.bishop.io.mqtt.model.QttType;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -34,7 +33,6 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  */
 public class X11E_QttDisconnect
         extends QttControl
-        implements IConsistent
 {
     public final static int COMMAND = 0x11E;
 
@@ -50,9 +48,4 @@ public class X11E_QttDisconnect
         return true;
     }
 
-    @Override
-    public long getOrigin()
-    {
-        return session().getIndex();
-    }
 }
