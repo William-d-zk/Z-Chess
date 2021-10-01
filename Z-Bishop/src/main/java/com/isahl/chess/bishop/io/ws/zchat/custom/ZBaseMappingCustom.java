@@ -24,13 +24,15 @@
 package com.isahl.chess.bishop.io.ws.zchat.custom;
 
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.*;
-import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 
 /**
  * @author william.d.zk
@@ -49,7 +51,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     }
 
     @Override
-    public IPair handle(ISessionManager manager, ISession session, IControl content)
+    public ITriple handle(ISessionManager manager, ISession session, IControl content)
     {
         _Logger.debug("mapping receive %s", content);
         switch(content.serial()) {
@@ -63,9 +65,9 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
                  * 内嵌逻辑，在ZCommandFilter中已经处理结束
                  * 此处仅执行转发逻辑
                  */
-                return new Pair<>(new IControl[]{ content }, null);
+                return new Triple<>(content, null, WRITE);
             default:
-                if(_Then == null) { return null; }
+                if(_Then == null) {return null;}
                 return _Then.handle(manager, session, content);
         }
     }

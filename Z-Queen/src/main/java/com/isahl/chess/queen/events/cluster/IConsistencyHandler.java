@@ -21,42 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.messages;
+package com.isahl.chess.queen.events.cluster;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
-/**
- * @author william.d.zk
- */
-public abstract class JsonProtocol
-        implements IProtocol
+public interface IConsistencyHandler
 {
-    protected int mLength;
-
-    @Override
-    public byte[] encode()
-    {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        mLength = data == null ? 0 : data.length;
-        return data;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return null;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
+    /**
+     * @param result consistent protocol - request/response
+     * @return flag:done
+     */
+    boolean onConsistencyCall(IConsistent result);
 }

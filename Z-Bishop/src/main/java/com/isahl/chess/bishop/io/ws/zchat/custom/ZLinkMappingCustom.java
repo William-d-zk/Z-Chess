@@ -49,9 +49,9 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
+    public List<ITriple> notify(ISessionManager manager, IControl request, long origin,boolean isConsistency)
     {
-        return _Then != null ? _Then.notify(manager, response, origin) : null;
+        return _Then != null ? _Then.notify(manager, request, origin,isConsistency) : null;
     }
 
     @Override

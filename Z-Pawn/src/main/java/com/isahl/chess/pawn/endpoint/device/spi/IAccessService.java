@@ -23,13 +23,11 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
 
@@ -42,18 +40,17 @@ public interface IAccessService
 
     List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content);
 
-    IPair onLink(ISessionManager manager, ISession session, IControl input);
+    ITriple onLink(ISessionManager manager, ISession session, IControl input);
 
     void onOffline(ISession session);
 
-    List<ITriple> onConsistentNotify(ISessionManager manager,
-                                     long origin,
-                                     IProtocol consensusBody,
-                                     boolean isConsistency);
+    List<ITriple> onConsistencyResult(ISessionManager manager,
+                                      long origin,
+                                      IProtocol consensusBody,
+                                      boolean isConsistency);
 
-    void clusterHandle(ISessionManager manager,
-                       IControl content,
-                       IClusterNode cluster,
-                       List<? extends IControl> pushList);
+    default void consume(IProtocol request)
+    {
 
+    }
 }

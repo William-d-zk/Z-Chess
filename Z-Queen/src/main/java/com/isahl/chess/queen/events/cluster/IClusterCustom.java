@@ -27,6 +27,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
@@ -36,8 +37,7 @@ import java.util.List;
  * @date 2020/4/20
  */
 public interface IClusterCustom<T extends IStorage>
-        extends IMappingCustom,
-                IConsistencyCustom
+        extends IMappingCustom
 {
     /**
      * Cluster.Leader heartbeat timeout event
@@ -55,10 +55,11 @@ public interface IClusterCustom<T extends IStorage>
      *
      * @param manager session 管理器
      * @param request 需要进行强一致的指令
-     * @return triples
+     * @param origin  指令的发起者编号；一致性完成时需要回溯
+     * @return triples first:request,second:session[cluster|single::linker],third:operator
      * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <E extends IConsistent> List<ITriple> consistent(ISessionManager manager, E request);
+    <E extends IProtocol> List<ITriple> consistent(ISessionManager manager, E request, long origin);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)
@@ -75,4 +76,14 @@ public interface IClusterCustom<T extends IStorage>
      * @return true 等待集群确认，false 接续执行
      */
     boolean waitForCommit();
+
+    /**
+     * @param result consistent protocol
+     * @return flag: need transfer → link-custom
+     */
+    boolean onConsistentCall(IConsistent result);
+
+    IConsistencyReject getReject();
+
+    void register(IConsistencyHandler handler);
 }

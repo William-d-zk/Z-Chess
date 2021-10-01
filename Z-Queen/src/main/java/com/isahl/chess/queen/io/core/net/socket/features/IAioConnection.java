@@ -23,6 +23,7 @@
 
 package com.isahl.chess.queen.io.core.net.socket.features;
 
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectError;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnected;
@@ -34,11 +35,11 @@ import java.nio.channels.AsynchronousSocketChannel;
  * @author william.d.zk
  */
 public interface IAioConnection
-        extends
-        ISessionCreator<AsynchronousSocketChannel>,
-        IConnectActivity,
-        IConnectError,
-        IConnected
+        extends ISessionCreator<AsynchronousSocketChannel>,
+                IConnectActivity,
+                IConnectError,
+                IConnected
 {
-
+    @Override
+    IOperator<Throwable, IAioConnection, Void> getErrorOperator();
 }

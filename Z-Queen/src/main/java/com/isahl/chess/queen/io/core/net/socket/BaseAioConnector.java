@@ -56,10 +56,10 @@ public abstract class BaseAioConnector
         _FailedHandler = failed;
     }
 
-    private final SocketConnectFailed _SocketConnectFailed = new SocketConnectFailed();
-    private final SocketConnected     _SocketConnected     = new SocketConnected();
-    private final InetSocketAddress     _RemoteAddress;
-    private final AtomicInteger          _State                 = new AtomicInteger(ITask.ctlOf(RUNNING.getCode(), 0));
+    private final SocketConnectFailed    _SocketConnectFailed = new SocketConnectFailed();
+    private final SocketConnected        _SocketConnected     = new SocketConnected();
+    private final InetSocketAddress      _RemoteAddress;
+    private final AtomicInteger          _State               = new AtomicInteger(ITask.ctlOf(RUNNING.getCode(), 0));
     private final IFailed<IAioConnector> _FailedHandler;
 
     private InetSocketAddress mLocalBind;
@@ -118,7 +118,7 @@ public abstract class BaseAioConnector
     }
 
     @Override
-    public IOperator<Throwable, IAioConnector, Void> getErrorOperator()
+    public IOperator<Throwable, IAioConnection, Void> getErrorOperator()
     {
         return _SocketConnectFailed;
     }

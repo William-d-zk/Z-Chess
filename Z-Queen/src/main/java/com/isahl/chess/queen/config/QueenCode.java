@@ -29,55 +29,46 @@ import com.isahl.chess.king.config.KingCode;
  * @author william.d.zk
  */
 public interface QueenCode
-        extends
-        KingCode
+        extends KingCode
 {
 
-    /* HA address max size 256 */
+    /**
+     * HA address max size 256
+     */
     int _HA_ROUTER_REMOTE_ADDRESS_INDEX_MASK = 0xFF;
-    int DEAULT_USR_BIND_SIZE                 = 3;
+    int DEFAULT_USR_BIND_SIZE                = 3;
 
     int EXIT_CODE_NO_ARGUMENT  = 404;
     int EXIT_CODE_START_FAILED = 900;
 
-    int UNKNOWN                          = -1;
-    int PLAIN_UNSUPPORTED                = 103;
-    int PLAIN_VERSION_LOWER              = 104;
-    int SYMMETRIC_KEY_OK                 = 110;
-    int SYMMETRIC_KEY_REROLL             = 111;
-    int DEVICE_OK                        = 300;
-    int DEVICE_AUTHORING_KEY_ERROR       = 301;
-    int DEVICE_AUTHORING_KEY_OUT_OF_DATE = 302;
-    int DEVICE_DUPLICATE                 = 303;
-    int DEVICE_FORBIDDEN                 = 304;
-    int DEVICE_NOT_FOUND                 = 305;
-    int USR_OK                           = 400;
-    int USR_FORBIDDEN                    = 401;
-    int USR_NOT_FOUND                    = 402;
-    int USR_AUTHORING_KEY_ERROR          = 403;
-    int USR_AUTHORING_KEY_OUT_OF_DATE    = 404;
-    int USR_DUPLICATE                    = 405;
-    int USR_FAILED                       = 406;
-    int USR_DELETE                       = 407;
-    int SERVICE_ERROR                    = 502;
-    int DEVICE_CLUSTER_ERROR             = 503;
-    int ROUTER_CLUSTER_ERROR             = 504;
-    int MQ_REGISTER_TOPIC_OK             = 600;
-    int MQ_REGISTER_TOPIC_DUPLICATE      = 601;
-    int MQ_REGISTER_TOPIC_MODE_CONFLICT  = 602;
-    int MQ_REGISTER_TOPIC_NULL           = 603;
+    int DEVICE_OK                        = 0x00200;
+    int DEVICE_AUTHORING_KEY_ERROR       = 0x00301;
+    int DEVICE_AUTHORING_KEY_OUT_OF_DATE = 0x00302;
+    int DEVICE_DUPLICATE                 = 0x00303;
+    int DEVICE_FORBIDDEN                 = 0x00304;
+    int DEVICE_NOT_FOUND                 = 0x00305;
+    int USR_OK                           = 0x00400;
+    int USR_FORBIDDEN                    = 0x00401;
+    int USR_NOT_FOUND                    = 0x00402;
+    int USR_AUTHORING_KEY_ERROR          = 0x00403;
+    int USR_AUTHORING_KEY_OUT_OF_DATE    = 0x00404;
+    int USR_DUPLICATE                    = 0x00405;
+    int USR_FAILED                       = 0x00406;
+    int USR_DELETE                       = 0x00407;
+    int SERVICE_ERROR                    = 0x00502;
+    int DEVICE_CLUSTER_ERROR             = 0x00503;
+    int ROUTER_CLUSTER_ERROR             = 0x00504;
+    int MQ_REGISTER_TOPIC_OK             = 0x00600;
+    int MQ_REGISTER_TOPIC_DUPLICATE      = 0x00601;
+    int MQ_REGISTER_TOPIC_MODE_CONFLICT  = 0x00602;
+    int MQ_REGISTER_TOPIC_NULL           = 0x00603;
 
     String ERROR_CLOSE = "error close";
     String LOCAL_CLOSE = "error close";
 
     static String codeOf(int code)
     {
-        return switch (code)
-        {
-            case PLAIN_UNSUPPORTED -> "PLAIN_UNSUPPORTED";
-            case PLAIN_VERSION_LOWER -> "PLAIN_VERSION_LOWER";
-            case SYMMETRIC_KEY_OK -> "SYMMETRIC_KEY_OK";
-            case SYMMETRIC_KEY_REROLL -> "SYMMETRIC_KEY_REROLL";
+        return switch(code) {
             case DEVICE_OK -> "DEVICE_OK";
             case USR_OK -> "USR_OK";
             case DEVICE_AUTHORING_KEY_ERROR -> "DEVICE_AUTHORING_KEY_ERROR";
@@ -99,7 +90,7 @@ public interface QueenCode
             case MQ_REGISTER_TOPIC_DUPLICATE -> "MQ_REGISTER_TOPIC_DUPLICATE";
             case MQ_REGISTER_TOPIC_MODE_CONFLICT -> "MQ_REGISTER_TOPIC_MODE_CONFLICT";
             case MQ_REGISTER_TOPIC_NULL -> "MQ_REGISTER_TOPIC_NULL";
-            default -> "UNKNOWN";
+            default -> KingCode.codeOf(code);
         };
     }
 }

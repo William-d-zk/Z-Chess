@@ -23,8 +23,8 @@
 
 package com.isahl.chess.queen.io.core.features.cluster;
 
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
 /**
  * @author william.d.zk
@@ -32,4 +32,9 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 public interface IConsistent
         extends ITraceable,
                 IProtocol
-{}
+{
+    default boolean isConsistency()
+    {
+        return true;
+    }
+}

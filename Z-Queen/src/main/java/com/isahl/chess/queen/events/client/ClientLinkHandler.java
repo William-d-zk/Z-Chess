@@ -32,14 +32,13 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 import static com.isahl.chess.king.base.features.IError.Type.CONNECT_FAILED;
 
 /**
@@ -81,17 +80,35 @@ public class ClientLinkHandler
         else {
             if(event.getEventType() == IOperator.Type.CONNECTED) {
                 try {
-                    IPair connectedContent = event.getContent();
-                    IConnectActivity connectActivity = connectedContent.getFirst();
-                    AsynchronousSocketChannel channel = connectedContent.getSecond();
-                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
-                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
-                    // connectedHandled 不可能为 null
-                    IControl[] waitToSend = connectedHandled.getFirst();
-                    ISession session = connectedHandled.getSecond();
-                    IOperator<IControl[], ISession, List<ITriple>> sendTransferOperator = connectedHandled.getThird();
-                    event.produce(IOperator.Type.WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                    _Logger.debug(String.format("link mappingHandle %s,connected", session));
+                    IPair connected = event.getContent();
+                    IAioConnection connection = connected.getFirst();
+                    AsynchronousSocketChannel channel = connected.getSecond();
+                    IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    ITriple handled = connectedOperator.handle(connection, channel);
+                    boolean success = handled.getFirst();
+                    if(success) {
+                        ISession session = handled.getSecond();
+                        ITriple result = handled.getThird();
+                        if(result != null) {
+                            IOperator.Type type = result.getThird();
+                            switch(type) {
+                                case SINGLE -> {
+                                    event.produce(WRITE, new Pair<>(result.getFirst(), session), session.getEncoder());
+                                }
+                                case BATCH -> event.produce(IOperator.Type.DISPATCH, result.getFirst());
+                            }
+                        }
+                    }
+                    else {
+                        Throwable throwable = handled.getThird();
+                        if(handled.getSecond() instanceof ISession) {
+                            ISession session = handled.getSecond();
+                            session.innerClose();
+                        }
+                        connection.error();
+                        _Logger.warning("session create failed %s", throwable, connection);
+                    }
+
                 }
                 catch(Exception e) {
                     _Logger.fetal("client session create failed", e);

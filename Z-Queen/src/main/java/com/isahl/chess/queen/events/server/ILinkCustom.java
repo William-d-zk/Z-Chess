@@ -44,11 +44,11 @@ public interface ILinkCustom
     /**
      * Cluster->Link.notify(Cluster.consensus_result)
      *
-     * @param manager  session - manager
-     * @param response link发来 强一致的请求
-     * @return response
+     * @param manager session - manager
+     * @param request 需要执行一致性要求的请求
+     * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(ISessionManager manager, IControl response, long origin);
+    List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency);
 
     /**
      * 当出现了关闭 session 的需要时

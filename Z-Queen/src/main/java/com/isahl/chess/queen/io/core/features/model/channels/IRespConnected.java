@@ -23,20 +23,19 @@
 
 package com.isahl.chess.queen.io.core.features.model.channels;
 
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 /**
  * 完成连接时 构建需要首次发送的数据包，仅使用ICommand 接口
  * 使用 ISession 的 最小发送单元ICommand 作为接口规范
- * 
+ *
  * @author william.d.zk
- * 
  * @see com.isahl.chess.queen.io.core.features.model.content.ICommand.Factory
  */
 public interface IRespConnected
 {
-    default IControl[] response(ISession session)
+    default ITriple response(ISession session)
     {
         return null;
     }

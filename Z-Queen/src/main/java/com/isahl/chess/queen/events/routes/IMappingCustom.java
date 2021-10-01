@@ -23,10 +23,10 @@
 
 package com.isahl.chess.queen.events.routes;
 
-import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 /**
  * @author william.d.zk
@@ -35,13 +35,13 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 public interface IMappingCustom
 {
     /**
-     * @param manager
-     * @param session
-     * @param content
-     * @return pair
-     * first: response ->
-     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
-     * @throws Exception
+     * @param manager session manager
+     * @param session input session
+     * @param content input
+     * @return triple
+     *          first: response ->
+     *          second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
+     *          third: operator-type
      */
-    IPair handle(ISessionManager manager, ISession session, IControl content);
+    ITriple handle(ISessionManager manager, ISession session, IControl content);
 }

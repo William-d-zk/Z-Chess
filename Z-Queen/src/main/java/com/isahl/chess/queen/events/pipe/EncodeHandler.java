@@ -78,7 +78,7 @@ public class EncodeHandler
         }
         else {
             switch(event.getEventType()) {
-                case WRITE:
+                case WRITE -> {
                     IPair pairWriteContent = event.getContent();
                     IControl cmd = pairWriteContent.getFirst();
                     ISession session = pairWriteContent.getSecond();
@@ -86,17 +86,17 @@ public class EncodeHandler
                     _Logger.debug("%s→  %s | %s", IOperator.Type.WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
-                    break;
-                case WROTE:
+                }
+                case WROTE -> {
                     IPair pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.getFirst();
-                    session = pairWroteContent.getSecond();
+                    ISession session = pairWroteContent.getSecond();
                     IOperator<Integer, ISession, ITriple> wroteOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", IOperator.Type.WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
-                    break;
-                default:
-                    break;
+                }
+                default -> {
+                }
             }
         }
     }

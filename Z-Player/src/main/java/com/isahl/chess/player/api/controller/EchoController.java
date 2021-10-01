@@ -21,32 +21,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.content.ZResponse;
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.isahl.chess.player.api.model.EchoDo;
+import com.isahl.chess.player.api.service.HookOpenService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * @author william.d.zk
- */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+@RestController
+@RequestMapping("echo")
+public class EchoController
 {
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
+    private final HookOpenService _HookOpenService;
 
-    @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    @Autowired
+    public EchoController(HookOpenService hookOpenService) {_HookOpenService = hookOpenService;}
+
+    @GetMapping("hook")
+    public @ResponseBody
+    ZResponse<?> hook(
+            @RequestParam
+                    String input)
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
-    }
-
-    @Override
-    public String getName()
-    {
-        return "operator.accept-failed";
+        EchoDo echo = new EchoDo();
+        echo.setContent(input);
+        ICode code = _HookOpenService.hookLogic(echo);
+        return ZResponse.of(code, echo, "example test");
     }
 }

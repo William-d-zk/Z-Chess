@@ -79,8 +79,7 @@ public class DecodeHandler
         IOperator<IPacket, ISession, ITriple> packetOperator = event.getEventOp();
         IPacket packet = packetContent.getFirst();
         IPContext context = session.getContext();
-        if(context instanceof IEContext) {
-            IEContext eContext = (IEContext) context;
+        if(context instanceof IEContext eContext) {
             eContext.setEncryptHandler(_EncryptHandler);
         }
         try {

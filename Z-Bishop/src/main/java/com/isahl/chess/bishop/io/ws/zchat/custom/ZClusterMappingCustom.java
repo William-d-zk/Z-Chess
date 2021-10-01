@@ -23,13 +23,13 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.custom;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
+import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
+import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
@@ -54,9 +54,9 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public <E extends IConsistent> List<ITriple> consistent(ISessionManager manager, E request)
+    public <E extends IProtocol> List<ITriple> consistent(ISessionManager manager, E request, long origin)
     {
-        return _Then != null ? _Then.consistent(manager, request) : null;
+        return _Then != null ? _Then.consistent(manager, request, origin) : null;
     }
 
     @Override
@@ -72,14 +72,23 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public IOperator<IConsistent, ISession, IPair> getOperator()
+    public boolean onConsistentCall(IConsistent result)
     {
-        return this::resolve;
+        return _Then != null && _Then.onConsistentCall(result);
     }
 
     @Override
-    public IPair resolve(IConsistent request, ISession session)
+    public IConsistencyReject getReject()
     {
-        return _Then == null ? null : _Then.resolve(request, session);
+        return _Then == null ? null : _Then.getReject();
     }
+
+    @Override
+    public void register(IConsistencyHandler handler)
+    {
+        if(_Then != null) {
+            _Then.register(handler);
+        }
+    }
+
 }
