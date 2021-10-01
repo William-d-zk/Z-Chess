@@ -21,28 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.config;
+package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.king.base.features.ICode;
 
 import java.util.Objects;
 
-/**
- * @author William.d.zk
- */
-public enum Code
-        implements
-        ICode
+public enum CodeKnight
+        implements ICode
 {
-
-    PLAIN_UNSUPPORTED(0xFF00, "不支持明文"),
-    SYMMETRIC_KEY_OK(0xFF01, "对称秘钥成功"),
-    ILLEGAL_PARAM(0x0010, "非法参数 %s"),
-    SUCCESS(0x00FF, "成功"),
-    FORBIDDEN(0x0101, "禁止访问 %s"),
-    UNAUTHORIZED(0x0102, "无权访问 %s"),
-    MISS(0x010F, "访问的资源不存在 %s"),
-    ERROR(0xFFFE, "错误[ %s ]");
+    CLUSTER_NO_IN_CONGRESS(KnightCode.CLUSTER_NO_IN_CONGRESS, " 一致性请求失败 input: [ %s ]"),
+    CLUSTER_ELECTING(KnightCode.CLUSTER_ELECTING, "集群正在选举,当前不可用");
 
     private final int    _Code;
     private final String _Formatter;
@@ -56,18 +45,19 @@ public enum Code
     @Override
     public String format(Object... args)
     {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter: String.format(_Formatter, args);
+        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
     }
 
-    public String getFormatter()
+    @Override
+    public String formatter()
     {
         return _Formatter;
     }
 
-    Code(int code,
-         String formatter)
+    CodeKnight(int code, String formatter)
     {
-        _Code = code;
-        _Formatter = formatter;
+        this._Code = code;
+        this._Formatter = formatter;
     }
+
 }

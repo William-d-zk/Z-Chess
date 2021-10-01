@@ -30,11 +30,11 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
@@ -46,19 +46,20 @@ import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.INDEX_NAN;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
@@ -302,11 +303,11 @@ public class RaftPeer
         return reject;
     }
 
-    private IControl[] rejectThenVote(ISessionManager manager)
+    private List<ITriple> rejectThenVote(ISessionManager manager)
     {
 
         vote4me();
-        return createVotes(manager, Function.identity()).toArray(IControl[]::new);
+        return createVotes(manager);
     }
 
     private X71_RaftBallot stepUp(long term, long candidate)
@@ -388,9 +389,9 @@ public class RaftPeer
         }
     }
 
-    private IControl[] lowTerm(long term, long peerId)
+    private X74_RaftReject lowTerm(long term, long peerId)
     {
-        return _SelfMachine.getTerm() > term ? new X74_RaftReject[]{ reject(LOWER_TERM, peerId) } : null;
+        return _SelfMachine.getTerm() > term ? reject(LOWER_TERM, peerId) : null;
     }
 
     private boolean highTerm(long term)
@@ -398,7 +399,7 @@ public class RaftPeer
         return term > _SelfMachine.getTerm();
     }
 
-    public IPair elect(long term, long index, long indexTerm, long candidate, long commit, ISessionManager manager)
+    public ITriple elect(long term, long index, long indexTerm, long candidate, long commit, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(candidate, term);
         if(peerMachine == null) {return null;}
@@ -407,8 +408,8 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(candidate);
         peerMachine.setState(CANDIDATE);
-        IControl[] response = lowTerm(term, candidate);
-        if(response != null) {return new Pair<>(response, null);}
+        IControl response = lowTerm(term, candidate);
+        if(response != null) {return new Triple<>(response, null, SINGLE);}
         if(highTerm(term)) {
             _Logger.debug("elect {step down [%s → follower]}", _SelfMachine.getState());
             stepDown(term);
@@ -419,7 +420,7 @@ public class RaftPeer
             {
                 _Logger.debug("new term [ %d ] follower → elector | candidate: %#x", term, candidate);
                 X71_RaftBallot vote = stepUp(term, candidate);
-                return new Pair<>(new X71_RaftBallot[]{ vote }, null);
+                return new Triple<>(vote, null, SINGLE);
             }
             else {
                 _Logger.debug(
@@ -429,23 +430,23 @@ public class RaftPeer
                         _SelfMachine.getIndexTerm(),
                         index,
                         indexTerm);
-                return new Pair<>(rejectThenVote(manager), null);
+                return new Triple<>(rejectThenVote(manager), null, BATCH);
             }
         }
         // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
         else if(_SelfMachine.getCandidate() != candidate) {
             _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x", _SelfMachine.getCandidate(), candidate);
-            return new Pair<>(new X74_RaftReject[]{ reject(ALREADY_VOTE, candidate) }, null);
+            return new Triple<>(reject(ALREADY_VOTE, candidate), null, SINGLE);
         }
         return null;
     }
 
-    public IPair ballot(long term,
-                        long elector,
-                        long catchUpIndex,
-                        long catchUpTerm,
-                        long commit,
-                        ISessionManager manager)
+    public ITriple ballot(long term,
+                          long elector,
+                          long catchUpIndex,
+                          long catchUpTerm,
+                          long commit,
+                          ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(elector, term);
         if(peerMachine == null) {return null;}
@@ -454,8 +455,8 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(_SelfMachine.getPeerId());
         peerMachine.setState(ELECTOR);
-        IControl[] response = lowTerm(term, elector);
-        if(response != null) {return new Pair<>(response, null);}
+        IControl response = lowTerm(term, elector);
+        if(response != null) {return new Triple<>(response, null, SINGLE);}
         if(highTerm(term)) {
             _Logger.debug("ballot {step down [%s → follower]}", _SelfMachine.getState());
             stepDown(term);
@@ -464,12 +465,12 @@ public class RaftPeer
                 _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
         {
             beLeader();
-            return new Pair<>(createAppends(manager, Function.identity()).toArray(IControl[]::new), null);
+            return new Triple<>(createAppends(manager), null, BATCH);
         }
         return null;
     }
 
-    public IPair onResponse(long term, long preIndex, long preIndexTerm, long leader, long commit)
+    public ITriple onResponse(long term, long preIndex, long preIndexTerm, long leader, long commit)
     {
         RaftMachine peerMachine = getMachine(leader, term);
         if(peerMachine == null) {return null;}
@@ -478,8 +479,8 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(_SelfMachine.getPeerId());
         peerMachine.setState(LEADER);
-        IControl[] response = lowTerm(term, leader);
-        if(response != null) {return new Pair<>(response, null);}
+        IControl response = lowTerm(term, leader);
+        if(response != null) {return new Triple<>(response, null, SINGLE);}
         if(highTerm(term)) {
             _Logger.debug(" → append {step down [%s → follower]}", _SelfMachine.getState());
             stepDown(term);
@@ -487,7 +488,7 @@ public class RaftPeer
         if(_SelfMachine.getState()
                        .getCode() < LEADER.getCode())
         {
-            return new Pair<>(new IControl[]{ follow(term, leader, commit, preIndex, preIndexTerm) }, null);
+            return new Triple<>(follow(term, leader, commit, preIndex, preIndexTerm), null, SINGLE);
         }
         // leader
         else {
@@ -495,7 +496,7 @@ public class RaftPeer
                             _SelfMachine.getState(),
                             _SelfMachine.getCandidate(),
                             leader);
-            return new Pair<>(new IControl[]{ reject(SPLIT_CLUSTER, leader) }, null);
+            return new Triple<>(reject(SPLIT_CLUSTER, leader), null, SINGLE);
         }
     }
 
@@ -523,7 +524,7 @@ public class RaftPeer
      * first : broadcast to peers
      * second : resp to origin
      */
-    public IPair onAccept(long term, long index, long indexTerm, long follower, ISessionManager manager)
+    public ITriple onAccept(long term, long index, long indexTerm, long follower, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(follower, term);
         if(peerMachine == null) {return null;}
@@ -550,15 +551,15 @@ public class RaftPeer
                 // leader -> follower -> client
                 ISession raftClient = manager.findSessionByPrefix(raftLog.getClient());
                 if(raftClient != null) {
-                    return new Pair<>(new IControl[]{ createNotify(raftLog, raftClient) }, x79);
+                    return new Triple<>(createNotify(raftLog, raftClient), x79, SINGLE);
                 }
             }
-            return new Pair<>(null, x79);
+            return new Triple<>(null, x79, SINGLE);
         }
         return null;
     }
 
-    public IPair onReject(long term, long index, long indexTerm, long from, int code, int state)
+    public ITriple onReject(long term, long index, long indexTerm, long from, int code, int state)
     {
         RaftMachine peerMachine = getMachine(from, term);
         if(peerMachine == null) {return null;}
@@ -575,13 +576,13 @@ public class RaftPeer
             STEP_DOWN:
             {
                 switch(RaftCode.valueOf(code)) {
-                    case CONFLICT:
+                    case CONFLICT -> {
                         if(_SelfMachine.getState() == LEADER) {
                             _Logger.debug("follower %#x,match failed,rollback %d@%d",
                                           peerMachine.getPeerId(),
                                           peerMachine.getIndex(),
                                           peerMachine.getIndexTerm());
-                            return new Pair<>(new X72_RaftAppend[]{ createAppend(peerMachine, 1) }, null);
+                            return new Triple<>(createAppend(peerMachine, 1), null, SINGLE);
                         }
                         else {
                             _Logger.warning("self %#x is old leader & send logs → %#x,next-index wasn't catchup",
@@ -589,24 +590,25 @@ public class RaftPeer
                                             peerMachine.getPeerId());
                             // Ignore
                         }
-                        break;
-                    case SPLIT_CLUSTER:
+                    }
+                    case SPLIT_CLUSTER -> {
                         if(_SelfMachine.getState() == LEADER) {
                             _Logger.debug("other leader:[%#x]", peerMachine.getPeerId());
                         }
-                        break;
-                    case ALREADY_VOTE:
+                    }
+                    case ALREADY_VOTE -> {
                         if(_SelfMachine.getState() == CANDIDATE) {
                             _Logger.debug("elector[%#x] has vote", peerMachine.getPeerId());
                         }
-                        break;
-                    case OBSOLETE:
+                    }
+                    case OBSOLETE -> {
                         if(_SelfMachine.getState()
                                        .getCode() > FOLLOWER.getCode())
                         {
                             stepDown(_SelfMachine.getTerm());
                         }
                         break STEP_DOWN;
+                    }
                 }
                 if(_RaftGraph.isMajorReject(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
                     stepDown(_SelfMachine.getTerm());
@@ -752,27 +754,27 @@ public class RaftPeer
         return null;
     }
 
-    public <T> List<T> checkVoteState(RaftMachine update, ISessionManager manager, Function<ZCommand, T> mapper)
+    public List<ITriple> checkVoteState(RaftMachine update, ISessionManager manager)
     {
         if(update.getTerm() > _SelfMachine.getTerm() && update.getIndex() == _SelfMachine.getIndex() &&
            update.getIndexTerm() == _SelfMachine.getIndexTerm() && update.getCandidate() == _SelfMachine.getPeerId() &&
            update.getCommit() == _SelfMachine.getCommit() && _SelfMachine.getState() == FOLLOWER)
         {
             vote4me();
-            return createVotes(manager, mapper);
+            return createVotes(manager);
         }
         _Logger.warning("check vote failed; now: %s", _SelfMachine);
         return null;
     }
 
-    public <T> List<T> checkLogAppend(RaftMachine update, ISessionManager manager, Function<ZCommand, T> mapper)
+    public List<ITriple> checkLogAppend(RaftMachine update, ISessionManager manager)
     {
         if(_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId() &&
            _SelfMachine.getTerm() >= update.getTerm() && _SelfMachine.getIndex() >= update.getIndex() &&
            _SelfMachine.getIndexTerm() >= update.getIndexTerm() && _SelfMachine.getCommit() >= update.getCommit())
         {
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
-            return createAppends(manager, mapper);
+            return createAppends(manager);
         }
         // state change => ignore
         _Logger.warning("check leader heartbeat failed; now:%s", _SelfMachine);
@@ -785,22 +787,14 @@ public class RaftPeer
         _LogQueue.addAll(logList);
     }
 
-    public <T extends IConsistent, R> List<R> onImmediate(T request,
-                                                          ISessionManager manager,
-                                                          Function<ZCommand, R> mapper)
+    public <T extends IProtocol> List<ITriple> onImmediate(T request, ISessionManager manager, long origin)
     {
-        byte[] payload = request.encode();
-        List<R> cmds = append(request.serial(),
-                              payload,
-                              _SelfMachine.getPeerId(),
-                              request.getOrigin(),
-                              manager,
-                              mapper);
-        if(cmds == null) {
+        List<ITriple> responses = append(request.serial(), request.encode(), _SelfMachine.getPeerId(), origin, manager);
+        if(responses == null) {
             stepDown(_SelfMachine.getTerm());
             return null;
         }
-        else {return cmds;}
+        else {return responses;}
     }
 
     /**
@@ -811,27 +805,42 @@ public class RaftPeer
      * @param manager    session manager
      * @param raftClient raft client session
      * @return response in RaftCustom
-     * pair.first [response → cluster]
-     * pair.second [response → raft client]
+     * response. first [response → cluster]
+     * response. second [response → raft client]
+     * response. third [operator-type]
      */
-    public IPair onRequest(int subSerial,
-                           byte[] payload,
-                           long client,
-                           long origin,
-                           ISessionManager manager,
-                           ISession raftClient)
+    public ITriple onRequest(int subSerial,
+                             byte[] payload,
+                             long client,
+                             long origin,
+                             ISessionManager manager,
+                             ISession raftClient)
     {
-        List<ZCommand> cmds = append(subSerial, payload, client, origin, manager, Function.identity());
-        if(cmds != null && !cmds.isEmpty()) {
+        List<ITriple> responsesToCluster = append(subSerial, payload, client, origin, manager);
+        if(responsesToCluster != null && !responsesToCluster.isEmpty()) {
             X76_RaftResp x76 = raftResp(SUCCESS, client, origin, subSerial, payload);
             x76.putSession(raftClient);
-            return new Pair<>(cmds.toArray(ZCommand[]::new), x76);
+            return new Triple<>(responsesToCluster, x76, BATCH);
         }
         else {
             X76_RaftResp x76 = raftResp(WAL_FAILED, client, origin, subSerial, payload);
             x76.putSession(raftClient);
-            return new Pair<>(null, x76);
+            return new Triple<>(null, x76, SINGLE);
         }
+    }
+
+    public ITriple onNotify(long logIndex)
+    {
+        LogEntry entry = getLogEntry(logIndex);
+        if(entry != null) {
+            X76_RaftResp x76 = raftResp(SUCCESS,
+                                        entry.getClient(),
+                                        entry.getOrigin(),
+                                        entry.subSerial(),
+                                        entry.getContent());
+            return new Triple<>(null, x76, SINGLE);
+        }
+        return null;
     }
 
     public X76_RaftResp raftResp(RaftCode code, long client, long origin, int subSerial, byte[] payload)
@@ -845,12 +854,7 @@ public class RaftPeer
         return x76;
     }
 
-    private <R> List<R> append(int subSerial,
-                               byte[] content,
-                               long client,
-                               long origin,
-                               ISessionManager manager,
-                               Function<ZCommand, R> mapper)
+    private List<ITriple> append(int subSerial, byte[] content, long client, long origin, ISessionManager manager)
     {
         _Logger.debug("leader append new log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
@@ -864,13 +868,13 @@ public class RaftPeer
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _SelfMachine.apply(_RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
-            return createAppends(manager, mapper);
+            return createAppends(manager);
         }
         _Logger.fetal("RAFT WAL failed!");
         return null;
     }
 
-    private <T> List<T> createVotes(ISessionManager manager, Function<ZCommand, T> mapper)
+    private List<ITriple> createVotes(ISessionManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .keySet()
@@ -893,11 +897,11 @@ public class RaftPeer
                              return null;
                          })
                          .filter(Objects::nonNull)
-                         .map(mapper)
+                         .map(this::map)
                          .collect(Collectors.toList());
     }
 
-    private <T> List<T> createAppends(ISessionManager manager, Function<ZCommand, T> mapper)
+    private List<ITriple> createAppends(ISessionManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .values()
@@ -916,7 +920,7 @@ public class RaftPeer
                              }
                          })
                          .filter(Objects::nonNull)
-                         .map(mapper)
+                         .map(this::map)
                          .collect(Collectors.toList());
     }
 
@@ -997,11 +1001,13 @@ public class RaftPeer
         return x72;
     }
 
+    @Override
     public boolean isInCongress()
     {
         return _RaftConfig.isInCongress();
     }
 
+    @Override
     public long getPeerId()
     {
         return _SelfMachine.getPeerId();
@@ -1093,5 +1099,14 @@ public class RaftPeer
         x77.setClient(raftLog.getClient());
         x77.putSession(session);
         return x77;
+    }
+
+    private Triple<ZCommand, ISession, IPipeEncoder> map(ZCommand source)
+    {
+        // source 一定持有 session 在上一步完成了这个操作。
+        return new Triple<>(source,
+                            source.session(),
+                            source.session()
+                                  .getEncoder());
     }
 }

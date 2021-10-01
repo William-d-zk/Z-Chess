@@ -37,17 +37,13 @@ import java.nio.channels.AsynchronousSocketChannel;
  * @author william.d.zk
  */
 public class SocketConnected
-        implements
-        IOperator<IAioConnection,
-                  AsynchronousSocketChannel,
-                  ITriple>
+        implements IOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
 {
     private final AioReader _AioReader = new AioReader();
 
     @Override
     public ITriple handle(IAioConnection connection, AsynchronousSocketChannel channel) throws ZException
     {
-
         ISession session = null;
         try {
             session = connection.createSession(channel, connection);
@@ -57,18 +53,18 @@ public class SocketConnected
             session.readNext(_AioReader);
             return new Triple<>(true, session, connection.response(session));
         }
-        catch (IOException e) {
+        catch(IOException e) {
             try {
                 channel.close();
             }
-            catch (IOException ex) {
+            catch(IOException ex) {
                 ex.printStackTrace();
             }
             return new Triple<>(false, channel, e);
         }
-        catch (Exception e) {
+        catch(Exception e) {
             // 此时session!=null
-            return session != null ? new Triple<>(false, session, e): new Triple<>(false, channel, e);
+            return session != null ? new Triple<>(false, session, e) : new Triple<>(false, channel, e);
         }
     }
 

@@ -21,22 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.cluster;
+package com.isahl.chess.knight.cluster.config;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.config.QueenCode;
 
-/**
- * @author william.d.zk
- */
-public interface IConsistencyCustom
+public interface KnightCode
+        extends QueenCode
 {
-    default IOperator<IConsistent, ISession, IPair> getOperator()
+    int CLUSTER_NO_IN_CONGRESS = 0x00700;
+    int CLUSTER_ELECTING       = 0x00701;
+
+    static String codeOf(int code)
     {
-        return this::resolve;
+        return switch(code) {
+            case CLUSTER_NO_IN_CONGRESS -> "node.%#x is not in congress";
+            case CLUSTER_ELECTING -> "cluster is electing!";
+            default -> QueenCode.codeOf(code);
+        };
     }
 
-    IPair resolve(IConsistent request, ISession session);
 }

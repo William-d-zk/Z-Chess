@@ -32,4 +32,6 @@ public interface IClusterPeer
     long getPeerId();
 
     long generateId();
+
+    boolean isInCongress();
 }

@@ -25,11 +25,11 @@ package com.isahl.chess.knight.cluster;
 
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
@@ -40,9 +40,12 @@ import com.isahl.chess.queen.io.core.net.socket.BaseAioServer;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
+import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
 /**
  * @author william.d.zk
@@ -89,13 +92,14 @@ public interface IClusterNode
             }
 
             @Override
-            public IControl[] response(ISession session)
+            public ITriple response(ISession session)
             {
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId());
-                    return new IControl[]{ x106 };
+                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                                        session,
+                                        SINGLE);
                 }
                 return null;
             }
@@ -150,13 +154,14 @@ public interface IClusterNode
             }
 
             @Override
-            public IControl[] response(ISession session)
+            public ITriple response(ISession session)
             {
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId());
-                    return new IControl[]{ x106 };
+                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                                        session,
+                                        SINGLE);
                 }
                 return null;
             }
@@ -166,4 +171,8 @@ public interface IClusterNode
     void setupPeer(String host, int port) throws IOException;
 
     void setupGate(String host, int port) throws IOException;
+
+    boolean isOwnedBy(long origin);
+
+    IClusterPeer getPeer();
 }

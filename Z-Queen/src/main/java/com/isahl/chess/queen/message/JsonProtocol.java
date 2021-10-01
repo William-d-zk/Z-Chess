@@ -21,32 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.queen.message;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+public abstract class JsonProtocol
+        implements IProtocol
 {
-
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
+    protected int mLength;
 
     @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    public byte[] encode()
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
+        byte[] data = JsonUtil.writeValueAsBytes(this);
+        mLength = data == null ? 0 : data.length;
+        return data;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        return mLength = data.length;
+    }
+
+    @Override
+    public byte[] payload()
+    {
         return null;
     }
 
     @Override
-    public String getName()
+    public int dataLength()
     {
-        return "operator.accept-failed";
+        return mLength;
     }
 }

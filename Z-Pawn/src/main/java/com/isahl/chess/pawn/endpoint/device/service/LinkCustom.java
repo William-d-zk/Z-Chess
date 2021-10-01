@@ -26,18 +26,16 @@ package com.isahl.chess.pawn.endpoint.device.service;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X76_RaftResp;
 import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X79_RaftAdjudge;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +62,7 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public IPair handle(ISessionManager manager, ISession session, IControl input)
+    public ITriple handle(ISessionManager manager, ISession session, IControl input)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isHandleProtocol(input)) {
@@ -75,35 +73,13 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
+    public List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency)
     {
-
-        IProtocol consensusBody;
-        boolean isConsistency = true;
-        switch(response.serial()) {
-            case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
-                if(response.serial() == X76_RaftResp.COMMAND) {
-                    X76_RaftResp x76 = (X76_RaftResp) response;
-                    isConsistency = x76.getCode() == RaftCode.SUCCESS.getCode();
-                }
-                int cmd = response.subSerial();
-                consensusBody = ZSortHolder.CREATE(cmd, response.payload());
-                _Logger.debug("consensus : %s", consensusBody);
-            }
-            default -> {
-                /*
-                 * single mode
-                 */
-                consensusBody = response;
-                _Logger.info("notify client single mode");
-            }
-        }
         for(IAccessService service : _AccessServices) {
-            if(service.isHandleProtocol(consensusBody)) {
-                return service.onConsistentNotify(manager, origin, consensusBody, isConsistency);
+            if(service.isHandleProtocol(request)) {
+                return service.onConsistencyResult(manager, origin, request, isConsistency);
             }
         }
-
         return null;
     }
 
@@ -124,21 +100,19 @@ public class LinkCustom
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
     {
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
-            case X76_RaftResp.COMMAND:
-            case X79_RaftAdjudge.COMMAND:
-                //TODO X79 是在 leader's Linker 进行处理，
+            case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
+                int cmd = consistency.subSerial();
+                IProtocol consensusBody = ZSortHolder.CREATE(cmd, consistency.payload());
+                return (T) consensusBody;
+            }
+            default -> {
+                return null;
+            }
         }
-        /*
-        int cmd = consensus.getSubSerial();
-        IControl consensusBody = ZSortHolder.create(cmd);
-        consensusBody.decode(consensus.getPayload());
-        switch(consensusBody.serial()) {
-        }
-         */
-        return (T) consistency;
     }
 }

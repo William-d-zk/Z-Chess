@@ -26,7 +26,7 @@ package com.isahl.chess.player.api.controller;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.config.Code;
+import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
@@ -82,7 +82,7 @@ public class DeviceController
             DeviceEntity exist = _MixOpenService.findByToken(token);
             if(exist != null) {return ZResponse.success(exist);}
         }
-        return ZResponse.error(Code.MISS.getCode(), "device miss");
+        return ZResponse.error(CodeKing.MISS.getCode(), "device miss");
     }
 
     @GetMapping("manager/query")
@@ -95,13 +95,13 @@ public class DeviceController
             DeviceEntity exist = _MixOpenService.findBySn(sn);
             if(exist != null) {return ZResponse.success(exist);}
         }
-        return ZResponse.error(Code.MISS.getCode(), "device miss");
+        return ZResponse.error(CodeKing.MISS.getCode(), "device miss");
     }
 
     /**
      * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
      * 推荐使用带有 查询条件的请求方式
-     *
+     * 引入 click-house 建立搜索引擎的模式
      * @param page
      * @param size
      * @return

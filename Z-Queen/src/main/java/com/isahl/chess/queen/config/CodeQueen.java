@@ -21,22 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.cluster.features;
+package com.isahl.chess.queen.config;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.king.base.features.ICode;
 
-/**
- * @author william.d.zk
- */
+import java.util.Objects;
 
-public interface IConsistencyHandler
+public enum CodeQueen
+        implements ICode
 {
-    default <T> IOperator<IConsistent, T, IPair> getOperator()
+    ;
+
+    private final int    _Code;
+    private final String _Formatter;
+
+    @Override
+    public int getCode(Object... condition)
     {
-        return this::resolve;
+        return _Code;
     }
 
-    <T> IPair resolve(IConsistent request, T context);
+    @Override
+    public String format(Object... args)
+    {
+        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
+    }
+
+    @Override
+    public String formatter()
+    {
+        return _Formatter;
+    }
+
+    CodeQueen(int code, String formatter)
+    {
+        this._Code = code;
+        this._Formatter = formatter;
+    }
 }

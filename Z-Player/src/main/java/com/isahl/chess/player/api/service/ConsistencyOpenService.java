@@ -23,17 +23,22 @@
 
 package com.isahl.chess.player.api.service;
 
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.config.CodeKing;
+import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
+import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
+import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 public class ConsistencyOpenService
@@ -44,22 +49,31 @@ public class ConsistencyOpenService
 
     private final DeviceNode _DeviceNode;
     private final RaftPeer   _RaftPeer;
+    private final RaftCustom _RaftCustom;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer)
+    public ConsistencyOpenService(DeviceNode deviceNode,
+                                  RaftPeer raftPeer,
+                                  RaftCustom raftCustom,
+                                  List<IConsistencyHandler> handlers)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
+        _RaftCustom = raftCustom;
+        handlers.forEach(raftCustom::register);
     }
 
     @Override
-    public void submit(String content, long origin)
+    public ICode submit(String content)
     {
-        if(IoUtil.isBlank(content)) {return;}
+        if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
         ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                                _RaftPeer.generateId(),
-                                                                origin);
-        submit(consistency, _DeviceNode, Pair::new);
-        _Logger.debug("consistent submit %s", consistency);
+                                                                _RaftPeer.generateId());
+        ICode result = submit(consistency, _DeviceNode, _RaftCustom.getReject());
+
+        if(result.getCode() == KingCode.SUCCESS) {
+            _Logger.debug("consistency submit ok:[ %s ]", content);
+        }
+        return result;
     }
 }

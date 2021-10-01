@@ -21,52 +21,52 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.server;
+package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.events.cluster.DecodedDispatcher;
+import com.isahl.chess.king.config.CodeKing;
+import com.isahl.chess.pawn.endpoint.device.DeviceNode;
+import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.lmax.disruptor.RingBuffer;
+import org.springframework.stereotype.Service;
 
-/**
- * @author william.d.zk
- */
-public class MixDecodedDispatcher
-        extends DecodedDispatcher
+import java.util.concurrent.locks.ReentrantLock;
+
+@Service
+public class HookOpenService
+
 {
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
-    private final RingBuffer<QEvent> _Link;
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    public MixDecodedDispatcher(RingBuffer<QEvent> link,
-                                RingBuffer<QEvent> cluster,
-                                RingBuffer<QEvent> error,
-                                RingBuffer<QEvent>[] workers)
-    {
-        super(cluster, error, workers);
-        _Link = link;
-    }
+    private final DeviceNode _DeviceNode;
 
-    @Override
-    protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
+    public HookOpenService(DeviceNode deviceNode) {_DeviceNode = deviceNode;}
+
+    public ICode hookLogic(EchoDo request)
     {
-        if(mode == ISort.Mode.LINK) {
-            if(cmd.isMapping()) {
-                return new Pair<>(_Link, IOperator.Type.LINK);
+        final RingBuffer<QEvent> _Publisher = _DeviceNode.getPublisher(IOperator.Type.SERVICE);
+        final ReentrantLock _Lock = _DeviceNode.getLock(IOperator.Type.SERVICE);
+        if(_Lock.tryLock()) {
+            try {
+                long sequence = _Publisher.next();
+                try {
+                    QEvent event = _Publisher.get(sequence);
+                    event.produce(IOperator.Type.SERVICE, new Pair<>(request, null), null);
+                    return CodeKing.SUCCESS;
+                }
+                finally {
+                    _Publisher.publish(sequence);
+                }
             }
-            else {
-                return new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
+            finally {
+                _Lock.unlock();
             }
         }
-        return super.getNextPipe(mode, cmd);
+        return CodeKing.LOCKED;
     }
 
-    public Logger getLogger()
-    {
-        return _Logger;
-    }
 }

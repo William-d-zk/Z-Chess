@@ -32,9 +32,10 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.Objects;
@@ -78,21 +79,29 @@ public class DecodedDispatcher
             }
         }
         else {
-            if(event.getEventType() == IOperator.Type.DISPATCH) {
-                IPair dispatchContent = event.getContent();
-                ISession session = dispatchContent.getSecond();
-                IControl[] commands = dispatchContent.getFirst();
-                if(Objects.nonNull(commands)) {
-                    for(IControl cmd : commands) {
-                        // dispatch 到对应的 处理器里
-                        dispatch(cmd, session, event.getEventOp());
+            switch(event.getEventType()) {
+                case DISPATCH -> {
+                    IPair dispatchContent = event.getContent();
+                    ISession session = dispatchContent.getSecond();
+                    IControl[] commands = dispatchContent.getFirst();
+                    if(Objects.nonNull(commands)) {
+                        for(IControl cmd : commands) {
+                            // dispatch 到对应的 处理器里
+                            dispatch(cmd, session, event.getEventOp());
+                        }
                     }
                 }
-            }
-            else if(event.getEventType() != IOperator.Type.NULL) {
-                _Logger.warning("decoded dispatcher event type error: %s",
-                                event.getEventType()
-                                     .name());
+                case SERVICE -> {
+                    IProtocol content = event.getContent()
+                                             .getFirst();
+                    RingBuffer<QEvent> publisher = _LogicWorkers[content.hashCode() & _WorkerMask];
+                    publish(publisher, IOperator.Type.SERVICE, new Pair<>(content, null), null);
+                }
+                default -> {
+                    _Logger.warning("decoded dispatcher event type error: %s",
+                                    event.getEventType()
+                                         .name());
+                }
             }
         }
         event.reset();

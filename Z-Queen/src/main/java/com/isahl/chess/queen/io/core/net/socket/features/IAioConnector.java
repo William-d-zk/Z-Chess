@@ -35,18 +35,11 @@ import java.nio.channels.CompletionHandler;
  * @author william.d.zk
  */
 public interface IAioConnector
-        extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
-        IAioConnection,
-        ITask,
-        ISslOption
+        extends CompletionHandler<Void, AsynchronousSocketChannel>,
+                IAioConnection,
+                ITask,
+                ISslOption
 {
-    @Override
-    IOperator<Throwable,
-              IAioConnector,
-              Void> getErrorOperator();
-
     @Override
     default void completed(Void result, AsynchronousSocketChannel channel)
     {

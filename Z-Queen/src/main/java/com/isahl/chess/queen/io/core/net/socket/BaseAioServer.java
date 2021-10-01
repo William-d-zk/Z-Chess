@@ -45,10 +45,10 @@ public abstract class BaseAioServer
         extends AioCreator
         implements IAioServer
 {
-    private final AcceptFailed      _AcceptFailed    = new AcceptFailed();
-    private final SocketConnected   _SocketConnected = new SocketConnected();
-    private final InetSocketAddress _LocalBind;
-    private volatile boolean              vValid;
+    private final    AcceptFailed      _AcceptFailed    = new AcceptFailed();
+    private final    SocketConnected   _SocketConnected = new SocketConnected();
+    private final    InetSocketAddress _LocalBind;
+    private volatile boolean           vValid;
 
     protected BaseAioServer(String serverHost, int serverPort, ISocketConfig socketConfig)
     {
@@ -88,7 +88,7 @@ public abstract class BaseAioServer
     }
 
     @Override
-    public IOperator<Throwable, IAioServer, Void> getErrorOperator()
+    public IOperator<Throwable, IAioConnection, Void> getErrorOperator()
     {
         return _AcceptFailed;
     }

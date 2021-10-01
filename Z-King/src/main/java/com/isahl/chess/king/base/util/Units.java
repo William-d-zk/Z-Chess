@@ -25,7 +25,7 @@ package com.isahl.chess.king.base.util;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.config.Code;
+import com.isahl.chess.king.config.CodeKing;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -766,7 +766,7 @@ public enum Units
                      .map(units -> units.parse(input))
                      .filter(Triple::getFirst)
                      .findAny()
-                     .orElseThrow(() -> new ZException(Code.ILLEGAL_PARAM.format(input)))
+                     .orElseThrow(() -> new ZException(CodeKing.ILLEGAL_PARAM.format(input)))
                      .getSecond();
     }
 }

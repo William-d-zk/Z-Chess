@@ -26,17 +26,21 @@ package com.isahl.chess.pawn.endpoint.device.service;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk
@@ -46,14 +50,14 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final T                    _Manager;
+    private final T                    _ClusterNode;
     private final IHealth              _Health;
     private final List<IAccessService> _AccessService;
     private final List<IHandleHook>    _HandleHooks;
 
-    public LogicHandler(T manager, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks)
+    public LogicHandler(T cluster, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks)
     {
-        _Manager = manager;
+        _ClusterNode = cluster;
         _Health = new Health(slot);
         _AccessService = accessAdapters;
         _HandleHooks = hooks;
@@ -68,23 +72,36 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
     @Override
     public ISessionManager getISessionManager()
     {
-        return _Manager;
+        return _ClusterNode;
     }
 
     @Override
-    public IControl[] handle(ISessionManager manager, ISession session, IControl content) throws ZException
+    public List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws ZException
     {
         List<? extends IControl> pushList = null;
         for(IAccessService service : _AccessService) {
             if(service.isHandleProtocol(content)) {
                 pushList = service.handle(manager, session, content);
-                service.clusterHandle(manager, content, _Manager, pushList);
             }
         }
         for(IHandleHook hook : _HandleHooks) {
             hook.handle(content, pushList);
         }
-        return (pushList == null || pushList.isEmpty()) ? null : pushList.toArray(new IControl[0]);
+        return (pushList == null || pushList.isEmpty()) ? null : pushList.stream()
+                                                                         .map(cmd->new Triple<>(cmd,
+                                                                                                session,
+                                                                                                session.getEncoder()))
+                                                                         .collect(Collectors.toList());
+    }
+
+    @Override
+    public void serviceHandle(IProtocol request) throws Exception
+    {
+        for(IAccessService service : _AccessService) {
+            if(service.isHandleProtocol(request)) {
+                service.consume(request);
+            }
+        }
     }
 
     @Override

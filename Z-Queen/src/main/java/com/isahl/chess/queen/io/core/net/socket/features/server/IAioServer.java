@@ -60,6 +60,4 @@ public interface IAioServer
         server.pendingAccept();
     }
 
-    @Override
-    IOperator<Throwable, IAioServer, Void> getErrorOperator();
 }

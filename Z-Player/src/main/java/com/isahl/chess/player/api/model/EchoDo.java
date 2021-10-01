@@ -21,32 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.functions;
+package com.isahl.chess.player.api.model;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.queen.message.JsonProtocol;
 
-/**
- * @author william.d.zk
- */
-public class AcceptFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class EchoDo
+        extends JsonProtocol
 {
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
+    public final static int _SERIAL = OTHER_SERIAL + 1;
+
+    private String mContent;
 
     @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
+    public int serial()
     {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
+        return _SERIAL;
     }
 
     @Override
-    public String getName()
+    public int superSerial()
     {
-        return "operator.accept-failed";
+        return OTHER_SERIAL;
+    }
+
+    public String getContent()
+    {
+        return mContent;
+    }
+
+    public void setContent(String content)
+    {
+        this.mContent = content;
     }
 }
