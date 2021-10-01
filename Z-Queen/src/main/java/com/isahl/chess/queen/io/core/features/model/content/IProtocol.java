@@ -40,7 +40,8 @@ public interface IProtocol
     int FRAME_SERIAL      = 0x200;// 0x201~0x2FE(513~766)
     int INTERNAL_SERIAL   = 0x400;// 0x401~0x4FE(1025~1278)
     int DB_SERIAL         = 0x800;// 0x801~0x8FE(2049~2302)
-    int CONSISTENT_SERIAL = 0xF00;// 0xF01~0xFFE(3841~4094)
+    int CONSISTENT_SERIAL = 0xE00;// 0xE01~0xEFE(3584~3838)
+    int OTHER_SERIAL      = 0xF00;// 0xF01~0xFFE(3841~4094)
 
     /**
      * @return max in encoding min in decoding

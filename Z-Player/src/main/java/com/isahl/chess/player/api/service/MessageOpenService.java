@@ -43,8 +43,8 @@ import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 @Service
 public class MessageOpenService
 {
-    private final Logger                _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final ZUID                  _ZUID;
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final ZUID   _ZUID;
 
     @Autowired
     public MessageOpenService(IRaftConfig clusterConfig)
@@ -61,7 +61,7 @@ public class MessageOpenService
                       .getValue() > OP_INSERT.getValue())
             {
                 try {
-//                    entity = _JpaRepository.getById(message.getId());
+                    //                    entity = _JpaRepository.getById(message.getId());
                     break EXIST;
                 }
                 catch(EntityNotFoundException | LazyInitializationException | JpaObjectRetrievalFailureException e) {
@@ -74,7 +74,7 @@ public class MessageOpenService
             entity.setOrigin(message.getOrigin());
             entity.setTopic(message.getTopic());
         }
-//        entity = _JpaRepository.save(entity);
+        //        entity = _JpaRepository.save(entity);
         return entity;
     }
 

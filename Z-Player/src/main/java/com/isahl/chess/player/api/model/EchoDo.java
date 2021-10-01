@@ -21,46 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.replicate;
+package com.isahl.chess.player.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.king.base.features.IReset;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.queen.message.JsonProtocol;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-public abstract class BaseMeta
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class EchoDo
         extends JsonProtocol
-        implements IReset
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    public final static int _SERIAL = OTHER_SERIAL + 1;
 
-    void flush()
+    private String mContent;
+
+    @Override
+    public int serial()
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-            mFile.getFD()
-                 .sync();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
+        return _SERIAL;
     }
 
-    void close()
+    @Override
+    public int superSerial()
     {
-        flush();
-        try {
-            mFile.close();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
+        return OTHER_SERIAL;
+    }
+
+    public String getContent()
+    {
+        return mContent;
+    }
+
+    public void setContent(String content)
+    {
+        this.mContent = content;
     }
 }

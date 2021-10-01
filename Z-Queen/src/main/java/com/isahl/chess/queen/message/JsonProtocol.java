@@ -21,46 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.replicate;
+package com.isahl.chess.queen.message;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-public abstract class BaseMeta
-        extends JsonProtocol
-        implements IReset
+/**
+ * @author william.d.zk
+ */
+public abstract class JsonProtocol
+        implements IProtocol
 {
+    protected int mLength;
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void flush()
+    @Override
+    public byte[] encode()
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-            mFile.getFD()
-                 .sync();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
+        byte[] data = JsonUtil.writeValueAsBytes(this);
+        mLength = data == null ? 0 : data.length;
+        return data;
     }
 
-    void close()
+    @Override
+    public int decode(byte[] data)
     {
-        flush();
-        try {
-            mFile.close();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
+        return mLength = data.length;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return null;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
     }
 }

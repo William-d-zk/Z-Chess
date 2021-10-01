@@ -39,6 +39,7 @@ public interface KingCode
     int ILLEGAL_PARAM                  = 0xF0002;
     int FORBIDDEN                      = 0xF0003;
     int UNAUTHORIZED                   = 0xF0004;
+    int LOCKED                         = 0xF000A;
     int LOCAL_FILE_SYSTEM_WRITE_FAILED = 0xF1000;
 
     static String codeOf(int code)

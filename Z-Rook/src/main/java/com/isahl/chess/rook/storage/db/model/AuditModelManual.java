@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.queen.messages.JsonProtocol;
+import com.isahl.chess.queen.message.JsonProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -48,17 +48,21 @@ import java.time.LocalDateTime;
 /**
  * @author william.d.zk
  */
-@TypeDefs({ @TypeDef(name = "string-array",
-                     typeClass = StringArrayType.class),
-            @TypeDef(name = "int-array",
-                     typeClass = IntArrayType.class),
-            @TypeDef(name = "list-array",
-                     typeClass = ListArrayType.class)
+@TypeDefs({
+        @TypeDef(name = "string-array",
+                 typeClass = StringArrayType.class),
+        @TypeDef(name = "int-array",
+                 typeClass = IntArrayType.class),
+        @TypeDef(name = "list-array",
+                 typeClass = ListArrayType.class)
 })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = { "created_at", "updated_at" },
+@JsonIgnoreProperties(value = {
+        "created_at",
+        "updated_at"
+},
                       allowGetters = true)
 public abstract class AuditModelManual
         extends JsonProtocol
@@ -113,5 +117,5 @@ public abstract class AuditModelManual
         return AUDIT_MODEL_SERIAL;
     }
 
-    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 100;
+    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 101;
 }

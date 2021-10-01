@@ -251,7 +251,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyNotify(ISessionManager manager,
+    public List<ITriple> onConsistencyResult(ISessionManager manager,
                                              long origin,
                                              IProtocol consensusBody,
                                              boolean isConsistency)

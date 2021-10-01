@@ -47,6 +47,7 @@ import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
@@ -57,7 +58,6 @@ import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.tasks.ClientCore;
-import com.isahl.chess.queen.messages.JsonProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -128,7 +128,7 @@ public class ClientPool
             }
 
             @Override
-            public void serviceHandle(JsonProtocol request) throws Exception
+            public void serviceHandle(IProtocol request) throws Exception
             {
 
             }

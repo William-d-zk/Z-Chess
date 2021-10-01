@@ -71,9 +71,9 @@ public class DeviceService
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final IDeviceJpaRepository _DeviceJpaRepository;
-    private final CacheManager _CacheManager;
-    private final CryptoUtil   _CryptoUtil = new CryptoUtil();
-    private final MixConfig    _MixConfig;
+    private final CacheManager         _CacheManager;
+    private final CryptoUtil           _CryptoUtil       = new CryptoUtil();
+    private final MixConfig            _MixConfig;
     private final TimeWheel            _TimeWheel;
     private final ShadowBatch          _BatchHandleLogin = new ShadowBatch();
     private final ShadowBatch          _BatchHandleIdle  = new ShadowBatch();

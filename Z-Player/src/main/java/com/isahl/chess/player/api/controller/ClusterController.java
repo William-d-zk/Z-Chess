@@ -25,6 +25,7 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.player.api.model.ClusterDo;
@@ -35,10 +36,11 @@ import org.springframework.web.bind.annotation.*;
  * @author william.d.zk
  * @date 2021/6/11
  */
-@RequestMapping("cluster")
 @RestController
+@RequestMapping("cluster")
 public class ClusterController
 {
+    private final Logger       _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final IRaftService _RaftService;
 
     @Autowired
@@ -63,3 +65,7 @@ public class ClusterController
     }
 
 }
+
+
+
+
