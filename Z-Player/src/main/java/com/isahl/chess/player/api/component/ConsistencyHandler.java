@@ -23,18 +23,26 @@
 
 package com.isahl.chess.player.api.component;
 
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class ConsistencyHandler
         implements IConsistencyHandler
 {
 
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
     @Override
     public boolean onConsistencyCall(IConsistent result)
     {
+        byte[] sub = result.encode();
+        String json = new String(sub, StandardCharsets.UTF_8);
+        _Logger.debug("consistency %s", json);
         return false;
     }
 }

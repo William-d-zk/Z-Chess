@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.messages.JsonProtocol;
 
 import java.util.List;
 
@@ -49,8 +49,8 @@ public interface ILogicHandler
     {
         switch(event.getEventType()) {
             case SERVICE -> {
-                JsonProtocol request = event.getContent()
-                                            .getFirst();
+                IProtocol request = event.getContent()
+                                         .getFirst();
                 try {
                     serviceHandle(request);
                 }
@@ -89,7 +89,10 @@ public interface ILogicHandler
 
     List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws Exception;
 
-    void serviceHandle(JsonProtocol request) throws Exception;
+    default void serviceHandle(IProtocol request) throws Exception
+    {
+
+    }
 
     interface factory
     {

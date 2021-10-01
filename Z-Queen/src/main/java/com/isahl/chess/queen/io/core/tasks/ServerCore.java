@@ -358,9 +358,9 @@ public class ServerCore
         Arrays.setAll(_LogicProcessors,
                       slot->new Z1Processor<>(_LogicEvents[slot], _LogicBarriers[slot], logicFactory.create(slot)));
         final RingBuffer<QEvent>[] _DecodedDispatchEvents = new RingBuffer[_DecoderCount + 1];
-        IoUtil.addArray(_DecodedDispatchEvents, _ReadEvents, _LocalLogicEvent);
+        IoUtil.addArray(_ReadEvents, _DecodedDispatchEvents, _LocalLogicEvent);
         final SequenceBarrier[] _DecodedDispatchBarriers = new SequenceBarrier[_DecodedDispatchEvents.length];
-        IoUtil.addArray(_DecodedDispatchBarriers, _DecodedBarriers, _LocalLogicEvent.newBarrier());
+        IoUtil.addArray(_DecodedBarriers, _DecodedDispatchBarriers, _LocalLogicEvent.newBarrier());
         /* Decoded dispatcher 将所有解码完成的结果派发到 _LinkDecoded,_ClusterDecoded,以及_LogicEvents进行逻辑处理 */
         final Z2Processor<QEvent> _DecodedDispatcher = new Z2Processor<>(_DecodedDispatchEvents,
                                                                          _DecodedDispatchBarriers,
@@ -472,7 +472,7 @@ public class ServerCore
         return switch(type) {
             case BIZ_LOCAL -> _LocalLock;
             case CLUSTER_LOCAL -> _ClusterLock;
-            case LOGIC -> _LocalLogicLock;
+            case SERVICE -> _LocalLogicLock;
             case CLUSTER_TOPOLOGY, CONSISTENCY_SERVICE -> _ConsensusApiLock;
             case CLUSTER_TIMER -> _ConsensusLock;
             default -> throw new IllegalArgumentException(String.format("error type:%s", type));
@@ -485,7 +485,7 @@ public class ServerCore
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalSendEvent;
             case CLUSTER_LOCAL -> _ClusterLocalSendEvent;
-            case LOGIC -> _LocalLogicEvent;
+            case SERVICE -> _LocalLogicEvent;
             case CLUSTER_TOPOLOGY, CONSISTENCY_SERVICE -> _ConsensusApiEvent;
             case CLUSTER_TIMER -> _ConsensusEvent;
             default -> throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));

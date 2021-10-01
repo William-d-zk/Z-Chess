@@ -21,59 +21,48 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi.plugin;
+package com.isahl.chess.player.api.component;
 
-import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
-import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X105_SslHandShake;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
+import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
-/**
- * @author william.d.zk
- */
 @Component
-public class WebSocketAccessPlugin
+public class EchoAccessPlugin
         implements IAccessService
 {
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     @Override
     public boolean isHandleProtocol(IProtocol protocol)
     {
-        return protocol.serial() >= X101_HandShake.COMMAND && protocol.serial() <= X105_SslHandShake.COMMAND;
+        return protocol.serial() == EchoDo._SERIAL;
     }
 
     @Override
     public List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content)
     {
-
-        switch(content.serial()) {
-            case X103_Ping.COMMAND -> {
-                return Collections.singletonList(new X104_Pong());
-            }
-        }
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ITriple onLink(ISessionManager manager, ISession session, IControl input)
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void onOffline(ISession session)
     {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -82,7 +71,14 @@ public class WebSocketAccessPlugin
                                              IProtocol consensusBody,
                                              boolean isConsistency)
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void consume(IProtocol request)
+    {
+        EchoDo echo = (EchoDo) request;
+        String content = echo.getContent();
+        _Logger.debug("echo: [ %s ]", content);
+    }
 }

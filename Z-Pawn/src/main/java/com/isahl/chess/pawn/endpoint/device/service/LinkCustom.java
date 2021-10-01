@@ -77,7 +77,7 @@ public class LinkCustom
     {
         for(IAccessService service : _AccessServices) {
             if(service.isHandleProtocol(request)) {
-                return service.onConsistencyNotify(manager, origin, request, isConsistency);
+                return service.onConsistencyResult(manager, origin, request, isConsistency);
             }
         }
         return null;

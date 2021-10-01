@@ -35,9 +35,9 @@ import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
-import com.isahl.chess.queen.messages.JsonProtocol;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -95,7 +95,7 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
     }
 
     @Override
-    public void serviceHandle(JsonProtocol request) throws Exception
+    public void serviceHandle(IProtocol request) throws Exception
     {
         for(IAccessService service : _AccessService) {
             if(service.isHandleProtocol(request)) {

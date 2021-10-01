@@ -42,6 +42,7 @@ public enum CodeKing
     UNAUTHORIZED(KingCode.UNAUTHORIZED, "无权访问 %s"),
     MISS(KingCode.MISS, "访问的资源不存在 %s"),
     ERROR(KingCode.ERROR, "错误[ %s ]"),
+    LOCKED(KingCode.LOCKED, " 获取锁失败 "),
     UNKNOWN(KingCode.UNKNOWN, "未知错误[ %s ]"),
     LOCAL_FILE_SYSTEM_WRITE_FAILED(KingCode.LOCAL_FILE_SYSTEM_WRITE_FAILED, "本地文件写入错误[ %s ]");
 

@@ -44,7 +44,7 @@ public interface IAccessService
 
     void onOffline(ISession session);
 
-    List<ITriple> onConsistencyNotify(ISessionManager manager,
+    List<ITriple> onConsistencyResult(ISessionManager manager,
                                       long origin,
                                       IProtocol consensusBody,
                                       boolean isConsistency);

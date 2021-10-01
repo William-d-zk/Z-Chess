@@ -21,42 +21,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.messages;
+package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.king.base.content.ZResponse;
+import com.isahl.chess.king.base.features.ICode;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.player.api.model.EchoDo;
+import com.isahl.chess.player.api.service.HookOpenService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * @author william.d.zk
- */
-public abstract class JsonProtocol
-        implements IProtocol
+@RestController
+@RequestMapping("echo")
+public class EchoController
 {
-    protected int mLength;
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    @Override
-    public byte[] encode()
-    {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        mLength = data == null ? 0 : data.length;
-        return data;
-    }
+    private final HookOpenService _HookOpenService;
 
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
+    @Autowired
+    public EchoController(HookOpenService hookOpenService) {_HookOpenService = hookOpenService;}
 
-    @Override
-    public byte[] payload()
+    @GetMapping("hook")
+    public @ResponseBody
+    ZResponse<?> hook(
+            @RequestParam
+                    String input)
     {
-        return null;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
+        EchoDo echo = new EchoDo();
+        echo.setContent(input);
+        ICode code = _HookOpenService.hookLogic(echo);
+        return ZResponse.of(code, echo, "example test");
     }
 }
