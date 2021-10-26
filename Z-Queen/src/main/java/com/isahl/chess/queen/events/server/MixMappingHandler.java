@@ -338,12 +338,15 @@ public class MixMappingHandler<T extends IStorage>
             switch(type) {
                 case SINGLE -> {
                     IControl response = result.getFirst();
-                    if(response != null) {
+                    if(response != null && response.session() != null) {
                         publish(_Writer,
                                 WRITE,
                                 new Pair<>(response, response.session()),
                                 response.session()
                                         .getEncoder());
+                    }
+                    else {
+                        _Logger.debug("recv:[ %s ],resp:[ %s ]", received, response);
                     }
                 }
                 case BATCH -> {
