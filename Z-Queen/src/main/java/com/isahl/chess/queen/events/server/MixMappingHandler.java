@@ -177,8 +177,10 @@ public class MixMappingHandler<T extends IStorage>
                             }
                             else if(result != null) {
                                 IControl response = result.getSecond();
-                                publish(_Writer,
-                                        _LinkCustom.notify(_SessionManager, response, session.getIndex(), true));
+                                if(response != null) {
+                                    publish(_Writer,
+                                            _LinkCustom.notify(_SessionManager, response, session.getIndex(), true));
+                                }
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);
@@ -210,6 +212,8 @@ public class MixMappingHandler<T extends IStorage>
                                                 new Pair<>(adjudge, session),
                                                 _LinkCustom.getOperator());
                                     }
+                                }else{
+                                    _Logger.debug("nothing for transfer to link");
                                 }
                             }
                             else {
@@ -347,6 +351,7 @@ public class MixMappingHandler<T extends IStorage>
                     }
                     else {
                         _Logger.debug("recv:[ %s ],resp:[ %s ]", received, response);
+
                     }
                 }
                 case BATCH -> {
