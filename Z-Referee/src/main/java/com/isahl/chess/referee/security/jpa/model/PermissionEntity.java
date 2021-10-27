@@ -37,10 +37,11 @@ import java.util.List;
  */
 @Entity(name = "permission")
 @Table(schema = "z_chess_security",
-       indexes = { @Index(name = "name_idx",
-                          columnList = "name"),
-                   @Index(name = "url_idx",
-                          columnList = "url")
+       indexes = {
+               @Index(name = "name_idx",
+                      columnList = "name"),
+               @Index(name = "url_idx",
+                      columnList = "url")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PermissionEntity

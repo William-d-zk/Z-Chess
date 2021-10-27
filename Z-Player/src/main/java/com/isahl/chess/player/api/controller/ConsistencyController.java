@@ -27,7 +27,10 @@ import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author william.d.zk

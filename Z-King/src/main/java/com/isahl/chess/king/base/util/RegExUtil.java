@@ -27,20 +27,15 @@ import java.util.regex.Pattern;
 
 /**
  * @author william.d.zk
- * 
  * @date 2018/1/3
  */
 public class RegExUtil
 {
-    public static String  BOOLEAN_PATTERN_STRING      = "([tT][rR][uU][eE])|"
-                                                        + "([fF][aA][lL][sS][eE])|"
-                                                        + "([yY][eE][sS])|"
-                                                        + "([nN][oO])|"
-                                                        + "([eE][nN][aA][bB][lL][eE])|"
-                                                        + "([dD][iI][sS][aA][bB][lL][eE])";
-    public static String  BOOLEAN_TRUE_PATTERN_STRING = "([tT][rR][uU][eE])|"
-                                                        + "([yY][eE][sS])|"
-                                                        + "([eE][nN][aA][bB][lL][eE])";
+    public static String  BOOLEAN_PATTERN_STRING      =
+            "([tT][rR][uU][eE])|" + "([fF][aA][lL][sS][eE])|" + "([yY][eE][sS])|" + "([nN][oO])|" +
+            "([eE][nN][aA][bB][lL][eE])|" + "([dD][iI][sS][aA][bB][lL][eE])";
+    public static String  BOOLEAN_TRUE_PATTERN_STRING =
+            "([tT][rR][uU][eE])|" + "([yY][eE][sS])|" + "([eE][nN][aA][bB][lL][eE])";
     public static String  INTEGER_PATTERN_STRING      = "([-+]?\\d+\\s*,?)";
     public static String  DOUBLE_PATTERN_STRING       = "(([-+]?((\\d+(\\.\\d*)?)|(\\.\\d+)))([eE](([-+]?([012]?\\d{1,2}|30[0-7]))|-3([01]?[4-9]|[012]?[0-3])))?[dD]?\\s*,?)";
     public static String  STRING_PATTERN_STRING       = "(\\w+\\s*,?)";
@@ -54,13 +49,13 @@ public class RegExUtil
 
     public static Class<?> testType(String value)
     {
-        if (value.matches(BOOLEAN_PATTERN_STRING)) {
+        if(value.matches(BOOLEAN_PATTERN_STRING)) {
             return Boolean.TYPE;
         }
-        else if (value.matches(INTEGER_PATTERN_STRING)) {
+        else if(value.matches(INTEGER_PATTERN_STRING)) {
             return Integer.TYPE;
         }
-        else if (value.matches(DOUBLE_PATTERN_STRING)) { return Double.TYPE; }
+        else if(value.matches(DOUBLE_PATTERN_STRING)) {return Double.TYPE;}
         return String.class;
     }
 

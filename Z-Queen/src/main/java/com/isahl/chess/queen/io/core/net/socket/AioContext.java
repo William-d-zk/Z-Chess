@@ -31,15 +31,13 @@ import java.nio.ByteBuffer;
  * @author William.d.zk
  */
 public abstract class AioContext<O extends ISessionOption>
-        implements
-        IContext
+        implements IContext
 {
 
     /**
      * 存在 一次性投递多个 IControl 的可能性
      * AioPacket 中的 ByteBuffer 仅用于序列化Control 对象
      * 创建时以SocketOption配置为基准进行设定，
-     * 
      */
     private final ByteBuffer _WrBuf;
 
@@ -89,10 +87,10 @@ public abstract class AioContext<O extends ISessionOption>
     @Override
     public void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived)
     {
-        if (mClientStartTime != 0) mClientStartTime = clientStart;
-        if (mServerArrivedTime != 0) mServerArrivedTime = serverArrived;
-        if (mServerResponseTime != 0) mServerResponseTime = serverResponse;
-        if (mClientArrivedTime != 0) mClientArrivedTime = clientArrived;
+        if(mClientStartTime != 0) {mClientStartTime = clientStart;}
+        if(mServerArrivedTime != 0) {mServerArrivedTime = serverArrived;}
+        if(mServerResponseTime != 0) {mServerResponseTime = serverResponse;}
+        if(mClientArrivedTime != 0) {mClientArrivedTime = clientArrived;}
     }
 
     @Override

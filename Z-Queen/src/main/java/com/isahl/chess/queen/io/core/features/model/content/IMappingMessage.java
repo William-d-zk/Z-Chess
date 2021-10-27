@@ -27,7 +27,6 @@ import com.isahl.chess.queen.io.core.features.model.session.ISessionMessage;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-21
  */
 public interface IMappingMessage

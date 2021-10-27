@@ -212,7 +212,8 @@ public class MixMappingHandler<T extends IStorage>
                                                 new Pair<>(adjudge, session),
                                                 _LinkCustom.getOperator());
                                     }
-                                }else{
+                                }
+                                else {
                                     _Logger.debug("nothing for transfer to link");
                                 }
                             }
@@ -337,21 +338,18 @@ public class MixMappingHandler<T extends IStorage>
     private ITriple doCustom(IMappingCustom custom, ISessionManager manager, ISession session, IControl received)
     {
         ITriple result = custom.handle(manager, session, received);
+        _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);
         if(result != null) {
             IOperator.Type type = result.getThird();
             switch(type) {
                 case SINGLE -> {
                     IControl response = result.getFirst();
-                    if(response != null && response.session() != null) {
+                    if(response != null) {
                         publish(_Writer,
                                 WRITE,
                                 new Pair<>(response, response.session()),
                                 response.session()
                                         .getEncoder());
-                    }
-                    else {
-                        _Logger.debug("recv:[ %s ],resp:[ %s ]", received, response);
-
                     }
                 }
                 case BATCH -> {

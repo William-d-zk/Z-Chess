@@ -26,8 +26,7 @@ package com.securityinnovation.jNeo;
  * by this implementation.
  */
 public class ParamSetNotSupportedException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception with the supplied OID as the detail message,
@@ -53,9 +52,8 @@ public class ParamSetNotSupportedException
     private static String oidToString(byte[] oid)
     {
         String s = "";
-        if (oid.length > 0) s += oid[0];
-        for (int i = 1; i < oid.length; i++)
-            s += "." + (0xff & oid[i]);
+        if(oid.length > 0) {s += oid[0];}
+        for(int i = 1; i < oid.length; i++) {s += "." + (0xff & oid[i]);}
         return s;
     }
 }

@@ -150,15 +150,17 @@ public class ClientCore
         final Z1Processor<QEvent> _LinkProcessor = new Z1Processor<>(_LinkIoEvent,
                                                                      _LinkIoEvent.newBarrier(),
                                                                      new ClientLinkHandler());
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{ _BizLocalSendEvent,
-                                                                   _LinkIoEvent,
-                                                                   _ReadAndLogicEvent,
-                                                                   _WroteEvent
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{
+                _BizLocalSendEvent,
+                _LinkIoEvent,
+                _ReadAndLogicEvent,
+                _WroteEvent
         };
-        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{ _BizLocalSendEvent.newBarrier(),
-                                                                       _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
-                                                                       _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
-                                                                       _WroteEvent.newBarrier()
+        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{
+                _BizLocalSendEvent.newBarrier(),
+                _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
+                _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                _WroteEvent.newBarrier()
         };
         final Z2Processor<QEvent> _WriteDispatcher = new Z2Processor<>(_SendEvents,
                                                                        _SendBarriers,

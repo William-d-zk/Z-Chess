@@ -33,8 +33,7 @@ public enum Progress
     /**
      *
      */
-    NA("NA/NA")
-    {
+    NA("NA/NA") {
         @Override
         public int getCount(String formatted)
         {
@@ -50,20 +49,19 @@ public enum Progress
     /**
      *
      */
-    NORMAL("%d/%d")
-    {
+    NORMAL("%d/%d") {
         @Override
         public int getCount(String formatted)
         {
             String[] split = formatted.split(getSplit());
-            return "NA".equals(split[0]) ? 0: Integer.parseInt(split[0]);
+            return "NA".equals(split[0]) ? 0 : Integer.parseInt(split[0]);
         }
 
         @Override
         public int getSize(String formatted)
         {
             String[] split = formatted.split(getSplit());
-            return "NA".equals(split[1]) ? 0: Integer.parseInt(split[1]);
+            return "NA".equals(split[1]) ? 0 : Integer.parseInt(split[1]);
         }
     };
 

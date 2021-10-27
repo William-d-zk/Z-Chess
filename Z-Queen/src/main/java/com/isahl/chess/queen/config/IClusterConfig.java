@@ -25,7 +25,6 @@ package com.isahl.chess.queen.config;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/23
  */
 public interface IClusterConfig
@@ -102,6 +101,6 @@ public interface IClusterConfig
                + 1 // write-dispatch
                + (1 << getEncoderCountPower())// write-encode
                + 1 // encoded-processor[write-end]
-        ;
+                ;
     }
 }

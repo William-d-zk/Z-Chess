@@ -29,8 +29,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 public class OAuth2Storage
-        implements
-        Serializable
+        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = 7886872340025936249L;

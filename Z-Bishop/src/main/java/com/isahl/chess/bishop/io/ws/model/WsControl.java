@@ -24,8 +24,8 @@ package com.isahl.chess.bishop.io.ws.model;
 
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -42,8 +42,8 @@ public abstract class WsControl
     private final byte[]    _Payload;
     private final int       _Command;
     private final byte      _CtrlCode;
-    private ISession  mSession;
-    private WsContext mContext;
+    private       ISession  mSession;
+    private       WsContext mContext;
 
     public WsControl(byte code, int command, byte[] payload)
     {

@@ -24,5 +24,4 @@
 package com.isahl.chess.queen.config;
 
 public interface IClientConfig
-{
-}
+{}

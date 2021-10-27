@@ -23,12 +23,12 @@
 package com.isahl.chess.bishop.io.ws.zchat.model;
 
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.king.base.features.IDuplicate;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.I18nUtil;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.features.IDuplicate;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.nio.charset.Charset;
 import java.util.Objects;
@@ -170,7 +170,7 @@ public abstract class ZProtocol
     {
         int l_crc = CryptoUtil.crc32(data, 0, lastPos);
         int crc = IoUtil.readInt(data, lastPos);
-        if(l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
+        if(l_crc != crc) {throw new SecurityException("crc check failed!  =" + data[1]);}
         return lastPos + 4;
     }
 
@@ -178,7 +178,7 @@ public abstract class ZProtocol
     public final byte[] encode()
     {
         int length = dataLength();
-        if(length == 0) { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
+        if(length == 0) {throw new ArrayIndexOutOfBoundsException("data_length == 0");}
         byte[] output = new byte[length];
         prefix(output, 0);
         return output;
@@ -212,7 +212,7 @@ public abstract class ZProtocol
     @Override
     public final int decode(byte[] input, int pos, int length)
     {
-        if(input == null || input.length == 0 || length == 0) { return 0; }
+        if(input == null || input.length == 0 || length == 0) {return 0;}
         // dataLength 此处表达了最短长度值
         int len = dataLength();
         if(len > length || (input.length < len || pos + length > input.length)) {
@@ -294,7 +294,7 @@ public abstract class ZProtocol
     @Override
     public void setMsgId(long uid)
     {
-        if(!_HasMsgId) { throw new UnsupportedOperationException(); }
+        if(!_HasMsgId) {throw new UnsupportedOperationException();}
         mMsgId = uid;
     }
 

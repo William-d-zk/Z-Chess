@@ -24,8 +24,8 @@
 package com.isahl.chess.bishop.io.mqtt.model;
 
 import com.isahl.chess.king.base.features.IDuplicate;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 /**
  * @author william.d.zk

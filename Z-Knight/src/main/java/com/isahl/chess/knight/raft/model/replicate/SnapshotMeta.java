@@ -42,7 +42,11 @@ public class SnapshotMeta
     private              long mTerm;
 
     @JsonCreator
-    public SnapshotMeta(@JsonProperty("term") long term, @JsonProperty("commit") long commit)
+    public SnapshotMeta(
+            @JsonProperty("term")
+                    long term,
+            @JsonProperty("commit")
+                    long commit)
     {
         mTerm = term;
         mCommit = commit;

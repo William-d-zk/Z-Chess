@@ -25,7 +25,6 @@ package com.isahl.chess.king.base.features;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-06-15
  */
 public interface IStatus

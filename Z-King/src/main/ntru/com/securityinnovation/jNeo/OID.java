@@ -397,9 +397,7 @@ public enum OID
      * Constructor. This constructor assumes there will be 3 bytes
      * in the OID.
      */
-    private OID(int first,
-                int second,
-                int third)
+    private OID(int first, int second, int third)
     {
         oidBytes = new byte[3];
         oidBytes[0] = (byte) first;

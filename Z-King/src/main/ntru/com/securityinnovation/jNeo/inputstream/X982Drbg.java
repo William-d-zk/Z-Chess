@@ -36,14 +36,12 @@ import java.io.InputStream;
  * functions for seeding and reseeding the DRBG.
  */
 public class X982Drbg
-        extends
-        InputStream
+        extends InputStream
 {
     /**
      * Constructor that takes a seed to start the RNG
      */
-    public X982Drbg(DigestAlgorithm hashAlgorithm,
-                    byte[] _seed)
+    public X982Drbg(DigestAlgorithm hashAlgorithm, byte[] _seed)
     {
         mHash = hashAlgorithm.newInstance();
         seed(_seed);
@@ -53,70 +51,72 @@ public class X982Drbg
     // on digital signtures. The recommended value of t for each
     // hash algorithm is the leading <n> bytes of this string,
     // where n = the digest length of the hash algorithm.
-    private final static byte[] t = {(byte) 0xcf,
-                                     (byte) 0x83,
-                                     (byte) 0xe1,
-                                     (byte) 0x35,
-                                     (byte) 0x7e,
-                                     (byte) 0xef,
-                                     (byte) 0xb8,
-                                     (byte) 0xbd,
-                                     (byte) 0xf1,
-                                     (byte) 0x54,
-                                     (byte) 0x28,
-                                     (byte) 0x50,
-                                     (byte) 0xd6,
-                                     (byte) 0x6d,
-                                     (byte) 0x80,
-                                     (byte) 0x07,
-                                     (byte) 0xd6,
-                                     (byte) 0x20,
-                                     (byte) 0xe4,
-                                     (byte) 0x05,
-                                     (byte) 0x0b,
-                                     (byte) 0x57,
-                                     (byte) 0x15,
-                                     (byte) 0xdc,
-                                     (byte) 0x83,
-                                     (byte) 0xf4,
-                                     (byte) 0xa9,
-                                     (byte) 0x21,
-                                     (byte) 0xd3,
-                                     (byte) 0x6c,
-                                     (byte) 0xe9,
-                                     (byte) 0xce,
-                                     (byte) 0x47,
-                                     (byte) 0xd0,
-                                     (byte) 0xd1,
-                                     (byte) 0x3c,
-                                     (byte) 0x5d,
-                                     (byte) 0x85,
-                                     (byte) 0xf2,
-                                     (byte) 0xb0,
-                                     (byte) 0xff,
-                                     (byte) 0x83,
-                                     (byte) 0x18,
-                                     (byte) 0xd2,
-                                     (byte) 0x87,
-                                     (byte) 0x7e,
-                                     (byte) 0xec,
-                                     (byte) 0x2f,
-                                     (byte) 0x63,
-                                     (byte) 0xb9,
-                                     (byte) 0x31,
-                                     (byte) 0xbd,
-                                     (byte) 0x47,
-                                     (byte) 0x41,
-                                     (byte) 0x7a,
-                                     (byte) 0x81,
-                                     (byte) 0xa5,
-                                     (byte) 0x38,
-                                     (byte) 0x32,
-                                     (byte) 0x7a,
-                                     (byte) 0xf9,
-                                     (byte) 0x27,
-                                     (byte) 0xda,
-                                     (byte) 0x3e};
+    private final static byte[] t = {
+            (byte) 0xcf,
+            (byte) 0x83,
+            (byte) 0xe1,
+            (byte) 0x35,
+            (byte) 0x7e,
+            (byte) 0xef,
+            (byte) 0xb8,
+            (byte) 0xbd,
+            (byte) 0xf1,
+            (byte) 0x54,
+            (byte) 0x28,
+            (byte) 0x50,
+            (byte) 0xd6,
+            (byte) 0x6d,
+            (byte) 0x80,
+            (byte) 0x07,
+            (byte) 0xd6,
+            (byte) 0x20,
+            (byte) 0xe4,
+            (byte) 0x05,
+            (byte) 0x0b,
+            (byte) 0x57,
+            (byte) 0x15,
+            (byte) 0xdc,
+            (byte) 0x83,
+            (byte) 0xf4,
+            (byte) 0xa9,
+            (byte) 0x21,
+            (byte) 0xd3,
+            (byte) 0x6c,
+            (byte) 0xe9,
+            (byte) 0xce,
+            (byte) 0x47,
+            (byte) 0xd0,
+            (byte) 0xd1,
+            (byte) 0x3c,
+            (byte) 0x5d,
+            (byte) 0x85,
+            (byte) 0xf2,
+            (byte) 0xb0,
+            (byte) 0xff,
+            (byte) 0x83,
+            (byte) 0x18,
+            (byte) 0xd2,
+            (byte) 0x87,
+            (byte) 0x7e,
+            (byte) 0xec,
+            (byte) 0x2f,
+            (byte) 0x63,
+            (byte) 0xb9,
+            (byte) 0x31,
+            (byte) 0xbd,
+            (byte) 0x47,
+            (byte) 0x41,
+            (byte) 0x7a,
+            (byte) 0x81,
+            (byte) 0xa5,
+            (byte) 0x38,
+            (byte) 0x32,
+            (byte) 0x7a,
+            (byte) 0xf9,
+            (byte) 0x27,
+            (byte) 0xda,
+            (byte) 0x3e
+    };
 
     /**
      * Implement the Initialize_Hash_DRBG algorithm from the X9.82 spec.
@@ -141,7 +141,7 @@ public class X982Drbg
         // large enough to hold a digest.
         int hashLen = mHash.getDigestLen();
         int VtmpLen = Math.max(V.length, hashLen);
-        if ((Vtmp == null) || (Vtmp.length != VtmpLen)) Vtmp = new byte[VtmpLen];
+        if((Vtmp == null) || (Vtmp.length != VtmpLen)) {Vtmp = new byte[VtmpLen];}
 
         // Calculate C = Hash(t || V) mod 2^B
         C = new byte[hashLen];
@@ -181,12 +181,12 @@ public class X982Drbg
         int hashLen = mHash.getDigestLen();
         byte[] newV = new byte[_seed.length];
         int newVOffset = 0;
-        while (newVOffset + hashLen <= newV.length) {
+        while(newVOffset + hashLen <= newV.length) {
             mHash.digest(tmp, 0, tmp.length, newV, newVOffset);
             plusEquals(tmp, 1);
             newVOffset += hashLen;
         }
-        if (newVOffset < newV.length) {
+        if(newVOffset < newV.length) {
             mHash.digest(tmp, 0, tmp.length, tmp, 0);
             System.arraycopy(tmp, 0, newV, newVOffset, newV.length - newVOffset);
         }
@@ -198,7 +198,7 @@ public class X982Drbg
         // Preallocate a temp buffer large enough to hold V, and
         // large enough to hold a digest.
         int VtmpLen = Math.max(V.length, hashLen);
-        if (VtmpLen != Vtmp.length) Vtmp = new byte[VtmpLen];
+        if(VtmpLen != Vtmp.length) {Vtmp = new byte[VtmpLen];}
 
         // Calculate C = Hash(t || newV) mod 2^B
         mHash.update(t, 0, hashLen);
@@ -228,15 +228,12 @@ public class X982Drbg
     public int read(byte[] out, int offset, int len)
     {
         //        if (out == null) throw new NullPointerException("Output buffer is null");
-        if (offset + len > out.length) throw new IllegalArgumentException("Writing "
-                                                                          + len
-                                                                          + " bytes of output starting at offset "
-                                                                          + offset
-                                                                          + " will overrun end of output buffer ("
-                                                                          + out.length
-                                                                          + " bytes long)");
-        if (offset < 0) throw new IllegalArgumentException("Output array offset is negative (" + offset + ")");
-        if (len < 0) throw new IllegalArgumentException("Output length is negative (" + len + ")");
+        if(offset + len > out.length) {
+            throw new IllegalArgumentException("Writing " + len + " bytes of output starting at offset " + offset +
+                                               " will overrun end of output buffer (" + out.length + " bytes long)");
+        }
+        if(offset < 0) {throw new IllegalArgumentException("Output array offset is negative (" + offset + ")");}
+        if(len < 0) {throw new IllegalArgumentException("Output length is negative (" + len + ")");}
 
         // Generate output bits
         hashGen(out, offset, len);
@@ -269,7 +266,7 @@ public class X982Drbg
         // where we need only a portion of the output bytes so it must
         // be at least hashLen bytes long
         System.arraycopy(V, 0, Vtmp, 0, V.length);
-        while (len > hashLen) {
+        while(len > hashLen) {
             mHash.digest(Vtmp, 0, V.length, out, offset);
             offset += hashLen;
             len -= hashLen;
@@ -290,7 +287,7 @@ public class X982Drbg
     {
         int carry = 0;
         int i = len - 1, j = accum.length - 1;
-        while ((i >= 0) && (j >= 0)) {
+        while((i >= 0) && (j >= 0)) {
             int oldCarry = carry;
             carry = (0xff & accum[j]) + (0xff & in[i]) + carry;
             accum[j] = (byte) carry;
@@ -308,7 +305,7 @@ public class X982Drbg
     {
         int carry = 0;
         int i = 0, j = accum.length - 1;
-        while ((i < 4) && (j >= 0)) {
+        while((i < 4) && (j >= 0)) {
             carry = (0xff & accum[j]) + (0xff & x) + carry;
             accum[j] = (byte) carry;
             carry >>= 8;

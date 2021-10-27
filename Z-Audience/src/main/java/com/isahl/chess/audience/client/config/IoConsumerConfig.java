@@ -34,19 +34,16 @@ import java.util.Map;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/1
  */
 @Configuration("io_consumer_config")
 @ConfigurationProperties(prefix = "z.chess.consumer.io")
 @PropertySource("classpath:consumer.io.properties")
 public class IoConsumerConfig
-        implements
-        IAioConfig
+        implements IAioConfig
 {
 
-    private Map<String,
-                Integer>         sizePowers;
+    private Map<String, Integer> sizePowers;
     private SocketConfig         consumer;
     private SocketConfig         internal;
 
@@ -59,8 +56,7 @@ public class IoConsumerConfig
     @Override
     public int getSizePower(int type)
     {
-        return switch (type)
-        {
+        return switch(type) {
             case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 9);
             case ZUID.TYPE_CONSUMER_SLOT -> sizePowers.getOrDefault("consumer.0", 3);
             default -> throw new IllegalArgumentException();
@@ -70,16 +66,14 @@ public class IoConsumerConfig
     @Override
     public ISocketConfig getSocketConfig(int type)
     {
-        return switch (type)
-        {
+        return switch(type) {
             case ZUID.TYPE_INTERNAL_SLOT -> internal;
             case ZUID.TYPE_CONSUMER_SLOT -> consumer;
             default -> null;
         };
     }
 
-    public void setSizePowers(Map<String,
-                                  Integer> sizePowers)
+    public void setSizePowers(Map<String, Integer> sizePowers)
     {
         this.sizePowers = sizePowers;
     }

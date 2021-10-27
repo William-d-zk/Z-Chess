@@ -87,7 +87,7 @@ public class QttFrame
     public int lackLength(int position)
     {
         mPayloadLength += (mLengthCode & 0x7F) << (position * 7);
-        if(isLengthCodeLack()) { return 1; }
+        if(isLengthCodeLack()) {return 1;}
         return mPayloadLength;
     }
 

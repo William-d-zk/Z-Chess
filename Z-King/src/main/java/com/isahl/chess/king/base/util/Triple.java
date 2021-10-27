@@ -29,22 +29,15 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public class Triple<FIRST,
-                    SECOND,
-                    THIRD>
-        implements
-        ITriple,
-        Comparable<Triple<FIRST,
-                          SECOND,
-                          THIRD>>
+public class Triple<FIRST, SECOND, THIRD>
+        implements ITriple,
+                   Comparable<Triple<FIRST, SECOND, THIRD>>
 {
     private FIRST  first;
     private SECOND second;
     private THIRD  third;
 
-    public Triple(FIRST first,
-                  SECOND second,
-                  THIRD third)
+    public Triple(FIRST first, SECOND second, THIRD third)
     {
         this.first = first;
         this.second = second;
@@ -92,9 +85,7 @@ public class Triple<FIRST,
     }
 
     @Override
-    public Triple<FIRST,
-                  SECOND,
-                  THIRD> clone()
+    public Triple<FIRST, SECOND, THIRD> clone()
     {
         return new Triple<>(first, second, third);
     }
@@ -102,14 +93,10 @@ public class Triple<FIRST,
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Triple)) { return false; }
-        if (this != obj) {
+        if(!(obj instanceof Triple)) {return false;}
+        if(this != obj) {
             @SuppressWarnings("unchecked")
-            Triple<FIRST,
-                   SECOND,
-                   THIRD> other = (Triple<FIRST,
-                                          SECOND,
-                                          THIRD>) obj;
+            Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
             return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
         }
         return true;
@@ -128,9 +115,7 @@ public class Triple<FIRST,
     }
 
     @Override
-    public int compareTo(Triple<FIRST,
-                                SECOND,
-                                THIRD> o)
+    public int compareTo(Triple<FIRST, SECOND, THIRD> o)
     {
         int a = first.toString()
                      .compareTo(o.first.toString());
@@ -138,6 +123,6 @@ public class Triple<FIRST,
                       .compareTo(o.second.toString());
         int c = third.toString()
                      .compareTo(o.third.toString());
-        return a == 0 ? b == 0 ? c: b: a;
+        return a == 0 ? b == 0 ? c : b : a;
     }
 }

@@ -96,8 +96,8 @@ public class LogMeta
         mCandidate = 0;
         mCommit = 0;
         mApplied = 0;
-        if(mPeerSet != null) { mPeerSet.clear(); }
-        if(mGateSet != null) { mGateSet.clear(); }
+        if(mPeerSet != null) {mPeerSet.clear();}
+        if(mGateSet != null) {mGateSet.clear();}
         flush();
     }
 

@@ -33,8 +33,8 @@ public class CrcCalculator
 {
 
     private final AlgoParams _Parameters;
-    private byte             hashSize = 8;
-    private long             mask     = 0xFFFFFFFFFFFFFFFFL;
+    private       byte       hashSize = 8;
+    private       long       mask     = 0xFFFFFFFFFFFFFFFFL;
     private final long[]     _table   = new long[256];
 
     CrcCalculator(AlgoParams params)
@@ -42,7 +42,7 @@ public class CrcCalculator
         _Parameters = params;
 
         hashSize = (byte) params.HashSize;
-        if (hashSize < 64) {
+        if(hashSize < 64) {
             mask = (1L << hashSize) - 1;
         }
 
@@ -51,7 +51,7 @@ public class CrcCalculator
 
     public long Calc(byte[] data, int offset, int length)
     {
-        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize): _Parameters.Init;
+        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize) : _Parameters.Init;
         long hash = ComputeCrc(init, data, offset, length);
         return (hash ^ _Parameters.XorOut) & mask;
     }
@@ -60,8 +60,8 @@ public class CrcCalculator
     {
         long crc = init;
 
-        if (_Parameters.RefOut) {
-            for (int i = offset; i < offset + length; i++) {
+        if(_Parameters.RefOut) {
+            for(int i = offset; i < offset + length; i++) {
                 crc = (_table[(int) ((crc ^ data[i]) & 0xFF)] ^ (crc >>> 8));
                 crc &= mask;
             }
@@ -69,7 +69,7 @@ public class CrcCalculator
         else {
             int toRight = (hashSize - 8);
             toRight = Math.max(toRight, 0);
-            for (int i = offset; i < offset + length; i++) {
+            for(int i = offset; i < offset + length; i++) {
                 crc = (_table[(int) (((crc >> toRight) ^ data[i]) & 0xFF)] ^ (crc << 8));
                 crc &= mask;
             }
@@ -80,31 +80,29 @@ public class CrcCalculator
 
     private void CreateTable()
     {
-        for (int i = 0; i < _table.length; i++)
-            _table[i] = CreateTableEntry(i);
+        for(int i = 0; i < _table.length; i++) {_table[i] = CreateTableEntry(i);}
     }
 
     private long CreateTableEntry(int index)
     {
         long r = index;
 
-        if (_Parameters.RefIn) r = CrcHelper.ReverseBits(r, hashSize);
-        else if (hashSize > 8) r <<= (hashSize - 8);
+        if(_Parameters.RefIn) {r = CrcHelper.ReverseBits(r, hashSize);}
+        else if(hashSize > 8) {r <<= (hashSize - 8);}
 
         long lastBit = (1L << (hashSize - 1));
 
-        for (int i = 0; i < 8; i++) {
-            if ((r & lastBit) != 0) r = ((r << 1) ^ _Parameters.Poly);
-            else r <<= 1;
+        for(int i = 0; i < 8; i++) {
+            if((r & lastBit) != 0) {r = ((r << 1) ^ _Parameters.Poly);}
+            else {r <<= 1;}
         }
 
-        if (_Parameters.RefOut) r = CrcHelper.ReverseBits(r, hashSize);
+        if(_Parameters.RefOut) {r = CrcHelper.ReverseBits(r, hashSize);}
 
         return r & mask;
     }
 
-    private static Map<AlgoParams,
-                       CrcCalculator> _CalcMap = new HashMap<>();
+    private static Map<AlgoParams, CrcCalculator> _CalcMap = new HashMap<>();
 
     public static long calc(AlgoParams algo, byte[] data)
     {
@@ -134,11 +132,11 @@ public class CrcCalculator
     //@formatter:on
     public static long calc4itu(byte[] data)
     {
-        if (data == null) { return 0; }
+        if(data == null) {return 0;}
         int pos = 0;
         byte crc = 0;
         int len = data.length;
-        while (len > 0) {
+        while(len > 0) {
             crc = table_byte[(crc ^ data[pos++]) & 0xFF];
             len--;
         }

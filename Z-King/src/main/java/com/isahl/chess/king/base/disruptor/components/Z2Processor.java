@@ -44,12 +44,12 @@ public class Z2Processor<T extends IEvent>
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private final AtomicInteger         _Running = new AtomicInteger(IDLE);
-    private final DataProvider<T>[]     _Providers;
+    private final AtomicInteger     _Running = new AtomicInteger(IDLE);
+    private final DataProvider<T>[] _Providers;
     private final SequenceBarrier[] _Barriers;
     private final IBatchHandler<T>  _Handler;
     private final Sequence[]        _Sequences;
-    private       String                threadName;
+    private       String            threadName;
 
     public Z2Processor(DataProvider<T>[] providers, SequenceBarrier[] barriers, IBatchHandler<T> handler)
     {

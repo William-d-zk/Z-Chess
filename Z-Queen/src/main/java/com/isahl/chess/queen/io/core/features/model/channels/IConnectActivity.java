@@ -33,7 +33,7 @@ public interface IConnectActivity
                 IConnectMode,
                 ISessionCreated,
                 IRespConnected,
-        ILifeCycle
+                ILifeCycle
 {
     String getProtocol();
 }

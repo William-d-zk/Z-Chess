@@ -27,14 +27,10 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-12
  */
 public interface ISessionCloser
-        extends
-        IOperator<String,
-                  ISession,
-                  Void>
+        extends IOperator<String, ISession, Void>
 {
     Void handle(String msg, ISession session);
 }

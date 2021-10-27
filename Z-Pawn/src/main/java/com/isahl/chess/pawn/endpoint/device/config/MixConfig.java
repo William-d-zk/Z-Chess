@@ -74,11 +74,11 @@ public class MixConfig
         }
     }
 
-    private List<Server>    listeners;
-    private Duration        passwordInvalidDays;
-    private String          passwordRandomSeed;
-    private boolean         multiBind;
-    private final TimeWheel _TimeWheel = new TimeWheel();
+    private       List<Server> listeners;
+    private       Duration     passwordInvalidDays;
+    private       String       passwordRandomSeed;
+    private       boolean      multiBind;
+    private final TimeWheel    _TimeWheel = new TimeWheel();
 
     public List<Server> getListeners()
     {

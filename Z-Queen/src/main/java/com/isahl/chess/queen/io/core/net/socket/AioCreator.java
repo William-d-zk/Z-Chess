@@ -38,9 +38,8 @@ import java.time.Duration;
  * @author William.d.zk
  */
 public abstract class AioCreator
-        implements
-        ISessionCreator<AsynchronousSocketChannel>,
-        ISslOption
+        implements ISessionCreator<AsynchronousSocketChannel>,
+                   ISslOption
 {
     private final ISocketConfig _Config;
 
@@ -139,14 +138,14 @@ public abstract class AioCreator
     @Override
     public void configChannel(NetworkChannel channel)
     {
-        if (channel != null) {
+        if(channel != null) {
             try {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
                 channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
                 channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
                 channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
             }
-            catch (IOException e) {
+            catch(IOException e) {
                 e.printStackTrace();
             }
         }

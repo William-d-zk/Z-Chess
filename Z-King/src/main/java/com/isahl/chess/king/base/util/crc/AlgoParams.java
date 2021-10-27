@@ -29,14 +29,7 @@ package com.isahl.chess.king.base.util.crc;
 class AlgoParams
 {
 
-    AlgoParams(String name,
-               int hashSize,
-               long poly,
-               long init,
-               boolean refIn,
-               boolean refOut,
-               long xorOut,
-               long check)
+    AlgoParams(String name, int hashSize, long poly, long init, boolean refIn, boolean refOut, long xorOut, long check)
     {
         Name = name;
         Check = check;

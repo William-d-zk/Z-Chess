@@ -24,3 +24,6 @@
 
 cd ~ || exit
 rm -rf Z-Chess
+mkdir -p Z-Chess/raft00
+mkdir -p Z-Chess/raft01
+mkdir -p Z-Chess/raft02

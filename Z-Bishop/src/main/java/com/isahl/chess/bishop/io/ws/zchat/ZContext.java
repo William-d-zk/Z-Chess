@@ -23,8 +23,8 @@
 package com.isahl.chess.bishop.io.ws.zchat;
 
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioContext;
 
 import java.util.concurrent.atomic.AtomicInteger;

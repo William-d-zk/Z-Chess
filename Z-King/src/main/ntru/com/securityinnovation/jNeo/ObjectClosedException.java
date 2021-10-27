@@ -25,8 +25,7 @@ package com.securityinnovation.jNeo;
  * This exception indicates that a key was used after it was closed.
  */
 public class ObjectClosedException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception a default message.

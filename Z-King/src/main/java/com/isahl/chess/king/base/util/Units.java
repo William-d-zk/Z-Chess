@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 
 /**
  * @author william.d.zk
- * 
  * @date 2018/1/3
  */
 public enum Units
@@ -42,13 +41,11 @@ public enum Units
     /**
      * 人民币
      */
-    CURRENCY_RMB("￥%f", 1, 2, SignModel.FRONT)
-    {
+    CURRENCY_RMB("￥%f", 1, 2, SignModel.FRONT) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case CURRENCY_EUR -> data / CURRENCY_EUR.getSI();
                 case CURRENCY_USD -> data / CURRENCY_USD.getSI();
                 case CURRENCY_RMB -> data;
@@ -57,13 +54,11 @@ public enum Units
         }
 
     },
-    CURRENCY_EUR("€%f", 7.93f, 2, SignModel.FRONT)
-    {
+    CURRENCY_EUR("€%f", 7.93f, 2, SignModel.FRONT) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case CURRENCY_EUR -> data;
                 case CURRENCY_USD -> data * getSI() / CURRENCY_USD.getSI();
                 case CURRENCY_RMB -> data * getSI();
@@ -72,13 +67,11 @@ public enum Units
         }
 
     },
-    CURRENCY_USD("[＄|\\$]%f", 6.84f, 2, SignModel.FRONT)
-    {
+    CURRENCY_USD("[＄|\\$]%f", 6.84f, 2, SignModel.FRONT) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case CURRENCY_EUR -> data * getSI() / CURRENCY_EUR.getSI();
                 case CURRENCY_USD -> data;
                 case CURRENCY_RMB -> data * getSI();
@@ -90,13 +83,11 @@ public enum Units
     /**
      * 吨
      */
-    WEIGHT_TON("%dT", 1000, 2, SignModel.BEHIND)
-    {
+    WEIGHT_TON("%dT", 1000, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case WEIGHT_KG -> data * getSI();
                 case WEIGHT_G -> data * getSI() / WEIGHT_G.getSI();
                 case WEIGHT_TON -> data;
@@ -107,13 +98,11 @@ public enum Units
     /**
      * 千克
      */
-    WEIGHT_KG("%dKG", 1, 1, SignModel.BEHIND)
-    {
+    WEIGHT_KG("%dKG", 1, 1, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case WEIGHT_TON -> data / WEIGHT_TON.getSI();
                 case WEIGHT_G -> data / WEIGHT_G.getSI();
                 case WEIGHT_KG -> data;
@@ -124,13 +113,11 @@ public enum Units
     /**
      * 克
      */
-    WEIGHT_G("%dG", 0.001f, 0, SignModel.BEHIND)
-    {
+    WEIGHT_G("%dG", 0.001f, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case WEIGHT_TON -> data * getSI() / WEIGHT_TON.getSI();
                 case WEIGHT_KG -> data * getSI();
                 case WEIGHT_G -> data;
@@ -141,13 +128,11 @@ public enum Units
     /**
      * 升
      */
-    VOLUME_L("%dL", 1, 1, SignModel.BEHIND)
-    {
+    VOLUME_L("%dL", 1, 1, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case VOLUME_ML -> data / VOLUME_ML.getSI();
                 case VOLUME_CubicM -> data / VOLUME_CubicM.getSI();
                 case VOLUME_L -> data;
@@ -158,13 +143,11 @@ public enum Units
     /**
      * 毫升
      */
-    VOLUME_ML("%dML", 0.001f, 0, SignModel.BEHIND)
-    {
+    VOLUME_ML("%dML", 0.001f, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case VOLUME_L -> data * getSI();
                 case VOLUME_CubicM -> data * getSI() / VOLUME_CubicM.getSI();
                 case VOLUME_ML -> data;
@@ -175,13 +158,11 @@ public enum Units
     /**
      * 立方米
      */
-    VOLUME_CubicM("%dM3", 1000, 2, SignModel.BEHIND)
-    {
+    VOLUME_CubicM("%dM3", 1000, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case VOLUME_L -> data * getSI();
                 case VOLUME_ML -> data * getSI() / VOLUME_ML.getSI();
                 case VOLUME_CubicM -> data;
@@ -192,13 +173,11 @@ public enum Units
     /**
      * 米
      */
-    LENGTH_M("%dM", 1, 2, SignModel.BEHIND)
-    {
+    LENGTH_M("%dM", 1, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case LENGTH_M -> data;
                 case LENGTH_CM -> data / LENGTH_CM.getSI();
                 case LENGTH_MM -> data / LENGTH_MM.getSI();
@@ -210,13 +189,11 @@ public enum Units
     /**
      * 厘米
      */
-    LENGTH_CM("%dCM", 0.01f, 0, SignModel.BEHIND)
-    {
+    LENGTH_CM("%dCM", 0.01f, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data;
                 case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
@@ -228,13 +205,11 @@ public enum Units
     /**
      * 毫米
      */
-    LENGTH_MM("%dMM", 0.001f, 0, SignModel.BEHIND)
-    {
+    LENGTH_MM("%dMM", 0.001f, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
                 case LENGTH_MM -> data;
@@ -246,13 +221,11 @@ public enum Units
     /**
      * 千米
      */
-    LENGTH_KM("%dKM", 1000, 2, SignModel.BEHIND)
-    {
+    LENGTH_KM("%dKM", 1000, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
                 case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
@@ -264,13 +237,11 @@ public enum Units
     /**
      * 小时
      */
-    TIME_H("%dH", 60, 2, SignModel.BEHIND)
-    {
+    TIME_H("%dH", 60, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case TIME_M -> data * getSI();
                 case TIME_S -> data * getSI() / TIME_S.getSI();
                 case TIME_H -> data;
@@ -281,13 +252,11 @@ public enum Units
     /**
      * 分钟
      */
-    TIME_M("%dM", 1, 1, SignModel.BEHIND)
-    {
+    TIME_M("%dM", 1, 1, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case TIME_H -> data / TIME_H.getSI();
                 case TIME_S -> data / TIME_S.getSI();
                 case TIME_M -> data;
@@ -298,13 +267,11 @@ public enum Units
     /**
      * 秒
      */
-    TIME_S("%dS", 1.0f / 60, 0, SignModel.BEHIND)
-    {
+    TIME_S("%dS", 1.0f / 60, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case TIME_H -> data * getSI() / TIME_H.getSI();
                 case TIME_M -> data * getSI();
                 case TIME_S -> data;
@@ -315,14 +282,12 @@ public enum Units
     /**
      * 千米每小时
      */
-    SPEED_KM_H("%fKM/H", 60000f, 3, SignModel.BEHIND)
-    {
+    SPEED_KM_H("%fKM/H", 60000f, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
 
-            return switch (to)
-            {
+            return switch(to) {
                 case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
                 case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
                 case SPEED_KM_H -> data;
@@ -334,13 +299,11 @@ public enum Units
     /**
      * 米每秒
      */
-    SPEED_M_S("%fM/S", 1f / 60, 0, SignModel.BEHIND)
-    {
+    SPEED_M_S("%fM/S", 1f / 60, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case SPEED_M_S -> data;
                 case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
                 case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
@@ -351,13 +314,11 @@ public enum Units
     /**
      * 米每分钟
      */
-    SPEED_M_M("%fM/M", 1f, 0, SignModel.BEHIND)
-    {
+    SPEED_M_M("%fM/M", 1f, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
                 case SPEED_M_M -> data;
                 case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
@@ -368,13 +329,11 @@ public enum Units
     /**
      * 每米人民币价格
      */
-    PRICE_DIS_CNY_M("￥%f/M", 1f, 0, SignModel.MIDDLE)
-    {
+    PRICE_DIS_CNY_M("￥%f/M", 1f, 0, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PRICE_DIS_USD_KM -> data / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data / PRICE_DIS_USD_M.getSI();
                 case PRICE_DIS_CNY_KM -> data / PRICE_DIS_CNY_KM.getSI();
@@ -386,13 +345,11 @@ public enum Units
     /**
      * 每千米人民币价格
      */
-    PRICE_DIS_CNY_KM("￥%f/KM", 1.0f / 1000, 3, SignModel.MIDDLE)
-    {
+    PRICE_DIS_CNY_KM("￥%f/KM", 1.0f / 1000, 3, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
                 case PRICE_DIS_CNY_KM -> data * getSI();
@@ -404,13 +361,11 @@ public enum Units
     /**
      * 每千米美元价格
      */
-    PRICE_DIS_USD_KM("[＄|\\$]%f/KM", 6.84f / 1000, 5, SignModel.MIDDLE)
-    {
+    PRICE_DIS_USD_KM("[＄|\\$]%f/KM", 6.84f / 1000, 5, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
                 case PRICE_DIS_USD_KM -> data * getSI();
                 case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
@@ -422,13 +377,11 @@ public enum Units
     /**
      * 每米美元价格
      */
-    PRICE_DIS_USD_M("[＄|\\$]%f/M", 6.84f, 5, SignModel.MIDDLE)
-    {
+    PRICE_DIS_USD_M("[＄|\\$]%f/M", 6.84f, 5, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
                 case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data * getSI();
@@ -441,39 +394,33 @@ public enum Units
      * 分/立方
      * e.g 装货速度，卸货速度
      */
-    TIME_VOLUME_M_CubicM("M/M3", 1f / 1000, 3, SignModel.BEHIND)
-    {
+    TIME_VOLUME_M_CubicM("M/M3", 1f / 1000, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case TIME_VOLUME_M_CubicM -> data * getSI();
                 case TIME_VOLUME_M_L -> data * getSI() / TIME_VOLUME_M_L.getSI();
                 default -> throw new IllegalArgumentException();
             };
         }
     },
-    TIME_VOLUME_M_L("M/L", 1f, 3, SignModel.BEHIND)
-    {
+    TIME_VOLUME_M_L("M/L", 1f, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case TIME_VOLUME_M_CubicM -> data / TIME_VOLUME_M_CubicM.getSI();
                 case TIME_VOLUME_M_L -> data;
                 default -> throw new IllegalArgumentException();
             };
         }
     },
-    PROGRAM_STORAGE_B("B", 1f / 1024, 0, SignModel.BEHIND)
-    {
+    PROGRAM_STORAGE_B("B", 1f / 1024, 0, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PROGRAM_STORAGE_B -> data;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
@@ -482,13 +429,11 @@ public enum Units
             };
         }
     },
-    PROGRAM_STORAGE_KB("KB", 1f, 4, SignModel.BEHIND)
-    {
+    PROGRAM_STORAGE_KB("KB", 1f, 4, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PROGRAM_STORAGE_B -> data * 1024;
                 case PROGRAM_STORAGE_MB -> data / PROGRAM_STORAGE_MB.getSI();
                 case PROGRAM_STORAGE_GB -> data / PROGRAM_STORAGE_GB.getSI();
@@ -496,13 +441,11 @@ public enum Units
             };
         }
     },
-    PROGRAM_STORAGE_MB("MB", 1024f, 3, SignModel.BEHIND)
-    {
+    PROGRAM_STORAGE_MB("MB", 1024f, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PROGRAM_STORAGE_B -> data * 1024 * 1024;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_GB -> data * getSI() / PROGRAM_STORAGE_GB.getSI();
@@ -510,13 +453,11 @@ public enum Units
             };
         }
     },
-    PROGRAM_STORAGE_GB("GB", 1024 * 1024f, 3, SignModel.BEHIND)
-    {
+    PROGRAM_STORAGE_GB("GB", 1024 * 1024f, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to)
-            {
+            return switch(to) {
                 case PROGRAM_STORAGE_B -> data * 1024 * 1024 * 1024;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
@@ -525,20 +466,18 @@ public enum Units
         }
     };
 
-    public Triple<Boolean,
-                  Float,
-                  Units>
+    public Triple<Boolean, Float, Units>
 
-            parse(String input)
+    parse(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return Objects.nonNull(value) ? new Triple<>(true, value * getSI(), this): new Triple<>(false, 0.0f, null);
+        return Objects.nonNull(value) ? new Triple<>(true, value * getSI(), this) : new Triple<>(false, 0.0f, null);
     }
 
     public float getValue(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return value == null ? 0.0f: value * getSI();
+        return value == null ? 0.0f : value * getSI();
     }
 
     private final String    _SignFormatter;
@@ -550,17 +489,14 @@ public enum Units
     enum SignModel
     {
         /**
-         * 
+         *
          */
-        FRONT
-        {
+        FRONT {
             @Override
             Pattern getPattern(String sign)
             {
-                return Pattern.compile("\\s*("
-                                       + sign.replaceAll("%[d|f]", "")
-                                       + ")\\s*"
-                                       + RegExUtil.DOUBLE_PATTERN_STRING);
+                return Pattern.compile(
+                        "\\s*(" + sign.replaceAll("%[d|f]", "") + ")\\s*" + RegExUtil.DOUBLE_PATTERN_STRING);
             }
 
             @Override
@@ -568,25 +504,19 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(2)): null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2)) : null;
             }
         },
         /**
-         * 
+         *
          */
-        MIDDLE
-        {
+        MIDDLE {
             @Override
             Pattern getPattern(String sign)
             {
                 String[] split = sign.split("%[d|f]", 2);
-                return Pattern.compile("\\s*("
-                                       + split[0]
-                                       + ")\\s*"
-                                       + RegExUtil.DOUBLE_PATTERN_STRING
-                                       + "\\s*("
-                                       + split[1]
-                                       + ")\\s*");
+                return Pattern.compile(
+                        "\\s*(" + split[0] + ")\\s*" + RegExUtil.DOUBLE_PATTERN_STRING + "\\s*(" + split[1] + ")\\s*");
             }
 
             @Override
@@ -594,21 +524,18 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(2)): null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2)) : null;
             }
         },
         /**
-         
+         *
          */
-        BEHIND
-        {
+        BEHIND {
             @Override
             Pattern getPattern(String sign)
             {
-                return Pattern.compile(RegExUtil.DOUBLE_PATTERN_STRING
-                                       + "\\s*("
-                                       + sign.replaceAll("%[d|f]", "")
-                                       + ")\\s*");
+                return Pattern.compile(
+                        RegExUtil.DOUBLE_PATTERN_STRING + "\\s*(" + sign.replaceAll("%[d|f]", "") + ")\\s*");
             }
 
             @Override
@@ -616,7 +543,7 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(1)): null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(1)) : null;
             }
         };
 
@@ -625,10 +552,7 @@ public enum Units
         abstract Float getValue(Pattern pattern, String input);
     }
 
-    Units(String formatter,
-          float si,
-          int precision,
-          SignModel model)
+    Units(String formatter, float si, int precision, SignModel model)
     {
         _SignFormatter = formatter;
         _Model = model;
@@ -753,20 +677,20 @@ public enum Units
     public static float parse(String input, String catalog, ICode errorCode) throws ZException
     {
         return Stream.of(Units.values())
-                     .map(units -> units.parse(input))
+                     .map(units->units.parse(input))
                      .filter(Triple::getFirst)
                      .findAny()
-                     .orElseThrow(() -> new ZException(errorCode.format(catalog, input)))
+                     .orElseThrow(()->new ZException(errorCode.format(catalog, input)))
                      .getSecond();
     }
 
     public static float parseValue(String input) throws ZException
     {
         return Stream.of(Units.values())
-                     .map(units -> units.parse(input))
+                     .map(units->units.parse(input))
                      .filter(Triple::getFirst)
                      .findAny()
-                     .orElseThrow(() -> new ZException(CodeKing.ILLEGAL_PARAM.format(input)))
+                     .orElseThrow(()->new ZException(CodeKing.ILLEGAL_PARAM.format(input)))
                      .getSecond();
     }
 }

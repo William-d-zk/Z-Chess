@@ -29,8 +29,7 @@ import com.isahl.chess.king.base.features.IDisposable;
  * @author William.d.zk
  */
 public interface IFilterChain
-        extends
-        IDisposable
+        extends IDisposable
 {
     void idempotentLeftShift(int previous);
 
@@ -52,7 +51,7 @@ public interface IFilterChain
 
     /**
      * 取得当前filter所占有的右向幂等位
-     * 
+     *
      * @return idempotent bit
      */
     int getRightIdempotentBit();
@@ -67,9 +66,8 @@ public interface IFilterChain
     /**
      * 32bit 确保每个Protocol 从chain上只流经一次
      * filter chain 不得成环
-     * 
-     * @param previous
-     *            previous idempotent bit
+     *
+     * @param previous previous idempotent bit
      */
     void idempotentRightShift(int previous);
 

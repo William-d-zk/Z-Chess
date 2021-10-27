@@ -22,15 +22,13 @@
  */
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IPContext,
-                         O extends IProtocol,
-                         I extends IProtocol>
+public interface IFilter<C extends IPContext, O extends IProtocol, I extends IProtocol>
 {
     default ResultType seek(C context, O output)
     {

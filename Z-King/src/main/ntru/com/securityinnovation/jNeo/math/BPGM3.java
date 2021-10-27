@@ -30,7 +30,7 @@ import com.securityinnovation.jNeo.inputstream.IGF2;
  * <p>
  * The main routine of this class requires that the IGF be initialized
  * before entry. This is to allow testing with known inputs.
- * 
+ *
  * <p>
  * Also this implementation allows the number of "+1" coefficients
  * to be different from the number of "-1" coefficients. This was done
@@ -46,14 +46,13 @@ public class BPGM3
     public static FullPolynomial genTrinomial(int N, int numOnes, int numNegOnes, IGF2 igf)
     {
         boolean[] isSet = new boolean[N];
-        for (int i = 0; i < N; i++)
-            isSet[i] = false;
+        for(int i = 0; i < N; i++) {isSet[i] = false;}
 
         FullPolynomial p = new FullPolynomial(N);
         int t = 0;
-        while (t < numOnes) {
+        while(t < numOnes) {
             int i = igf.nextIndex();
-            if (isSet[i]) continue;
+            if(isSet[i]) {continue;}
 
             p.p[i] = 1;
             isSet[i] = true;
@@ -61,9 +60,9 @@ public class BPGM3
         }
 
         t = 0;
-        while (t < numNegOnes) {
+        while(t < numNegOnes) {
             int i = igf.nextIndex();
-            if (isSet[i]) {
+            if(isSet[i]) {
                 continue;
             }
             p.p[i] = -1;

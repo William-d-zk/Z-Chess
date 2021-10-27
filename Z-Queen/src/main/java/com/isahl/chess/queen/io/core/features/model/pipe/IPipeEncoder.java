@@ -27,11 +27,11 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 import java.nio.ByteBuffer;
@@ -40,30 +40,26 @@ import java.nio.ByteBuffer;
  * @author William.d.zk
  */
 public interface IPipeEncoder
-        extends
-        IOperator<IControl, ISession,
-                  ITriple>
+        extends IOperator<IControl, ISession, ITriple>
 {
     default IPacket protocolWrite(IControl output, ISession session)
     {
 
         IPContext context = session.getContext();
-        if (context == null || output == null) { return null; }
+        if(context == null || output == null) {return null;}
         IFilterChain previous = session.getFilterChain()
                                        .getChainTail();
         IProtocol protocol = output;
         CHAIN:
         {
             IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
-            while (previous != null) {
+            while(previous != null) {
                 context = session.getContext();// 每次都要还原为最外层的context
                 IPipeFilter pipeFilter = previous.getPipeFilter();
-                Pair<IFilter.ResultType,
-                     IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
+                Pair<IFilter.ResultType, IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
                 resultType = seekResult.getFirst();
                 context = seekResult.getSecond();
-                switch (resultType)
-                {
+                switch(resultType) {
                     case ERROR:
                         throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
                     case NEED_DATA:
@@ -80,11 +76,11 @@ public interface IPipeEncoder
                 }
                 previous = previous.getPrevious();
             }
-            if (resultType == IFilter.ResultType.IGNORE && protocol.superSerial() != IProtocol.PACKET_SERIAL) {
+            if(resultType == IFilter.ResultType.IGNORE && protocol.superSerial() != IProtocol.PACKET_SERIAL) {
                 throw new ZException("no filter handle output: %s ", protocol);
             }
         }
-        return protocol instanceof IPacket ? (IPacket) protocol: new AioPacket(ByteBuffer.wrap(protocol.encode()));
+        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(ByteBuffer.wrap(protocol.encode()));
     }
 
 }

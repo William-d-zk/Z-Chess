@@ -35,8 +35,7 @@ package com.securityinnovation.jNeo.math;
  * This algorithm will not work if the modulus is not a prime number.
  */
 public class PolynomialInverterModPrime
-        implements
-        PolynomialInverter
+        implements PolynomialInverter
 {
     /**
      * The modulus.
@@ -55,18 +54,15 @@ public class PolynomialInverterModPrime
      * This constructor initializes the object to calculate inverses
      * modulo a particular prime.
      *
-     * @param _prime
-     *            the modulus.
-     * @param _invModPrime
-     *            a precomputed table of integer inverses modulo
-     *            _prime. The table should be initialized so that
-     *            invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
-     *            invModPrime[i] = 0 if the inverse of i does not exist. This
-     *            table should not be modified after it has been passed to the
-     *            constructor.
+     * @param _prime       the modulus.
+     * @param _invModPrime a precomputed table of integer inverses modulo
+     *                     _prime. The table should be initialized so that
+     *                     invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
+     *                     invModPrime[i] = 0 if the inverse of i does not exist. This
+     *                     table should not be modified after it has been passed to the
+     *                     constructor.
      */
-    public PolynomialInverterModPrime(int _prime,
-                                      short[] _invModPrime)
+    public PolynomialInverterModPrime(int _prime, short[] _invModPrime)
     {
         prime = _prime;
         invModPrime = _invModPrime;
@@ -89,8 +85,7 @@ public class PolynomialInverterModPrime
         FullPolynomial f = new FullPolynomial(N + 1);
         FullPolynomial g = new FullPolynomial(N + 1);
         b.p[0] = 1;
-        for (int i = 0; i < N; i++)
-            f.p[i] = modPrime(a.p[i]);
+        for(int i = 0; i < N; i++) {f.p[i] = modPrime(a.p[i]);}
         g.p[N] = 1;
         g.p[0] = (short) (prime - 1);
 
@@ -100,33 +95,32 @@ public class PolynomialInverterModPrime
         // Find the degree of g(X). This is a constant based on initialization
         int dg = N;
 
-        while (true) {
+        while(true) {
             // while f[0] = 0 {f/=X, c*=X, k++}
-            while ((f.p[0] == 0) && (df > 0)) {
+            while((f.p[0] == 0) && (df > 0)) {
                 df--;
                 divideByX(f);
                 multiplyByX(c);
                 k++;
             }
 
-            if (df == 0) {
+            if(df == 0) {
                 // Make sure there is a solution.
                 // Return null if a is not invertible
                 int f0Inv = invModPrime[f.p[0]];
-                if (f0Inv == 0) return null;
+                if(f0Inv == 0) {return null;}
 
                 // b(X) = f[0]inv * b(X) mod p
                 // return X^(N-k) * b
                 int shift = N - k;
                 shift %= N;
-                if (shift < N) shift += N;
+                if(shift < N) {shift += N;}
                 FullPolynomial ret = new FullPolynomial(N);
-                for (int i = 0; i < N; i++)
-                    ret.p[(i + shift) % N] = modPrime(f0Inv * b.p[i]);
+                for(int i = 0; i < N; i++) {ret.p[(i + shift) % N] = modPrime(f0Inv * b.p[i]);}
                 return ret;
             }
 
-            if (df < dg) {
+            if(df < dg) {
                 // swap(f,g), swap(b,c);
                 FullPolynomial tmpP;
                 int tmpD;
@@ -145,12 +139,10 @@ public class PolynomialInverterModPrime
             int u = modPrime(f.p[0] * invModPrime[g.p[0]]);
 
             // f(X) -= u*g(X) mod p
-            for (int i = 0; i < f.p.length; i++)
-                f.p[i] = modPrime(f.p[i] - u * g.p[i]);
+            for(int i = 0; i < f.p.length; i++) {f.p[i] = modPrime(f.p[i] - u * g.p[i]);}
 
             // b(X) -= u*c(X) mod p
-            for (int i = 0; i < b.p.length; i++)
-                b.p[i] = modPrime(b.p[i] - u * c.p[i]);
+            for(int i = 0; i < b.p.length; i++) {b.p[i] = modPrime(b.p[i] - u * c.p[i]);}
         }
     }
 
@@ -160,7 +152,7 @@ public class PolynomialInverterModPrime
     protected final static int getDegree(FullPolynomial f)
     {
         int df = f.p.length - 1;
-        while ((df > 0) && f.p[df] == 0)
+        while((df > 0) && f.p[df] == 0)
             df--;
         return df;
     }
@@ -173,7 +165,7 @@ public class PolynomialInverterModPrime
     protected final short modPrime(int x)
     {
         x = x % prime;
-        if (x < 0) x += prime;
+        if(x < 0) {x += prime;}
         return (short) x;
     }
 
@@ -184,8 +176,7 @@ public class PolynomialInverterModPrime
     protected final static void divideByX(FullPolynomial f)
     {
         short f0 = f.p[0];
-        for (int i = 0; i < f.p.length - 1; i++)
-            f.p[i] = f.p[i + 1];
+        for(int i = 0; i < f.p.length - 1; i++) {f.p[i] = f.p[i + 1];}
         f.p[f.p.length - 1] = f0;
     }
 
@@ -196,8 +187,7 @@ public class PolynomialInverterModPrime
     protected final static void multiplyByX(FullPolynomial f)
     {
         short fn = f.p[f.p.length - 1];
-        for (int i = f.p.length - 1; i > 0; i--)
-            f.p[i] = f.p[i - 1];
+        for(int i = f.p.length - 1; i > 0; i--) {f.p[i] = f.p[i - 1];}
         f.p[0] = fn;
     }
 }

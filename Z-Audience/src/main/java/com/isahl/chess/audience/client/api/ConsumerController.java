@@ -51,46 +51,62 @@ public class ConsumerController
     }
 
     @PostMapping("ws/start")
-    public String wsStart(@RequestBody Client client) throws IOException
+    public String wsStart(
+            @RequestBody
+                    Client client) throws IOException
     {
         _ClientPool.connect(ZSortHolder.WS_ZCHAT_CONSUMER, client);
         return "async commit ws_start consumer request";
     }
 
     @PostMapping("qtt/start")
-    public String qttStart(@RequestBody Client client) throws IOException
+    public String qttStart(
+            @RequestBody
+                    Client client) throws IOException
     {
         _ClientPool.connect(ZSortHolder.QTT_SYMMETRY, client);
         return "async commit qtt_start consumer request";
     }
 
     @GetMapping("ws/end")
-    public String wsEnd(@RequestParam(name = "client_id") long clientId)
+    public String wsEnd(
+            @RequestParam(name = "client_id")
+                    long clientId)
     {
         _ClientPool.close(clientId);
         return "consumer wsEnd";
     }
 
     @GetMapping("ws/close")
-    public String wsClose(@RequestParam(name = "client_id") long clientId)
+    public String wsClose(
+            @RequestParam(name = "client_id")
+                    long clientId)
     {
         _ClientPool.sendLocal(clientId, new X102_Close("client ws_close".getBytes()));
         return "consumer ws_close";
     }
 
     @GetMapping("ws/heartbeat")
-    public String wsHeartbeat(@RequestParam(name = "msg",
-                                            defaultValue = "client ws_heartbeat",
-                                            required = false) String msg,
-                              @RequestParam(name = "client_id") long clientId)
+    public String wsHeartbeat(
+            @RequestParam(name = "msg",
+                          defaultValue = "client ws_heartbeat",
+                          required = false)
+                    String msg,
+            @RequestParam(name = "client_id")
+                    long clientId)
     {
         _ClientPool.wsHeartbeat(clientId, msg);
         return "ws_heartbeat";
     }
 
     @GetMapping("ws/x50")
-    public String wsX50(@RequestParam(name = "msg", defaultValue = "test", required = false) String msg,
-                        @RequestParam(name = "client_id") long clientId)
+    public String wsX50(
+            @RequestParam(name = "msg",
+                          defaultValue = "test",
+                          required = false)
+                    String msg,
+            @RequestParam(name = "client_id")
+                    long clientId)
     {
         X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
         x50.putPayload(msg.getBytes());
@@ -99,9 +115,15 @@ public class ConsumerController
     }
 
     @GetMapping("ws/sign-up")
-    public String wsX20(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
-                        @RequestParam(name = "sn") String sn,
-                        @RequestParam(name = "session_id") long sessionId)
+    public String wsX20(
+            @RequestParam(name = "password",
+                          defaultValue = "password",
+                          required = false)
+                    String password,
+            @RequestParam(name = "sn")
+                    String sn,
+            @RequestParam(name = "session_id")
+                    long sessionId)
     {
 
         X20_SignUp x20 = new X20_SignUp();
@@ -112,9 +134,15 @@ public class ConsumerController
     }
 
     @GetMapping("ws/sign-in")
-    public String wsX22(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
-                        @RequestParam(name = "token") String token,
-                        @RequestParam(name = "session_id") long sessionId)
+    public String wsX22(
+            @RequestParam(name = "password",
+                          defaultValue = "password",
+                          required = false)
+                    String password,
+            @RequestParam(name = "token")
+                    String token,
+            @RequestParam(name = "session_id")
+                    long sessionId)
     {
         X22_SignIn x22 = new X22_SignIn();
         // if (Objects.nonNull(_DeviceClient.getToken())
@@ -129,7 +157,9 @@ public class ConsumerController
     }
 
     @GetMapping("ws/ztls")
-    public String wsZtls(@RequestParam(name = "client_id") long clientId)
+    public String wsZtls(
+            @RequestParam(name = "client_id")
+                    long clientId)
     {
         X01_EncryptRequest x01 = new X01_EncryptRequest();
         _ClientPool.sendLocal(clientId, x01);
