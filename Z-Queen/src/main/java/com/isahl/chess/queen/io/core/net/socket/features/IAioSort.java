@@ -24,15 +24,14 @@
 package com.isahl.chess.queen.io.core.net.socket.features;
 
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 /**
  * @author william.d.zk
  */
 public interface IAioSort<C extends IPContext>
-        extends
-        ISort
+        extends ISort
 {
     C newContext(INetworkOption option);
 }

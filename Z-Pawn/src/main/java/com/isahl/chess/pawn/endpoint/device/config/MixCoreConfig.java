@@ -32,8 +32,7 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "z.chess.pawn.core")
 @PropertySource("classpath:mix.core.properties")
 public class MixCoreConfig
-        implements
-        IMixConfig
+        implements IMixConfig
 {
     private int decoderCountPower;
     private int encoderCountPower;

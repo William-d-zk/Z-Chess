@@ -27,8 +27,7 @@ import java.io.Serializable;
 import java.time.Duration;
 
 public class OAuth2Client
-        implements
-        Serializable
+        implements Serializable
 {
     private String thirdClientId;
     private String thirdClientSecret;

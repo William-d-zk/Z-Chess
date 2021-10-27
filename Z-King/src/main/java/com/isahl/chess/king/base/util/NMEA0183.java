@@ -25,7 +25,6 @@ package com.isahl.chess.king.base.util;
 
 /**
  * @author Idempotent
- * 
  * @date 2019/11/28
  */
 public class NMEA0183

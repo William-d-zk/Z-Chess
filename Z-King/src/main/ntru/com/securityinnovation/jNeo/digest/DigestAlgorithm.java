@@ -63,7 +63,7 @@ public enum DigestAlgorithm
         }
         // By construction this shouldn't happen,
         // except perhaps an out-of-memory error.
-        catch (Exception e) {
+        catch(Exception e) {
             return null;
         }
     }

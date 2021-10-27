@@ -31,8 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author william.d.zk
  */
 public interface ITask
-        extends
-        ILifeCycle
+        extends ILifeCycle
 {
     int RETRY_COUNT_BITS = 2;
     int RETRY_LIMIT      = (1 << RETRY_COUNT_BITS) - 1;
@@ -59,17 +58,17 @@ public interface ITask
 
     static void advanceState(AtomicInteger _Ctl, int targetState, int limit)
     {
-        for (;;) {
+        for(; ; ) {
             int c = _Ctl.get();
-            if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) break;
+            if(c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {break;}
         }
     }
 
     static void recedeState(AtomicInteger _Ctl, int targetState, int limit)
     {
-        for (;;) {
+        for(; ; ) {
             int c = _Ctl.get();
-            if (c <= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) break;
+            if(c <= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {break;}
         }
     }
 

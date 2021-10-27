@@ -24,17 +24,14 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author william.d.zk
  */
 public class SessionIgnore
-        implements
-        IOperator<IControl,
-                  ISession,
-                  IControl>
+        implements IOperator<IControl, ISession, IControl>
 {
 
     @Override

@@ -50,5 +50,4 @@ public interface IRaftService
      */
     List<RaftNode> getTopology();
 
-    
 }

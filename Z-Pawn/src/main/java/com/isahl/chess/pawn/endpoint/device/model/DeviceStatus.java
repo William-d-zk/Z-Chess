@@ -27,12 +27,10 @@ import com.isahl.chess.king.base.features.IStatus;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-06-16
  */
 public enum DeviceStatus
-        implements
-        IStatus
+        implements IStatus
 {
 
     MISS(CODE_MISS),

@@ -27,11 +27,11 @@ import com.isahl.chess.bishop.io.ws.features.IWsContext;
 import com.isahl.chess.bishop.io.ws.model.WsFrame;
 import com.isahl.chess.bishop.io.ws.proxy.WsProxyContext;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 

@@ -16,7 +16,7 @@ client.onMessageArrived = onMessageArrived;
 //  client.onConnected = onConnected;
 
 var options = {
-    invocationContext: { host: hostname, port: port, clientId: clientId },
+    invocationContext: {host: hostname, port: port, clientId: clientId},
     timeout: 5,
     keepAliveInterval: 60,
     cleanSession: true,
@@ -36,7 +36,7 @@ function subscribe() {
     var topic = "mytopic01";
     var qos = 0;
     logMessage("INFO", "Subscribing to: [Topic: ", topic, ", QoS: ", qos, "]");
-    client.subscribe(topic, { qos: Number(qos) });
+    client.subscribe(topic, {qos: Number(qos)});
 }
 
 
@@ -63,9 +63,6 @@ function disconnect() {
 }
 
 
-
-
-
 // called when the client loses its connection
 function onConnectionLost(responseObject) {
     if (responseObject.errorCode !== 0) {
@@ -79,7 +76,6 @@ function onMessageArrived(message) {
     logMessage("INFO", "Message Recieved: [Topic: ", message.destinationName, ", Payload: ", message.payloadString, ", QoS: ", message.qos, ", Retained: ", message.retained, ", Duplicate: ", message.duplicate, "]");
 
 }
-
 
 
 // called when the client connects
@@ -117,7 +113,6 @@ function makeid() {
 
     return text;
 }
-
 
 
 function logMessage(type, ...content) {

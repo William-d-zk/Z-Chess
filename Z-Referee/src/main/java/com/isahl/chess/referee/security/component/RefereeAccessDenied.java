@@ -34,8 +34,7 @@ import java.io.IOException;
 
 @Component
 public class RefereeAccessDenied
-        implements
-        AccessDeniedHandler
+        implements AccessDeniedHandler
 {
 
     private final RefereeCode _RefereeCode;

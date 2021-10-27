@@ -39,9 +39,9 @@ public interface IMappingCustom
      * @param session input session
      * @param content input
      * @return triple
-     *          first: response ->
-     *          second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
-     *          third: operator-type
+     * first: response ->
+     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
+     * third: operator-type
      */
     ITriple handle(ISessionManager manager, ISession session, IControl content);
 }

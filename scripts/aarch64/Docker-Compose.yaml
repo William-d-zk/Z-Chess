@@ -21,19 +21,19 @@
 
 version: '3.9'
 services:
-  db-pg: 
+  db-pg:
     image: isahl/postgres
     container_name: db-pg
     hostname: db-pg
     domainname: isahl.com
-    ports: 
+    ports:
       - "5432:5432"
     networks:
       endpoint:
         ipv4_address: 172.30.10.254
     volumes:
       - "~/Services/db/postgresql:/var/lib/postgresql/data"
-    environment: 
+    environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgress
       - POSTGRES_DB=postgres

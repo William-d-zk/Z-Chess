@@ -43,10 +43,11 @@ import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_RE
  */
 @Entity(name = "message")
 @Table(schema = "z_chess_pawn",
-       indexes = { @Index(name = "origin_idx",
-                          columnList = "origin"),
-                   @Index(name = "topic_idx",
-                          columnList = "topic")
+       indexes = {
+               @Index(name = "origin_idx",
+                      columnList = "origin"),
+               @Index(name = "topic_idx",
+                      columnList = "topic")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity

@@ -33,20 +33,16 @@ import java.util.function.Consumer;
  * @author William.d.zk
  */
 public class ScheduleHandler<A extends IValid>
-        implements
-        TimeWheel.IWheelItem<A>
+        implements TimeWheel.IWheelItem<A>
 {
-    private A                   attach;
+    private       A             attach;
     private final boolean       _Cycle;
     private final Consumer<A>   _Callback;
     private final int           _Priority;
     private final long          _Tick;
     private final ReentrantLock _Lock;
 
-    public ScheduleHandler(Duration delay,
-                           boolean cycle,
-                           Consumer<A> callback,
-                           int priority)
+    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback, int priority)
     {
         _Cycle = cycle;
         _Tick = delay.toMillis();
@@ -55,21 +51,17 @@ public class ScheduleHandler<A extends IValid>
         _Lock = new ReentrantLock();
     }
 
-    public ScheduleHandler(Duration delay,
-                           boolean cycle)
+    public ScheduleHandler(Duration delay, boolean cycle)
     {
         this(delay, cycle, null, PRIORITY_NORMAL);
     }
 
-    public ScheduleHandler(Duration delay,
-                           Consumer<A> callback)
+    public ScheduleHandler(Duration delay, Consumer<A> callback)
     {
         this(delay, false, callback, PRIORITY_NORMAL);
     }
 
-    public ScheduleHandler(Duration delay,
-                           boolean cycle,
-                           Consumer<A> callback)
+    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback)
     {
         this(delay, cycle, callback, PRIORITY_NORMAL);
     }
@@ -95,7 +87,7 @@ public class ScheduleHandler<A extends IValid>
     @Override
     public void onCall()
     {
-        if (_Callback != null && attach != null && attach.isValid()) {
+        if(_Callback != null && attach != null && attach.isValid()) {
             _Callback.accept(attach);
         }
     }
@@ -146,18 +138,8 @@ public class ScheduleHandler<A extends IValid>
     @Override
     public String toString()
     {
-        return "ScheduleHandler{"
-               + "attach="
-               + attach
-               + ", _Cycle="
-               + _Cycle
-               + ", _Callback="
-               + _Callback
-               + ", _Priority="
-               + _Priority
-               + ", _MilliTick="
-               + _Tick
-               + '}';
+        return "ScheduleHandler{" + "attach=" + attach + ", _Cycle=" + _Cycle + ", _Callback=" + _Callback +
+               ", _Priority=" + _Priority + ", _MilliTick=" + _Tick + '}';
     }
 
 }

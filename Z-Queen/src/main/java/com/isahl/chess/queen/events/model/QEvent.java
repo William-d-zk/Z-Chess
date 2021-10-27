@@ -41,12 +41,12 @@ public class QEvent
         implements IReset,
                    IEvent
 {
-    public static final EventFactory<QEvent>   EVENT_FACTORY = new QEventFactory();
-    private IError.Type    mErrType = NO_ERROR;
-    private IOperator.Type mType    = IOperator.Type.NULL;
-    private IPair          mContent;
-    private             IOperator<?, ?, ?>     mOperator;
-    private             List<ITriple>          mContentList;
+    public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
+    private             IError.Type          mErrType      = NO_ERROR;
+    private             IOperator.Type       mType         = IOperator.Type.NULL;
+    private             IPair                mContent;
+    private             IOperator<?, ?, ?>   mOperator;
+    private             List<ITriple>        mContentList;
 
     @Override
     public String toString()

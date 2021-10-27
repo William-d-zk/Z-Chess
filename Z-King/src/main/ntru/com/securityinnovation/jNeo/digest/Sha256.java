@@ -25,8 +25,7 @@ package com.securityinnovation.jNeo.digest;
  * This class implements the SHA-256 message digest algorithm.
  */
 public class Sha256
-        extends
-        Digest
+        extends Digest
 {
 
     /**
@@ -78,32 +77,26 @@ public class Sha256
     /**
      * Updates the message digest with new data.
      *
-     * @param data
-     *            the data to be added.
-     * @param offset
-     *            the start of the data in the array.
-     * @param length
-     *            the number of bytes of data to add.
+     * @param data   the data to be added.
+     * @param offset the start of the data in the array.
+     * @param length the number of bytes of data to add.
      */
     public void update(byte[] data, int offset, int length)
     {
         // Sanity check inputs
-        if (data == null) throw new NullPointerException("Input data buffer is null");
-        if (offset + length > data.length) throw new IllegalArgumentException("reading "
-                                                                              + length
-                                                                              + " bytes of input starting at offset "
-                                                                              + offset
-                                                                              + " will overrun end of input buffer ("
-                                                                              + data.length
-                                                                              + " bytes long)");
-        if (offset < 0) throw new IllegalArgumentException("input offset is negative (" + offset + ")");
-        if (length < 0) throw new IllegalArgumentException("input length is negative (" + offset + ")");
+        if(data == null) {throw new NullPointerException("Input data buffer is null");}
+        if(offset + length > data.length) {
+            throw new IllegalArgumentException("reading " + length + " bytes of input starting at offset " + offset +
+                                               " will overrun end of input buffer (" + data.length + " bytes long)");
+        }
+        if(offset < 0) {throw new IllegalArgumentException("input offset is negative (" + offset + ")");}
+        if(length < 0) {throw new IllegalArgumentException("input length is negative (" + offset + ")");}
 
         byteCount += length;
 
         // Process any full blocks we get by combining cached input
         // with the new input
-        while (bufOff + length >= buf.length) {
+        while(bufOff + length >= buf.length) {
             int todo = buf.length - bufOff;
             System.arraycopy(data, offset, buf, bufOff, todo);
             transform(buf);
@@ -126,15 +119,13 @@ public class Sha256
     public void finishDigest(byte[] out, int outOffset)
     {
         // Sanity check inputs
-        if (out == null) throw new NullPointerException("output array is null");
-        if (outOffset + getDigestLen() > out.length) throw new IllegalArgumentException("writing "
-                                                                                        + getDigestLen()
-                                                                                        + " bytes of input starting at offset "
-                                                                                        + outOffset
-                                                                                        + " will overrun end of output buffer ("
-                                                                                        + out.length
-                                                                                        + " bytes long)");
-        if (outOffset < 0) throw new IllegalArgumentException("output offset is negative (" + outOffset + ")");
+        if(out == null) {throw new NullPointerException("output array is null");}
+        if(outOffset + getDigestLen() > out.length) {
+            throw new IllegalArgumentException(
+                    "writing " + getDigestLen() + " bytes of input starting at offset " + outOffset +
+                    " will overrun end of output buffer (" + out.length + " bytes long)");
+        }
+        if(outOffset < 0) {throw new IllegalArgumentException("output offset is negative (" + outOffset + ")");}
 
         // Add the "end of input" marker
         buf[bufOff++] = (byte) 0x80;
@@ -142,7 +133,7 @@ public class Sha256
         // If the current block is not large enough to hold the
         // 8-byte long bitcount, pad the current block with 0s,
         // process it, and start a new block.
-        if (bufOff + 8 > buf.length) {
+        if(bufOff + 8 > buf.length) {
             java.util.Arrays.fill(buf, bufOff, getBlockLen(), (byte) 0);
             transform(buf);
             bufOff = 0;
@@ -151,7 +142,7 @@ public class Sha256
         // Pad the final block with 0's, then the bitcount of all of the input
         java.util.Arrays.fill(buf, bufOff, buf.length - 8, (byte) 0);
         long bitCount = byteCount * 8;
-        for (int i = 0; i < 8; i++) {
+        for(int i = 0; i < 8; i++) {
             buf[buf.length - i - 1] = (byte) bitCount;
             bitCount >>>= 8;
         }
@@ -169,22 +160,34 @@ public class Sha256
     // SHA-256 block routines
     //......................................................................
 
-    /** Size (in bytes) of this hash */
+    /**
+     * Size (in bytes) of this hash
+     */
     private static final int HASH_LEN = 32;
 
-    /** Size (in bytes) of one process block */
+    /**
+     * Size (in bytes) of one process block
+     */
     private static final int BLOCK_LEN = 64;
 
-    /** 64 byte input buffer */
+    /**
+     * 64 byte input buffer
+     */
     private final byte[] buf = new byte[64];
 
-    /** index of first empty element in buf */
+    /**
+     * index of first empty element in buf
+     */
     private int bufOff;
 
-    /** Total number of bytes hashed so far. */
+    /**
+     * Total number of bytes hashed so far.
+     */
     private long byteCount;
 
-    /** 8 32-bit words (interim result) */
+    /**
+     * 8 32-bit words (interim result)
+     */
     private final int[] state = new int[8];
 
     /**
@@ -201,12 +204,11 @@ public class Sha256
      */
     private static void byte2int(byte[] src, int srcOffset, int[] dst, int dstOffset, int numInts)
     {
-        while (numInts-- > 0) {
+        while(numInts-- > 0) {
             // Big endian
-            dst[dstOffset++] = (src[srcOffset++] << 24)
-                               | ((src[srcOffset++] & 0xFF) << 16)
-                               | ((src[srcOffset++] & 0xFF) << 8)
-                               | (src[srcOffset++] & 0xFF);
+            dst[dstOffset++] =
+                    (src[srcOffset++] << 24) | ((src[srcOffset++] & 0xFF) << 16) | ((src[srcOffset++] & 0xFF) << 8) |
+                    (src[srcOffset++] & 0xFF);
         }
     }
 
@@ -217,7 +219,7 @@ public class Sha256
     protected void int2byte(int[] src, int srcOffset, byte[] dst, int dstOffset, int numInts)
     {
         int end = numInts + srcOffset;
-        for (int i = srcOffset, j = dstOffset; i < end; i++) {
+        for(int i = srcOffset, j = dstOffset; i < end; i++) {
             int d = src[srcOffset + i];
             dst[j++] = (byte) (d >>> 24);
             dst[j++] = (byte) (d >>> 16);

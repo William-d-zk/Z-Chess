@@ -29,8 +29,7 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
  * @author william.d.zk
  */
 public class PipeTransfer
-        implements
-        IPipeTransfer
+        implements IPipeTransfer
 {
     @Override
     public String getName()

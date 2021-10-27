@@ -50,15 +50,13 @@ import java.util.stream.Collectors;
  */
 @Service
 public class InvocationSecurityMetadataSourceService
-        implements
-        FilterInvocationSecurityMetadataSource
+        implements FilterInvocationSecurityMetadataSource
 {
     private final Logger _Logger = Logger.getLogger("security.referee." + getClass().getSimpleName());
 
     private final IPermissionRepository             _PermissionRepository;
     private final IRoleRepository                   _RoleRepository;
-    private final Map<String,
-                      List<SecurityConfig>>         _AttributeMap;
+    private final Map<String, List<SecurityConfig>> _AttributeMap;
 
     @Autowired
     public InvocationSecurityMetadataSourceService(IPermissionRepository permissionRepository,
@@ -69,27 +67,29 @@ public class InvocationSecurityMetadataSourceService
         List<PermissionEntity> permissions = _PermissionRepository.findAll();
         List<RoleEntity> roles = _RoleRepository.findAll();
         _AttributeMap = permissions.stream()
-                                   .map(p -> new Pair<>(p.getUrl(),
-                                                        roles.stream()
-                                                             .filter(r -> r.getPermissions()
-                                                                           .stream()
-                                                                           .anyMatch(rp -> rp.getUrl()
-                                                                                             .equals(p.getUrl())))
-                                                             .map(r -> new SecurityConfig(r.getAuthority()))
-                                                             .collect(Collectors.toList())))
+                                   .map(p->new Pair<>(p.getUrl(),
+                                                      roles.stream()
+                                                           .filter(r->r.getPermissions()
+                                                                       .stream()
+                                                                       .anyMatch(rp->rp.getUrl()
+                                                                                       .equals(p.getUrl())))
+                                                           .map(r->new SecurityConfig(r.getAuthority()))
+                                                           .collect(Collectors.toList())))
                                    .collect(Collectors.toConcurrentMap(Pair::getFirst, Pair::getSecond));
     }
 
     @Override
-    public Collection<ConfigAttribute> getAttributes(@NonNull Object param) throws IllegalArgumentException
+    public Collection<ConfigAttribute> getAttributes(
+            @NonNull
+                    Object param) throws IllegalArgumentException
     {
         HttpServletRequest request = ((FilterInvocation) param).getHttpRequest();
         return _RoleRepository.findAll()
                               .stream()
-                              .filter(role -> role.getPermissions()
-                                                  .stream()
-                                                  .anyMatch(p -> new AntPathRequestMatcher(p.getUrl()).matches(request)))
-                              .map(role -> new SecurityConfig(role.getAuthority()))
+                              .filter(role->role.getPermissions()
+                                                .stream()
+                                                .anyMatch(p->new AntPathRequestMatcher(p.getUrl()).matches(request)))
+                              .map(role->new SecurityConfig(role.getAuthority()))
                               .collect(Collectors.toList());
     }
 

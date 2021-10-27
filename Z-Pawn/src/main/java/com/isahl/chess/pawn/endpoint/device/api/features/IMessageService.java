@@ -44,5 +44,4 @@ public interface IMessageService
 
     List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 
-
 }

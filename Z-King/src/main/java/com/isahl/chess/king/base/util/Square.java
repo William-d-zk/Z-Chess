@@ -29,22 +29,15 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public class Square<FIRST,
-                    SECOND,
-                    THIRD,
-                    FOURTH>
-        implements
-        ISquare
+public class Square<FIRST, SECOND, THIRD, FOURTH>
+        implements ISquare
 {
     private FIRST  first;
     private SECOND second;
     private THIRD  third;
     private FOURTH fourth;
 
-    public Square(FIRST first,
-                  SECOND second,
-                  THIRD third,
-                  FOURTH fourth)
+    public Square(FIRST first, SECOND second, THIRD third, FOURTH fourth)
     {
         this.first = first;
         this.second = second;
@@ -99,20 +92,12 @@ public class Square<FIRST,
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Square)) { return false; }
-        if (this != obj) {
+        if(!(obj instanceof Square)) {return false;}
+        if(this != obj) {
             @SuppressWarnings("unchecked")
-            Square<FIRST,
-                   SECOND,
-                   THIRD,
-                   FOURTH> other = (Square<FIRST,
-                                           SECOND,
-                                           THIRD,
-                                           FOURTH>) obj;
-            return first.equals(other.first)
-                   && second.equals(other.second)
-                   && third.equals(other.third)
-                   && fourth.equals(other.fourth);
+            Square<FIRST, SECOND, THIRD, FOURTH> other = (Square<FIRST, SECOND, THIRD, FOURTH>) obj;
+            return first.equals(other.first) && second.equals(other.second) && third.equals(other.third) &&
+                   fourth.equals(other.fourth);
         }
         return true;
     }
@@ -130,10 +115,7 @@ public class Square<FIRST,
     }
 
     @Override
-    public Square<FIRST,
-                  SECOND,
-                  THIRD,
-                  FOURTH> clone()
+    public Square<FIRST, SECOND, THIRD, FOURTH> clone()
     {
         return new Square<>(first, second, third, fourth);
     }

@@ -28,53 +28,49 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 /**
  * @author William.d.zk
  */
 public interface IPipeDecoder
-        extends
-        IOperator<IPacket, ISession,
-                  ITriple>
+        extends IOperator<IPacket, ISession, ITriple>
 {
     default IControl[] filterRead(IPacket input, ISession session)
     {
         IPContext context = session.getContext();
-        if (context == null || input == null) { return null; }
+        if(context == null || input == null) {return null;}
         final IFilterChain _Header = session.getFilterChain()
                                             .getChainHead();
         IControl[] commands = null;
         IProtocol protocol = input;
         IPacket proxy = null;
 
-        for (IFilterChain next = _Header;; next = _Header, protocol = input, context = session.getContext()) {
+        for(IFilterChain next = _Header; ; next = _Header, protocol = input, context = session.getContext()) {
             Chain:
             {
                 IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
-                while (next != null) {
+                while(next != null) {
                     IPipeFilter pipeFilter = next.getPipeFilter();
-                    Pair<IFilter.ResultType,
-                         IPContext> peekResult = pipeFilter.pipePeek(context, protocol);
+                    Pair<IFilter.ResultType, IPContext> peekResult = pipeFilter.pipePeek(context, protocol);
                     resultType = peekResult.getFirst();
                     context = peekResult.getSecond();
-                    switch (resultType)
-                    {
+                    switch(resultType) {
                         case ERROR:
                             throw new ZException("error input: %s ;filter: %s ", protocol, next.getName());
                         case NEED_DATA:
-                            if (commands != null) {
+                            if(commands != null) {
                                 /*
                                   协议层已经完成处理，返回所有已处理完毕的
                                   IControl 对象。
                                  */
                                 return commands;
                             }
-                            else if (proxy != null) {
+                            else if(proxy != null) {
                                 /*
                                   协议层代理
                                   例如 WS→QTT
@@ -93,10 +89,10 @@ public interface IPipeDecoder
                             break;
                         case HANDLED:
                             IControl cmd = pipeFilter.pipeDecode(context, protocol);
-                            if (cmd != null) {
+                            if(cmd != null) {
                                 cmd.putSession(session);
-                                if (commands == null) {
-                                    commands = new IControl[]{cmd};
+                                if(commands == null) {
+                                    commands = new IControl[]{ cmd };
                                 }
                                 else {
                                     IControl[] nCmd = new IControl[commands.length + 1];
@@ -112,7 +108,7 @@ public interface IPipeDecoder
                     }
                     next = next.getNext();
                 }
-                if (resultType == IFilter.ResultType.IGNORE) {
+                if(resultType == IFilter.ResultType.IGNORE) {
                     throw new ZException("no filter handle input: %s ", protocol);
                 }
             }

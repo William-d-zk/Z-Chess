@@ -31,12 +31,10 @@ import com.isahl.chess.queen.io.core.features.model.session.ISessionError;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-04-25
  */
 public class SessionError
-        implements
-        ISessionError
+        implements ISessionError
 
 {
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
@@ -51,7 +49,6 @@ public class SessionError
     public IPair handle(Throwable throwable, ISession session)
     {
         _Logger.trace("error session:%s", throwable, session);
-        return session != null ? new Pair<>(session, session.getCloser())
-                               : null;
+        return session != null ? new Pair<>(session, session.getCloser()) : null;
     }
 }

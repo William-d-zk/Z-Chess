@@ -4,8 +4,7 @@ Content-Type: application/json
 {
   "sn": "z-chess0003",
   "username": "isahl.test",
-  "profile":
-  {
+  "profile": {
     "wifi_mac": "09:12:11:FF:2D:8F",
     "sensor_mac": "09:12:12:3A:2D:8F",
     "bluetooth_mac": "09:12:12:7F:2D:8F",
@@ -21,8 +20,7 @@ Content-Type: application/json
 {
   "sn": "z-chess.device-local-test.00002",
   "username": "isahl.test",
-  "profile":
-  {
+  "profile": {
     "wifi_mac": "09:12:11:FF:2D:8E",
     "sensor_mac": "09:12:12:3A:2D:8E",
     "bluetooth_mac": "09:12:12:7F:2D:8E",
@@ -38,8 +36,7 @@ Content-Type: application/json
 {
   "sn": "z-chess.device-local-test.00001",
   "username": "isahl.test",
-  "profile":
-  {
+  "profile": {
     "wifi_mac": "09:12:11:3F:2D:8E",
     "sensor_mac": "09:12:11:3A:2D:8E",
     "bluetooth_mac": "09:12:11:7F:2D:8E",

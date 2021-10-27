@@ -54,16 +54,17 @@ import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_RE
 @TypeDef(name = "jsonb",
          typeClass = JsonBinaryType.class)
 @Table(schema = "z_chess_pawn",
-       indexes = { @Index(name = "device_idx_token_pwd_id",
-                          columnList = "token,password,password_id"),
-                   @Index(name = "device_idx_token_pwd",
-                          columnList = "token,password"),
-                   @Index(name = "device_idx_sn",
-                          columnList = "sn"),
-                   @Index(name = "device_idx_token",
-                          columnList = "token"),
-                   @Index(name = "device_idx_username",
-                          columnList = "username")
+       indexes = {
+               @Index(name = "device_idx_token_pwd_id",
+                      columnList = "token,password,password_id"),
+               @Index(name = "device_idx_token_pwd",
+                      columnList = "token,password"),
+               @Index(name = "device_idx_sn",
+                      columnList = "sn"),
+               @Index(name = "device_idx_token",
+                      columnList = "token"),
+               @Index(name = "device_idx_username",
+                      columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceEntity

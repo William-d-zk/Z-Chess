@@ -30,7 +30,5 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 @FunctionalInterface
 public interface IConnectError
 {
-    IOperator<Throwable,
-              ? extends IConnectActivity,
-              Void> getErrorOperator();
+    IOperator<Throwable, ? extends IConnectActivity, Void> getErrorOperator();
 }

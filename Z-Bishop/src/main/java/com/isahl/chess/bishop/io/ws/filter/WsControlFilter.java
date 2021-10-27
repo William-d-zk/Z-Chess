@@ -22,21 +22,21 @@
  */
 package com.isahl.chess.bishop.io.ws.filter;
 
-import com.isahl.chess.bishop.io.ws.features.IWsContext;
-import com.isahl.chess.bishop.io.ws.model.WsControl;
-import com.isahl.chess.bishop.io.ws.model.WsFrame;
 import com.isahl.chess.bishop.io.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
 import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
 import com.isahl.chess.bishop.io.ws.ctrl.X104_Pong;
+import com.isahl.chess.bishop.io.ws.features.IWsContext;
+import com.isahl.chess.bishop.io.ws.model.WsControl;
+import com.isahl.chess.bishop.io.ws.model.WsFrame;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X107_Redirect;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
 /**
@@ -98,7 +98,7 @@ public class WsControlFilter<T extends ZContext & IWsContext>
                 else if(acting.isProxy()) {
                     acting = ((IProxyContext<?>) acting).getActingContext();
                 }
-                else { break; }
+                else {break;}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -119,7 +119,7 @@ public class WsControlFilter<T extends ZContext & IWsContext>
                 else if(acting.isProxy()) {
                     acting = ((IProxyContext<?>) acting).getActingContext();
                 }
-                else { break; }
+                else {break;}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

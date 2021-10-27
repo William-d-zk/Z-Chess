@@ -33,7 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController
 {
     @GetMapping("/user/common")
-    public @ResponseBody ZResponse<String> hello(@RequestParam("input") String input)
+    public @ResponseBody
+    ZResponse<String> hello(
+            @RequestParam("input")
+                    String input)
     {
         return ZResponse.success("world");
     }

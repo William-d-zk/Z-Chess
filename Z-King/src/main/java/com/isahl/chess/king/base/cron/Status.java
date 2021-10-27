@@ -32,24 +32,21 @@ public enum Status
 {
 
     MISS(-1 << ITask.RETRY_COUNT_BITS),
-    CREATED(0)
-    {
+    CREATED(0) {
         @Override
         public boolean isTerminated()
         {
             return false;
         }
     },
-    PENDING(1 << ITask.RETRY_COUNT_BITS)
-    {
+    PENDING(1 << ITask.RETRY_COUNT_BITS) {
         @Override
         public boolean isTerminated()
         {
             return false;
         }
     },
-    RUNNING(2 << ITask.RETRY_COUNT_BITS)
-    {
+    RUNNING(2 << ITask.RETRY_COUNT_BITS) {
         @Override
         public boolean isTerminated()
         {
@@ -82,8 +79,7 @@ public enum Status
 
     public static Status valueOf(int code)
     {
-        return switch (code & ~ITask.RETRY_LIMIT)
-        {
+        return switch(code & ~ITask.RETRY_LIMIT) {
             case -1 << ITask.RETRY_COUNT_BITS -> MISS;
             case 0 -> CREATED;
             case 1 << ITask.RETRY_COUNT_BITS -> PENDING;

@@ -42,19 +42,19 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true,
+                            securedEnabled = true,
+                            jsr250Enabled = true)
 @ConfigurationProperties(prefix = "z-chess.referee.security")
 @PropertySource("classpath:security.properties")
 public class WebSecurityConfig
-        extends
-        WebSecurityConfigurerAdapter
-        implements
-        ISecurityConfig
+        extends WebSecurityConfigurerAdapter
+        implements ISecurityConfig
 {
 
     private final BCryptPasswordEncoder _PasswordEncoder = new BCryptPasswordEncoder();
-    private String                      mode;
-    private String[]                    ignorePatterns;
+    private       String                mode;
+    private       String[]              ignorePatterns;
 
     public String[] getIgnorePatterns()
     {
@@ -114,8 +114,7 @@ public class WebSecurityConfig
          */
         http.csrf()
             .disable();
-        switch (mode)
-        {
+        switch(mode) {
             case "oauth" -> oauth(http);
             case "jwt" -> jwt(http);
             case "basic" -> basic(http);

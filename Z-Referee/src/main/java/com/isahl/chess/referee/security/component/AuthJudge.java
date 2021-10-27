@@ -41,8 +41,7 @@ import java.util.Collection;
  */
 @Component
 public class AuthJudge
-        implements
-        AccessDecisionManager
+        implements AccessDecisionManager
 {
     private final String _SecurityMode;
 
@@ -55,19 +54,18 @@ public class AuthJudge
     @Override
     public void decide(Authentication authentication,
                        Object object,
-                       Collection<ConfigAttribute> configAttributes) throws AccessDeniedException,
-                                                                     InsufficientAuthenticationException
+                       Collection<ConfigAttribute> configAttributes) throws AccessDeniedException, InsufficientAuthenticationException
     {
-        if (!"none".equals(_SecurityMode)) {
-            if (configAttributes != null && !configAttributes.isEmpty()) {
+        if(!"none".equals(_SecurityMode)) {
+            if(configAttributes != null && !configAttributes.isEmpty()) {
                 String authority;
-                for (ConfigAttribute configAttribute : configAttributes) {
+                for(ConfigAttribute configAttribute : configAttributes) {
                     authority = configAttribute.getAttribute();
-                    for (GrantedAuthority ga : authentication.getAuthorities()) {
-                        if (authority.trim()
-                                     .equals(ga.getAuthority()
-                                               .trim()))
-                        { return; }
+                    for(GrantedAuthority ga : authentication.getAuthorities()) {
+                        if(authority.trim()
+                                    .equals(ga.getAuthority()
+                                              .trim()))
+                        {return;}
                     }
                 }
                 throw new AccessDeniedException("no access permission");

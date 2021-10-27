@@ -26,8 +26,7 @@ package com.securityinnovation.jNeo;
  * was attempted on a key that only contains public key material.
  */
 public class NoPrivateKeyException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception a default message.

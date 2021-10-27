@@ -28,14 +28,10 @@ import com.isahl.chess.king.base.features.model.IPair;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-06-28
  */
 public interface ISessionError
-        extends
-        IOperator<Throwable,
-                  ISession,
-                  IPair>
+        extends IOperator<Throwable, ISession, IPair>
 {
     IPair handle(Throwable throwable, ISession session);
 }

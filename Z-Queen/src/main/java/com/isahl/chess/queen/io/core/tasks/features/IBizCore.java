@@ -30,8 +30,7 @@ import java.nio.channels.AsynchronousChannelGroup;
  * @author william.d.zk
  */
 public interface IBizCore
-        extends
-        IPipeCore
+        extends IPipeCore
 {
     AsynchronousChannelGroup getServiceChannelGroup() throws IOException;
 }

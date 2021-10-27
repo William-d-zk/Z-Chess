@@ -32,10 +32,8 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnected;
  * @author William.d.zk
  */
 public interface IDatagram
-        extends
-        IConnectActivity,
-        IConnected,
-        IConnectError,
-        ITask
-{
-}
+        extends IConnectActivity,
+                IConnected,
+                IConnectError,
+                ITask
+{}

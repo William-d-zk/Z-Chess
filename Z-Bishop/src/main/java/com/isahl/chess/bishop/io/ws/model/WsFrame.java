@@ -115,7 +115,7 @@ public class WsFrame
     public void doMask()
     {
         if(mMaskLength > 0 && mPayloadLength > 0) {
-            for(int i = 0; i < mPayloadLength; i++) { mPayload[i] ^= mMask[i & 3]; }
+            for(int i = 0; i < mPayloadLength; i++) {mPayload[i] ^= mMask[i & 3];}
         }
     }
 
@@ -160,7 +160,7 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if(mPayloadLength <= 0) { return new byte[]{ (byte) (mMask == null ? 0 : 0x80) }; }
+        if(mPayloadLength <= 0) {return new byte[]{ (byte) (mMask == null ? 0 : 0x80) };}
         int t_size = mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1;
         byte[] x = new byte[t_size];
         if(mPayloadLength > 0xFFFF) {
@@ -171,8 +171,8 @@ public class WsFrame
             x[0] = 0x7E;
             IoUtil.writeShort((int) mPayloadLength, x, 1);
         }
-        else { x[0] = (byte) mPayloadLength; }
-        if(mMask != null) { mMaskCode = x[0] |= 0x80; }
+        else {x[0] = (byte) mPayloadLength;}
+        if(mMask != null) {mMaskCode = x[0] |= 0x80;}
         return x;
     }
 
@@ -230,8 +230,8 @@ public class WsFrame
 
     public byte getFrameFin()
     {
-        if(frame_fragment) { return frame_fin ? getFragmentEndFrame() : getFragmentFrame(); }
-        else { return getFrame(frame_op_code); }
+        if(frame_fragment) {return frame_fin ? getFragmentEndFrame() : getFragmentFrame();}
+        else {return getFrame(frame_op_code);}
     }
 
     public boolean checkRSV(byte value)
@@ -322,7 +322,7 @@ public class WsFrame
     {
         pos += IoUtil.writeByte(getFrameFin(), data, pos);
         pos += IoUtil.write(getPayloadLengthArray(), data, pos);
-        if(getMaskLength() > 0) { pos += IoUtil.write(getMask(), data, pos); }
+        if(getMaskLength() > 0) {pos += IoUtil.write(getMask(), data, pos);}
         if(getPayloadLength() > 0) {
             doMask();
             pos += IoUtil.write(payload(), data, pos);

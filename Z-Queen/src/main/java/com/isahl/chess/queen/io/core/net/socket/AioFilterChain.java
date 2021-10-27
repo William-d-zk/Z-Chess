@@ -24,31 +24,26 @@ package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilter;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFilter;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IPContext,
-                                     O extends IProtocol,
-                                     I extends IProtocol>
-        implements
-        IFilterChain,
-        IPipeFilter,
-        IFilter<C,
-                O,
-                I>
+public abstract class AioFilterChain<C extends IPContext, O extends IProtocol, I extends IProtocol>
+        implements IFilterChain,
+                   IPipeFilter,
+                   IFilter<C, O, I>
 {
 
     protected final Logger _Logger;
 
-    private final String _Name;
-    private IFilterChain next;
-    private IFilterChain previous;
+    private final String       _Name;
+    private       IFilterChain next;
+    private       IFilterChain previous;
 
     private int mRightIdempotent = 0x80000000;
     private int mLeftIdempotent  = 1;
@@ -74,31 +69,31 @@ public abstract class AioFilterChain<C extends IPContext,
     @Override
     public void idempotentRightShift(int previous)
     {
-        if (previous != 0) {
+        if(previous != 0) {
             int rightShift = previous >>> 1;
-            if (rightShift != 0) {
+            if(rightShift != 0) {
                 mRightIdempotent = rightShift;
             }
             else {
                 throw new IllegalArgumentException("no space for right shift");
             }
         }
-        IoUtil.requireNonNull(getNext(), f -> f.idempotentRightShift(mRightIdempotent));
+        IoUtil.requireNonNull(getNext(), f->f.idempotentRightShift(mRightIdempotent));
     }
 
     @Override
     public void idempotentLeftShift(int next)
     {
-        if (next != 0) {
+        if(next != 0) {
             int leftShift = next << 1;
-            if (leftShift != 0) {
+            if(leftShift != 0) {
                 mLeftIdempotent = leftShift;
             }
             else {
                 throw new IllegalArgumentException("no space for left shift");
             }
         }
-        IoUtil.requireNonNull(getPrevious(), f -> f.idempotentLeftShift(mLeftIdempotent));
+        IoUtil.requireNonNull(getPrevious(), f->f.idempotentLeftShift(mLeftIdempotent));
     }
 
     @Override
@@ -129,28 +124,26 @@ public abstract class AioFilterChain<C extends IPContext,
     public IFilterChain getChainHead()
     {
         IFilterChain node = previous;
-        while (node != null && node.getPrevious() != null) {
+        while(node != null && node.getPrevious() != null) {
             node = node.getPrevious();
         }
-        return node == null ? this
-                            : node;
+        return node == null ? this : node;
     }
 
     @Override
     public IFilterChain getChainTail()
     {
         IFilterChain node = next;
-        while (node != null && node.getNext() != null) {
+        while(node != null && node.getNext() != null) {
             node = node.getNext();
         }
-        return node == null ? this
-                            : node;
+        return node == null ? this : node;
     }
 
     @Override
     public IFilterChain linkAfter(IFilterChain current)
     {
-        if (current == null) { return this; }
+        if(current == null) {return this;}
         current.setNext(this);
         setPrevious(current);
         idempotentRightShift(current.getRightIdempotentBit());
@@ -161,7 +154,7 @@ public abstract class AioFilterChain<C extends IPContext,
     @Override
     public IFilterChain linkFront(IFilterChain current)
     {
-        if (current == null) { return this; }
+        if(current == null) {return this;}
         current.setPrevious(this);
         setNext(current);
         current.idempotentRightShift(getRightIdempotentBit());
@@ -174,7 +167,7 @@ public abstract class AioFilterChain<C extends IPContext,
     {
         IFilterChain nextNext;
         IFilterChain next = this.next;
-        while (next != null) {
+        while(next != null) {
             nextNext = next.getNext();
             next.setNext(null);
             next = nextNext;

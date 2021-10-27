@@ -30,14 +30,14 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.functions.SessionWrote;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.tasks.features.IAvailable;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionError;
-import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
+import com.isahl.chess.queen.io.core.tasks.features.IAvailable;
 import com.lmax.disruptor.RingBuffer;
 
 import java.nio.channels.AsynchronousSocketChannel;

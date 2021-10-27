@@ -25,10 +25,10 @@ package com.isahl.chess.bishop.io.ws.proxy;
 
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 /**

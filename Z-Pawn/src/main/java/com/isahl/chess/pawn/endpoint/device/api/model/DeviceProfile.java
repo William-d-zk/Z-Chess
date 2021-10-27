@@ -33,17 +33,16 @@ import java.io.Serializable;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DeviceProfile
-        implements
-        Serializable
+        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = -3059633247602550952L;
 
-    private String            wifiMac;
-    private String            sensorMac;
-    private String            bluetoothMac;
-    private String            imei;
-    private String            imsi;
+    private String wifiMac;
+    private String sensorMac;
+    private String bluetoothMac;
+    private String imei;
+    private String imsi;
 
     public String getWifiMac()
     {

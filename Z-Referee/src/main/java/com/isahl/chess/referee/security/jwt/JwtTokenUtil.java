@@ -41,12 +41,11 @@ import java.util.Objects;
 
 @Component
 public class JwtTokenUtil
-        implements
-        Serializable
+        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = 788687777265936249L;
-    private final Key         _Key             = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private final        Key  _Key             = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     public String generateToken(UserDetails userDetails)
     {
@@ -64,8 +63,7 @@ public class JwtTokenUtil
         Objects.requireNonNull(token);
         return Objects.requireNonNull(userDetails)
                       .getUsername()
-                      .equals(getUsernameFromToken(token))
-               && !isTokenExpired(token);
+                      .equals(getUsernameFromToken(token)) && !isTokenExpired(token);
     }
 
     public String getUsernameFromToken(String token)
