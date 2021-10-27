@@ -26,14 +26,13 @@ import com.securityinnovation.jNeo.math.FullPolynomial;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 
 class PubKeyFormatter_PUBLIC_KEY_v1
-        implements
-        PubKeyFormatter
+        implements PubKeyFormatter
 {
     private final static byte tag = NtruEncryptKeyNativeEncoder.PUBLIC_KEY_v1;
 
     public byte[] encode(KeyParams keyParams, FullPolynomial h)
     {
-        if (h.p.length != keyParams.N) return null;
+        if(h.p.length != keyParams.N) {return null;}
 
         int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null) + BitPack.pack(keyParams.N, keyParams.q));
         byte[] ret = new byte[len];
@@ -46,17 +45,17 @@ class PubKeyFormatter_PUBLIC_KEY_v1
     public RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException
     {
         // Parse the header, recover the key parameters.
-        if (keyBlob[0] != tag) throw new IllegalArgumentException("key blob tag not recognized");
+        if(keyBlob[0] != tag) {throw new IllegalArgumentException("key blob tag not recognized");}
         KeyParams keyParams = KeyFormatterUtil.parseOID(keyBlob, 1, 3);
 
         // Make sure the input will be fully consumed
         int headerLen = KeyFormatterUtil.getHeaderEndOffset(keyBlob);
         int packedHLen = BitPack.unpack(keyParams.N, keyParams.q);
-        if (headerLen + packedHLen != keyBlob.length) throw new IllegalArgumentException("Input public key blob is "
-                                                                                         + keyBlob.length
-                                                                                         + " bytes, not "
-                                                                                         + "the expected "
-                                                                                         + (headerLen + packedHLen));
+        if(headerLen + packedHLen != keyBlob.length) {
+            throw new IllegalArgumentException(
+                    "Input public key blob is " + keyBlob.length + " bytes, not " + "the expected " +
+                    (headerLen + packedHLen));
+        }
 
         // Recover h
         FullPolynomial h = new FullPolynomial(keyParams.N);

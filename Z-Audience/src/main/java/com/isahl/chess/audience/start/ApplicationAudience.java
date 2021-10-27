@@ -30,10 +30,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author william.d.zk
  */
 
-@SpringBootApplication(scanBasePackages = {"com.isahl.chess.audience",
-                                           "com.isahl.chess.pawn",
-                                           "com.isahl.chess.rook",
-                                           "com.isahl.chess.knight"})
+@SpringBootApplication(scanBasePackages = {
+        "com.isahl.chess.audience",
+        "com.isahl.chess.pawn",
+        "com.isahl.chess.rook",
+        "com.isahl.chess.knight"
+})
 public class ApplicationAudience
 {
     public static void main(String[] args)

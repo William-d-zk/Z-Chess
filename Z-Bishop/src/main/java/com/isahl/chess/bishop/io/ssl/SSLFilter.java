@@ -25,9 +25,9 @@ package com.isahl.chess.bishop.io.ssl;
 
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
@@ -69,7 +69,7 @@ public class SSLFilter<A extends IPContext>
             _Logger.info("SSL ready to write");
             return ResultType.NEXT_STEP;
         }
-        else if(context.isOutConvert()) { return ResultType.NEXT_STEP; }
+        else if(context.isOutConvert()) {return ResultType.NEXT_STEP;}
         return ResultType.IGNORE;
     }
 

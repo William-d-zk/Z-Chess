@@ -36,8 +36,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+        implements UserDetailsService
 {
     private final IUserRepository _UserRepository;
 

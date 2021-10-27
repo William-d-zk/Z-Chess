@@ -42,8 +42,11 @@ public interface IShadowJpaRepository
 {
     @Transactional
     @Modifying
-    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)
-    void deleteByDevice(@Param("p_device_id") long deviceId);
+    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id",
+           nativeQuery = true)
+    void deleteByDevice(
+            @Param("p_device_id")
+                    long deviceId);
 
     ShadowEntity findByDeviceId(long deviceId);
 }

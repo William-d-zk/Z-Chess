@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-21
  */
 public class TestAccountAuth
@@ -43,16 +42,15 @@ public class TestAccountAuth
         src = src.replaceAll("#+", "#");
         src = src.replaceAll("(/#)+", "/#");
 
-        if (Pattern.compile("#\\+|\\+#")
+        if(Pattern.compile("#\\+|\\+#")
+                  .asPredicate()
+                  .test(src))
+        {throw new IllegalArgumentException(src);}
+        if(!Pattern.compile("(/\\+)$")
                    .asPredicate()
-                   .test(src))
-        { throw new IllegalArgumentException(src); }
-        if (!Pattern.compile("(/\\+)$")
-                    .asPredicate()
-                    .test(src)
-            && !Pattern.compile("^\\+")
-                       .asPredicate()
-                       .test(src))
+                   .test(src) && !Pattern.compile("^\\+")
+                                         .asPredicate()
+                                         .test(src))
         {
             src = src.replaceAll("(\\+)$", "");
         }
@@ -66,6 +64,6 @@ public class TestAccountAuth
         Pattern pattern = Pattern.compile(src);
         System.out.printf("pattern:%s%n", pattern);
         Matcher matcher = pattern.matcher("a/b/c");
-        System.out.printf("match:%s%n", matcher.matches() ? matcher.group(): "no matcher");
+        System.out.printf("match:%s%n", matcher.matches() ? matcher.group() : "no matcher");
     }
 }

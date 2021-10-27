@@ -61,7 +61,7 @@ public class X50_DeviceMsg
     public void putPayload(byte[] payload)
     {
         this.payload = payload;
-        if(payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }
+        if(payload.length > 4096) {throw new IllegalArgumentException("payload length is over 4096");}
         payloadLength = payload.length;
     }
 

@@ -31,12 +31,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @date 2021/02/17
  */
 
-@SpringBootApplication(scanBasePackages = { "com.isahl.chess.knight.raft",
-                                            "com.isahl.chess.rook.storage",
-                                            "com.isahl.chess.pawn.endpoint",
-                                            "com.isahl.chess.player.api",
-                                            "com.isahl.chess.referee.security",
-                                            "com.isahl.chess.arena.gateway"
+@SpringBootApplication(scanBasePackages = {
+        "com.isahl.chess.knight.raft",
+        "com.isahl.chess.rook.storage",
+        "com.isahl.chess.pawn.endpoint",
+        "com.isahl.chess.player.api",
+        "com.isahl.chess.referee.security",
+        "com.isahl.chess.arena.gateway"
 })
 public class ApplicationArena
 {

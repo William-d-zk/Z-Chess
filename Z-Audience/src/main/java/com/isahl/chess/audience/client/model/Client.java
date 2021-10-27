@@ -24,20 +24,19 @@
 package com.isahl.chess.audience.client.model;
 
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Client
 {
-    private final Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
-    private final Map<IControl,
-                      Integer>           _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
-    private final ZUID                   _ZUID;
-    private final Device                 _Device;
-    private final static AtomicInteger   DEVICE_ID     = new AtomicInteger(1);
+    private final        Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
+    private final        Map<IControl, Integer> _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
+    private final        ZUID                   _ZUID;
+    private final        Device                 _Device;
+    private final static AtomicInteger          DEVICE_ID     = new AtomicInteger(1);
 
     public Client(ZUID zuid)
     {
@@ -54,7 +53,7 @@ public class Client
     {
         content.setSequence(_ZUID.getId(ZUID.TYPE_CONSUMER));
         IQoS.Level level = content.getLevel();
-        if (level.getValue() > IQoS.Level.ALMOST_ONCE.getValue()) {
+        if(level.getValue() > IQoS.Level.ALMOST_ONCE.getValue()) {
             _ConfirmMap.put(content, level.getValue());
         }
         return content;

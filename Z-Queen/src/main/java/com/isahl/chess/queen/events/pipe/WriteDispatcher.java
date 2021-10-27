@@ -33,8 +33,8 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.List;
@@ -87,14 +87,13 @@ public class WriteDispatcher
         }
         else {
             switch(event.getEventType()) {
-                case NULL,// 在前一个处理器event.reset().
-                        IGNORE // 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
-                        -> {
+                /*
+                 * NULL: 在前一个处理器event.reset().
+                 * IGNORE:没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+                 */
+                case NULL, IGNORE -> {
                 }
-                case BIZ_LOCAL, // from biz local
-                        CLUSTER_LOCAL,// from cluster local
-                        WRITE// from LinkIo/Cluster
-                        -> {
+                case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
                     IPair writeContent = event.getContent();
                     _Logger.debug("content:%s,%s", writeContent, event.getEventType());
                     IControl cmd = writeContent.getFirst();
@@ -127,8 +126,11 @@ public class WriteDispatcher
                                 event.getEventOp());
                     }
                 }
-                case LOGIC,// from read->logic
-                        DISPATCH -> {
+                /*
+                 * LOGIC:from read->logic
+                 * DISPATCH:logic->batch->dispatch
+                 */
+                case LOGIC, DISPATCH -> {
                     List<ITriple> writeContents = event.getContentList();
                     for(ITriple content : writeContents) {
                         IControl command = content.getFirst();

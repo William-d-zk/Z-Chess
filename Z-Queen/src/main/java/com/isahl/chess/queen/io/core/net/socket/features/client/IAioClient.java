@@ -34,10 +34,9 @@ import java.io.IOException;
  * @author William.d.zk
  */
 public interface IAioClient
-        extends
-        IFailed<IAioConnector>,
-        ISessionCreated,
-        ISessionDismiss
+        extends IFailed<IAioConnector>,
+                ISessionCreated,
+                ISessionDismiss
 {
     void connect(IAioConnector connector) throws IOException;
 

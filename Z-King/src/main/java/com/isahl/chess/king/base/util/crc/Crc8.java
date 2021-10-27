@@ -39,14 +39,16 @@ public class Crc8
     public static AlgoParams Crc8Rohc     = new AlgoParams("CRC-8/ROHC", 8, 0x7, 0xFF, true, true, 0x0, 0xD0);
     public static AlgoParams Crc8Wcdma    = new AlgoParams("CRC-8/WCDMA", 8, 0x9B, 0x0, true, true, 0x0, 0x25);
 
-    public static final AlgoParams[] Params = new AlgoParams[]{Crc8,
-                                                               Crc8Cdma2000,
-                                                               Crc8Darc,
-                                                               Crc8DvbS2,
-                                                               Crc8Ebu,
-                                                               Crc8ICode,
-                                                               Crc8Itu,
-                                                               Crc8Maxim,
-                                                               Crc8Rohc,
-                                                               Crc8Wcdma};
+    public static final AlgoParams[] Params = new AlgoParams[]{
+            Crc8,
+            Crc8Cdma2000,
+            Crc8Darc,
+            Crc8DvbS2,
+            Crc8Ebu,
+            Crc8ICode,
+            Crc8Itu,
+            Crc8Maxim,
+            Crc8Rohc,
+            Crc8Wcdma
+    };
 }

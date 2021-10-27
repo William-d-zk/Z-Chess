@@ -74,7 +74,7 @@ public class AioManager
 
     protected int getConfigPower(int slot)
     {
-        if(ZUID.MAX_TYPE < slot || slot < 0) { throw new IllegalArgumentException("slot: " + slot); }
+        if(ZUID.MAX_TYPE < slot || slot < 0) {throw new IllegalArgumentException("slot: " + slot);}
         return _AioConfig.getSizePower(slot);
     }
 
@@ -88,7 +88,7 @@ public class AioManager
     {
         int slot = getSlot(session.getIndex());
         _SessionsSets[slot].add(session);
-        if(!_Logger.isEnable(Level.DEBUG)) { return; }
+        if(!_Logger.isEnable(Level.DEBUG)) {return;}
         _Logger.debug(String.format("%s add session -> set slot:%s", getClass().getSimpleName(), switch(slot) {
             case ZUID.TYPE_CONSUMER_SLOT -> "CONSUMER";
             case ZUID.TYPE_INTERNAL_SLOT -> "INTERNAL";

@@ -25,19 +25,17 @@ package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class PipeDecoder
-        implements
-        IPipeDecoder
+        implements IPipeDecoder
 {
 
     @Override
@@ -47,7 +45,7 @@ public class PipeDecoder
         /*一旦read出现异常将抛出到event-handler进行处理，
          无异常时才继续session.readNext()操作*/
         session.readNext();
-        return received != null ? new Triple<>(received, session, session.getTransfer()): null;
+        return received != null ? new Triple<>(received, session, session.getTransfer()) : null;
     }
 
     @Override

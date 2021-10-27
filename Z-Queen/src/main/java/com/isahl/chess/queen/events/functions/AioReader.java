@@ -37,9 +37,7 @@ import static com.isahl.chess.king.base.features.IError.Type.*;
  * @author william.d.zk
  */
 public class AioReader
-        implements
-        CompletionHandler<Integer,
-                          ISession>
+        implements CompletionHandler<Integer, ISession>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
@@ -47,35 +45,29 @@ public class AioReader
     public void completed(Integer result, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result)
-        {
+        switch(result) {
             case -1 -> worker.publishReadError(session.getError(),
                                                READ_EOF,
                                                new EOFException("Read Negative"),
                                                session);
-            case 0 ->
-                {
-                    worker.publishReadError(session.getError(),
-                                            READ_ZERO,
-                                            new IllegalStateException("Read Zero"),
-                                            session);
-                    try {
-                        session.readNext(this);
-                    }
-                    catch (Exception e) {
-                        // ignore
-                    }
+            case 0 -> {
+                worker.publishReadError(session.getError(), READ_ZERO, new IllegalStateException("Read Zero"), session);
+                try {
+                    session.readNext(this);
                 }
-            default ->
-                {
-                    _Logger.debug("read count: %d | %s", result, session);
-                    try {
-                        worker.publishRead(session.getDecoder(), new AioPacket(session.read(result)), session);
-                    }
-                    catch (Exception e) {
-                        worker.publishReadError(session.getError(), READ_FAILED, e, session);
-                    }
+                catch(Exception e) {
+                    // ignore
                 }
+            }
+            default -> {
+                _Logger.debug("read count: %d | %s", result, session);
+                try {
+                    worker.publishRead(session.getDecoder(), new AioPacket(session.read(result)), session);
+                }
+                catch(Exception e) {
+                    worker.publishReadError(session.getError(), READ_FAILED, e, session);
+                }
+            }
         }
     }
 

@@ -24,8 +24,8 @@
 package com.isahl.chess.pawn.endpoint.device.api.service;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.db.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.data.domain.Pageable;

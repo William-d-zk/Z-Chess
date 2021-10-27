@@ -26,10 +26,10 @@ import com.isahl.chess.bishop.io.ws.features.IWsContext;
 import com.isahl.chess.bishop.io.ws.model.WsFrame;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
@@ -67,20 +67,20 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
         int lack = context.lack();
         switch(context.position()) {
             case -1:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 context.setCarrier(carrier = new WsFrame());
                 byte value = recvBuf.get();
                 carrier.putCtrl(WsFrame.getOpCode(value));
                 carrier.frame_fin = WsFrame.isFrameFin(value);
                 lack = context.lackLength(1, 1);
             case 0:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 carrier.setMaskCode(recvBuf.get());
                 cRvBuf.put(carrier.getLengthCode());
                 lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position());
             case 1:
             default:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 int target = context.position() + lack;
                 do {
                     int remain = recvBuf.remaining();
@@ -89,7 +89,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                         cRvBuf.put(recvBuf.get());
                     }
                     lack = context.lackLength(length, target);
-                    if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                    if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                     cRvBuf.flip();
                     // decoding
                     if(carrier.getPayloadLength() < 0) {
@@ -136,7 +136,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                             _Logger.warning("payload is too large");
                             return ResultType.ERROR;
                         }
-                        else if(carrier.getPayloadLength() == 0) { return ResultType.NEXT_STEP; }
+                        else if(carrier.getPayloadLength() == 0) {return ResultType.NEXT_STEP;}
                     }
                     else {
                         if(carrier.getPayloadLength() > 0) {
@@ -183,7 +183,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 else if(acting.isProxy()) {
                     acting = ((IProxyContext<?>) acting).getActingContext();
                 }
-                else { break; }
+                else {break;}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -205,7 +205,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 else if(acting.isProxy()) {
                     acting = ((IProxyContext<?>) acting).getActingContext();
                 }
-                else { break; }
+                else {break;}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

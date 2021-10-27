@@ -27,8 +27,8 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.channels.IWritable;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 public class SessionWrote
         implements IOperator<Integer, ISession, ITriple>

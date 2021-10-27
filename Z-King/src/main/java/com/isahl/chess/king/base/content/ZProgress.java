@@ -33,13 +33,11 @@ import java.io.Serializable;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/7/7
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ZProgress
-        implements
-        Serializable
+        implements Serializable
 {
     private final long _Size;
 
@@ -49,7 +47,9 @@ public class ZProgress
     private boolean  exist;
 
     @JsonCreator
-    public ZProgress(@JsonProperty("size") long size)
+    public ZProgress(
+            @JsonProperty("size")
+                    long size)
     {
         _Size = size;
     }

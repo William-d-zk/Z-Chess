@@ -48,8 +48,9 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
  */
 @Entity(name = "user")
 @Table(schema = "z_chess_security",
-       indexes = { @Index(name = "username_idx",
-                          columnList = "username")
+       indexes = {
+               @Index(name = "username_idx",
+                      columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserEntity

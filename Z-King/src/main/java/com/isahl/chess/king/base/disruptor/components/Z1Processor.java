@@ -38,9 +38,9 @@ public class Z1Processor<T extends IEvent>
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private final Logger                _Logger;
-    private final AtomicInteger         _Running  = new AtomicInteger(IDLE);
-    private final DataProvider<T>       _DataProvider;
+    private final Logger           _Logger;
+    private final AtomicInteger    _Running  = new AtomicInteger(IDLE);
+    private final DataProvider<T>  _DataProvider;
     private final SequenceBarrier  _SequenceBarrier;
     private final IBatchHandler<T> _BatchEventHandler;
     private final Sequence         _Sequence = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);

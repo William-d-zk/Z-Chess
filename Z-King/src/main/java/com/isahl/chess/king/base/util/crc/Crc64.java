@@ -50,7 +50,9 @@ public class Crc64
                                                       0xFFFFFFFFFFFFFFFFL,
                                                       0x995DC9BBDF1939FAL);
 
-    public static final AlgoParams[] Params = new AlgoParams[]{Crc64,
-                                                               Crc64We,
-                                                               Crc64Xz};
+    public static final AlgoParams[] Params = new AlgoParams[]{
+            Crc64,
+            Crc64We,
+            Crc64Xz
+    };
 }

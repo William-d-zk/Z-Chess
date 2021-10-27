@@ -41,19 +41,15 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BaseAioClient
-        implements
-        IAioClient
+        implements IAioClient
 {
     private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
 
     private final TimeWheel                                            _TimeWheel;
     private final AsynchronousChannelGroup                             _ChannelGroup;
-    private final Map<InetSocketAddress,
-                      Pair<Integer,
-                           IAioConnector>>                             _TargetManageMap = new HashMap<>();
+    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new HashMap<>();
 
-    public BaseAioClient(TimeWheel timeWheel,
-                         AsynchronousChannelGroup channelGroup)
+    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup)
     {
         Objects.requireNonNull(timeWheel);
         Objects.requireNonNull(channelGroup);
@@ -70,11 +66,10 @@ public class BaseAioClient
         try {
             AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
             InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            Pair<Integer,
-                 IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
+            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
             socketChannel.connect(remoteAddress, socketChannel, connector);
             int retryCount = 0;
-            if (pair != null) {
+            if(pair != null) {
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
@@ -110,29 +105,27 @@ public class BaseAioClient
 
     private void delayConnect(IAioConnector connector)
     {
-        if (connector.isShutdown()) { return; }
+        if(connector.isShutdown()) {return;}
         _TimeWheel.acquire(connector,
                            new ScheduleHandler<>(connector.getConnectTimeout()
-                                                          .multipliedBy(3),
-                                                 c ->
-                                                 {
-                                                     try {
-                                                         _Logger.debug("%s connect",
-                                                                       Thread.currentThread()
-                                                                             .getName());
-                                                         connect(c);
-                                                     }
-                                                     catch (IOException e) {
-                                                         e.printStackTrace();
-                                                     }
-                                                 }));
+                                                          .multipliedBy(3), c->{
+                               try {
+                                   _Logger.debug("%s connect",
+                                                 Thread.currentThread()
+                                                       .getName());
+                                   connect(c);
+                               }
+                               catch(IOException e) {
+                                   e.printStackTrace();
+                               }
+                           }));
     }
 
     @Override
     public void shutdown(ISession session)
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
-        if (_TargetManageMap.containsKey(remoteAddress)) {
+        if(_TargetManageMap.containsKey(remoteAddress)) {
             IAioConnector connector = _TargetManageMap.get(remoteAddress)
                                                       .getSecond();
             connector.shutdown();

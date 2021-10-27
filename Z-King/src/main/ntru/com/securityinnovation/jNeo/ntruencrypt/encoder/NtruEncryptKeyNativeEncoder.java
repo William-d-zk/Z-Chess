@@ -26,8 +26,7 @@ import com.securityinnovation.jNeo.math.FullPolynomial;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 
 public class NtruEncryptKeyNativeEncoder
-        implements
-        NtruEncryptKeyEncoder
+        implements NtruEncryptKeyEncoder
 {
     /**
      * The format for the public key.
@@ -76,12 +75,10 @@ public class NtruEncryptKeyNativeEncoder
     PrivKeyFormatter pickDefaultPrivKeyFormatter(KeyParams keyParams)
     {
         int packedFLength = (keyParams.N + 4) / 5;
-        int packedListedFLength = (keyParams.df
-                                   * 2
-                                   * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7)
-                                   / 8);
-        if (packedFLength < packedListedFLength) return new PrivKeyFormatter_PrivateKeyPackedFv1();
-        else return new PrivKeyFormatter_PrivateKeyListedFv1();
+        int packedListedFLength = (
+                keyParams.df * 2 * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7) / 8);
+        if(packedFLength < packedListedFLength) {return new PrivKeyFormatter_PrivateKeyPackedFv1();}
+        else {return new PrivKeyFormatter_PrivateKeyListedFv1();}
     }
 
     /**
@@ -96,11 +93,9 @@ public class NtruEncryptKeyNativeEncoder
     /**
      * Parse a public or private key blob.
      */
-    public RawKeyData decodeKeyBlob(
-            byte[] keyBlob)
-        throws FormatNotSupportedException, ParamSetNotSupportedException
+    public RawKeyData decodeKeyBlob(byte[] keyBlob) throws FormatNotSupportedException, ParamSetNotSupportedException
     {
-        switch (keyBlob[0]) {
+        switch(keyBlob[0]) {
             case (PUBLIC_KEY_v1) -> {
                 PubKeyFormatter_PUBLIC_KEY_v1 formatter = new PubKeyFormatter_PUBLIC_KEY_v1();
                 return formatter.decode(keyBlob);

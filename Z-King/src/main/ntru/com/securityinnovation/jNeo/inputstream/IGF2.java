@@ -83,9 +83,7 @@ public class IGF2
     /**
      * Create an IGF driven by an externally-supplied InputStream.
      */
-    public IGF2(int _maxValue,
-                int _bitsPerIndex,
-                InputStream _source)
+    public IGF2(int _maxValue, int _bitsPerIndex, InputStream _source)
     {
         init(_maxValue, _bitsPerIndex, _source);
     }
@@ -112,7 +110,7 @@ public class IGF2
         try {
             source.close();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             throw new InternalError("IGF bit source was unable to close");
         }
     }
@@ -124,9 +122,9 @@ public class IGF2
     {
         try {
             int ret;
-            while (true) {
+            while(true) {
                 // Make sure leftoverBits has at least bitsPerIndex in it.
-                while (numLeftoverBits < bitsPerIndex) {
+                while(numLeftoverBits < bitsPerIndex) {
                     leftoverBits <<= 8;
                     leftoverBits |= (0xff & source.read());
                     numLeftoverBits += 8;
@@ -139,10 +137,10 @@ public class IGF2
                 leftoverBits &= ((1 << numLeftoverBits) - 1);
 
                 // If the value is below the cutoff, use it
-                if (ret < cutoff) return ret % maxValue;
+                if(ret < cutoff) {return ret % maxValue;}
             }
         }
-        catch (IOException e) {
+        catch(IOException e) {
             throw new InternalError("IGF bit source was unable to generate input");
         }
     }

@@ -58,12 +58,11 @@ public class Random
     /**
      * Constructor that initializes the PRNG with the supplied seed.
      *
-     * @param _seed
-     *            the new seed for the PRNG.
+     * @param _seed the new seed for the PRNG.
      */
     public Random(byte[] _seed)
     {
-        if (_seed == null) throw new NullPointerException("seed is null");
+        if(_seed == null) {throw new NullPointerException("seed is null");}
         rng = new X982Drbg(sha256, _seed);
     }
 
@@ -71,12 +70,11 @@ public class Random
      * Reinitialize the jNeo PRNG with the supplied seed. This discards
      * the old PRNG state.
      *
-     * @param _seed
-     *            the new seed for the PRNG. This must be non-null.
+     * @param _seed the new seed for the PRNG. This must be non-null.
      */
     public void seed(byte[] _seed)
     {
-        if (_seed == null) throw new NullPointerException("seed is null");
+        if(_seed == null) {throw new NullPointerException("seed is null");}
         rng.seed(_seed);
     }
 
@@ -84,25 +82,21 @@ public class Random
      * Reseed the jNeo PRNG with the supplied seed. This combines the
      * seed into the existing PRNG state.
      *
-     * @param _seed
-     *            the value to integrate into the PRNG state. This
-     *            must be non-null.
+     * @param _seed the value to integrate into the PRNG state. This
+     *              must be non-null.
      */
     public void reseed(byte[] _seed)
     {
-        if (_seed == null) throw new NullPointerException("seed is null");
+        if(_seed == null) {throw new NullPointerException("seed is null");}
         rng.reseed(_seed);
     }
 
     /**
      * Read bytes from the random number stream into an array.
-     * 
-     * @param outbuf
-     *            the buffer to store the output into.
-     * @param offset
-     *            the offset to start storing the data at.
-     * @param length
-     *            the number of bytes to output.
+     *
+     * @param outbuf the buffer to store the output into.
+     * @param offset the offset to start storing the data at.
+     * @param length the number of bytes to output.
      */
     public void read(byte[] outbuf, int offset, int length)
     {
@@ -112,9 +106,8 @@ public class Random
     /**
      * Fill an array with bytes from the PRNG stream.
      * This is identical to read(outbuf, 0, outbuf.length);
-     * 
-     * @param outbuf
-     *            the buffer to store the output into.
+     *
+     * @param outbuf the buffer to store the output into.
      */
     public void read(byte[] outbuf)
     {

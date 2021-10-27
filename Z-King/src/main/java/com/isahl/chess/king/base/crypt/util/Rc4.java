@@ -33,12 +33,11 @@ import java.util.Random;
  * @author William.d.zk
  */
 public class Rc4
-        implements
-        ISymmetric
+        implements ISymmetric
 {
     private final byte[] S = new byte[256];
-    private int          i, j;
-    private boolean      initialized;
+    private       int    i, j;
+    private boolean initialized;
 
     public static byte[] decrypt(byte[] data, byte[] key)
     {
@@ -52,15 +51,14 @@ public class Rc4
 
     private static byte[] rc4(byte[] data, byte[] key)
     {
-        if (!isKeyValid(key)) throw new IllegalArgumentException("key is fail!");
-        if (data.length < 1) throw new IllegalArgumentException("data is fail!");
+        if(!isKeyValid(key)) {throw new IllegalArgumentException("key is fail!");}
+        if(data.length < 1) {throw new IllegalArgumentException("data is fail!");}
         int[] S = new int[256];
 
         // KSA
-        for (int i = 0; i < S.length; i++)
-            S[i] = i;
+        for(int i = 0; i < S.length; i++) {S[i] = i;}
         int j = 0;
-        for (int i = 0; i < S.length; i++) {
+        for(int i = 0; i < S.length; i++) {
             j = (j + S[i] + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -71,7 +69,7 @@ public class Rc4
 
         byte[] encodeData = new byte[data.length];
 
-        for (int x = 0; x < encodeData.length; x++) {
+        for(int x = 0; x < encodeData.length; x++) {
             i = (i + 1) & 0xFF;
             j = (j + S[i]) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -87,11 +85,11 @@ public class Rc4
         byte[] bKey = key;
         int len = bKey.length;
         int num = 0;// 0x0E计数
-        if (len > 0 && len <= 256) {
-            for (int i = 0; i < len; i++) {
-                if ((bKey[i] & 0xFF) == 0x0E) {
+        if(len > 0 && len <= 256) {
+            for(int i = 0; i < len; i++) {
+                if((bKey[i] & 0xFF) == 0x0E) {
                     num++;
-                    if (num > 3) return false;
+                    if(num > 3) {return false;}
                 }
             }
             return true;
@@ -107,14 +105,14 @@ public class Rc4
         long tick = curTime ^ (code << 31);
         Random rd = new Random(tick);
         byte[] xc;
-        if (seed == null || "".equals(seed.trim())) seed = "Isahl.Tina.Rc4" + System.nanoTime();
+        if(seed == null || "".equals(seed.trim())) {seed = "Isahl.Tina.Rc4" + System.nanoTime();}
         xc = seed.getBytes();
         byte[] key = new byte[20];
-        for (int i = 0, j = 1; i < key.length; i++) {
-            for (byte b : xc) {
+        for(int i = 0, j = 1; i < key.length; i++) {
+            for(byte b : xc) {
                 long dx = System.nanoTime() ^ tick ^ rd.nextLong() ^ b;
                 key[i] ^= dx >> j++;
-                if (j > 40) j = 1;
+                if(j > 40) {j = 1;}
             }
         }
         return key;
@@ -122,10 +120,9 @@ public class Rc4
 
     private void ksa(byte[] key)
     {
-        if (initialized || key == null) return;
-        for (int i = 0; i < S.length; i++)
-            S[i] = (byte) i;
-        for (int i = 0, j = 0; i < S.length; i++) {
+        if(initialized || key == null) {return;}
+        for(int i = 0; i < S.length; i++) {S[i] = (byte) i;}
+        for(int i = 0, j = 0; i < S.length; i++) {
             j = (j + (S[i] & 0xFF) + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -135,10 +132,10 @@ public class Rc4
     @Override
     public void digest(ByteBuffer buffer, byte[] key)
     {
-        if (!buffer.hasRemaining() || key == null) return;
+        if(!buffer.hasRemaining() || key == null) {return;}
         ksa(key);
         int limit = buffer.limit();
-        for (int x = buffer.position(); x < limit; x++) {
+        for(int x = buffer.position(); x < limit; x++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -150,10 +147,10 @@ public class Rc4
     @Override
     public void digest(byte[] dst, byte[] key)
     {
-        if (dst == null || key == null) return;
+        if(dst == null || key == null) {return;}
         ksa(key);
         int limit = dst.length;
-        for (int x = 0; x < limit; x++) {
+        for(int x = 0; x < limit; x++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);

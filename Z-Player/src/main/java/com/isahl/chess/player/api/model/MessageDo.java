@@ -32,7 +32,6 @@ import com.isahl.chess.queen.db.model.IStorage;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/5/11
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -47,8 +47,7 @@ import java.io.InputStream;
  * size of the underlying hash algorithm will eliminate this waste.
  */
 public class RefillingBufferedInputStream
-        extends
-        InputStream
+        extends InputStream
 {
     InputStream is;
     int         next;
@@ -57,13 +56,10 @@ public class RefillingBufferedInputStream
     /**
      * Constructor.
      *
-     * @param in
-     *            the underlying input stream.
-     * @param size
-     *            the buffer size.
+     * @param in   the underlying input stream.
+     * @param size the buffer size.
      */
-    RefillingBufferedInputStream(InputStream in,
-                                 int size)
+    RefillingBufferedInputStream(InputStream in, int size)
     {
         is = in;
         buf = new byte[size];
@@ -75,7 +71,7 @@ public class RefillingBufferedInputStream
      */
     public int read() throws IOException
     {
-        if (next >= buf.length) refill();
+        if(next >= buf.length) {refill();}
         return (0xff & buf[next++]);
     }
 
@@ -83,21 +79,18 @@ public class RefillingBufferedInputStream
      * Reads bytes from this byte-input stream into the specified byte
      * array, starting at the given offset.
      *
-     * @param b
-     *            destination buffer.
-     * @param off
-     *            offset at which to start storing bytes.
-     * @param len
-     *            maximum number of bytes to read.
-     *
+     * @param b   destination buffer.
+     * @param off offset at which to start storing bytes.
+     * @param len maximum number of bytes to read.
+     *            <p>
      *            See the parallel <code>read</code> method in
      *            <code>InputStream</code>.
      */
     public int read(byte[] b, int off, int len) throws IOException
     {
         int origLen = len;
-        while (len > 0) {
-            if (next >= buf.length) refill();
+        while(len > 0) {
+            if(next >= buf.length) {refill();}
             int count = Math.min(len, buf.length - next);
             System.arraycopy(buf, next, b, off, count);
             off += count;

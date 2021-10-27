@@ -25,12 +25,12 @@ package com.isahl.chess.queen.io.core.tasks.features;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
+
 /**
  * @author William.d.zk
  */
 public interface IClusterCore
-        extends
-        IPipeCore
+        extends IPipeCore
 {
     AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
 }

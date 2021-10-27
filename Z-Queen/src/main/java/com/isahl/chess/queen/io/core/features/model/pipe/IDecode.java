@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-14
  */
 public interface IDecode

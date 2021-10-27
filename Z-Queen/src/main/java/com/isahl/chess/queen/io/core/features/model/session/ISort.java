@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 
 /**
  * @author william.d.zk
- *         基于通讯协议的Pipeline 固有模式分类
+ * 基于通讯协议的Pipeline 固有模式分类
  */
 public interface ISort
 {
@@ -51,13 +51,11 @@ public interface ISort
     }
 
     /**
-     *
      * 用于区分当前处理过程属于哪个Pipeline
      */
     Mode getMode();
 
     /**
-     * 
      * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
      */
     Type getType();

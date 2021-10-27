@@ -36,9 +36,7 @@ import static com.isahl.chess.king.base.features.IError.Type.*;
  * @author william.d.zk
  */
 public class AioWriter
-        implements
-        CompletionHandler<Integer,
-                          ISession>
+        implements CompletionHandler<Integer, ISession>
 {
     private final Logger       _Logger        = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
     private final SessionWrote _WroteOperator = new SessionWrote(this);
@@ -47,18 +45,16 @@ public class AioWriter
     public void completed(Integer result, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result)
-        {
+        switch(result) {
             case -1 -> worker.publishWroteError(session.getError(), WRITE_EOF, new EOFException("wrote -1!"), session);
             case 0 -> worker.publishWroteError(session.getError(),
                                                WRITE_ZERO,
                                                new IllegalArgumentException("wrote zero!"),
                                                session);
-            default ->
-                {
-                    _Logger.debug("aio wrote %d | %s", result, session);
-                    worker.publishWrote(_WroteOperator, result, session);
-                }
+            default -> {
+                _Logger.debug("aio wrote %d | %s", result, session);
+                worker.publishWrote(_WroteOperator, result, session);
+            }
         }
     }
 

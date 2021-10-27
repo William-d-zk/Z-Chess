@@ -27,8 +27,7 @@ package com.securityinnovation.jNeo;
  * or IllegalArgumentException for invalid array bounds or lengths.
  */
 public class NtruException
-        extends
-        Exception
+        extends Exception
 {
     public NtruException(String msg)
     {

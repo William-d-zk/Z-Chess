@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/21
  */
 public interface IPipeCore

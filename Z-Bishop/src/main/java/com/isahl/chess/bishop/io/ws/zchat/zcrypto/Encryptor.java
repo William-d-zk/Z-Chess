@@ -50,9 +50,9 @@ public class Encryptor
     private final        int        _VersionMask              = ((1 << _VersionWidth) - 1) << _TotalSizeWidth;
     private final        NtruUtil   _Ntru                     = new NtruUtil();
     private final        Random     _Random                   = new Random();
-    private final byte[][][] _PublicKeyPair = new byte[_PairSize][][];
-    private final CryptoUtil cryptoUtil     = new CryptoUtil();
-    private       int        mIndexAdd;
+    private final        byte[][][] _PublicKeyPair            = new byte[_PairSize][][];
+    private final        CryptoUtil cryptoUtil                = new CryptoUtil();
+    private              int        mIndexAdd;
 
     private boolean isPubKeyAvailable(int _ReqPubKeyId)
     {
@@ -95,14 +95,27 @@ public class Encryptor
         if(recreate) {
             byte[] password = new byte[32];
             random.nextBytes(password);
-            byte[] time = new byte[]{ 0, 0, 0, 0 };
-            byte[] version = new byte[]{ 0, 0 };
+            byte[] time = new byte[]{
+                    0,
+                    0,
+                    0,
+                    0
+            };
+            byte[] version = new byte[]{
+                    0,
+                    0
+            };
 
             curVersion = (curVersion + 1) & (_VersionMask >>> _TotalSizeWidth);
             IoUtil.writeShort(curVersion, version, 0);
             try {
                 byte[][] keys = _Ntru.getKeys(password);
-                keyPair = new byte[][]{ keys[KEY_PAIR_INDEX_PUBLIC_KEY], keys[KEY_PAIR_INDEX_PASSWORD], time, version };
+                keyPair = new byte[][]{
+                        keys[KEY_PAIR_INDEX_PUBLIC_KEY],
+                        keys[KEY_PAIR_INDEX_PASSWORD],
+                        time,
+                        version
+                };
             }
             catch(Exception e) {
                 return null;
@@ -116,14 +129,14 @@ public class Encryptor
     public Pair<Integer, byte[]> getAsymmetricPubKey(final int _InPubKeyId)
     {
         Pair<Integer, byte[][]> keyPair = createPair(_Random, _InPubKeyId);
-        if(keyPair == null) { return null; }
+        if(keyPair == null) {return null;}
         return new Pair<>(keyPair.getFirst(), keyPair.getSecond()[KEY_PAIR_INDEX_PUBLIC_KEY]);
     }
 
     @Override
     public byte[] getSymmetricKey(final int _InPubKeyId, byte[] cipher)
     {
-        if(_InPubKeyId < 0) { return null; }
+        if(_InPubKeyId < 0) {return null;}
         int keyIndex = _InPubKeyId & _PairSizeMask;
         int keyVersion = (_InPubKeyId & _VersionMask) >>> _TotalSizeWidth;
         byte[][] keyPair = null;
@@ -133,7 +146,7 @@ public class Encryptor
         if(keyPair != null && keyPair[KEY_PAIR_INDEX_VERSION] != null &&
            IoUtil.readUnsignedShort(keyPair[KEY_PAIR_INDEX_VERSION], 0) == keyVersion)
         {
-            if(keyPair[KEY_PAIR_INDEX_PASSWORD] == null) { return null; }
+            if(keyPair[KEY_PAIR_INDEX_PASSWORD] == null) {return null;}
             return _Ntru.decrypt(cipher, keyPair[KEY_PAIR_INDEX_PASSWORD]);
         }
         return null;

@@ -67,18 +67,13 @@ public abstract class Digest
      * The object is left initialized for a new hash operation
      * (see <code>reset()</code>).
      *
-     * @param input
-     *            the array holding the input
-     * @param inputOffset
-     *            the index of the start of the input data
-     * @param inputLength
-     *            the number of bytes of input
-     * @param output
-     *            the array to write the digest into
-     * @param outputOffset
-     *            the index where the first byte of output
-     *            should go. This will use getDigestLen() bytes
-     *            following this index.
+     * @param input        the array holding the input
+     * @param inputOffset  the index of the start of the input data
+     * @param inputLength  the number of bytes of input
+     * @param output       the array to write the digest into
+     * @param outputOffset the index where the first byte of output
+     *                     should go. This will use getDigestLen() bytes
+     *                     following this index.
      */
     public void digest(byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset)
     {
@@ -95,12 +90,9 @@ public abstract class Digest
     /**
      * Updates the message digest with new data.
      *
-     * @param data
-     *            the data to be added.
-     * @param offset
-     *            the start of the data in the array.
-     * @param length
-     *            the number of bytes of data to add.
+     * @param data   the data to be added.
+     * @param offset the start of the data in the array.
+     * @param length the number of bytes of data to add.
      */
     public abstract void update(byte[] data, int offset, int length);
 

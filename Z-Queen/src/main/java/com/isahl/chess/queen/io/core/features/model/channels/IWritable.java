@@ -36,18 +36,10 @@ import java.util.concurrent.RejectedExecutionException;
 public interface IWritable<A>
 {
     WRITE_STATUS write(IPacket ps,
-                       CompletionHandler<Integer,
-                                         A> completionHandler) throws WritePendingException,
-                                                               NotYetConnectedException,
-                                                               ShutdownChannelGroupException,
-                                                               RejectedExecutionException;
+                       CompletionHandler<Integer, A> completionHandler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
 
     WRITE_STATUS writeNext(int wroteCnt,
-                           CompletionHandler<Integer,
-                                             A> completionHandler) throws WritePendingException,
-                                                                   NotYetConnectedException,
-                                                                   ShutdownChannelGroupException,
-                                                                   RejectedExecutionException;
+                           CompletionHandler<Integer, A> completionHandler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
 
     enum WRITE_STATUS
     {

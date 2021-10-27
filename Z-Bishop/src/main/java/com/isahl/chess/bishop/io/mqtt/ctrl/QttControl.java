@@ -25,8 +25,8 @@ package com.isahl.chess.bishop.io.mqtt.ctrl;
 
 import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.io.mqtt.model.QttContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.Objects;
 
