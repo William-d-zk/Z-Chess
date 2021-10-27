@@ -26,19 +26,15 @@ package com.securityinnovation.jNeo;
  * wrong length based on the key parameter set.
  */
 public class CiphertextBadLengthException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception a default message.
      *
-     * @param ctLen
-     *            the length of the input ciphertext.
-     * @param reqCtLen
-     *            the required length of the input ciphertext.
+     * @param ctLen    the length of the input ciphertext.
+     * @param reqCtLen the required length of the input ciphertext.
      */
-    public CiphertextBadLengthException(int ctLen,
-                                        int reqCtLen)
+    public CiphertextBadLengthException(int ctLen, int reqCtLen)
     {
         super("Input ciphertext is wrong length (is " + ctLen + "bytes, should be " + reqCtLen + " bytes)");
     }

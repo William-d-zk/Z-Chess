@@ -31,8 +31,7 @@ import java.util.stream.Stream;
  * @author William.d.zk
  */
 public interface IStorage
-        extends
-        IProtocol
+        extends IProtocol
 {
     @Override
     default int superSerial()
@@ -91,13 +90,13 @@ public interface IStorage
 
         public Operation predicate(byte value)
         {
-            return _Value == value ? this: null;
+            return _Value == value ? this : null;
         }
 
         public static Operation convertOperationValue(final byte value)
         {
             return Stream.of(Operation.values())
-                         .map(op -> op.predicate(value))
+                         .map(op->op.predicate(value))
                          .filter(Objects::nonNull)
                          .findAny()
                          .orElse(OP_INVALID);

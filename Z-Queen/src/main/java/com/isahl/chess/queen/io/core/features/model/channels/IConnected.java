@@ -34,7 +34,5 @@ import java.nio.channels.AsynchronousSocketChannel;
  */
 public interface IConnected
 {
-    IOperator<IAioConnection,
-              AsynchronousSocketChannel,
-              ITriple> getConnectedOperator();
+    IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator();
 }

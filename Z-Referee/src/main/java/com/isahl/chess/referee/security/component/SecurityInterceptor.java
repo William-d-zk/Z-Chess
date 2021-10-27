@@ -41,10 +41,8 @@ import java.io.IOException;
  */
 @Component
 public class SecurityInterceptor
-        extends
-        AbstractSecurityInterceptor
-        implements
-        Filter
+        extends AbstractSecurityInterceptor
+        implements Filter
 {
 
     private final FilterInvocationSecurityMetadataSource _SecurityMetadataSource;

@@ -34,12 +34,9 @@ public interface ISessionCreator<C extends Channel>
 {
     /**
      * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
-     * 
-     * @param channel
-     *            已完成连接的 channel
-     * @param activity
-     *            连接执行器实际执行单元
-     * 
+     *
+     * @param channel  已完成连接的 channel
+     * @param activity 连接执行器实际执行单元
      * @return session
      */
     ISession createSession(C channel, IConnectActivity activity) throws IOException;

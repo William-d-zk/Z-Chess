@@ -102,6 +102,7 @@ public class DeviceController
      * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
      * 推荐使用带有 查询条件的请求方式
      * 引入 click-house 建立搜索引擎的模式
+     *
      * @param page
      * @param size
      * @return

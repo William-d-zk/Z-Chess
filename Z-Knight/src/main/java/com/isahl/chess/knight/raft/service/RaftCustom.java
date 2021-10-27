@@ -67,16 +67,16 @@ public class RaftCustom
     }
 
     /**
-     * @param manager cluster 管理器 注意与 device 管理器的区分
-     * @param session 来源 session
-     * @param content 需要 raft custom 处理的内容
-     * @return IPair
-     * first : list of command implements 'IControl',broadcast to all cluster peers
-     * second : command implements 'IConsistent',
-     * third : operator. type
+     * @param manager  cluster 管理器 注意与 device 管理器的区分
+     * @param session  来源 session
+     * @param received 需要 raft custom 处理的内容
+     * @return ITriple
+     * first :  command implements 'IControl', BATCH:List<IControl> ; SINGLE: IControl
+     * second : command implements 'IConsistent', for transfer → LINK
+     * third : operator-type [SINGLE|BATCH]
      */
     @Override
-    public ITriple handle(ISessionManager manager, ISession session, IControl content)
+    public ITriple handle(ISessionManager manager, ISession session, IControl received)
     {
         /*
          * leader -> follow, self::follow
@@ -84,30 +84,32 @@ public class RaftCustom
          * LinkCustom中专门有对应findSession的操作，所以此处不再执行此操作，且在LinkCustom中执行更为安全
          */
         /* 作为 client 收到 notify */
-        switch(content.serial()) {
+        switch(received.serial()) {
             // follower → elector
             case X70_RaftVote.COMMAND -> {
-                X70_RaftVote x70 = (X70_RaftVote) content;
+                X70_RaftVote x70 = (X70_RaftVote) received;
                 return _RaftPeer.elect(x70.getTerm(),
                                        x70.getIndex(),
                                        x70.getIndexTerm(),
                                        x70.getCandidateId(),
                                        x70.getCommit(),
-                                       manager);
+                                       manager,
+                                       session);
             }
             // elector → candidate
             case X71_RaftBallot.COMMAND -> {
-                X71_RaftBallot x71 = (X71_RaftBallot) content;
+                X71_RaftBallot x71 = (X71_RaftBallot) received;
                 return _RaftPeer.ballot(x71.getTerm(),
                                         x71.getElectorId(),
                                         x71.getIndex(),
                                         x71.getCandidateId(),
                                         x71.getCommit(),
-                                        manager);
+                                        manager,
+                                        session);
             }
             // leader → follower
             case X72_RaftAppend.COMMAND -> {
-                X72_RaftAppend x72 = (X72_RaftAppend) content;
+                X72_RaftAppend x72 = (X72_RaftAppend) received;
                 if(x72.payload() != null) {
                     _RaftPeer.receiveLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
                 }
@@ -115,11 +117,12 @@ public class RaftCustom
                                             x72.getPreIndex(),
                                             x72.getPreIndexTerm(),
                                             x72.getLeaderId(),
-                                            x72.getCommit());
+                                            x72.getCommit(),
+                                            session);
             }
             // follower → leader
             case X73_RaftAccept.COMMAND -> {
-                X73_RaftAccept x73 = (X73_RaftAccept) content;
+                X73_RaftAccept x73 = (X73_RaftAccept) received;
                 return _RaftPeer.onAccept(x73.getTerm(),
                                           x73.getCatchUp(),
                                           x73.getCatchUpTerm(),
@@ -128,26 +131,27 @@ public class RaftCustom
             }
             // * → candidate
             case X74_RaftReject.COMMAND -> {
-                X74_RaftReject x74 = (X74_RaftReject) content;
+                X74_RaftReject x74 = (X74_RaftReject) received;
                 return _RaftPeer.onReject(x74.getTerm(),
                                           x74.getIndex(),
                                           x74.getIndexTerm(),
                                           x74.getPeerId(),
                                           x74.getCode(),
-                                          x74.getState());
+                                          x74.getState(),
+                                          session);
             }
             // client → leader
             case X75_RaftReq.COMMAND -> {
                 if(_RaftPeer.getMachine()
                             .getState() == LEADER)
                 {
-                    X75_RaftReq x75 = (X75_RaftReq) content;
+                    X75_RaftReq x75 = (X75_RaftReq) received;
                     return _RaftPeer.onRequest(x75.subSerial(),
                                                x75.payload(),
                                                x75.getClientId(),
                                                x75.getOrigin(),
                                                manager,
-                                               x75.session());
+                                               session);
                 }
                 else {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
@@ -157,24 +161,24 @@ public class RaftCustom
             }
             // client.received:x76
             case X76_RaftResp.COMMAND -> {
-                X76_RaftResp x76 = (X76_RaftResp) content;
+                X76_RaftResp x76 = (X76_RaftResp) received;
                 _Logger.debug("received: %s, %s", x76, RaftCode.valueOf(x76.getCode()));
                 return new Triple<>(null, x76, WRITE);
             }
             // leader → client
             case X77_RaftNotify.COMMAND -> {
-                X77_RaftNotify x77 = (X77_RaftNotify) content;
+                X77_RaftNotify x77 = (X77_RaftNotify) received;
                 return _RaftPeer.onNotify(x77.getIndex());
             }
             // peer *, behind in config → previous in config
             case X106_Identity.COMMAND -> {
-                X106_Identity x106 = (X106_Identity) content;
+                X106_Identity x106 = (X106_Identity) received;
                 long peerId = x106.getIdentity();
                 long newIdx = x106.getSessionIdx();
                 _Logger.debug("===> map peerId:%#x @ %#x", peerId, newIdx);
                 manager.mapSession(newIdx, session, peerId);
             }
-            default -> throw new IllegalStateException("Unexpected value: " + content.serial());
+            default -> throw new IllegalStateException("Unexpected value: " + received.serial());
         }
         return null;
     }

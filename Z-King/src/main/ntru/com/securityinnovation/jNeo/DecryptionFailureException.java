@@ -32,8 +32,7 @@ package com.securityinnovation.jNeo;
  * format.
  */
 public class DecryptionFailureException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception a default message.

@@ -31,9 +31,8 @@ import java.nio.ByteBuffer;
  * @author William.d.zk
  */
 public interface IContext
-        extends
-        IReset,
-        IDisposable
+        extends IReset,
+                IDisposable
 {
     ByteBuffer getWrBuffer();
 

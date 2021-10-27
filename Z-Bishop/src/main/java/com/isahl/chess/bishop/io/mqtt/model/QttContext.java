@@ -42,8 +42,14 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPA
 public class QttContext
         extends ZContext
 {
-    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{ "5.0", "3.1.1" },
-                                                            new int[]{ VERSION_V5_0, VERSION_V3_1_1 });
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{
+            "5.0",
+            "3.1.1"
+    },
+                                                            new int[]{
+                                                                    VERSION_V5_0,
+                                                                    VERSION_V3_1_1
+                                                            });
 
     public QttContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {

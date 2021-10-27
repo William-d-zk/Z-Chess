@@ -26,10 +26,10 @@ package com.isahl.chess.bishop.io.mqtt.filter;
 import com.isahl.chess.bishop.io.mqtt.model.QttContext;
 import com.isahl.chess.bishop.io.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
@@ -67,18 +67,18 @@ public class QttFrameFilter
         int lack = context.lack();
         switch(context.position()) {
             case -1:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 context.setCarrier(carrier = new QttFrame());
                 byte value = recvBuf.get();
                 carrier.putCtrl(value);
                 lack = context.lackLength(1, 1);
             case 0:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 carrier.setLengthCode(recvBuf.get());
                 lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
             case 1:
             default:
-                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 int target = context.position() + lack;
                 do {
                     if(carrier.isLengthCodeLack()) {
@@ -93,7 +93,7 @@ public class QttFrameFilter
                             cRvBuf.put(recvBuf.get());
                         }
                         lack = context.lackLength(length, target);
-                        if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                        if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                         if(carrier.getPayloadLength() > 0) {
                             byte[] payload = new byte[carrier.getPayloadLength()];
                             cRvBuf.flip();
@@ -127,7 +127,7 @@ public class QttFrameFilter
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof QttContext) { return new Pair<>(ResultType.NEXT_STEP, acting); }
+                if(acting instanceof QttContext) {return new Pair<>(ResultType.NEXT_STEP, acting);}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

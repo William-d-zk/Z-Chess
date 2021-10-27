@@ -39,8 +39,7 @@ public class NtruUtil
     static {
         try {
             LOADED_LIB = true;
-            switch (oid)
-            {
+            switch(oid) {
                 case ees401ep1:
                     CIPHER_BUFF_LEN = 552;
                     PLAIN_TEXT_MAX = 60;
@@ -53,7 +52,7 @@ public class NtruUtil
             }
             KeyParams.getKeyParams(oid);
         }
-        catch (Throwable e) {
+        catch(Throwable e) {
             // Ignore
         }
 
@@ -73,8 +72,9 @@ public class NtruUtil
     {
         Random prng = new Random(seed);
         NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
-        return new byte[][]{key.getPubKey(),
-                            key.getPrivKey()
+        return new byte[][]{
+                key.getPubKey(),
+                key.getPrivKey()
 
         };
     }
@@ -90,11 +90,7 @@ public class NtruUtil
             NtruEncryptKey ntruKey = new NtruEncryptKey(pubKey);
             return ntruKey.encrypt(message, prng);
         }
-        catch (FormatNotSupportedException |
-               ParamSetNotSupportedException |
-               ObjectClosedException |
-               PlaintextBadLengthException e)
-        {
+        catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | PlaintextBadLengthException e) {
             e.printStackTrace();
             return null;
         }
@@ -106,13 +102,7 @@ public class NtruUtil
             NtruEncryptKey ntruKey = new NtruEncryptKey(priKey);
             return ntruKey.decrypt(cipher);
         }
-        catch (FormatNotSupportedException |
-               ParamSetNotSupportedException |
-               ObjectClosedException |
-               NoPrivateKeyException |
-               CiphertextBadLengthException |
-               DecryptionFailureException e)
-        {
+        catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | NoPrivateKeyException | CiphertextBadLengthException | DecryptionFailureException e) {
             e.printStackTrace();
             return null;
         }

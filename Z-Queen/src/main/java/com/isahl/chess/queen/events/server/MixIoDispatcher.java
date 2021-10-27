@@ -32,8 +32,7 @@ import com.lmax.disruptor.RingBuffer;
  * @author william.d.zk
  */
 public class MixIoDispatcher
-        extends
-        IoDispatcher
+        extends IoDispatcher
 {
     private final RingBuffer<QEvent> _Link;
 
@@ -50,7 +49,6 @@ public class MixIoDispatcher
     @Override
     protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
     {
-        return mode == ISort.Mode.LINK ? _Link
-                                       : super.getNextPipe(mode);
+        return mode == ISort.Mode.LINK ? _Link : super.getNextPipe(mode);
     }
 }

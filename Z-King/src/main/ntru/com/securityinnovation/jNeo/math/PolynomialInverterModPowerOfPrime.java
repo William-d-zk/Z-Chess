@@ -37,8 +37,7 @@ package com.securityinnovation.jNeo.math;
  * a prime number.
  */
 public class PolynomialInverterModPowerOfPrime
-        extends
-        PolynomialInverterModPrime
+        extends PolynomialInverterModPrime
 {
     /**
      * The exponent the prime p must be raised to to compute the modulus.
@@ -50,21 +49,16 @@ public class PolynomialInverterModPowerOfPrime
      * This constructor initializes the object to calculate inverses
      * modulo a particular prime.
      *
-     * @param _powerOfPrime
-     *            the exponent used to define the modulus.
-     * @param _prime
-     *            the prime base of the modulus
-     * @param _invModPrime
-     *            a precomputed table of integer inverses modulo
-     *            _prime. The table should be initialized so that
-     *            invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
-     *            invModPrime[i] = 0 if the inverse of i does not exist. This
-     *            table should not be modified after it has been passed to the
-     *            constructor.
+     * @param _powerOfPrime the exponent used to define the modulus.
+     * @param _prime        the prime base of the modulus
+     * @param _invModPrime  a precomputed table of integer inverses modulo
+     *                      _prime. The table should be initialized so that
+     *                      invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
+     *                      invModPrime[i] = 0 if the inverse of i does not exist. This
+     *                      table should not be modified after it has been passed to the
+     *                      constructor.
      */
-    public PolynomialInverterModPowerOfPrime(int _powerOfPrime,
-                                             int _prime,
-                                             short[] _invModPrime)
+    public PolynomialInverterModPowerOfPrime(int _powerOfPrime, int _prime, short[] _invModPrime)
     {
         super(_prime, _invModPrime);
         powerOfPrime = _powerOfPrime;
@@ -81,7 +75,7 @@ public class PolynomialInverterModPowerOfPrime
         FullPolynomial b = super.invert(a);
 
         // Make sure a was invertible
-        if (b == null) return null;
+        if(b == null) {return null;}
 
         int q = prime;
         do {
@@ -92,14 +86,15 @@ public class PolynomialInverterModPowerOfPrime
             FullPolynomial c = FullPolynomial.convolution(a, b, q);
             //    ii:  c = 2-a*b
             c.p[0] = (short) (2 - c.p[0]);
-            if (c.p[0] < 0) c.p[0] += (short) q;
-            for (int i = 1; i < b.p.length; i++)
+            if(c.p[0] < 0) {c.p[0] += (short) q;}
+            for(int i = 1; i < b.p.length; i++) {
                 c.p[i] = (short) (q - c.p[i]); // This is -c (mod q)
+            }
             //    iii: b = b*(2-a*b) mod q
-            if (q > powerOfPrime) b = FullPolynomial.convolution(b, c, powerOfPrime);
-            else b = FullPolynomial.convolution(b, c, q);
+            if(q > powerOfPrime) {b = FullPolynomial.convolution(b, c, powerOfPrime);}
+            else {b = FullPolynomial.convolution(b, c, q);}
         }
-        while (q < powerOfPrime);
+        while(q < powerOfPrime);
 
         return b;
     }

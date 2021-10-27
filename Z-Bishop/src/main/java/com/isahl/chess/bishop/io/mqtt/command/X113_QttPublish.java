@@ -52,8 +52,8 @@ public class X113_QttPublish
     public int dataLength()
     {
         return (getLevel().getValue() > ALMOST_ONCE.getValue() ? super.dataLength()
-                                                             : Objects.nonNull(this.payload()) ? this.payload().length
-                                                                                               : 0) + 2 +
+                                                               : Objects.nonNull(this.payload()) ? this.payload().length
+                                                                                                 : 0) + 2 +
                (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0);
     }
 

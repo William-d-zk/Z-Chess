@@ -33,7 +33,6 @@ import org.springframework.lang.NonNull;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-06-15
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -51,12 +50,16 @@ public class DeviceDo
         return mSn;
     }
 
-    public void setSn(@NonNull String sn)
+    public void setSn(
+            @NonNull
+                    String sn)
     {
         this.mSn = sn.toUpperCase();
     }
 
-    public void setPassword(@NonNull String password)
+    public void setPassword(
+            @NonNull
+                    String password)
     {
         this.mPassword = password;
     }
@@ -66,7 +69,9 @@ public class DeviceDo
         return mPassword;
     }
 
-    public void setToken(@NonNull String token)
+    public void setToken(
+            @NonNull
+                    String token)
     {
         this.mToken = token.toUpperCase();
     }

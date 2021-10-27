@@ -101,13 +101,15 @@ public class Crc32
                                                           0x00000000L,
                                                           0xBD0BE338L);
 
-    public static final AlgoParams[] Params = new AlgoParams[]{Crc32,
-                                                               Crc32Bzip2,
-                                                               Crc32C,
-                                                               Crc32D,
-                                                               Crc32Jamcrc,
-                                                               Crc32Mpeg2,
-                                                               Crc32Posix,
-                                                               Crc32Q,
-                                                               Crc32Xfer};
+    public static final AlgoParams[] Params = new AlgoParams[]{
+            Crc32,
+            Crc32Bzip2,
+            Crc32C,
+            Crc32D,
+            Crc32Jamcrc,
+            Crc32Mpeg2,
+            Crc32Posix,
+            Crc32Q,
+            Crc32Xfer
+    };
 }

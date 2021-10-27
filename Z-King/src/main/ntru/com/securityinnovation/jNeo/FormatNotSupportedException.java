@@ -26,8 +26,7 @@ package com.securityinnovation.jNeo;
  * is not recognized.
  */
 public class FormatNotSupportedException
-        extends
-        NtruException
+        extends NtruException
 {
     /**
      * Constructs a new exception with the supplied key blob tag as

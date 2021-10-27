@@ -42,13 +42,13 @@ public class IPParser
     private final static String ipv4segment = "(25[0-5]|(2[0-4]|1?[0-9])?[0-9])";
 
     // 0-65535
-    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|"
-                                                      + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
+    private final static String portsegment         =
+            ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|" + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
     private final static String ipv4address         = "(" + ipv4segment + "\\.){3}" + ipv4segment;
     private final static String ipv4addressWithPort = ipv4address + portsegment + "?";
     private final static String ipv6segment         = "[a-fA-F0-9]{1,4}";
     private final static String ipv6address         = "(" +
-    // 1:2:3:4:5:6:7:8
+                                                      // 1:2:3:4:5:6:7:8
                                                       "(" + ipv6segment + ":){7}" + ipv6segment + "|" +
                                                       // 1::, 1:2:3:4:5:6:7::
                                                       "(" + ipv6segment + ":){1,7}:|" +
@@ -101,26 +101,24 @@ public class IPParser
      * Parses ipv4 and ipv6 addresses. Emits each described IP address as a
      * hexadecimal integer representing the address, the address space,
      * and the port number specified, if any.
-     * 
-     * @param address
-     *            the address to analyze
+     *
+     * @param address the address to analyze
      */
-    public static Pair<InetAddress,
-                       Integer> parse(String address)
+    public static Pair<InetAddress, Integer> parse(String address)
     {
 
         // Try to match the pattern with one of the 2 types, with or without a
         // port
-        if (Pattern.matches("^" + ipv4address + "$", address)) {
+        if(Pattern.matches("^" + ipv4address + "$", address)) {
             try {
                 return new Pair<>(Inet4Address.getByName(address), 0);
             }
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 e.printStackTrace();
             }
 
         }
-        else if (Pattern.matches("^" + ipv4addressWithPort + "$", address)) {
+        else if(Pattern.matches("^" + ipv4addressWithPort + "$", address)) {
             String[] parts = address.split("\\.");
             int port = Integer.parseInt(parts[3].split(":")[1]);
             parts[3] = parts[3].split(":")[0];
@@ -129,20 +127,20 @@ public class IPParser
                 address = parts[0] + '.' + parts[1] + '.' + parts[2] + '.' + parts[3];
                 return new Pair<>(Inet4Address.getByName(address), port);
             }
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 e.printStackTrace();
             }
         }
-        else if (Pattern.matches("^" + ipv6address + "$", address)) {
+        else if(Pattern.matches("^" + ipv6address + "$", address)) {
 
             try {
                 return new Pair<>(Inet6Address.getByName(address), 0);
             }
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 e.printStackTrace();
             }
         }
-        else if (Pattern.matches("^" + ipv6addressWithPort + "$", address)) {
+        else if(Pattern.matches("^" + ipv6addressWithPort + "$", address)) {
             String[] parts = address.split(":");
             address = address.replace("[", "")
                              .replace("]", "")
@@ -150,7 +148,7 @@ public class IPParser
             try {
                 return new Pair<>(Inet6Address.getByName(address), Integer.parseInt(parts[parts.length - 1]));
             }
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 e.printStackTrace();
             }
         }
@@ -159,7 +157,7 @@ public class IPParser
             try {
                 return new Pair<>(Inet6Address.getByName(parts[0]), Integer.parseInt(parts[parts.length - 1]));
             }
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 e.printStackTrace();
             }
         }

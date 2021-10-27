@@ -29,7 +29,7 @@ public class KeyFormatterUtil
 {
     static int fillHeader(byte tag, byte[] oid, byte[] out)
     {
-        if (out != null) {
+        if(out != null) {
             out[0] = tag;
             System.arraycopy(oid, 0, out, 1, oid.length);
         }
@@ -38,8 +38,9 @@ public class KeyFormatterUtil
 
     static KeyParams parseOID(byte[] keyBlob, int oidStartIndex, int oidLen) throws ParamSetNotSupportedException
     {
-        if (oidStartIndex
-            + oidLen > keyBlob.length) throw new IllegalArgumentException("keyblob not large enough to hold OID");
+        if(oidStartIndex + oidLen > keyBlob.length) {
+            throw new IllegalArgumentException("keyblob not large enough to hold OID");
+        }
         byte[] oid = new byte[oidLen];
         System.arraycopy(keyBlob, oidStartIndex, oid, 0, oidLen);
         return KeyParams.getKeyParams(oid);
@@ -57,8 +58,7 @@ public class KeyFormatterUtil
     {
         FullPolynomial F = new FullPolynomial(f.p.length);
         F.p[0] = (short) ((f.p[0] - 1) / 3);
-        for (int i = 1; i < f.p.length; i++)
-            F.p[i] = (short) (f.p[i] / 3);
+        for(int i = 1; i < f.p.length; i++) {F.p[i] = (short) (f.p[i] / 3);}
         return F;
     }
 
@@ -72,13 +72,14 @@ public class KeyFormatterUtil
 
     static public int packListedCoefficients(FullPolynomial F, int numOnes, int numNegOnes, byte[] out, int offset)
     {
-        if (out == null) return BitPack.pack(numOnes + numNegOnes, F.p.length);
+        if(out == null) {return BitPack.pack(numOnes + numNegOnes, F.p.length);}
 
         short[] coefficients = new short[numOnes + numNegOnes];
         int ones = 0, negOnes = numOnes;
-        for (int i = 0; i < F.p.length; i++)
-            if (F.p[i] == 1) coefficients[ones++] = (short) i;
-            else if (F.p[i] == -1) coefficients[negOnes++] = (short) i;
+        for(int i = 0; i < F.p.length; i++) {
+            if(F.p[i] == 1) {coefficients[ones++] = (short) i;}
+            else if(F.p[i] == -1) {coefficients[negOnes++] = (short) i;}
+        }
         int len = BitPack.pack(numOnes + numNegOnes, F.p.length, coefficients, 0, out, offset);
         java.util.Arrays.fill(coefficients, (short) 0);
         return len;
@@ -94,10 +95,8 @@ public class KeyFormatterUtil
         short[] coefficients = new short[numOnes + numNegOnes];
         int len = BitPack.unpack(coefficients.length, N, in, offset, coefficients, 0);
         java.util.Arrays.fill(F.p, (short) 0);
-        for (int i = 0; i < numOnes; i++)
-            F.p[coefficients[i]] = 1;
-        for (int i = numOnes; i < coefficients.length; i++)
-            F.p[coefficients[i]] = -1;
+        for(int i = 0; i < numOnes; i++) {F.p[coefficients[i]] = 1;}
+        for(int i = numOnes; i < coefficients.length; i++) {F.p[coefficients[i]] = -1;}
         java.util.Arrays.fill(coefficients, (short) 0);
         return len;
     }

@@ -25,7 +25,6 @@ package com.isahl.chess.queen.config;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/1
  */
 public interface IAioConfig

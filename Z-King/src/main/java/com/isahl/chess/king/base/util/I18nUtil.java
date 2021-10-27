@@ -48,8 +48,7 @@ public interface I18nUtil
 
     static Charset getCharset(byte data)
     {
-        return switch (data & 0xF0)
-        {
+        return switch(data & 0xF0) {
             case CHARSET_ASCII -> StandardCharsets.US_ASCII;
             case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
             case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
@@ -64,30 +63,29 @@ public interface I18nUtil
 
     static int getCharsetCode(String charset)
     {
-        if (charset.equals("ASCII")) return CHARSET_ASCII;
-        if (charset.equals("UTF-8")) return CHARSET_UTF_8;
-        if (charset.equals("UTF-16")) return CHARSET_UTF_8_NB;
-        if (charset.equals("UTF-16BE")) return CHARSET_UTC_BE;
-        if (charset.equals("UTF-16LE")) return CHARSET_UTC_LE;
-        if (charset.equals("GBK")) return CHARSET_GBK;
-        if (charset.equals("GB2312")) return CHARSET_GB2312;
-        if (charset.equals("GB18030")) return CHARSET_GB18030;
-        if (charset.equals("ISO-8859-1")) return CHARSET_ISO_8859_1;
-        if (charset.equals("ISO-8859-15")) return CHARSET_ISO_8859_15;
+        if(charset.equals("ASCII")) {return CHARSET_ASCII;}
+        if(charset.equals("UTF-8")) {return CHARSET_UTF_8;}
+        if(charset.equals("UTF-16")) {return CHARSET_UTF_8_NB;}
+        if(charset.equals("UTF-16BE")) {return CHARSET_UTC_BE;}
+        if(charset.equals("UTF-16LE")) {return CHARSET_UTC_LE;}
+        if(charset.equals("GBK")) {return CHARSET_GBK;}
+        if(charset.equals("GB2312")) {return CHARSET_GB2312;}
+        if(charset.equals("GB18030")) {return CHARSET_GB18030;}
+        if(charset.equals("ISO-8859-1")) {return CHARSET_ISO_8859_1;}
+        if(charset.equals("ISO-8859-15")) {return CHARSET_ISO_8859_15;}
         return CHARSET_UTF_8;
     }
 
     static int getCharsetCode(Charset charset)
     {
-        if (StandardCharsets.US_ASCII.equals(charset)) return CHARSET_ASCII;
-        if (StandardCharsets.UTF_8.equals(charset)) return CHARSET_UTF_8;
-        if (StandardCharsets.UTF_16.equals(charset)) return CHARSET_UTF_8_NB;
-        if (StandardCharsets.UTF_16BE.equals(charset)) return CHARSET_UTC_BE;
-        if (StandardCharsets.UTF_16LE.equals(charset)) return CHARSET_UTC_LE;
-        if (StandardCharsets.ISO_8859_1.equals(charset)) return CHARSET_ISO_8859_1;
-        return switch (charset.name()
-                              .toUpperCase())
-        {
+        if(StandardCharsets.US_ASCII.equals(charset)) {return CHARSET_ASCII;}
+        if(StandardCharsets.UTF_8.equals(charset)) {return CHARSET_UTF_8;}
+        if(StandardCharsets.UTF_16.equals(charset)) {return CHARSET_UTF_8_NB;}
+        if(StandardCharsets.UTF_16BE.equals(charset)) {return CHARSET_UTC_BE;}
+        if(StandardCharsets.UTF_16LE.equals(charset)) {return CHARSET_UTC_LE;}
+        if(StandardCharsets.ISO_8859_1.equals(charset)) {return CHARSET_ISO_8859_1;}
+        return switch(charset.name()
+                             .toUpperCase()) {
             case "GBK" -> CHARSET_GBK;
             case "GB2312" -> CHARSET_GB2312;
             case "GB18030" -> CHARSET_GB18030;
@@ -98,8 +96,7 @@ public interface I18nUtil
 
     static String getSerialType(int type)
     {
-        return switch (type & 0xF)
-        {
+        return switch(type & 0xF) {
             case SERIAL_TEXT -> "text";
             case SERIAL_BINARY -> "binary";
             case SERIAL_JSON -> "json";

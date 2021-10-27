@@ -31,8 +31,7 @@ import java.io.InputStream;
  * algorithm defined in the PKCS#1 spec.
  */
 public class MGF1
-        extends
-        InputStream
+        extends InputStream
 {
     /**
      * The MGF seed concatenated with the 4-byte MGF counter.
@@ -68,40 +67,29 @@ public class MGF1
 
     /**
      * Initialize the MGF with a seed.
-     * 
-     * @param hashAlg
-     *            identifies the hash algorithm underlying the MGF
-     * @param _minNumRuns
-     *            the minimum number of times the hash algorithm
-     *            should be run. If the hash algorithm has not been run
-     *            this many times before the MGF is close()ed, then
-     *            during the close() the hash will be calculated enough
-     *            times to bring the total count up to minNumRuns.
-     * @param hashSeed
-     *            a flag indicating whether the seed needs to be
-     *            hashed before use. Typically this will be true if the
-     *            seed length is greater than the block size of the
-     *            underlying hash algorithm.
-     * @param seed
-     *            the array containing the MGF seed.
-     * @param seedOffset
-     *            the index of the start of the seed within the
-     *            seed array.
-     * @param seedLength
-     *            the length of the seed.
+     *
+     * @param hashAlg     identifies the hash algorithm underlying the MGF
+     * @param _minNumRuns the minimum number of times the hash algorithm
+     *                    should be run. If the hash algorithm has not been run
+     *                    this many times before the MGF is close()ed, then
+     *                    during the close() the hash will be calculated enough
+     *                    times to bring the total count up to minNumRuns.
+     * @param hashSeed    a flag indicating whether the seed needs to be
+     *                    hashed before use. Typically this will be true if the
+     *                    seed length is greater than the block size of the
+     *                    underlying hash algorithm.
+     * @param seed        the array containing the MGF seed.
+     * @param seedOffset  the index of the start of the seed within the
+     *                    seed array.
+     * @param seedLength  the length of the seed.
      */
-    public MGF1(DigestAlgorithm hashAlg,
-                int _minNumRuns,
-                boolean hashSeed,
-                byte[] seed,
-                int seedOffset,
-                int seedLength)
+    public MGF1(DigestAlgorithm hashAlg, int _minNumRuns, boolean hashSeed, byte[] seed, int seedOffset, int seedLength)
     {
         hash = hashAlg.newInstance();
 
         minNumRuns = _minNumRuns;
 
-        if (hashSeed) {
+        if(hashSeed) {
             seedAndCounter = new byte[hash.getDigestLen() + 4];
             hash.digest(seed, 0, seedLength, seedAndCounter, 0);
             seedLength = hash.getDigestLen();
@@ -126,7 +114,7 @@ public class MGF1
      */
     public void close()
     {
-        while (numRuns < minNumRuns)
+        while(numRuns < minNumRuns)
             fillBuffer();
 
         outputStream = null;
@@ -139,7 +127,7 @@ public class MGF1
      */
     public int read()
     {
-        if (outputUsed >= outputStream.length) fillBuffer();
+        if(outputUsed >= outputStream.length) {fillBuffer();}
         return 0xff & outputStream[outputUsed++];
     }
 
@@ -149,8 +137,8 @@ public class MGF1
     public int read(byte[] out, int offset, int len)
     {
         int toread = len;
-        while (toread > 0) {
-            if (outputUsed >= outputStream.length) fillBuffer();
+        while(toread > 0) {
+            if(outputUsed >= outputStream.length) {fillBuffer();}
 
             int n = Math.min(outputStream.length - outputUsed, toread);
             System.arraycopy(outputStream, outputUsed, out, offset, n);
@@ -173,7 +161,7 @@ public class MGF1
 
         // Increment the counter
         int carry = 1;
-        for (int i = seedAndCounter.length - 1; i > seedAndCounter.length - 5; i--) {
+        for(int i = seedAndCounter.length - 1; i > seedAndCounter.length - 5; i--) {
             int x = (seedAndCounter[i] & 0xff) + carry;
             seedAndCounter[i] = (byte) (x & 0xff);
             carry = (x >> 8);

@@ -30,8 +30,7 @@ public interface IPortChannel
 {
     /**
      * @return 0 ignore channel dispatch operation , otherwise dispatch to
-     *         target channel.
-     * 
+     * target channel.
      */
     default int channel()
     {

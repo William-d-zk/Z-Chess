@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/7/12
  */
 class CryptoUtilTest
@@ -38,7 +37,7 @@ class CryptoUtilTest
     @Test
     void randomPassword()
     {
-        for (int i = 0; i < 100; i++) {
+        for(int i = 0; i < 100; i++) {
             String passwd = cryptoUtil.randomPassword(17, 31);
             System.out.println(passwd);
         }

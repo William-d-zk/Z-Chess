@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.features.model.channels;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-26
  */
 public interface IVariableLength

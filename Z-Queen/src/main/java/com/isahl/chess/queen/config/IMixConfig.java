@@ -26,14 +26,12 @@ package com.isahl.chess.queen.config;
 /**
  * 由于主Pipeline 使用了disruptor 的 RingBuffer
  * 所以有些参数直接使用 __Power 直接设定RingBuffer的 _SIZE
- * 
+ *
  * @author william.d.zk
- * 
  * @date 2017/02/10
  */
 public interface IMixConfig
-        extends
-        IClusterConfig
+        extends IClusterConfig
 {
 
     /**
@@ -68,7 +66,7 @@ public interface IMixConfig
                + 1 // write-dispatch
                + (1 << getEncoderCountPower())// write-encode
                + 1 // encoded-processor [write-end]
-        ;
+                ;
     }
 
 }

@@ -116,7 +116,7 @@ public class RaftNode
     @Override
     public String toString()
     {
-        return String.format(" RaftNode{%#x,%s:%d,%s | %s:%d }", mId, mHost, mPort, mState, mGateHost, mGatePort);
+        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }", mId, mHost, mPort, mState, mGateHost, mGatePort);
     }
 
     public String getGateHost()

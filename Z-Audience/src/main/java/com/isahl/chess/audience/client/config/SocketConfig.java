@@ -35,8 +35,7 @@ import java.security.cert.CertificateException;
 import java.time.Duration;
 
 public class SocketConfig
-        implements
-        ISocketConfig
+        implements ISocketConfig
 {
     private boolean        keepAlive;
     private Duration       connectTimeoutInSecond;
@@ -156,10 +155,8 @@ public class SocketConfig
         this.connectTimeoutInSecond = connectTimeoutInSecond;
     }
 
-    private KeyStore loadKeyStore(String path, String password) throws KeyStoreException,
-                                                                IOException,
-                                                                NoSuchAlgorithmException,
-                                                                CertificateException
+    private KeyStore loadKeyStore(String path,
+                                  String password) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException
     {
         FileInputStream fis = new FileInputStream(path);
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -185,19 +182,14 @@ public class SocketConfig
     @Override
     public TrustManager[] getTrustManagers()
     {
-        if (trustManagers == null && trustKeyStorePath != null && trustKeyPassword != null) {
+        if(trustManagers == null && trustKeyStorePath != null && trustKeyPassword != null) {
             try {
                 KeyStore keyStore = loadKeyStore(trustKeyStorePath, trustKeyPassword);
                 TrustManagerFactory factory = TrustManagerFactory.getInstance("PKIX", "SunJSSE");
                 factory.init(keyStore);
                 return trustManagers = factory.getTrustManagers();
             }
-            catch (KeyStoreException |
-                   IOException |
-                   NoSuchAlgorithmException |
-                   CertificateException |
-                   NoSuchProviderException e)
-            {
+            catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -208,20 +200,14 @@ public class SocketConfig
     @Override
     public KeyManager[] getKeyManagers()
     {
-        if (keyManagers == null && keyStorePath != null && keyPassword != null) {
+        if(keyManagers == null && keyStorePath != null && keyPassword != null) {
             try {
                 KeyStore keyStore = loadKeyStore(keyStorePath, keyPassword);
                 KeyManagerFactory factory = KeyManagerFactory.getInstance("PKIX", "SunJSSE");
                 factory.init(keyStore, keyPassword.toCharArray());
                 return keyManagers = factory.getKeyManagers();
             }
-            catch (KeyStoreException |
-                   IOException |
-                   NoSuchAlgorithmException |
-                   CertificateException |
-                   NoSuchProviderException |
-                   UnrecoverableKeyException e)
-            {
+            catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | UnrecoverableKeyException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -241,9 +227,7 @@ public class SocketConfig
             sslPacketBufferSize = sslSession.getPacketBufferSize();
             sslAppBufferSize = sslSession.getApplicationBufferSize();
         }
-        catch (NoSuchAlgorithmException |
-               KeyManagementException e)
-        {
+        catch(NoSuchAlgorithmException | KeyManagementException e) {
             throw new ZException(e, "ssl static init failed");
         }
     }

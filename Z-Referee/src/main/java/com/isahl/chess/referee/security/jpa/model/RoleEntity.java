@@ -39,8 +39,9 @@ import java.util.List;
  */
 @Entity(name = "role")
 @Table(schema = "z_chess_security",
-       indexes = { @Index(name = "role_name_idx",
-                          columnList = "name")
+       indexes = {
+               @Index(name = "role_name_idx",
+                      columnList = "name")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RoleEntity

@@ -46,8 +46,8 @@ class MixManagerTest
     {
         Objects.requireNonNull(pairs);
         Objects.requireNonNull(pair);
-        if (index >= pairs.size()) {
-            for (int i = pairs.size(); i < index; i++) {
+        if(index >= pairs.size()) {
+            for(int i = pairs.size(); i < index; i++) {
                 pairs.add(new Pair<>(-1, null));
             }
             pairs.add(pair);

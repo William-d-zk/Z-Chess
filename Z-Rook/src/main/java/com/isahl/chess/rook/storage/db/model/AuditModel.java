@@ -50,17 +50,21 @@ import java.time.LocalDateTime;
 /**
  * @author william.d.zk
  */
-@TypeDefs({ @TypeDef(name = "string-array",
-                     typeClass = StringArrayType.class),
-            @TypeDef(name = "int-array",
-                     typeClass = IntArrayType.class),
-            @TypeDef(name = "list-array",
-                     typeClass = ListArrayType.class)
+@TypeDefs({
+        @TypeDef(name = "string-array",
+                 typeClass = StringArrayType.class),
+        @TypeDef(name = "int-array",
+                 typeClass = IntArrayType.class),
+        @TypeDef(name = "list-array",
+                 typeClass = ListArrayType.class)
 })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = { "created_at", "updated_at" },
+@JsonIgnoreProperties(value = {
+        "created_at",
+        "updated_at"
+},
                       allowGetters = true)
 public abstract class AuditModel
         extends JsonProtocol

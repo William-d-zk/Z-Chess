@@ -43,7 +43,7 @@ public class LocalDnsTest
     public void listTest()
     {
         List<Integer> a = Lists.list(1, 2, 3, 4, 5, 6, 7, 8);
-        a.subList(3, a.size()-1)
+        a.subList(3, a.size() - 1)
          .clear();
         System.out.println(a);
     }

@@ -43,17 +43,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author William.d.zk
  */
 public class BaseDatagramPeer
-        implements
-        IAioClient
+        implements IAioClient
 {
 
     private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
 
     private final TimeWheel                                            _TimeWheel;
     private final Selector                                             _Selector;
-    private final Map<InetSocketAddress,
-                      Pair<Integer,
-                           IAioConnector>>                             _TargetManageMap = new HashMap<>();
+    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new HashMap<>();
 
     public BaseDatagramPeer(TimeWheel timeWheel) throws IOException
     {
@@ -74,10 +71,9 @@ public class BaseDatagramPeer
             _DatagramChannel.connect(remoteAddress);
             _DatagramChannel.configureBlocking(false);
             _DatagramChannel.register(_Selector, SelectionKey.OP_READ, connector);
-            Pair<Integer,
-                 IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
+            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
             int retryCount = 0;
-            if (pair != null) {
+            if(pair != null) {
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
@@ -89,22 +85,26 @@ public class BaseDatagramPeer
     }
 
     @Override
-    public void shutdown(ISession session) {
+    public void shutdown(ISession session)
+    {
 
     }
 
     @Override
-    public void onFailed(IAioConnector iAioConnector) {
+    public void onFailed(IAioConnector iAioConnector)
+    {
 
     }
 
     @Override
-    public void onCreated(ISession session) {
+    public void onCreated(ISession session)
+    {
 
     }
 
     @Override
-    public void onDismiss(ISession session) {
+    public void onDismiss(ISession session)
+    {
 
     }
 }

@@ -37,26 +37,23 @@ public interface INoSql<E extends IStorage>
 
     /**
      * DAO 将数据存入 KV-Storage
-     * 
+     *
      * @param entry
      */
     void put(E entry);
 
     /**
      * 将数据取回
-     * 
+     *
      * @param entry
-     * 
      * @return
      */
     E get(E entry);
 
     /**
-     * 
      * @param primaryKey
      * @param secondaryKey
      * @param secondaryKeyArray
-     * 
      * @return
      */
     boolean contains(long primaryKey, long secondaryKey, byte[] secondaryKeyArray);
