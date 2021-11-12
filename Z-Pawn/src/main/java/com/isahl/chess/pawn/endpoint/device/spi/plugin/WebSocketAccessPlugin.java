@@ -23,16 +23,13 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
-import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X104_Pong;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X105_SslHandShake;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -49,7 +46,7 @@ public class WebSocketAccessPlugin
     @Override
     public boolean isHandleProtocol(IProtocol protocol)
     {
-        return protocol.serial() >= X101_HandShake.COMMAND && protocol.serial() <= X105_SslHandShake.COMMAND;
+        return protocol.serial() >= 0x101 && protocol.serial() <= 0x105;
     }
 
     @Override
@@ -57,7 +54,7 @@ public class WebSocketAccessPlugin
     {
 
         switch(content.serial()) {
-            case X103_Ping.COMMAND -> {
+            case 0x103 -> {
                 return Collections.singletonList(new X104_Pong());
             }
         }

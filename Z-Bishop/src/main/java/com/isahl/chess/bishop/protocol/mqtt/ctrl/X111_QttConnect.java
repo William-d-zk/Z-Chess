@@ -23,6 +23,8 @@
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -35,17 +37,16 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  * @author william.d.zk
  * @date 2019-05-02
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x111)
 public class X111_QttConnect
         extends QttControl
 {
     private final static int MAX_USER_NAME_LENGTH = 127;
     private final static int MAX_PASSWORD_LENGTH  = 127;
 
-    public final static int COMMAND = 0x111;
-
     public X111_QttConnect()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNECT));
     }
 

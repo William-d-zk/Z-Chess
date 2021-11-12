@@ -28,8 +28,6 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import java.util.Objects;
-
 /**
  * @author william.d.zk
  * @date 2019-05-13
@@ -38,20 +36,7 @@ public abstract class QttControl
         extends MqttProtocol
         implements IControl
 {
-    private final int      _Command;
-    private       byte[]   mPayload;
-    private       ISession mSession;
-
-    public QttControl(int command)
-    {
-        _Command = command;
-    }
-
-    @Override
-    public int length()
-    {
-        return Objects.nonNull(mPayload) ? mPayload.length : 0;
-    }
+    private ISession mSession;
 
     @Override
     public byte ctrl()
@@ -78,34 +63,16 @@ public abstract class QttControl
     }
 
     @Override
-    public int serial()
-    {
-        return _Command;
-    }
-
-    @Override
     public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public byte[] payload()
-    {
-        return mPayload;
-    }
-
-    @Override
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
     public void reset()
     {
-        mSession = null;
-        mPayload = null;
+        putSession(null);
+        put(null);
     }
 
     @Override

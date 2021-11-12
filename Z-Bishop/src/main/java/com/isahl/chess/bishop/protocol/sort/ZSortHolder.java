@@ -23,8 +23,6 @@
 
 package com.isahl.chess.bishop.protocol.sort;
 
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.protocol.sort.ssl.SslZSort;
@@ -102,7 +100,7 @@ public enum ZSortHolder
 
     public static IControl CREATE(int serial, byte[] data)
     {
-        if(serial >= X111_QttConnect.COMMAND && serial <= X11E_QttDisconnect.COMMAND) {
+        if(serial >= 0x111 && serial <= 0x11E) {
             return _QttFactory.create(serial, data, null);
         }
         if(serial >= 0x20 && serial <= 0x6F) {return _ServerFactory.create(serial, data, null);}

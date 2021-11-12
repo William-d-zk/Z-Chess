@@ -24,6 +24,8 @@
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -31,14 +33,13 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  * @author william.d.zk
  * @date 2019-05-30
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x11E)
 public class X11E_QttDisconnect
         extends QttControl
 {
-    public final static int COMMAND = 0x11E;
-
     public X11E_QttDisconnect()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
     }
 
@@ -47,6 +48,4 @@ public class X11E_QttDisconnect
     {
         return true;
     }
-
-
 }

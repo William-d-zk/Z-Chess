@@ -24,6 +24,8 @@
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -31,14 +33,14 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  * @author william.d.zk
  * @date 2019-05-30
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x117)
 public class X117_QttPubcomp
         extends QttCommand
 {
-    public final static int COMMAND = 0x117;
 
     public X117_QttPubcomp()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBCOMP));
     }
 

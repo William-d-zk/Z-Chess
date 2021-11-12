@@ -37,16 +37,9 @@ public abstract class QttCommand
         implements ICommand
 {
 
-    private final int _Command;
-
-    public QttCommand(int command)
-    {
-        _Command = command;
-    }
-
-    private long     mMsgId = -1;
     private ISession mSession;
-    private byte[]   mPayload;
+
+    private long mMsgId = -1;
 
     @Override
     public void put(byte ctrl)
@@ -67,18 +60,6 @@ public abstract class QttCommand
     }
 
     @Override
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return mPayload;
-    }
-
-    @Override
     public byte ctrl()
     {
         return getOpCode();
@@ -93,13 +74,8 @@ public abstract class QttCommand
     @Override
     public void reset()
     {
-        mPayload = null;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _Command;
+        put(null);
+        putSession(null);
     }
 
     @Override
@@ -138,7 +114,7 @@ public abstract class QttCommand
     @Override
     public int length()
     {
-        return 2 + (mPayload == null ? 0 : mPayload.length);
+        return super.length() + 2;
     }
 
     @Override

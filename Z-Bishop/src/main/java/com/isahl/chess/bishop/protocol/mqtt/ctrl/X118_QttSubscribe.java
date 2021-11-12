@@ -25,6 +25,8 @@ package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -37,15 +39,14 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT
  * @author william.d.zk
  * @date 2019-05-30
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x118)
 public class X118_QttSubscribe
         extends QttCommand
 {
 
-    public final static int COMMAND = 0x118;
-
     public X118_QttSubscribe()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE));
     }
 

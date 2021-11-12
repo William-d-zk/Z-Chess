@@ -56,7 +56,7 @@ public class QttControlFilter
             Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
             层完成这一操作 [Server]
          */
-        if(output.serial() == X112_QttConnack.COMMAND) {
+        if(output.serial() == 0x112) {
             X112_QttConnack x112 = (X112_QttConnack) output;
             if(x112.isOk()) {
                 context.updateOut();
@@ -78,7 +78,7 @@ public class QttControlFilter
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]
              */
-            if(input.serial() == X112_QttConnack.COMMAND) {
+            if(input.serial() == 0x112) {
                 X112_QttConnack x112 = (X112_QttConnack) control;
                 if(x112.isOk()) {
                     context.updateIn();
@@ -111,7 +111,9 @@ public class QttControlFilter
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof QttFrame && ((IFrame) input).isCtrl()) {
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof QttFrame &&
+           ((IFrame) input).isCtrl())
+        {
             if(context instanceof QttContext && context.isInFrame()) {
                 return new Pair<>(ResultType.HANDLED, context);
             }

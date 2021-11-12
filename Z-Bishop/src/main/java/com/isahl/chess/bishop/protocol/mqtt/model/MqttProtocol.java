@@ -47,6 +47,7 @@ public abstract class MqttProtocol
     protected int        mVersion;
     protected QttContext mContext;
 
+    private byte[]  mPayload;
     private boolean mDuplicate;
     private boolean mRetain;
     private byte    mQosLevel;
@@ -166,4 +167,21 @@ public abstract class MqttProtocol
         if(context != null) {mVersion = context.getVersion();}
     }
 
+    @Override
+    public void put(byte[] payload)
+    {
+        mPayload = payload;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return mPayload;
+    }
+
+    @Override
+    public int length()
+    {
+        return mPayload == null ? 0 : mPayload.length;
+    }
 }
