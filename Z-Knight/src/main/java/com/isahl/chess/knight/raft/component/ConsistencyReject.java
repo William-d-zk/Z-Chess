@@ -31,7 +31,7 @@ import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
 
@@ -40,10 +40,10 @@ public class ConsistencyReject
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final RaftPeer        _RaftPeer;
-    private final ISessionManager _SessionManager;
+    private final RaftPeer _RaftPeer;
+    private final IManager _SessionManager;
 
-    public ConsistencyReject(RaftPeer peer, ISessionManager manager)
+    public ConsistencyReject(RaftPeer peer, IManager manager)
     {
         _RaftPeer = peer;
         _SessionManager = manager;

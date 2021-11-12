@@ -30,7 +30,7 @@ import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,13 +48,13 @@ public class EchoAccessPlugin
     }
 
     @Override
-    public List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content)
+    public List<? extends IControl> handle(IManager manager, ISession session, IControl content)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ITriple onLink(ISessionManager manager, ISession session, IControl input)
+    public ITriple onLink(IManager manager, ISession session, IControl input)
     {
         throw new UnsupportedOperationException();
     }
@@ -66,7 +66,7 @@ public class EchoAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(ISessionManager manager,
+    public List<ITriple> onConsistencyResult(IManager manager,
                                              long origin,
                                              IProtocol consensusBody,
                                              boolean isConsistency)

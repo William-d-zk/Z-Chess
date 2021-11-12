@@ -42,8 +42,8 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.lmax.disruptor.RingBuffer;
 
@@ -64,7 +64,7 @@ public class MixMappingHandler<T extends IStorage>
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
     private final RingBuffer<QEvent> _Transfer;
-    private final ISessionManager    _SessionManager;
+    private final IManager           _SessionManager;
     private final ILinkCustom        _LinkCustom;
     private final IClusterCustom<T>  _ClusterCustom;
     private final IHealth            _Health = new Health(-1);
@@ -110,7 +110,7 @@ public class MixMappingHandler<T extends IStorage>
                     IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     ISession session = errorContent.getSecond();
-                    ISessionDismiss dismiss = session.getDismissCallback();
+                    IDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
                     if(!closed) {
@@ -335,7 +335,7 @@ public class MixMappingHandler<T extends IStorage>
         return _Logger;
     }
 
-    private ITriple doCustom(IMappingCustom custom, ISessionManager manager, ISession session, IControl received)
+    private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IControl received)
     {
         ITriple result = custom.handle(manager, session, received);
         _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);

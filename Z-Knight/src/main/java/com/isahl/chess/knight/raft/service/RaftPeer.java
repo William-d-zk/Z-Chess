@@ -23,8 +23,8 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.bishop.io.ws.zchat.model.ZCommand;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.*;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.ZCommand;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.*;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
@@ -40,7 +40,7 @@ import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
-import com.isahl.chess.knight.raft.features.IRaftMessage;
+import com.isahl.chess.knight.raft.features.IRaftControl;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -51,7 +51,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.lmax.disruptor.RingBuffer;
 
@@ -207,7 +207,7 @@ public class RaftPeer
 
     }
 
-    public void installSnapshot(List<IRaftMessage> snapshot)
+    public void installSnapshot(List<IRaftControl> snapshot)
     {
 
     }
@@ -304,7 +304,7 @@ public class RaftPeer
         return reject;
     }
 
-    private List<ITriple> rejectThenVote(ISessionManager manager)
+    private List<ITriple> rejectThenVote(IManager manager)
     {
 
         vote4me();
@@ -405,7 +405,7 @@ public class RaftPeer
                          long indexTerm,
                          long candidate,
                          long commit,
-                         ISessionManager manager,
+                         IManager manager,
                          ISession session)
     {
         RaftMachine peerMachine = getMachine(candidate, term);
@@ -459,7 +459,7 @@ public class RaftPeer
                           long catchUpIndex,
                           long catchUpTerm,
                           long commit,
-                          ISessionManager manager,
+                          IManager manager,
                           ISession session)
     {
         RaftMachine peerMachine = getMachine(elector, term);
@@ -548,7 +548,7 @@ public class RaftPeer
      * first : broadcast to peers
      * second : resp to origin
      */
-    public ITriple onAccept(long term, long index, long indexTerm, long follower, ISessionManager manager)
+    public ITriple onAccept(long term, long index, long indexTerm, long follower, IManager manager)
     {
         RaftMachine peerMachine = getMachine(follower, term);
         if(peerMachine == null) {return null;}
@@ -780,7 +780,7 @@ public class RaftPeer
         return null;
     }
 
-    public List<ITriple> checkVoteState(RaftMachine update, ISessionManager manager)
+    public List<ITriple> checkVoteState(RaftMachine update, IManager manager)
     {
         if(update.getTerm() > _SelfMachine.getTerm() && update.getIndex() == _SelfMachine.getIndex() &&
            update.getIndexTerm() == _SelfMachine.getIndexTerm() && update.getCandidate() == _SelfMachine.getPeerId() &&
@@ -793,7 +793,7 @@ public class RaftPeer
         return null;
     }
 
-    public List<ITriple> checkLogAppend(RaftMachine update, ISessionManager manager)
+    public List<ITriple> checkLogAppend(RaftMachine update, IManager manager)
     {
         if(_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId() &&
            _SelfMachine.getTerm() >= update.getTerm() && _SelfMachine.getIndex() >= update.getIndex() &&
@@ -813,7 +813,7 @@ public class RaftPeer
         _LogQueue.addAll(logList);
     }
 
-    public <T extends IProtocol> List<ITriple> onImmediate(T request, ISessionManager manager, long origin)
+    public <T extends IProtocol> List<ITriple> onImmediate(T request, IManager manager, long origin)
     {
         List<ITriple> responses = append(request.serial(), request.encode(), _SelfMachine.getPeerId(), origin, manager);
         if(responses == null) {
@@ -839,7 +839,7 @@ public class RaftPeer
                              byte[] payload,
                              long client,
                              long origin,
-                             ISessionManager manager,
+                             IManager manager,
                              ISession raftClient)
     {
         List<ITriple> responsesToCluster = append(subSerial, payload, client, origin, manager);
@@ -862,7 +862,7 @@ public class RaftPeer
             X76_RaftResp x76 = raftResp(SUCCESS,
                                         entry.getClient(),
                                         entry.getOrigin(),
-                                        entry.subSerial(),
+                                        entry._sub(),
                                         entry.getContent());
             return new Triple<>(null, x76, SINGLE);
         }
@@ -875,12 +875,12 @@ public class RaftPeer
         x76.setClientId(client);
         x76.setOrigin(origin);
         x76.setSubSerial(subSerial);
-        x76.putPayload(payload);
+        x76.put(payload);
         x76.setCode((byte) code.getCode());
         return x76;
     }
 
-    private List<ITriple> append(int subSerial, byte[] content, long client, long origin, ISessionManager manager)
+    private List<ITriple> append(int subSerial, byte[] content, long client, long origin, IManager manager)
     {
         _Logger.debug("leader append new log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
@@ -900,7 +900,7 @@ public class RaftPeer
         return null;
     }
 
-    private List<ITriple> createVotes(ISessionManager manager)
+    private List<ITriple> createVotes(IManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .keySet()
@@ -927,7 +927,7 @@ public class RaftPeer
                          .collect(Collectors.toList());
     }
 
-    private List<ITriple> createAppends(ISessionManager manager)
+    private List<ITriple> createAppends(IManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .values()
@@ -1015,13 +1015,13 @@ public class RaftPeer
                 }
                 LogEntry nextLog = _RaftMapper.getEntry(next);
                 entryList.add(nextLog);
-                payloadSize += nextLog.dataLength();
+                payloadSize += nextLog.length();
             }
             if(!entryList.isEmpty()) {
                 /* 此处不检查 entryList.isEmpty() 也不会有有影响, 是因为
                  * JsonUtil 对ObjectMapper做了设定, 不包含Empty项目
                  */
-                x72.putPayload(JsonUtil.writeValueAsBytes(entryList));
+                x72.put(JsonUtil.writeValueAsBytes(entryList));
             }
         }
         return x72;
@@ -1112,8 +1112,8 @@ public class RaftPeer
         x79.setOrigin(raftLog.getOrigin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
-        x79.setSubSerial(raftLog.subSerial());
-        x79.putPayload(raftLog.getContent());
+        x79.setSubSerial(raftLog._sub());
+        x79.put(raftLog.getContent());
         return x79;
     }
 

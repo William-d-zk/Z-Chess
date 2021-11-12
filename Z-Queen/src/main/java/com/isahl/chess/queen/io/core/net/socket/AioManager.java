@@ -27,7 +27,7 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import org.slf4j.event.Level;
 
 import java.util.*;
@@ -43,7 +43,7 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.PREF
  * @author William.d.zk
  */
 public class AioManager
-        implements ISessionManager
+        implements IManager
 {
     protected final Logger                     _Logger = Logger.getLogger(
             "io.queen.session." + getClass().getSimpleName());

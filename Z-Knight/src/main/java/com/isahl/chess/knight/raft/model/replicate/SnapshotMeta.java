@@ -37,7 +37,7 @@ import java.io.RandomAccessFile;
 public class SnapshotMeta
         extends BaseMeta
 {
-    private final static int  _SERIAL = INTERNAL_SERIAL + 3;
+    private final static int  _SERIAL = CORE_KING_INTERNAL_SERIAL + 3;
     private              long mCommit;
     private              long mTerm;
 
@@ -102,9 +102,9 @@ public class SnapshotMeta
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
-        return INTERNAL_SERIAL;
+        return CORE_KING_INTERNAL_SERIAL;
     }
 
     public void setCommit(long commit)

@@ -66,9 +66,9 @@ public interface ISort
 
     IPipeTransfer getTransfer();
 
-    ISessionCloser getCloser();
+    ICloser getCloser();
 
-    ISessionError getError();
+    IFailed getError();
 
     IFilterChain getFilterChain();
 

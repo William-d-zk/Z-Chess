@@ -94,7 +94,7 @@ public class ZRaftConfig
         {
             for(Map.Entry<Integer, String> peerEntry : mConfig.getPeers()
                                                               .entrySet()) {
-                RaftNode peer = toRaftNode(peerEntry.getValue(), RaftState.FOLLOWER);
+                RaftNode peer = toPeerNode(peerEntry.getValue(), RaftState.FOLLOWER);
                 String peerHost = peer.getHost();
                 if(hostname.equalsIgnoreCase(peerHost)) {
                     if(mPeerBind == null) {
@@ -120,7 +120,7 @@ public class ZRaftConfig
             {
                 for(Map.Entry<Long, String> gateEntry : mConfig.getGates()
                                                                .entrySet()) {
-                    RaftNode gate = toRaftNode(gateEntry.getValue(), RaftState.GATE);
+                    RaftNode gate = toGateNode(gateEntry.getValue(), RaftState.GATE);
                     gate.setId(gateEntry.getKey());
                     if(hostname.equalsIgnoreCase(gate.getHost())) {
                         if(!isGateNode()) {
@@ -272,15 +272,25 @@ public class ZRaftConfig
         return mPeerBind;
     }
 
-    private RaftNode toRaftNode(String content, RaftState state)
+    private RaftNode toPeerNode(String content, RaftState state)
     {
         String[] split = content.split(":", 2);
-        String[] split1 = split[0].split("/", 2);
-        RaftNode node = new RaftNode(split1[0], Integer.parseInt(split[1]), state);
-        if(split1.length == 2) {
-            node.setGateHost(split1[1]);
-            node.setGatePort(Integer.parseInt(split[1]));
-        }
+        String host = split[0];
+        int port = Integer.parseInt(split[1]);
+        return new RaftNode(host, port, state);
+    }
+
+    private RaftNode toGateNode(String content, RaftState state)
+    {
+        String[] split0 = content.split("/", 2);
+        String host = split0[0];
+        String gate = split0[1];
+        String[] split1 = gate.split(":", 2);
+        String gateHost = split1[0];
+        int gatePort = Integer.parseInt(split1[1]);
+        RaftNode node = new RaftNode(host, -1, state);
+        node.setGateHost(gateHost);
+        node.setGatePort(gatePort);
         return node;
     }
 

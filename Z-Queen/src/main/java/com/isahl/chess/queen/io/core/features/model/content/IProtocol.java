@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.io.core.features.model.pipe.IDecode;
 import com.isahl.chess.queen.io.core.features.model.pipe.IEncode;
 import com.isahl.chess.queen.io.core.features.model.routes.IPortChannel;
@@ -30,38 +31,14 @@ import com.isahl.chess.queen.io.core.features.model.routes.IPortChannel;
  * @author William.d.zk
  */
 public interface IProtocol
-        extends IEncode,
+        extends ISerial,
+                IEncode,
                 IDecode,
                 IPortChannel
 {
-    int PACKET_SERIAL     = 0x008;// 0x08~0x0F(8~15)
-    int COMMAND_SERIAL    = 0x0FF;// 0x10~0xFE(16~254)
-    int CONTROL_SERIAL    = 0x100;// 0x101~0x1FE(257~510)
-    int FRAME_SERIAL      = 0x200;// 0x201~0x2FE(513~766)
-    int INTERNAL_SERIAL   = 0x400;// 0x401~0x4FE(1025~1278)
-    int DB_SERIAL         = 0x800;// 0x801~0x8FE(2049~2302)
-    int CONSISTENT_SERIAL = 0xE00;// 0xE01~0xEFE(3584~3838)
-    int OTHER_SERIAL      = 0xF00;// 0xF01~0xFFE(3841~4094)
-
-    /**
-     * @return max in encoding min in decoding
-     */
-    int dataLength();
-
-    int serial();
-
-    int superSerial();
-
-    default int subSerial()
-    {
-        return -1;
-    }
-
-    byte[] payload();
-
     default byte[] encode()
     {
-        int len = dataLength();
+        int len = length();
         if(len > 0) {
             byte[] a = new byte[len];
             encodec(a, 0);
@@ -72,7 +49,7 @@ public interface IProtocol
 
     default int encode(byte[] buf, int pos, int length)
     {
-        int len = dataLength();
+        int len = length();
         if(len > length || len > 0 && buf == null || (buf != null && (buf.length < len || pos + length > buf.length))) {
             throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         }
@@ -80,11 +57,16 @@ public interface IProtocol
         return pos;
     }
 
+    default int encodec(byte[] buf, int pos)
+    {
+        return pos;
+    }
+
     default int decode(byte[] input, int pos, int length)
     {
         if(input == null || input.length == 0) {return 0;}
-        // dataLength 此处表达了最短长度值
-        int len = dataLength();
+        // length() 此处表达了最短长度值
+        int len = length();
         if(len > length || (input.length < len || pos + length > input.length)) {
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -97,6 +79,11 @@ public interface IProtocol
         return decode(data, 0, data.length);
     }
 
+    default int decodec(byte[] data, int pos)
+    {
+        return pos;
+    }
+
     default boolean inIdempotent(int bitIdempotent)
     {
         return true;
@@ -106,4 +93,5 @@ public interface IProtocol
     {
         return true;
     }
+
 }

@@ -176,7 +176,7 @@ public abstract class AioFilterChain<C extends IPContext, O extends IProtocol, I
 
     protected boolean checkType(IProtocol protocol, int type_serial)
     {
-        return protocol.superSerial() == type_serial;
+        return protocol._super() == type_serial;
     }
 
     @Override

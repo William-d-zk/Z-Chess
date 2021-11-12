@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.queen.db.model;
 
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.board.base.ISerial;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -31,14 +31,8 @@ import java.util.stream.Stream;
  * @author William.d.zk
  */
 public interface IStorage
-        extends IProtocol
+        extends ISerial
 {
-    @Override
-    default int superSerial()
-    {
-        return DB_SERIAL;
-    }
-
     long primaryKey();
 
     default long foreignKey()

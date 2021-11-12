@@ -26,14 +26,18 @@ package com.isahl.chess.knight.raft.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 /**
  * @author william.d.zk
  * @date 2021/06/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public class RaftNode
-        implements Comparable<RaftNode>
+        implements Comparable<RaftNode>,
+                   IProtocol
 {
 
     private long      mId;
@@ -138,4 +142,5 @@ public class RaftNode
     {
         mGatePort = port;
     }
+
 }

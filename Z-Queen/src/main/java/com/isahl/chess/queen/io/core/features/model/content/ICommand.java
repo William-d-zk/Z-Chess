@@ -34,11 +34,6 @@ public interface ICommand
         extends IControl,
                 IStreamProtocol
 {
-    @Override
-    default int superSerial()
-    {
-        return COMMAND_SERIAL;
-    }
 
     long getMsgId();
 

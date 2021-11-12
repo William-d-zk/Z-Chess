@@ -76,7 +76,7 @@ public interface IPipeEncoder
                 }
                 previous = previous.getPrevious();
             }
-            if(resultType == IFilter.ResultType.IGNORE && protocol.superSerial() != IProtocol.PACKET_SERIAL) {
+            if(resultType == IFilter.ResultType.IGNORE && protocol._super() != IProtocol.IO_QUEEN_PACKET_SERIAL) {
                 throw new ZException("no filter handle output: %s ", protocol);
             }
         }

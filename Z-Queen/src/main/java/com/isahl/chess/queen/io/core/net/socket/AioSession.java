@@ -49,8 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.isahl.chess.king.base.cron.features.ITask.*;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
-import static com.isahl.chess.queen.io.core.features.model.session.ISessionManager.INVALID_INDEX;
-import static com.isahl.chess.queen.io.core.features.model.session.ISessionManager.NULL_INDEX;
+import static com.isahl.chess.queen.io.core.features.model.session.IManager.INVALID_INDEX;
+import static com.isahl.chess.queen.io.core.features.model.session.IManager.NULL_INDEX;
 
 /**
  * @author William.d.zk
@@ -71,9 +71,9 @@ public class AioSession<C extends IPContext>
      */
     private final ByteBuffer      _RecvBuf;
     private final C               _Context;
-    private final int             _HashCode;
-    private final ISessionDismiss _DismissCallback;
-    private final int             _QueueSizeMax;
+    private final int      _HashCode;
+    private final IDismiss _DismissCallback;
+    private final int      _QueueSizeMax;
     private final IAioSort<C>     _Sort;
     private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
     private final boolean         _MultiBind;
@@ -112,7 +112,7 @@ public class AioSession<C extends IPContext>
                       ISslOption option,
                       IAioSort<C> sort,
                       IConnectActivity activity,
-                      ISessionDismiss sessionDismiss,
+                      IDismiss sessionDismiss,
                       boolean multiBind) throws IOException
     {
         Objects.requireNonNull(option);
@@ -457,7 +457,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public ISessionDismiss getDismissCallback()
+    public IDismiss getDismissCallback()
     {
         return _DismissCallback;
     }
@@ -469,13 +469,13 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public ISessionError getError()
+    public IFailed getError()
     {
         return _Sort.getError();
     }
 
     @Override
-    public ISessionCloser getCloser()
+    public ICloser getCloser()
     {
         return _Sort.getCloser();
     }

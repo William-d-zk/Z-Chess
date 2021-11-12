@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 
@@ -38,13 +38,13 @@ public interface IAccessService
 {
     boolean isHandleProtocol(IProtocol protocol);
 
-    List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content);
+    List<? extends IControl> handle(IManager manager, ISession session, IControl content);
 
-    ITriple onLink(ISessionManager manager, ISession session, IControl input);
+    ITriple onLink(IManager manager, ISession session, IControl input);
 
     void onOffline(ISession session);
 
-    List<ITriple> onConsistencyResult(ISessionManager manager,
+    List<ITriple> onConsistencyResult(IManager manager,
                                       long origin,
                                       IProtocol consensusBody,
                                       boolean isConsistency);

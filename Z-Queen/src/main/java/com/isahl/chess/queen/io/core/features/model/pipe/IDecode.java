@@ -29,8 +29,14 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
  */
 public interface IDecode
 {
-    default int decodec(byte[] data, int pos)
-    {
-        return pos;
-    }
+
+    /**
+     * @param data input/received buffer
+     * @param pos  decode start position
+     * @return decode completed position
+     * <p>
+     * return-pos >= start-pos
+     */
+    int decodec(byte[] data, int pos);
+
 }

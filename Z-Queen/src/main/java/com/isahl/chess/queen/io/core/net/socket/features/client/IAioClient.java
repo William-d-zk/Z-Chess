@@ -24,8 +24,8 @@ package com.isahl.chess.queen.io.core.net.socket.features.client;
 
 import com.isahl.chess.king.base.features.IFailed;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionCreated;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.ICreated;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 
 import java.io.IOException;
@@ -35,8 +35,8 @@ import java.io.IOException;
  */
 public interface IAioClient
         extends IFailed<IAioConnector>,
-                ISessionCreated,
-                ISessionDismiss
+                ICreated,
+                IDismiss
 {
     void connect(IAioConnector connector) throws IOException;
 

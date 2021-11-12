@@ -33,7 +33,7 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public interface ILogicHandler
 {
     Logger getLogger();
 
-    ISessionManager getISessionManager();
+    IManager getISessionManager();
 
     @Override
     default void onEvent(QEvent event, long sequence)
@@ -87,7 +87,7 @@ public interface ILogicHandler
         }
     }
 
-    List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws Exception;
+    List<ITriple> logicHandle(IManager manager, ISession session, IControl content) throws Exception;
 
     default void serviceHandle(IProtocol request) throws Exception
     {

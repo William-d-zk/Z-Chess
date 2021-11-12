@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X105_SslHandShake;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X105_SslHandShake;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
@@ -161,7 +161,7 @@ public class SslHandShakeFilter<A extends IPContext>
     @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.CONTROL_SERIAL) && context.isProxy() && context instanceof SSLZContext &&
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && context.isProxy() && context instanceof SSLZContext &&
            context.isOutFrame())
         {
             return new Pair<>(seek((SSLZContext<A>) context, (IControl) output), context);
@@ -173,7 +173,7 @@ public class SslHandShakeFilter<A extends IPContext>
     @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext &&
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext &&
            context.isInFrame())
         {
             return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);

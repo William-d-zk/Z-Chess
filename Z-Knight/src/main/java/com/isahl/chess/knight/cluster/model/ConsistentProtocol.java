@@ -39,7 +39,7 @@ import java.nio.charset.StandardCharsets;
 public class ConsistentProtocol
         extends JsonProtocol
 {
-    public final static int _SERIAL = CONSISTENT_SERIAL + 1;
+    public final static int _SERIAL = CLUSTER_KNIGHT_CONSISTENT_SERIAL + 1;
 
     private final byte[] _Content;
     private final long   _Uid;
@@ -64,9 +64,9 @@ public class ConsistentProtocol
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
-        return CONSISTENT_SERIAL;
+        return CLUSTER_KNIGHT_CONSISTENT_SERIAL;
     }
 
     public byte[] getContent()

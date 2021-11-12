@@ -37,7 +37,7 @@ import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * @author william.d.zk
  */
-public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
+public class LogicHandler<T extends IActivity & IManager & IClusterNode>
         implements ILogicHandler
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
@@ -70,13 +70,13 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
     }
 
     @Override
-    public ISessionManager getISessionManager()
+    public IManager getISessionManager()
     {
         return _ClusterNode;
     }
 
     @Override
-    public List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws ZException
+    public List<ITriple> logicHandle(IManager manager, ISession session, IControl content) throws ZException
     {
         List<? extends IControl> pushList = null;
         for(IAccessService service : _AccessService) {

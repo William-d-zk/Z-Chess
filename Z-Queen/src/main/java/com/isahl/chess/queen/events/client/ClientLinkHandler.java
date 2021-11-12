@@ -33,7 +33,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -69,7 +69,7 @@ public class ClientLinkHandler
                 _Logger.warning("client io error , do close session");
                 IPair errorContent = event.getContent();
                 ISession session = errorContent.getSecond();
-                ISessionDismiss dismiss = session.getDismissCallback();
+                IDismiss dismiss = session.getDismissCallback();
                 IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
                 if(!session.isClosed()) {
                     closeOperator.handle(null, session);

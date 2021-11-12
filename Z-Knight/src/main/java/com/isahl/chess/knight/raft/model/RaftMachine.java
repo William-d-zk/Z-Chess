@@ -28,11 +28,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.util.*;
 
@@ -44,13 +45,12 @@ import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
  * @author william.d.zk
  * @date 2019/12/10
  */
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftMachine
         implements IRaftMachine,
                    IStorage
 {
-    private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
-
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
     private final long   _PeerId;
 
@@ -74,52 +74,15 @@ public class RaftMachine
     private transient byte[] tPayload;
 
     @Override
-    public int dataLength()
+    public int length()
     {
         return mLength;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        tPayload = data;
-        RaftMachine json = JsonUtil.readValue(data, getClass());
-        Objects.requireNonNull(json);
-        assert (_PeerId == json.getPeerId());
-        mTerm = json.getTerm();
-        mIndex = json.getIndex();
-        mIndexTerm = json.getIndexTerm();
-        mCandidate = json.getCandidate();
-        mLeader = json.getLeader();
-        mCommit = json.getCommit();
-        mApplied = json.getApplied();
-        mState = json.getState()
-                     .getCode();
-        mPeerSet = json.getPeerSet();
-        mGateSet = json.getGateSet();
-        mLength = data.length;
-        return mLength;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        tPayload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tPayload);
-        mLength = tPayload.length;
-        return tPayload;
     }
 
     @Override
     public byte[] payload()
     {
         return tPayload;
-    }
-
-    @Override
-    public int serial()
-    {
-        return RAFT_MACHINE_SERIAL;
     }
 
     @Override
