@@ -36,15 +36,15 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 public interface IControl
         extends IFrame,
                 IQoS,
-                IMappingMessage,
+                IMapping,
                 IDisposable
 {
     <C extends IContext> C context();
 
     @Override
-    default int superSerial()
+    default int _super()
     {
-        return CONTROL_SERIAL;
+        return PROTOCOL_BISHOP_CONTROL_SERIAL;
     }
 
     @Override

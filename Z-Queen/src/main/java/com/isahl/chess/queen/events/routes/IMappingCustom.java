@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.routes;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 /**
  * @author william.d.zk
@@ -43,5 +43,5 @@ public interface IMappingCustom
      * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
      * third: operator-type
      */
-    ITriple handle(ISessionManager manager, ISession session, IControl content);
+    ITriple handle(IManager manager, ISession session, IControl content);
 }

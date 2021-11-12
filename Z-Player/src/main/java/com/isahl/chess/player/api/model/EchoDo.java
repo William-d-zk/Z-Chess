@@ -34,7 +34,7 @@ public class EchoDo
         extends JsonProtocol
 {
 
-    public final static int _SERIAL = OTHER_SERIAL + 1;
+    public final static int _SERIAL = BIZ_PLAYER_API_SERIAL + 1;
 
     private String mContent;
 
@@ -45,9 +45,9 @@ public class EchoDo
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
-        return OTHER_SERIAL;
+        return BIZ_PLAYER_API_SERIAL;
     }
 
     public String getContent()

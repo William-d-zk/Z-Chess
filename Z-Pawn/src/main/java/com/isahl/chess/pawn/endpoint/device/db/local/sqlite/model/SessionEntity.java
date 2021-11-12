@@ -26,7 +26,7 @@ package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.JsonUtil;
@@ -39,7 +39,7 @@ import java.io.Serial;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe.TYPE_SUBSCRIBES;
+import static com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe.TYPE_SUBSCRIBES;
 import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_LOCAL_SESSION_ENTITY;
 
 /**

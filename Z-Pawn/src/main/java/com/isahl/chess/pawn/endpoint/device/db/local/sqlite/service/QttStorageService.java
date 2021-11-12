@@ -23,11 +23,11 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.service;
 
-import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
-import com.isahl.chess.bishop.io.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
-import com.isahl.chess.bishop.io.mqtt.service.IQttRouter;
-import com.isahl.chess.bishop.io.mqtt.service.IQttStorage;
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.IValid;
@@ -167,7 +167,7 @@ public class QttStorageService
                 BrokerMsgEntity received = receivedOptional.get();
                 X113_QttPublish x113 = new X113_QttPublish();
                 x113.setTopic(received.getTopic());
-                x113.putPayload(received.getContent());
+                x113.put(received.getContent());
                 _MessageRepository.deleteById(primaryKey);
                 return x113;
             }
@@ -200,7 +200,7 @@ public class QttStorageService
                     X113_QttPublish retained = new X113_QttPublish();
                     retained.setTopic(sessionEntity.getWillTopic());
                     retained.setLevel(sessionEntity.getWillLevel());
-                    retained.putPayload(sessionEntity.getWillPayload());
+                    retained.put(sessionEntity.getWillPayload());
                     subscribe.mRetained = retained;
                 }
             }

@@ -25,12 +25,9 @@ package com.isahl.chess.audience.client.api;
 
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.X20_SignUp;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.X22_SignIn;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.X50_DeviceMsg;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.zls.X01_EncryptRequest;
+import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.zls.X01_EncryptRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,7 +106,7 @@ public class ConsumerController
                     long clientId)
     {
         X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
-        x50.putPayload(msg.getBytes());
+        x50.put(msg.getBytes());
         _ClientPool.sendLocal(clientId, x50);
         return "ws_x50";
     }

@@ -33,11 +33,7 @@ public interface IFrame
                 IProtocol
 {
 
-    void putCtrl(byte ctrl);
-
-    void putPayload(byte[] payload);
-
-    byte[] payload();
+    void put(byte ctrl);
 
     byte ctrl();
 
@@ -51,11 +47,5 @@ public interface IFrame
     default IPacket translate()
     {
         return null;
-    }
-
-    @Override
-    default int superSerial()
-    {
-        return FRAME_SERIAL;
     }
 }

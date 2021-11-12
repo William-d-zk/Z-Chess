@@ -23,9 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X76_RaftResp;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X79_RaftAdjudge;
+import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.X76_RaftResp;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.X79_RaftAdjudge;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
@@ -35,7 +35,7 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,7 +62,7 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public ITriple handle(ISessionManager manager, ISession session, IControl input)
+    public ITriple handle(IManager manager, ISession session, IControl input)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isHandleProtocol(input)) {
@@ -73,7 +73,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency)
+    public List<ITriple> notify(IManager manager, IControl request, long origin, boolean isConsistency)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isHandleProtocol(request)) {
@@ -106,7 +106,7 @@ public class LinkCustom
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
             case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
-                int cmd = consistency.subSerial();
+                int cmd = consistency._sub();
                 IProtocol consensusBody = ZSortHolder.CREATE(cmd, consistency.payload());
                 return (T) consensusBody;
             }

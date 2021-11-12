@@ -25,7 +25,9 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.JsonProtocol;
 
@@ -34,6 +36,7 @@ import com.isahl.chess.queen.message.JsonProtocol;
  * @date 2020/7/13
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public class SnapshotEntry
         extends JsonProtocol
         implements ITraceable,

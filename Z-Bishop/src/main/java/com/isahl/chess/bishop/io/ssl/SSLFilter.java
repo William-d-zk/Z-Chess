@@ -113,7 +113,7 @@ public class SSLFilter<A extends IPContext>
     @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext) {
+        if(checkType(output, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext) {
             return new Pair<>(seek((SSLZContext<A>) context, (IPacket) output), context);
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -123,7 +123,7 @@ public class SSLFilter<A extends IPContext>
     @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PACKET_SERIAL) && context.isProxy() && context.isInConvert() &&
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isProxy() && context.isInConvert() &&
            context instanceof SSLZContext)
         {
             return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);

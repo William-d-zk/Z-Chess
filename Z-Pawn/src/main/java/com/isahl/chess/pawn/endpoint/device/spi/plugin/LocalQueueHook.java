@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;

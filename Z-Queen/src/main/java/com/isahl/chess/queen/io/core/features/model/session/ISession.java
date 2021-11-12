@@ -81,7 +81,7 @@ public interface ISession
 
     <T extends IPContext> T getContext(Class<T> clazz);
 
-    ISessionDismiss getDismissCallback();
+    IDismiss getDismissCallback();
 
     long[] getPrefixArray();
 
@@ -122,7 +122,7 @@ public interface ISession
 
     default void innerClose()
     {
-        ISessionCloser closeOperator = getCloser();
+        ICloser closeOperator = getCloser();
         closeOperator.handle("inner-close", this);
         getDismissCallback().onDismiss(this);
     }
@@ -163,9 +163,9 @@ public interface ISession
         return c >= SESSION_CLOSE;
     }
 
-    ISessionError getError();
+    IFailed getError();
 
-    ISessionCloser getCloser();
+    ICloser getCloser();
 
     IPipeEncoder getEncoder();
 

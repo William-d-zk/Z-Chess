@@ -22,6 +22,8 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 
@@ -30,10 +32,10 @@ import java.nio.ByteBuffer;
 /**
  * @author William.d.zk
  */
+@ISerialGenerator(parent = ISerial.IO_QUEEN_PACKET_SERIAL)
 public class AioPacket
         implements IPacket
 {
-    public final static int SERIAL = PACKET_SERIAL + 1;
 
     private ByteBuffer mBuf;
     private Status     mStatus = Status.No_Send;
@@ -121,21 +123,9 @@ public class AioPacket
     }
 
     @Override
-    public int dataLength()
+    public int length()
     {
         return mBuf.capacity();
-    }
-
-    @Override
-    public int serial()
-    {
-        return SERIAL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return PACKET_SERIAL;
     }
 
     @Override
@@ -159,6 +149,23 @@ public class AioPacket
     {
         mBuf.flip();
         return this;
+    }
+
+    @Override
+    public void put(byte[] payload)
+    {
+        if(mBuf.isDirect() && mBuf.capacity() < payload.length) {
+            mBuf = ByteBuffer.allocateDirect(payload.length);
+            IoUtil.write(payload, 0, mBuf.array(), 0, payload.length);
+        }
+        else if(mBuf.capacity() < payload.length) {
+            mBuf = ByteBuffer.wrap(payload);
+        }
+        else {
+            mBuf.clear();
+            IoUtil.write(payload, 0, mBuf.array(), 0, payload.length);
+            mBuf.limit(payload.length);
+        }
     }
 
     @Override
@@ -186,5 +193,26 @@ public class AioPacket
     public void expand(int size)
     {
         mBuf = IoUtil.expandBuffer(mBuf, size);
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        int length = Math.min(data.length - pos, mBuf.remaining());
+        pos += IoUtil.write(data, pos, mBuf.array(), mBuf.position(), length);
+        //此处不应执行 buffer.flip() 控制暂存或打包的操作应在外层进行控制
+        mBuf.position(mBuf.position() + length);
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        int length = Math.min(data.length - pos, mBuf.remaining());
+        pos += IoUtil.write(data, pos, mBuf.array(), mBuf.position(), length);
+        //此处不应执行 buffer.flip() 控制暂存或打包的操作应在外层进行控制
+        mBuf.position(mBuf.position() + length);
+        // since jdk13 buffer.put(byte[],offset,length)  没必要更新
+        return pos;
     }
 }

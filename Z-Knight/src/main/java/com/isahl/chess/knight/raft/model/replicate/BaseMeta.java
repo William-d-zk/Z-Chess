@@ -24,12 +24,15 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.JsonProtocol;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public abstract class BaseMeta
         extends JsonProtocol
         implements IReset
@@ -43,7 +46,7 @@ public abstract class BaseMeta
         try {
             mFile.seek(0);
             byte[] data = encode();
-            mFile.writeInt(dataLength());
+            mFile.writeInt(length());
             mFile.write(data);
             mFile.getFD()
                  .sync();

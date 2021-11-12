@@ -25,13 +25,13 @@ package com.isahl.chess.audience.client.component;
 
 import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.io.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.bishop.io.ws.WsContext;
-import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.io.ws.features.IWsContext;
-import com.isahl.chess.bishop.io.ws.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
+import com.isahl.chess.bishop.protocol.ws.zchat.zcrypto.Encryptor;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
@@ -49,8 +49,8 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
@@ -80,7 +80,7 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
 public class ClientPool
         extends AioManager
         implements IAioClient,
-                   ISessionDismiss
+                   IDismiss
 {
     private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ClientConfig             _ClientConfig;
@@ -114,13 +114,13 @@ public class ClientPool
             }
 
             @Override
-            public ISessionManager getISessionManager()
+            public IManager getISessionManager()
             {
                 return ClientPool.this;
             }
 
             @Override
-            public List<ITriple> logicHandle(ISessionManager manager,
+            public List<ITriple> logicHandle(IManager manager,
                                              ISession session,
                                              IControl content) throws Exception
             {
@@ -211,8 +211,8 @@ public class ClientPool
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel,
+                                   IConnectActivity activity) throws IOException
             {
 
                 return new AioSession<>(socketChannel, this, ZSortHolder.getSort(), activity, ClientPool.this, false);

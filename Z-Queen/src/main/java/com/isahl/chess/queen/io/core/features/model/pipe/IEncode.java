@@ -29,8 +29,11 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
  */
 public interface IEncode
 {
-    default int encodec(byte[] data, int pos)
-    {
-        return pos;
-    }
+    /**
+     * @param data output/sending buffer
+     * @param pos  encode start position
+     * @return encode completed position
+     * return-position >= start-position
+     */
+    int encodec(byte[] data, int pos);
 }

@@ -23,14 +23,14 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.queen.io.core.features.model.session.IContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionOption;
+import com.isahl.chess.queen.io.core.features.model.session.IOption;
 
 import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioContext<O extends ISessionOption>
+public abstract class AioContext<O extends IOption>
         implements IContext
 {
 

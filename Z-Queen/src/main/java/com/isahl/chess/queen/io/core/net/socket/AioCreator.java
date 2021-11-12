@@ -23,7 +23,7 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionCreator;
+import com.isahl.chess.queen.io.core.features.model.session.ICreator;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 
 import javax.net.ssl.KeyManager;
@@ -38,7 +38,7 @@ import java.time.Duration;
  * @author William.d.zk
  */
 public abstract class AioCreator
-        implements ISessionCreator<AsynchronousSocketChannel>,
+        implements ICreator<AsynchronousSocketChannel>,
                    ISslOption
 {
     private final ISocketConfig _Config;

@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
-import com.isahl.chess.bishop.io.mqtt.model.data.SubscribeEntry;
+import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.protocol.mqtt.model.data.SubscribeEntry;
 import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
 
 import java.io.Serial;

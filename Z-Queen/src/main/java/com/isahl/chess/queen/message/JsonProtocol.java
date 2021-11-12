@@ -32,31 +32,55 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 public abstract class JsonProtocol
         implements IProtocol
 {
-    protected int mLength;
+    protected           int    mLength;
+    protected transient byte[] tPayload;
 
     @Override
     public byte[] encode()
     {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        mLength = data == null ? 0 : data.length;
-        return data;
+        tPayload = JsonUtil.writeValueAsBytes(this);
+        if(tPayload != null) {
+            mLength = tPayload.length;
+        }
+        return tPayload;
     }
 
     @Override
+    public int encodec(byte[] data, int pos)
+    {
+        return pos + data.length;
+    }
+
+    /**
+     * Json-Protocol 以外部性 decode 过程
+     */
+    @Override
     public int decode(byte[] data)
     {
-        return mLength = data.length;
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public byte[] payload()
     {
-        return null;
+        return tPayload;
+    }
+
+    public void put(byte[] data)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public int dataLength()
+    public int length()
     {
         return mLength;
     }
+
 }

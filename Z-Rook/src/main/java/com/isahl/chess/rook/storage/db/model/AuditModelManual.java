@@ -112,10 +112,10 @@ public abstract class AuditModelManual
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
         return AUDIT_MODEL_SERIAL;
     }
 
-    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 101;
+    public final static int AUDIT_MODEL_SERIAL = STORAGE_ROOK_DB_SERIAL + 101;
 }

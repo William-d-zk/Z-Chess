@@ -23,16 +23,16 @@
 
 package com.isahl.chess.knight.cluster;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
@@ -58,7 +58,7 @@ public interface IClusterNode
                                          final int _Port,
                                          final ISocketConfig _SocketConfig,
                                          final IAioClient _Client,
-                                         final ISessionManager _Manager,
+                                         final IManager _Manager,
                                          final ZSortHolder _ZSortHolder,
                                          final IClusterPeer _ClusterPeer)
     {
@@ -77,8 +77,8 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel,
+                                   IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
             }
@@ -117,8 +117,8 @@ public interface IClusterNode
                                    final int _Port,
                                    final ISocketConfig _SocketConfig,
                                    final ZSortHolder _ZSortHolder,
-                                   final ISessionManager _Manager,
-                                   final ISessionDismiss _Dismiss,
+                                   final IManager _Manager,
+                                   final IDismiss _Dismiss,
                                    final boolean _MultiBind,
                                    final IClusterPeer _ClusterPeer)
     {
@@ -133,8 +133,8 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel,
+                                   IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
             }

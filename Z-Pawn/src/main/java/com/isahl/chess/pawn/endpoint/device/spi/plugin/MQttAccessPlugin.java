@@ -23,16 +23,16 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.bishop.io.mqtt.command.*;
-import com.isahl.chess.bishop.io.mqtt.ctrl.*;
-import com.isahl.chess.bishop.io.mqtt.model.MqttProtocol;
-import com.isahl.chess.bishop.io.mqtt.model.QttContext;
-import com.isahl.chess.bishop.io.mqtt.model.data.DeviceSubscribe;
-import com.isahl.chess.bishop.io.mqtt.service.IQttRouter;
-import com.isahl.chess.bishop.io.mqtt.service.IQttStorage;
-import com.isahl.chess.bishop.io.mqtt.v5.ctrl.X11F_QttAuth;
-import com.isahl.chess.bishop.io.ws.ctrl.X102_Close;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X108_Shutdown;
+import com.isahl.chess.bishop.protocol.mqtt.command.*;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
+import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
+import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
+import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X102_Close;
+import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X108_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -48,7 +48,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -98,7 +98,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content)
+    public List<? extends IControl> handle(IManager manager, ISession session, IControl content)
     {
         List<ICommand> pushList = null;
         switch(content.serial()) {
@@ -174,7 +174,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public ITriple onLink(ISessionManager manager, ISession session, IControl input)
+    public ITriple onLink(IManager manager, ISession session, IControl input)
     {
         switch(input.serial()) {
             case X102_Close.COMMAND -> session.innerClose();
@@ -251,7 +251,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(ISessionManager manager,
+    public List<ITriple> onConsistencyResult(IManager manager,
                                              long origin,
                                              IProtocol consensusBody,
                                              boolean isConsistency)
@@ -516,7 +516,7 @@ public class MQttAccessPlugin
         return Pattern.compile(topic);
     }
 
-    private void brokerTopic(ISessionManager manager,
+    private void brokerTopic(IManager manager,
                              X113_QttPublish x113,
                              Map<Long, IQoS.Level> routes,
                              List<ICommand> pushList)

@@ -28,7 +28,7 @@ import com.isahl.chess.queen.events.cluster.IConsistencyJudge;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public interface ILinkCustom
      * @param request 需要执行一致性要求的请求
      * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency);
+    List<ITriple> notify(IManager manager, IControl request, long origin, boolean isConsistency);
 
     /**
      * 当出现了关闭 session 的需要时

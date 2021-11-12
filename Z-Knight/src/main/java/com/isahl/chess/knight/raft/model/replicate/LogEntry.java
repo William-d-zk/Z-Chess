@@ -28,7 +28,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.JsonProtocol;
 
@@ -36,6 +38,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public class LogEntry
         extends JsonProtocol
         implements ITraceable,
@@ -45,7 +48,7 @@ public class LogEntry
     @Serial
     private final static long serialVersionUID = -3944638115324945253L;
 
-    private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
+    private final static int _LOG_SERIAL = CORE_KING_INTERNAL_SERIAL + 2;
 
     private final long   _Term;
     private final long   _Index;
@@ -100,9 +103,9 @@ public class LogEntry
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
-        return INTERNAL_SERIAL;
+        return CORE_KING_INTERNAL_SERIAL;
     }
 
     public long getTerm()
@@ -127,7 +130,7 @@ public class LogEntry
     }
 
     @Override
-    public int subSerial()
+    public int _sub()
     {
         return _SubSerial;
     }

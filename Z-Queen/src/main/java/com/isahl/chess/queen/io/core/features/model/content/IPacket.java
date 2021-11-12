@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 /**
  * @author William.d.zk
  */
+
 public interface IPacket
         extends IProtocol
 

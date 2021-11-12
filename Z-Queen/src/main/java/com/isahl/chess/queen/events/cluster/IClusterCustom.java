@@ -28,7 +28,7 @@ import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public interface IClusterCustom<T extends IStorage>
      * @param content
      * @return
      */
-    List<ITriple> onTimer(ISessionManager manager, T content);
+    List<ITriple> onTimer(IManager manager, T content);
 
     /**
      * Link → Cluster.consistent(Link.consensus_data,consensus_data.origin)
@@ -59,7 +59,7 @@ public interface IClusterCustom<T extends IStorage>
      * @return triples first:request,second:session[cluster|single::linker],third:operator
      * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <E extends IProtocol> List<ITriple> consistent(ISessionManager manager, E request, long origin);
+    <E extends IProtocol> List<ITriple> consistent(IManager manager, E request, long origin);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)
@@ -68,7 +68,7 @@ public interface IClusterCustom<T extends IStorage>
      * @param topology
      * @return
      */
-    <E extends IConsistent> List<ITriple> changeTopology(ISessionManager manager, E topology);
+    <E extends IConsistent> List<ITriple> changeTopology(IManager manager, E topology);
 
     /**
      * 用于验证是否需要执行集群commit

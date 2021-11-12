@@ -45,7 +45,7 @@ import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 public class LogMeta
         extends BaseMeta
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 1;
+    private final static int _SERIAL = CORE_KING_INTERNAL_SERIAL + 1;
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
@@ -176,9 +176,9 @@ public class LogMeta
     }
 
     @Override
-    public int superSerial()
+    public int _super()
     {
-        return INTERNAL_SERIAL;
+        return CORE_KING_INTERNAL_SERIAL;
     }
 
     public long getStart()

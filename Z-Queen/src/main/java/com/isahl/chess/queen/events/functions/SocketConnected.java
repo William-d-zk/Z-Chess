@@ -46,7 +46,7 @@ public class SocketConnected
     {
         ISession session = null;
         try {
-            session = connection.createSession(channel, connection);
+            session = connection.create(channel, connection);
             // session == null 已经throw IOException了
             connection.onCreated(session);
             session.ready();

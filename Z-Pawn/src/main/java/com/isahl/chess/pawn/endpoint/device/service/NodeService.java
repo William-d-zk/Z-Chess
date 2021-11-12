@@ -23,9 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.custom.ZClusterMappingCustom;
-import com.isahl.chess.bishop.io.ws.zchat.custom.ZLinkMappingCustom;
+import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.ws.zchat.custom.ZClusterMappingCustom;
+import com.isahl.chess.bishop.protocol.ws.zchat.custom.ZLinkMappingCustom;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
