@@ -105,9 +105,9 @@ public class ConsumerController
             @RequestParam(name = "client_id")
                     long clientId)
     {
-        X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
-        x50.put(msg.getBytes());
-        _ClientPool.sendLocal(clientId, x50);
+        //        X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
+        //        x50.put(msg.getBytes());
+        //        _ClientPool.sendLocal(clientId, x50);
         return "ws_x50";
     }
 
@@ -123,10 +123,10 @@ public class ConsumerController
                     long sessionId)
     {
 
-        X20_SignUp x20 = new X20_SignUp();
-        x20.setSn(sn);
-        x20.setPassword(password);
-        _ClientPool.sendLocal(sessionId, x20);
+        //        X20_SignUp x20 = new X20_SignUp();
+        //        x20.setSn(sn);
+        //        x20.setPassword(password);
+        //        _ClientPool.sendLocal(sessionId, x20);
         return String.format("send ws_x20 to sign up, sn{ %s }password{ %s }", sn, password);
     }
 
@@ -141,7 +141,7 @@ public class ConsumerController
             @RequestParam(name = "session_id")
                     long sessionId)
     {
-        X22_SignIn x22 = new X22_SignIn();
+        // X22_SignIn x22 = new X22_SignIn();
         // if (Objects.nonNull(_DeviceClient.getToken())
         // && !IoUtil.bin2Hex(_DeviceClient.getToken())
         // .equals(token)) throw new IllegalStateException(String.format("client already login with %s ",

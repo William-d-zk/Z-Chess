@@ -30,8 +30,6 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
-import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
-import com.isahl.chess.bishop.protocol.ws.ctrl.X102_Close;
 import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X108_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
@@ -46,9 +44,9 @@ import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -94,7 +92,7 @@ public class MQttAccessPlugin
     @Override
     public boolean isHandleProtocol(IProtocol protocol)
     {
-        return protocol.serial() >= X111_QttConnect.COMMAND && protocol.serial() <= X11F_QttAuth.COMMAND;
+        return protocol.serial() >= 0x111 && protocol.serial() <= 0x11F;
     }
 
     @Override
@@ -102,7 +100,7 @@ public class MQttAccessPlugin
     {
         List<ICommand> pushList = null;
         switch(content.serial()) {
-            case X113_QttPublish.COMMAND:
+            case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(x113.isRetain()) {
                     retain(x113.getTopic(), x113);
@@ -132,13 +130,13 @@ public class MQttAccessPlugin
                         break;
                 }
                 break;
-            case X114_QttPuback.COMMAND:
+            case 0x114:
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
                 ack(x114, session.getIndex());
                 _QttStorage.deleteMessage((int) x114.getMsgId(), session.getIndex());
                 break;
-            case X115_QttPubrec.COMMAND:
+            case 0x115:
                 //x113.QoS2 → client → x115, 服务端恒定返回x116,Router无需操作。
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
@@ -148,7 +146,7 @@ public class MQttAccessPlugin
                 register(x116, session.getIndex());
                 _QttStorage.deleteMessage((int) x115.getMsgId(), session.getIndex());
                 break;
-            case X116_QttPubrel.COMMAND:
+            case 0x116:
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
@@ -163,11 +161,11 @@ public class MQttAccessPlugin
                     }
                 }
                 break;
-            case X117_QttPubcomp.COMMAND:
+            case 0x117:
                 x117 = (X117_QttPubcomp) content;
                 ack(x117, session.getIndex());
                 break;
-            case X11C_QttPingreq.COMMAND:
+            case 0x11C:
                 return Collections.singletonList(new X11D_QttPingresp());
         }
         return pushList;
@@ -177,8 +175,8 @@ public class MQttAccessPlugin
     public ITriple onLink(IManager manager, ISession session, IControl input)
     {
         switch(input.serial()) {
-            case X102_Close.COMMAND -> session.innerClose();
-            case X111_QttConnect.COMMAND -> {
+            case 0x102 -> session.innerClose();
+            case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) input;
                 X112_QttConnack x112 = new X112_QttConnack();
                 QttContext qttContext = session.getContext(QttContext.class);
@@ -233,11 +231,11 @@ public class MQttAccessPlugin
                     return new Triple<>(x112, null, SINGLE);
                 }
             }
-            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND, X11E_QttDisconnect.COMMAND -> {
+            case 0x118, 0x11A, 0x11E -> {
                 _Logger.info("%s ,wait for consistent notify", input);
                 return new Triple<>(null, input, SINGLE);
             }
-            case X11F_QttAuth.COMMAND -> {
+            case 0x11F -> {
 
             }
         }
@@ -258,7 +256,7 @@ public class MQttAccessPlugin
     {
         ISession session = manager.findSessionByIndex(origin);
         switch(consensusBody.serial()) {
-            case X111_QttConnect.COMMAND -> {
+            case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 if(isConsistency) {
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
@@ -281,7 +279,7 @@ public class MQttAccessPlugin
                     return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                 }
             }
-            case X118_QttSubscribe.COMMAND -> {
+            case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
                 if(subscribes != null && isConsistency) {
@@ -301,7 +299,7 @@ public class MQttAccessPlugin
                     }
                 }
             }
-            case X11A_QttUnsubscribe.COMMAND -> {
+            case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
                 if(topics != null && isConsistency) {
@@ -318,7 +316,7 @@ public class MQttAccessPlugin
                     }
                 }
             }
-            case X11E_QttDisconnect.COMMAND -> {
+            case 0x11E -> {
                 if(session != null) {
                     clean(session.getIndex());
                     session.innerClose();
@@ -328,7 +326,7 @@ public class MQttAccessPlugin
                     _Logger.info("disconnect :%#x,session → null", origin);
                 }
             }
-            case X11F_QttAuth.COMMAND -> {
+            case 0x11F -> {
 
             }
         }

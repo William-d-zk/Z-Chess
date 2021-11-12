@@ -24,8 +24,6 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.X76_RaftResp;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.X79_RaftAdjudge;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
@@ -34,8 +32,8 @@ import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -105,7 +103,7 @@ public class LinkCustom
     {
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
-            case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
+            case 0x76, 0x79 -> {
                 int cmd = consistency._sub();
                 IProtocol consensusBody = ZSortHolder.CREATE(cmd, consistency.payload());
                 return (T) consensusBody;

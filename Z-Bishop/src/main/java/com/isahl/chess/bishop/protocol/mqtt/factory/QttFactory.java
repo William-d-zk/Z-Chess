@@ -48,19 +48,19 @@ public class QttFactory
     @Override
     public IControl create(int serial, byte[] data, QttContext context)
     {
-        if(serial < X111_QttConnect.COMMAND || serial > X11F_QttAuth.COMMAND) {
+        if(serial < 0x111 || serial > 0x11F) {
             return null;
         }
         QttCommand qttCommand = switch(serial) {
-            case X113_QttPublish.COMMAND -> new X113_QttPublish();
-            case X114_QttPuback.COMMAND -> new X114_QttPuback();
-            case X115_QttPubrec.COMMAND -> new X115_QttPubrec();
-            case X116_QttPubrel.COMMAND -> new X116_QttPubrel();
-            case X117_QttPubcomp.COMMAND -> new X117_QttPubcomp();
-            case X118_QttSubscribe.COMMAND -> new X118_QttSubscribe();
-            case X119_QttSuback.COMMAND -> new X119_QttSuback();
-            case X11A_QttUnsubscribe.COMMAND -> new X11A_QttUnsubscribe();
-            case X11B_QttUnsuback.COMMAND -> new X11B_QttUnsuback();
+            case 0x113 -> new X113_QttPublish();
+            case 0x114 -> new X114_QttPuback();
+            case 0x115 -> new X115_QttPubrec();
+            case 0x116 -> new X116_QttPubrel();
+            case 0x117 -> new X117_QttPubcomp();
+            case 0x118 -> new X118_QttSubscribe();
+            case 0x119 -> new X119_QttSuback();
+            case 0x11A -> new X11A_QttUnsubscribe();
+            case 0x11B -> new X11B_QttUnsuback();
             default -> null;
         };
         if(qttCommand != null) {
@@ -69,12 +69,12 @@ public class QttFactory
             return qttCommand;
         }
         QttControl qttControl = switch(serial) {
-            case X111_QttConnect.COMMAND -> new X111_QttConnect();
-            case X112_QttConnack.COMMAND -> new X112_QttConnack();
-            case X11C_QttPingreq.COMMAND -> new X11C_QttPingreq();
-            case X11D_QttPingresp.COMMAND -> new X11D_QttPingresp();
-            case X11E_QttDisconnect.COMMAND -> new X11E_QttDisconnect();
-            case X11F_QttAuth.COMMAND -> new X11F_QttAuth();
+            case 0x111 -> new X111_QttConnect();
+            case 0x112 -> new X112_QttConnack();
+            case 0x11C -> new X11C_QttPingreq();
+            case 0x11D -> new X11D_QttPingresp();
+            case 0x11E -> new X11E_QttDisconnect();
+            case 0x11F -> new X11F_QttAuth();
             default -> null;
         };
         qttControl.putContext(context);

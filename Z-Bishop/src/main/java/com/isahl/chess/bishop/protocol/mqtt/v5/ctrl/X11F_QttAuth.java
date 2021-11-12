@@ -25,17 +25,19 @@ package com.isahl.chess.bishop.protocol.mqtt.v5.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x11F)
 public class X11F_QttAuth
         extends QttControl
 {
-    public final static int COMMAND = 0x11F;
 
     public X11F_QttAuth()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.AUTH));
     }
 }

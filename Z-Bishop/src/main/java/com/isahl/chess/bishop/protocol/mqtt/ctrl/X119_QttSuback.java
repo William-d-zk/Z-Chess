@@ -25,6 +25,8 @@ package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.util.IoUtil;
 
 import java.util.ArrayList;
@@ -37,15 +39,14 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  * @author william.d.zk
  * @date 2019-05-30
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
+                  serial = 0x119)
 public class X119_QttSuback
         extends QttCommand
 {
 
-    public final static int COMMAND = 0x119;
-
     public X119_QttSuback()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK));
     }
 
@@ -96,6 +97,6 @@ public class X119_QttSuback
     @Override
     public String toString()
     {
-        return String.format("%#x suback msg-id %d, %s", COMMAND, getMsgId(), getQosLevels());
+        return String.format("%#x suback msg-id %d, %s", command(), getMsgId(), getQosLevels());
     }
 }

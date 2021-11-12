@@ -25,6 +25,8 @@ package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.CodeMqtt;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.util.IoUtil;
 
@@ -34,17 +36,17 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  * @author william.d.zk
  * @date 2019-05-11
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x112)
 public class X112_QttConnack
         extends QttControl
 {
-    public final static int COMMAND = 0x112;
 
     private boolean mPresent;
     private byte    mResponseCode;
 
     public X112_QttConnack()
     {
-        super(COMMAND);
         put(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNACK));
     }
 
@@ -151,6 +153,6 @@ public class X112_QttConnack
     @Override
     public String toString()
     {
-        return String.format("%#x connack:[present:%s,result:%s]", COMMAND, mPresent, getCode());
+        return String.format("%#x connack:[present:%s,result:%s]", command(), mPresent, getCode());
     }
 }

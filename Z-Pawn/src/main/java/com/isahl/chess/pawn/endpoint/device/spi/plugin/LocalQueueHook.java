@@ -74,7 +74,7 @@ public class LocalQueueHook
     @Override
     public void handle(IControl content, List<? extends IControl> pushList)
     {
-        if(content.serial() == X113_QttPublish.COMMAND) {
+        if(content.serial() == 0x113) {
             X113_QttPublish x113 = (X113_QttPublish) content;
             if(!x113.isDuplicate()) {_MainQueue.offer(content);}
         }
