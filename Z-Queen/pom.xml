@@ -71,7 +71,7 @@
                         </path>
                     </annotationProcessorPaths>
                     <annotationProcessors>
-                        com.isahl.chess.board.processor.SerialProcessor
+                        com.isahl.chess.board.processor.ZAnnotationProcessor
                     </annotationProcessors>
                 </configuration>
             </plugin>
