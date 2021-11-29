@@ -25,6 +25,8 @@ package com.isahl.chess.queen.io.core.features.model.content;
 import com.isahl.chess.queen.io.core.features.model.session.IContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
+import java.nio.ByteBuffer;
+
 /**
  * stream protocol 存在stream control的状态更新机制
  * 状态机由 IContext 进行管理。
@@ -60,23 +62,23 @@ public interface IStreamProtocol
      * @param ctx
      * @return
      */
-    default <C extends IPContext> byte[] encode(C ctx)
+    default <C extends IPContext> ByteBuffer encode(C ctx)
     {
-        byte[] data = encode();
+        ByteBuffer output = encode();
         afterEncode(ctx);
-        return data;
+        return output;
     }
 
     /**
      * 扩展IProtocol 未对IContext进行约定
      * 解码过程
      *
-     * @param data
+     * @param input
      * @param ctx
      */
-    default <C extends IPContext> void decode(byte[] data, C ctx)
+    default <C extends IPContext> void decode(ByteBuffer input, C ctx)
     {
-        decode(data);
+        decode(input);
         afterDecode(ctx);
     }
 }

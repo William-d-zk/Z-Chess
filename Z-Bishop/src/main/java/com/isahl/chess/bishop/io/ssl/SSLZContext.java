@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;

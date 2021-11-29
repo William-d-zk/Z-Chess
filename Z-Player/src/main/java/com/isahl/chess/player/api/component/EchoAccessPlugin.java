@@ -29,8 +29,8 @@ import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public class EchoAccessPlugin
     @Override
     public boolean isHandleProtocol(IProtocol protocol)
     {
-        return protocol.serial() == EchoDo._SERIAL;
+        return protocol.serial() == 0x801;
     }
 
     @Override

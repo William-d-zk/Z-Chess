@@ -27,77 +27,71 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.message.JsonProtocol;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  * @date 2020/4/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
 public class ConsistentProtocol
         extends JsonProtocol
 {
-    public final static int _SERIAL = CLUSTER_KNIGHT_CONSISTENT_SERIAL + 1;
 
-    private final byte[] _Content;
-    private final long   _Uid;
-
-    private transient byte[] tPayload;
+    private long mId;
 
     @JsonCreator
     public ConsistentProtocol(
             @JsonProperty("content")
                     byte[] content,
-            @JsonProperty("uid")
-                    long uid)
+            @JsonProperty("id")
+                    long id)
     {
-        _Content = content;
-        _Uid = uid;
+        mPayload = content;
+        mId = id;
+    }
+
+    public ConsistentProtocol()
+    {
+
     }
 
     @Override
-    public int serial()
+    public void decode(ByteBuffer input)
     {
-        return _SERIAL;
+        super.decode(input);
+        mId = input.getLong();
+        mPayload = new byte[input.remaining()];
+        input.get(mPayload);
     }
 
     @Override
-    public int _super()
+    public ByteBuffer encode()
     {
-        return CLUSTER_KNIGHT_CONSISTENT_SERIAL;
+        ByteBuffer output = super.encode();
+        output.putLong(mId);
+        output.put(mPayload);
+        return output;
+    }
+
+    public long getId()
+    {
+        return mId;
     }
 
     public byte[] getContent()
     {
-        return _Content;
+        return mPayload;
     }
 
-    public long getUid()
+    public int length()
     {
-        return _Uid;
+        int length = 8; // id
+        return length + super.length();
     }
-
-    @Override
-    public byte[] payload()
-    {
-        return tPayload;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        return tPayload = super.encode();
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("ConsistentProtocol{content:%s,uid:%#x||%d}",
-                             new String(_Content, StandardCharsets.UTF_8),
-                             _Uid,
-                             _Uid);
-    }
-
 }

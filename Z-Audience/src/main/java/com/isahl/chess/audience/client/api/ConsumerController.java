@@ -25,9 +25,9 @@ package com.isahl.chess.audience.client.api;
 
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X102_Close;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.zls.X01_EncryptRequest;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls.X01_EncryptRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

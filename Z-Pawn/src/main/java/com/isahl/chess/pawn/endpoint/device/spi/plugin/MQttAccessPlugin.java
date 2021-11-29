@@ -24,13 +24,15 @@
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
 import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X108_Shutdown;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X108_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -123,7 +125,8 @@ public class MQttAccessPlugin
                         register(x115, session.getIndex());
                         _QttStorage.receivedStorage((int) x113.getMsgId(),
                                                     x113.getTopic(),
-                                                    x113.payload(),
+                                                    x113.payload()
+                                                        .array(),
                                                     session.getIndex());
                         break;
                     default:
@@ -400,7 +403,9 @@ public class MQttAccessPlugin
     public void retain(String topic, MqttProtocol msg)
     {
         Pattern pattern = topicToRegex(topic);
-        if(msg.payload() == null || msg.payload().length == 0) {
+        if(msg.payload() == null || msg.payload()
+                                       .capacity() == 0)
+        {
             _Topic2SessionsMap.computeIfPresent(pattern, (k, v)->{
                 v.mRetained = null;
                 return v;
@@ -530,7 +535,11 @@ public class MQttAccessPlugin
                     register(n113, kIdx);
                 }
                 pushList.add(n113);
-                _QttStorage.brokerStorage((int) n113.getMsgId(), n113.getTopic(), n113.payload(), kIdx);
+                _QttStorage.brokerStorage((int) n113.getMsgId(),
+                                          n113.getTopic(),
+                                          n113.payload()
+                                              .array(),
+                                          kIdx);
             }
         });
     }

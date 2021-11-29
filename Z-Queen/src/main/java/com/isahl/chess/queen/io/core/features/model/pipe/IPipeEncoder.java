@@ -34,8 +34,6 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import java.nio.ByteBuffer;
-
 /**
  * @author William.d.zk
  */
@@ -80,7 +78,7 @@ public interface IPipeEncoder
                 throw new ZException("no filter handle output: %s ", protocol);
             }
         }
-        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(ByteBuffer.wrap(protocol.encode()));
+        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(protocol.encode());
     }
 
 }

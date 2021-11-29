@@ -25,6 +25,8 @@ package com.isahl.chess.referee.security.jpa.model.oauth;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.Column;
@@ -41,6 +43,7 @@ import java.io.Serializable;
 @Entity(name = "oauth_access_token")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Table(schema = "z_chess_security")
+@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class OauthAccessToken
         extends AuditModel
         implements Serializable
@@ -48,8 +51,6 @@ public class OauthAccessToken
 {
     @Serial
     private static final long serialVersionUID = 3470254183734664175L;
-
-    public static int SERIAL_OAUTH_ACCESS_TOKEN = ClientDetail.SERIAL_CLIENT_DETAIL + 1;
 
     @Id
     @Column(name = "authentication_id")
@@ -68,12 +69,6 @@ public class OauthAccessToken
     private String clientId;
     @Column(name = "refresh_token")
     private String refreshToken;
-
-    @Override
-    public int serial()
-    {
-        return SERIAL_OAUTH_ACCESS_TOKEN;
-    }
 
     public String getAuthenticationId()
     {

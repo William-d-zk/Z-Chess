@@ -27,7 +27,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
@@ -36,11 +42,12 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public class RaftNode
-        implements Comparable<RaftNode>,
-                   IProtocol
+        extends InnerProtocol
+        implements Comparable<RaftNode>
 {
 
-    private long      mId;
+    static final Logger LOG = Logger.getLogger("cluster.knight." + RaftNode.class.getSimpleName());
+
     private String    mHost;
     private int       mPort;
     private String    mGateHost;
@@ -49,25 +56,84 @@ public class RaftNode
 
     public RaftNode()
     {
-        mId = -1;
+        super(Operation.OP_MODIFY, Strategy.RETAIN);
     }
 
     public RaftNode(String host, int port, RaftState state)
     {
-        mId = -1;
+        this();
         mHost = host;
         mPort = port;
         mState = state;
     }
 
+    @Override
+    public ByteBuffer encode()
+    {
+        ByteBuffer output = super.encode()
+                                 .putShort((short) getPort())
+                                 .putShort((short) getGatePort())
+                                 .put(getState().getCode());
+        if(!IoUtil.isBlank(getHost())) {
+            output.putShort((short) getHost().length());
+        }
+        else {
+            output.putShort((short) 0);
+        }
+        if(!IoUtil.isBlank(getGateHost())) {
+            output.putShort((short) getGateHost().length());
+        }
+        else {
+            output.putShort((short) 0);
+        }
+        return output;
+    }
+
+    @Override
+    public void decode(ByteBuffer input)
+    {
+        super.decode(input);
+        input.get();// skip foreign key flag
+        setPort(input.getShort() & 0xFFFF);
+        setGatePort(input.getShort() & 0xFFFF);
+        setState(RaftState.valueOf(input.get()));
+        int hl = input.getShort() & 0xFFFF;
+        if(hl > 0) {
+            setHost(new String(input.array(), input.position(), hl, StandardCharsets.UTF_8));
+            input.position(input.position() + hl);
+        }
+        int gl = input.getShort() & 0xFFFF;
+        if(gl > 0) {
+            setGateHost(new String(input.array(), input.position(), gl, StandardCharsets.UTF_8));
+            input.position(input.position() + gl);
+        }
+    }
+
+    @Override
+    public int length()
+    {
+        int length = 2 + // port
+                     2 + // gate port
+                     1 + // state
+                     2 + // host length
+                     2;  // gate host length
+        if(!IoUtil.isBlank(mHost)) {
+            length += mHost.length();
+        }
+        if(!IoUtil.isBlank(mGateHost)) {
+            length += mGateHost.length();
+        }
+        return length + super.length();
+    }
+
     public long getId()
     {
-        return mId;
+        return primaryKey();
     }
 
     public void setId(long id)
     {
-        mId = id;
+        pKey = id;
     }
 
     public String getHost()
@@ -113,14 +179,20 @@ public class RaftNode
     @Override
     public int compareTo(RaftNode o)
     {
-        int a = Long.compare(mId, o.mId);
+        int a = Long.compare(primaryKey(), o.primaryKey());
         return a == 0 ? mHost.compareTo(o.mHost) : a;
     }
 
     @Override
     public String toString()
     {
-        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }", mId, mHost, mPort, mState, mGateHost, mGatePort);
+        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }",
+                             primaryKey(),
+                             mHost,
+                             mPort,
+                             mState,
+                             mGateHost,
+                             mGatePort);
     }
 
     public String getGateHost()

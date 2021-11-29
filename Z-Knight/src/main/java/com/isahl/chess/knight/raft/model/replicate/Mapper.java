@@ -118,18 +118,24 @@ public class Mapper
         String metaFileName = _LogMetaDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mLogMeta = LogMeta.loadFromFile(metaFile);
+            mLogMeta = LogMeta.load(LogMeta._Factory, metaFile);
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name: %s", metaFileName);
+            _Logger.warning("log meta file not exist, name: %s", metaFileName);
+        }
+        catch(IOException e) {
+            _Logger.warning("log meta load file error", e);
         }
         metaFileName = _SnapshotDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mSnapshotMeta = SnapshotMeta.loadFromFile(metaFile);
+            mSnapshotMeta = SnapshotMeta.load(SnapshotMeta._Factory, metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("meta file not exist, name: %s", metaFileName);
+        }
+        catch(IOException e) {
+            _Logger.warning("snapshot meta load file error", e);
         }
         File configFile = getConfigFile();
         try {
@@ -360,8 +366,7 @@ public class Mapper
         if(entry == null) {return false;}
         long newEndIndex = getEndIndex() + 1;
         if(entry.getIndex() == newEndIndex) {
-            byte[] data = entry.encode();
-            int size = data.length + 4;
+            int size = entry.size();
             boolean needNewFile = false;
             if(_Index2SegmentMap.isEmpty()) {
                 needNewFile = true;
@@ -402,7 +407,7 @@ public class Mapper
                                                  .getValue();
             }
             if(targetSegment != null) {
-                targetSegment.add(data, entry);
+                targetSegment.add(entry);
                 vTotalSize += size;
                 _Logger.debug("append ok: %d", newEndIndex);
                 return true;

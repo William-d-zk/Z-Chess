@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.cluster.features;
 
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.util.Pair;
@@ -31,14 +32,13 @@ import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.cluster.config.CodeKnight;
 import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends IProtocol> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
+    default <T extends ISerial> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
     {
         if(request == null || node == null) {
             return CodeKing.MISS;

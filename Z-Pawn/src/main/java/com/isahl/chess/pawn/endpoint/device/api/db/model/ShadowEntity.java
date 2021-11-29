@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.SubscribeEntry;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -36,8 +38,6 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serial;
-
-import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_REMOTE_SHADOW_ENTITY;
 
 /**
  * @author william.d.zk
@@ -48,6 +48,7 @@ import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_RE
          typeClass = JsonBinaryType.class)
 @Table(schema = "z_chess_pawn")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class ShadowEntity
         extends AuditModel
         implements IStorage
@@ -158,12 +159,6 @@ public class ShadowEntity
     public Strategy strategy()
     {
         return Strategy.RETAIN;
-    }
-
-    @Override
-    public int serial()
-    {
-        return DB_SERIAL_REMOTE_SHADOW_ENTITY;
     }
 
     public String getUsername()

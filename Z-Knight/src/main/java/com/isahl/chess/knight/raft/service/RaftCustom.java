@@ -24,13 +24,13 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.*;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -111,7 +111,7 @@ public class RaftCustom
             case 0x72 -> {
                 X72_RaftAppend x72 = (X72_RaftAppend) received;
                 if(x72.payload() != null) {
-                    _RaftPeer.receiveLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
+                    _RaftPeer.receiveLogs(ClusterFactory.listOf(x72._sub(), x72.payload()));
                 }
                 return _RaftPeer.onResponse(x72.getTerm(),
                                             x72.getPreIndex(),
@@ -147,7 +147,8 @@ public class RaftCustom
                 {
                     X75_RaftReq x75 = (X75_RaftReq) received;
                     return _RaftPeer.onRequest(x75._sub(),
-                                               x75.payload(),
+                                               x75.payload()
+                                                  .array(),
                                                x75.getClientId(),
                                                x75.getOrigin(),
                                                manager,
@@ -216,7 +217,8 @@ public class RaftCustom
                 _Logger.info("client → leader x75");
                 X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
                 x75.setSubSerial(request.serial());
-                x75.put(request.encode());
+                x75.put(request.encode()
+                               .array());
                 x75.setOrigin(origin);
                 x75.setClientId(_RaftPeer.getMachine()
                                          .getPeerId());

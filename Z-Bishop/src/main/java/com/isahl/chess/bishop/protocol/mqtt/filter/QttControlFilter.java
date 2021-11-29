@@ -29,7 +29,6 @@ import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
@@ -65,29 +64,27 @@ public class QttControlFilter
         /*======================================================*/
         QttFrame frame = new QttFrame();
         frame.put(output.ctrl());
-        frame.put(output.encode());
+        frame.put(output.encode()
+                        .array());
         return frame;
     }
 
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        IControl control = QttFactory.CREATE(input, context);
-        if(control != null) {
-            /*
+        QttControl control = QttFactory.Create(input, context);
+         /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]
              */
-            if(input.serial() == 0x112) {
-                X112_QttConnack x112 = (X112_QttConnack) control;
-                if(x112.isOk()) {
-                    context.updateIn();
-                }
+        if(input._sub() == 0x112) {
+            X112_QttConnack x112 = (X112_QttConnack) control;
+            if(x112.isOk()) {
+                context.updateIn();
             }
-            /*======================================================*/
-            return (QttControl) control;
         }
-        throw new IllegalArgumentException("MQTT decode error");
+        /*======================================================*/
+        return control;
     }
 
     @Override

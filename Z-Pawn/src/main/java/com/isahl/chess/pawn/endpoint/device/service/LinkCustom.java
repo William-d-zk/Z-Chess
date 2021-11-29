@@ -23,10 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
@@ -54,7 +54,7 @@ public class LinkCustom
     }
 
     /**
-     * @param manager session 管理器
+     * @param manager session 管理器f
      * @param session 当前处理的 session
      * @param input   收到的消息
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
@@ -104,8 +104,7 @@ public class LinkCustom
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
             case 0x76, 0x79 -> {
-                int cmd = consistency._sub();
-                IProtocol consensusBody = ZSortHolder.CREATE(cmd, consistency.payload());
+                IProtocol consensusBody = ClusterFactory.create(consistency._sub(), consistency.payload());
                 return (T) consensusBody;
             }
             default -> {

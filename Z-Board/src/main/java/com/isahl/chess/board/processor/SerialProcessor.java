@@ -26,21 +26,17 @@ package com.isahl.chess.board.processor;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Pair;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.Writer;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -50,53 +46,23 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SupportedAnnotationTypes("com.isahl.chess.board.annotation.ISerialGenerator")
+/**
+ * @author william.d.zk
+ */
 public class SerialProcessor
-        extends AbstractProcessor
+        implements IAnnotationProcessor
 {
 
-    private Filer                      mFiler;
-    private Messager                   mMessager;
-    private Elements                   mElementUtils;
-    private JavacProcessingEnvironment mEnvironment;
+    private final ZAnnotationProcessor _ZProcessor;
 
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv)
-    {
-        super.init(processingEnv);
-        mEnvironment = (JavacProcessingEnvironment) processingEnv;
-        mElementUtils = processingEnv.getElementUtils();
-        mFiler = processingEnv.getFiler();
-        mMessager = processingEnv.getMessager();
-        note("custom processor: %s", getClass().getSimpleName());
-    }
-
-    private void note(String msg)
-    {
-        mMessager.printMessage(Diagnostic.Kind.NOTE, msg);
-        System.out.println(msg);
-    }
-
-    private void note(String format, Object... args)
-    {
-        mMessager.printMessage(Diagnostic.Kind.NOTE, String.format(format, args));
-        System.out.println(String.format(format, args));
-    }
-
-    private void write(Writer writer, StringBuilder builder, String... contents) throws IOException
-    {
-        for(String str : contents) {
-            writer.write(str);
-            builder.append(str);
-        }
-    }
+    public SerialProcessor(ZAnnotationProcessor zProcessor) {_ZProcessor = zProcessor;}
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
         if(!roundEnv.processingOver()) {
-            final Context _Context = mEnvironment.getContext();
-            final Trees _Trees = Trees.instance(mEnvironment);
+            final Context _Context = _ZProcessor.mEnvironment.getContext();
+            final Trees _Trees = Trees.instance(_ZProcessor.mEnvironment);
 
             Map<Integer, Integer> globalMap = new HashMap<>();
             Map<String, Integer> classMap = new HashMap<>();
@@ -163,12 +129,12 @@ public class SerialProcessor
 
             roundEnv.getElementsAnnotatedWith(ISerialGenerator.class)
                     .forEach(element->{
-                        String pkgName = mElementUtils.getPackageOf(element)
-                                                      .getQualifiedName()
-                                                      .toString();
+                        String pkgName = _ZProcessor.mElementUtils.getPackageOf(element)
+                                                                  .getQualifiedName()
+                                                                  .toString();
                         String className = pkgName + "." + element.getSimpleName()
                                                                   .toString();
-                        note("annotation class:%s", className);
+                        _ZProcessor.note("annotation class:%s", className);
                         boolean hasSerial = false;
                         boolean hasSuper = false;
                         List<? extends Element> enclosedElements = element.getEnclosedElements();
@@ -187,16 +153,16 @@ public class SerialProcessor
                         final int cs;
                         if(serial < 0 && !classMap.containsKey(className)) {
                             serial = parent + globalMap.computeIfPresent(parent, (k, v)->v + 1);
-                            note("+ class:%s,%d [%d]", className, parent, serial);
+                            _ZProcessor.note("+ class:%s,%d [%d]", className, parent, serial);
                         }
                         if(classMap.containsKey(className)) {
                             serial = classMap.get(className);
-                            note("= class:%s,%d [%d]", className, parent, serial);
+                            _ZProcessor.note("= class:%s,%d [%d]", className, parent, serial);
                         }
                         if(serial > 0) {
                             int count = serial - parent;
                             globalMap.computeIfPresent(parent, (k, v)->Math.max(count, v));
-                            note("- class:%s,%d [%d]", className, parent, serial);
+                            _ZProcessor.note("- class:%s,%d [%d]", className, parent, serial);
                         }
                         cs = serial;
 

@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.protocol.ws;
 import com.isahl.chess.bishop.protocol.ws.ctrl.WsHandshake;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;

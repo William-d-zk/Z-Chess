@@ -36,8 +36,8 @@ import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,9 +88,11 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
             hook.handle(content, pushList);
         }
         return (pushList == null || pushList.isEmpty()) ? null : pushList.stream()
+                                                                         .filter(cmd->cmd.session() != null)
                                                                          .map(cmd->new Triple<>(cmd,
-                                                                                                session,
-                                                                                                session.getEncoder()))
+                                                                                                cmd.session(),
+                                                                                                cmd.session()
+                                                                                                   .getEncoder()))
                                                                          .collect(Collectors.toList());
     }
 

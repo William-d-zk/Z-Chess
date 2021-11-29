@@ -26,8 +26,9 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.features.model.channels.IVariableLength;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
@@ -35,14 +36,11 @@ import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_FRAME_SERIAL)
 public class WsFrame
         implements IReset,
-                   IFrame,
-                   IVariableLength
+                   IFrame
 {
     public final static byte    frame_op_code_ctrl_close                 = 0x08;
     public final static byte    frame_op_code_ctrl_ping                  = 0x09;
     public final static byte    frame_op_code_ctrl_pong                  = 0x0A;
-    public final static byte    frame_op_code_ctrl_cluster               = 0x0B;
-    public final static byte    frame_op_code_ctrl_redirect              = 0x0C;
     public final static byte    frame_op_code_ctrl_handshake             = 0x00;
     public final static byte    frame_op_code_mask                       = 0x0F;
     public final static byte    frame_fin_more                           = 0x00;
@@ -71,6 +69,7 @@ public class WsFrame
     // mask | first payload_length
     private             byte    mMaskCode;
     private             int     mMaskLength;
+    private             int     mSub;
 
     public WsFrame()
     {
@@ -114,11 +113,13 @@ public class WsFrame
         }
     }
 
-    public byte[] payload()
+    @Override
+    public ByteBuffer payload()
     {
-        return mPayload;
+        return ByteBuffer.wrap(mPayload);
     }
 
+    @Override
     public void put(byte[] payload)
     {
         mPayload = payload;
@@ -203,7 +204,7 @@ public class WsFrame
     }
 
     @Override
-    public int lackLength(int position)
+    public int lack(int position)
     {
         int result = (mMaskCode & 0x80) != 0 ? 4 : 0;
         return switch(mMaskCode & 0x7F) {
@@ -266,68 +267,64 @@ public class WsFrame
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        byte attr = data[pos++];
+        byte attr = input.get();
         frame_op_code = getOpCode(attr);
         frame_fin = isFrameFin(attr);
-        mMaskCode = data[pos++];
-        int p = lackLength(pos);
+        mMaskCode = input.get();
+        int p = lack(input.position());
         switch(p) {
             case WsFrame.frame_payload_length_7_no_mask_position:
                 setPayloadLength(mMaskCode & 0x7F);
                 setMask(null);
                 break;
             case WsFrame.frame_payload_length_16_no_mask_position:
-                setPayloadLength(IoUtil.readUnsignedShort(data, pos));
+                setPayloadLength(input.getShort() & 0xFFFF);
                 setMask(null);
-                pos += 2;
                 break;
             case WsFrame.frame_payload_length_7_mask_position:
                 setPayloadLength(mMaskCode & 0x7F);
                 byte[] mask = new byte[4];
-                pos = IoUtil.read(data, pos, mask);
+                input.get(mask);
                 setMask(mask);
                 break;
             case WsFrame.frame_payload_length_16_mask_position:
-                setPayloadLength(IoUtil.readUnsignedShort(data, pos));
-                pos += 2;
+                setPayloadLength(input.getShort() & 0xFFFF);
                 mask = new byte[4];
-                pos = IoUtil.read(data, pos, mask);
+                input.get(mask);
                 setMask(mask);
                 break;
             case WsFrame.frame_payload_length_63_no_mask_position:
-                setPayloadLength(IoUtil.readLong(data, pos));
-                pos += 8;
+                setPayloadLength(input.getLong());
                 setMask(null);
                 break;
             case WsFrame.frame_payload_length_63_mask_position:
-                setPayloadLength(IoUtil.readLong(data, pos));
-                pos += 8;
+                setPayloadLength(input.getLong());
                 mask = new byte[4];
-                pos = IoUtil.read(data, pos, mask);
+                input.get(mask);
                 setMask(mask);
                 break;
         }
-        return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        pos += IoUtil.writeByte(getFrameFin(), data, pos);
-        pos += IoUtil.write(getPayloadLengthArray(), data, pos);
-        if(getMaskLength() > 0) {pos += IoUtil.write(getMask(), data, pos);}
+        output.put(getFrameFin());
+        output.put(getPayloadLengthArray());
+        if(getMaskLength() > 0) {
+            output.put(getMask());
+        }
         if(getPayloadLength() > 0) {
             doMask();
-            pos += IoUtil.write(payload(), data, pos);
+            output.put(mPayload);
         }
-        return pos;
     }
 
     @Override
-    public int command()
+    public int _sub()
     {
-        return payload()[1] & 0xFF;
+        return mSub;
     }
 }

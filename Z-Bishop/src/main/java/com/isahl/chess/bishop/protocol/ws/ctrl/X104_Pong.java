@@ -35,7 +35,6 @@ import com.isahl.chess.board.base.ISerial;
 public class X104_Pong
         extends WsControl
 {
-
     public X104_Pong()
     {
         this(null);
@@ -49,6 +48,6 @@ public class X104_Pong
     @Override
     public X104_Pong duplicate()
     {
-        return new X104_Pong(payload());
+        return new X104_Pong(_Payload);
     }
 }

@@ -23,6 +23,7 @@
 
 package com.isahl.chess.king.base.util;
 
+import java.io.DataInput;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
@@ -553,6 +554,24 @@ public interface IoUtil
         return length;
     }
 
+    static int readVariableIntLength(DataInput input)
+    {
+        int length = 0;
+        int cur;
+        try {
+            do {
+                cur = input.readUnsignedByte();
+                length |= (cur & 0x7F);
+                if((cur & 0x80) != 0) {length <<= 7;}
+            }
+            while((cur & 0x80) != 0);
+            return length;
+        }
+        catch(Exception e) {
+            return 0;
+        }
+    }
+
     static int readVariableIntLength(ByteBuffer buf)
     {
         int length = 0;
@@ -565,7 +584,6 @@ public interface IoUtil
             }
             while((cur & 0x80) != 0 && buf.hasRemaining());
         }
-
         return length;
     }
 
@@ -660,6 +678,12 @@ public interface IoUtil
     static int writeByte(byte v, byte[] b, int off)
     {
         b[off] = v;
+        return 1;
+    }
+
+    static int writeBool(boolean v, byte[] b, int off)
+    {
+        b[off] = (byte) (v ? 1 : 0);
         return 1;
     }
 

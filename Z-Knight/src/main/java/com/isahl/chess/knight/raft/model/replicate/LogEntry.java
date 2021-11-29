@@ -24,49 +24,45 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+/**
+ * @author william.d.zk
+ */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
-        extends JsonProtocol
+        extends InnerProtocol
         implements ITraceable,
-                   IStorage,
                    Serializable
 {
     @Serial
     private final static long serialVersionUID = -3944638115324945253L;
 
-    private final static int _LOG_SERIAL = CORE_KING_INTERNAL_SERIAL + 2;
-
-    private final long   _Term;
-    private final long   _Index;
+    private long mTerm;
+    private long mIndex;
     /*
     纪录哪个Raft-Client发起的当前这次一致性记录
      */
-    private final long   _Client;
+    private long mClient;
     /*
     完成一致性记录后，成功的消息反馈给哪个请求人
     在Z-Chat体系中表达了device 终端，
     web api 中表达了某次请求的session
      */
-    private final long   _Origin;
-    private final int    _SubSerial;
-    private final byte[] _Content;
-
-    @JsonIgnore
-    private Operation mOperation = Operation.OP_INSERT;
+    private long mOrigin;
+    private int  mSubSerial;
 
     @JsonCreator
     public LogEntry(
@@ -78,109 +74,117 @@ public class LogEntry
                     long client,
             @JsonProperty("origin")
                     long origin,
-            @JsonProperty("sub_serial")
-                    int subSerial,
+            @JsonProperty("sub")
+                    int sub,
             @JsonProperty("content")
                     byte[] content)
     {
-        _Term = term;
-        _Index = index;
-        _Client = client;
-        _Origin = origin;
-        _SubSerial = subSerial;
-        _Content = content;
+        super(Operation.OP_INSERT, Strategy.RETAIN);
+        mTerm = term;
+        mIndex = index;
+        mClient = client;
+        mOrigin = origin;
+        mSubSerial = sub;
+        put(content);
+        pKey = mIndex;
     }
 
-    public int getSubSerial()
+    public LogEntry()
     {
-        return _SubSerial;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _LOG_SERIAL;
-    }
-
-    @Override
-    public int _super()
-    {
-        return CORE_KING_INTERNAL_SERIAL;
+        super();
     }
 
     public long getTerm()
     {
-        return _Term;
+        return mTerm;
     }
 
     public long getIndex()
     {
-        return _Index;
+        return mIndex;
     }
 
     public byte[] getContent()
     {
-        return _Content;
+        return mPayload;
     }
 
     @Override
-    public byte[] payload()
+    public int length()
     {
-        return _Content;
+        int length = 8 + //term
+                     8 + //index
+                     8 + //client
+                     8 + //origin
+                     2;  //sub
+        return length + super.length();
+    }
+
+    public static Factory<LogEntry> _Factory = serial->{
+        LogEntry entry = new LogEntry();
+        if(serial == entry.serial()) {return entry;}
+        return null;
+    };
+
+    @Override
+    public ByteBuffer encode()
+    {
+        ByteBuffer output = super.encode();
+        output.putLong(getTerm());
+        output.putLong(getIndex());
+        output.putLong(getClient());
+        output.putLong(getOrigin());
+        output.putShort((short) _sub());
+        if(mPayload != null) {
+            output.put(mPayload);
+        }
+        return output;
     }
 
     @Override
+    public void decode(ByteBuffer input)
+    {
+        super.decode(input);
+        mTerm = input.getLong();
+        pKey = mIndex = input.getLong();
+        mClient = input.getLong();
+        mOrigin = input.getLong();
+        mSubSerial = input.getShort() & 0xFFFF;
+        if(input.hasRemaining()) {
+            mPayload = new byte[input.remaining()];
+            input.get(mPayload);
+        }
+    }
+
+    @Override
+    @JsonInclude
+    @JsonProperty("sub")
     public int _sub()
     {
-        return _SubSerial;
+        return mSubSerial;
     }
 
     public long getClient()
     {
-        return _Client;
+        return mClient;
     }
 
     @Override
     public long getOrigin()
     {
-        return _Origin;
+        return mOrigin;
     }
 
     @Override
     public String toString()
     {
-        return String.format("raft_log{ %d@%d, from:%#x, origin:%#x, payload-serial:%#x, payload-size:%d }",
-                             _Index,
-                             _Term,
-                             _Client,
-                             _Origin,
-                             _SubSerial,
-                             _Content == null ? 0 : _Content.length);
+        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub-serial:%#x, sub-size:%d }",
+                             mIndex,
+                             mTerm,
+                             mClient,
+                             mOrigin,
+                             mSubSerial,
+                             mPayload == null ? 0 : mPayload.length);
     }
 
-    @Override
-    @JsonIgnore
-    public long primaryKey()
-    {
-        return _Index;
-    }
-
-    @JsonIgnore
-    public void setOperation(Operation op)
-    {
-        mOperation = op;
-    }
-
-    @JsonIgnore
-    @Override
-    public Operation operation()
-    {
-        return mOperation;
-    }
-
-    @JsonIgnore
-    public Strategy strategy()
-    {
-        return Strategy.RETAIN;
-    }
 }

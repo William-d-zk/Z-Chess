@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.JsonUtil;
@@ -40,13 +42,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe.TYPE_SUBSCRIBES;
-import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_LOCAL_SESSION_ENTITY;
 
 /**
  * @author william.d.zk
  */
 @Entity(name = "session_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class SessionEntity
         extends AuditModel
         implements IValid
@@ -74,12 +76,6 @@ public class SessionEntity
     public DeviceSubscribe getDeviceSubscribe()
     {
         return mDeviceSubscribe;
-    }
-
-    @Override
-    public int serial()
-    {
-        return DB_SERIAL_LOCAL_SESSION_ENTITY;
     }
 
     public void setId(long id)

@@ -26,6 +26,8 @@ package com.isahl.chess.pawn.endpoint.device.api.db.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -34,8 +36,6 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serial;
-
-import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_REMOTE_MSG_ENTITY;
 
 /**
  * @author william.d.zk
@@ -50,6 +50,7 @@ import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_RE
                       columnList = "topic")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class MessageEntity
         extends AuditModel
         implements IStorage,
@@ -101,12 +102,6 @@ public class MessageEntity
     }
 
     @Override
-    public int serial()
-    {
-        return DB_SERIAL_REMOTE_MSG_ENTITY;
-    }
-
-    @Override
     public long primaryKey()
     {
         return id;
@@ -150,9 +145,4 @@ public class MessageEntity
         return content;
     }
 
-    @Override
-    public byte[] payload()
-    {
-        return content;
-    }
 }

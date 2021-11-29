@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -44,8 +46,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serial;
 import java.time.LocalDateTime;
-
-import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_REMOTE_DEVICE_ENTITY;
 
 /**
  * @author william.d.zk
@@ -67,6 +67,7 @@ import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_RE
                       columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class DeviceEntity
         extends AuditModel
         implements IStorage
@@ -242,12 +243,6 @@ public class DeviceEntity
     public Strategy strategy()
     {
         return Strategy.RETAIN;
-    }
-
-    @Override
-    public int serial()
-    {
-        return DB_SERIAL_REMOTE_DEVICE_ENTITY;
     }
 
 }

@@ -23,17 +23,13 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author william.d.zk
  * @date 2019-07-14
  */
 public interface IEncode
 {
-    /**
-     * @param data output/sending buffer
-     * @param pos  encode start position
-     * @return encode completed position
-     * return-position >= start-position
-     */
-    int encodec(byte[] data, int pos);
+    void encodec(ByteBuffer output);
 }

@@ -24,7 +24,7 @@ package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -49,13 +49,11 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
     }
 
     @Override
-    public IPacket encode(T context, WsFrame output)
+    public IPacket encode(T context, WsFrame frame)
     {
-        output.setMask(context.getMask());
-        ByteBuffer toWrite = ByteBuffer.allocate(output.length());
-        toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
-               .flip();
-        return new AioPacket(toWrite);
+        frame.setMask(context.getMask());
+        return new AioPacket(frame.encode()
+                                  .flip());
     }
 
     @Override
@@ -77,7 +75,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 carrier.setMaskCode(recvBuf.get());
                 cRvBuf.put(carrier.getLengthCode());
-                lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position());
+                lack = context.lackLength(1, carrier.lack(context.position()) + context.position());
             case 1:
             default:
                 if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
@@ -157,13 +155,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
     public WsFrame decode(T context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
-        if(frame.getMaskLength() > 0) {
-            byte[] mask = frame.getMask();
-            for(int i = 0, size = (int) frame.getPayloadLength(); i < size; i++) {
-                int maskIndex = i & 3;
-                frame.payload()[i] ^= mask[maskIndex];
-            }
-        }
+        frame.doMask();
         context.finish();
         return frame;
     }

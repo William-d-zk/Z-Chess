@@ -29,7 +29,6 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
@@ -54,16 +53,15 @@ public class QttCommandFilter
         output.putContext(context);
         QttFrame frame = new QttFrame();
         frame.put(output.ctrl());
-        frame.put(output.encode(context));
+        frame.put(output.encode(context)
+                        .array());
         return frame;
     }
 
     @Override
     public QttCommand decode(QttContext context, QttFrame input)
     {
-        IControl qttCommand = QttFactory.CREATE(input, context);
-        if(qttCommand == null) {throw new IllegalArgumentException("MQTT type error");}
-        return (QttCommand) qttCommand;
+        return QttFactory.Create(input, context);
     }
 
     @Override

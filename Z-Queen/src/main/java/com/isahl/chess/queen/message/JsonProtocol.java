@@ -23,64 +23,27 @@
 
 package com.isahl.chess.queen.message;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.board.base.ISerial;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  */
 public abstract class JsonProtocol
-        implements IProtocol
+        implements ISerial
 {
-    protected           int    mLength;
-    protected transient byte[] tPayload;
+    protected byte[] mPayload;
 
     @Override
-    public byte[] encode()
+    public ByteBuffer payload()
     {
-        tPayload = JsonUtil.writeValueAsBytes(this);
-        if(tPayload != null) {
-            mLength = tPayload.length;
-        }
-        return tPayload;
+        return ByteBuffer.wrap(mPayload);
     }
 
-    @Override
-    public int encodec(byte[] data, int pos)
+    public void put(byte[] payload)
     {
-        return pos + data.length;
-    }
-
-    /**
-     * Json-Protocol 以外部性 decode 过程
-     */
-    @Override
-    public int decode(byte[] data)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int decodec(byte[] data, int pos)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return tPayload;
-    }
-
-    public void put(byte[] data)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int length()
-    {
-        return mLength;
+        mPayload = payload;
     }
 
 }

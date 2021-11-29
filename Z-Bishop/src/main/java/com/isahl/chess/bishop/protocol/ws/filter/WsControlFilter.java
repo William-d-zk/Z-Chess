@@ -29,9 +29,7 @@ import com.isahl.chess.bishop.protocol.ws.ctrl.X104_Pong;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X106_Identity;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X107_Redirect;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -55,7 +53,8 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     {
         WsFrame frame = new WsFrame();
         _Logger.debug("control %s", output);
-        frame.put(output.payload());
+        frame.put(output.payload()
+                        .array());
         frame.put(output.ctrl());
         return frame;
     }
@@ -63,18 +62,27 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     @Override
     public ResultType peek(T context, WsFrame input)
     {
-        return context.isInConvert() && input.isCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
+        return context.isInConvert() && input.isCtrl() && isHandle(input) ? ResultType.HANDLED : ResultType.IGNORE;
+    }
+
+    private boolean isHandle(WsFrame input)
+    {
+        return switch(input.frame_op_code & 0x0F) {
+            case WsFrame.frame_op_code_ctrl_close, WsFrame.frame_op_code_ctrl_ping, WsFrame.frame_op_code_ctrl_pong -> true;
+            default -> false;
+        };
     }
 
     @Override
     public WsControl decode(T context, WsFrame input)
     {
         return switch(input.frame_op_code & 0x0F) {
-            case WsFrame.frame_op_code_ctrl_close -> new X102_Close(input.payload());
-            case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping(input.payload());
-            case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong(input.payload());
-            case WsFrame.frame_op_code_ctrl_cluster -> new X106_Identity(input.payload());
-            case WsFrame.frame_op_code_ctrl_redirect -> new X107_Redirect(input.payload());
+            case WsFrame.frame_op_code_ctrl_close -> new X102_Close(input.payload()
+                                                                         .array());
+            case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping(input.payload()
+                                                                       .array());
+            case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong(input.payload()
+                                                                       .array());
             default -> throw new UnsupportedOperationException(String.format("web socket frame with control code %d.",
                                                                              input.frame_op_code & 0x0F));
         };

@@ -27,6 +27,8 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IDecode;
 import com.isahl.chess.queen.io.core.features.model.pipe.IEncode;
 import com.isahl.chess.queen.io.core.features.model.routes.IPortChannel;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author William.d.zk
  */
@@ -36,52 +38,22 @@ public interface IProtocol
                 IDecode,
                 IPortChannel
 {
-    default byte[] encode()
+    @Override
+    default ByteBuffer encode()
     {
         int len = length();
         if(len > 0) {
-            byte[] a = new byte[len];
-            encodec(a, 0);
-            return a;
+            ByteBuffer buf = ByteBuffer.allocate(len);
+            encodec(buf);
+            return buf;
         }
         return null;
     }
 
-    default int encode(byte[] buf, int pos, int length)
+    @Override
+    default void decode(ByteBuffer input)
     {
-        int len = length();
-        if(len > length || len > 0 && buf == null || (buf != null && (buf.length < len || pos + length > buf.length))) {
-            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
-        }
-        pos = encodec(buf, pos);
-        return pos;
-    }
-
-    default int encodec(byte[] buf, int pos)
-    {
-        return pos;
-    }
-
-    default int decode(byte[] input, int pos, int length)
-    {
-        if(input == null || input.length == 0) {return 0;}
-        // length() 此处表达了最短长度值
-        int len = length();
-        if(len > length || (input.length < len || pos + length > input.length)) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        return decodec(input, pos);
-    }
-
-    default int decode(byte[] data)
-    {
-        if(data == null || data.length == 0) {return 0;}
-        return decode(data, 0, data.length);
-    }
-
-    default int decodec(byte[] data, int pos)
-    {
-        return pos;
+        decodec(input);
     }
 
     default boolean inIdempotent(int bitIdempotent)

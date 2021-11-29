@@ -28,6 +28,8 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author william.d.zk
  * @date 2019-05-13
@@ -76,22 +78,21 @@ public abstract class QttControl
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
-    {
-        return pos;
-    }
-
-    @Override
-    public int encodec(byte[] data, int pos)
-    {
-        return pos;
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public QttContext context()
     {
         return mContext;
     }
 
+    @Override
+    public void decodec(ByteBuffer input)
+    {
+
+    }
+
+    @Override
+    public void encodec(ByteBuffer output)
+    {
+
+    }
 }

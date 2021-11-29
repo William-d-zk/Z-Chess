@@ -25,12 +25,12 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,13 +166,9 @@ public class Segment
         long endIndex = 0;
         if(mFileSize == 0) {return;}
         while(offset < mFileSize) {
-            int length = mRandomAccessFile.readInt();
             long entryStart = mRandomAccessFile.getFilePointer();
-            byte[] data = new byte[length];
-            mRandomAccessFile.read(data);
-            LogEntry entry = JsonUtil.readValue(data, LogEntry.class);
+            LogEntry entry = LogEntry.load(LogEntry._Factory, mRandomAccessFile);
             if(entry != null) {
-                entry.decode(data);//仅更新 length 信息
                 endIndex = entry.getIndex();
                 if(startIndex < 0) {
                     startIndex = endIndex;
@@ -206,15 +202,15 @@ public class Segment
         }
     }
 
-    public void add(byte[] data, LogEntry entry)
+    public void add(LogEntry entry)
     {
         try {
             long offset = mRandomAccessFile.getFilePointer();
-            mRandomAccessFile.writeInt(data.length);
-            mRandomAccessFile.write(data);
+            ByteBuffer output = entry.encode();
+            mRandomAccessFile.write(output.array());
             _Records.add(new Record(offset, entry));
             mEndIndex = entry.getIndex();
-            mFileSize += data.length + 4;
+            mFileSize += output.capacity();
         }
         catch(IOException e) {
             throw new ZException("add record failed ", e);

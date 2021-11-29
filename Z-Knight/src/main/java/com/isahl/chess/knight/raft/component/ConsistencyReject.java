@@ -61,7 +61,7 @@ public class ConsistencyReject
                                                        _RaftPeer.getPeerId(),
                                                        origin,
                                                        request.serial(),
-                                                       request.encode()), session, session.getError());
+                                                       request.encode().array()), session, session.getError());
             }
         }
         return null;

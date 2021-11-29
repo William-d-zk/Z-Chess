@@ -25,6 +25,8 @@ package com.isahl.chess.referee.security.jpa.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -44,6 +46,7 @@ import java.util.List;
                       columnList = "name")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class RoleEntity
         extends AuditModel
         implements GrantedAuthority,
@@ -88,14 +91,6 @@ public class RoleEntity
     public void setName(String name)
     {
         this.name = name;
-    }
-
-    public static int SERIAL_ROLE = UserEntity.SERIAL_USER + 1;
-
-    @Override
-    public int serial()
-    {
-        return SERIAL_ROLE;
     }
 
     @Override

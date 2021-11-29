@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.referee.security.jpa.model.Status;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 
@@ -45,14 +47,13 @@ import java.time.LocalDateTime;
 @Entity(name = "oauth_approvals")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Table(schema = "z_chess_security")
+@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class OauthApprovals
         extends AuditModel
         implements Serializable
 {
     @Serial
     private static final long serialVersionUID = 4281980171453236833L;
-
-    public static int SERIAL_OAUTH_APPROVALS = OauthAccessToken.SERIAL_OAUTH_ACCESS_TOKEN + 1;
 
     @Id
     private String        clientId;
@@ -64,12 +65,6 @@ public class OauthApprovals
     @Column(nullable = false,
             name = "invalid_at")
     private LocalDateTime invalidAt;
-
-    @Override
-    public int serial()
-    {
-        return SERIAL_OAUTH_APPROVALS;
-    }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

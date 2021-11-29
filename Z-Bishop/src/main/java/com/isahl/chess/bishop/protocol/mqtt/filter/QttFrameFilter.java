@@ -52,10 +52,8 @@ public class QttFrameFilter
     @Override
     public IPacket encode(QttContext context, QttFrame output)
     {
-        ByteBuffer toWrite = ByteBuffer.allocate(output.length());
-        toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
-               .flip();
-        return new AioPacket(toWrite);
+        return new AioPacket(output.encode()
+                                   .flip());
     }
 
     @Override
@@ -75,7 +73,7 @@ public class QttFrameFilter
             case 0:
                 if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
                 carrier.setLengthCode(recvBuf.get());
-                lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
+                lack = context.lackLength(1, carrier.lack(context.position()) + context.position() + 1);
             case 1:
             default:
                 if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
@@ -84,8 +82,7 @@ public class QttFrameFilter
                     if(carrier.isLengthCodeLack()) {
                         carrier.setLengthCode(recvBuf.get());
                         lack = context.lackLength(1,
-                                                  target = carrier.lackLength(context.position()) + context.position() +
-                                                           1);
+                                                  target = carrier.lack(context.position()) + context.position() + 1);
                     }
                     else {
                         int length = Math.min(recvBuf.remaining(), lack);

@@ -23,10 +23,10 @@
 package com.isahl.chess.bishop.protocol.ws.model;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -39,10 +39,10 @@ public abstract class WsControl
         implements IControl
 {
 
-    private final byte[]    _Payload;
-    private final byte      _CtrlCode;
-    private       ISession  mSession;
-    private       WsContext mContext;
+    protected final byte[]    _Payload;
+    private final   byte      _CtrlCode;
+    private         ISession  mSession;
+    private         WsContext mContext;
 
     public WsControl(byte code, byte[] payload)
     {
@@ -62,9 +62,10 @@ public abstract class WsControl
         putSession(null);
     }
 
-    public byte[] payload()
+    @Override
+    public ByteBuffer payload()
     {
-        return _Payload;
+        return ByteBuffer.wrap(_Payload);
     }
 
     public void put(byte[] payload)
@@ -73,10 +74,15 @@ public abstract class WsControl
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        pos += IoUtil.write(_Payload, data, pos);
-        return pos;
+        output.put(_Payload);
+    }
+
+    @Override
+    public void decodec(ByteBuffer input)
+    {
+
     }
 
     @Override
@@ -118,9 +124,8 @@ public abstract class WsControl
     @Override
     public String toString()
     {
-        int command = serial();
         return String.format("cmd: %#x, %s",
-                             command,
+                             serial(),
                              _Payload == null ? "[NULL] payload" : new String(_Payload, StandardCharsets.UTF_8));
     }
 
@@ -130,7 +135,7 @@ public abstract class WsControl
         return ALMOST_ONCE;
     }
 
-    public void setContext(WsContext context)
+    public void putContext(WsContext context)
     {
         mContext = context;
     }
