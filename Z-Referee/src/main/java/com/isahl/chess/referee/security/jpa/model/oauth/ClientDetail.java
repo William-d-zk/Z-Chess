@@ -25,7 +25,8 @@ package com.isahl.chess.referee.security.jpa.model.oauth;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
 
@@ -44,14 +45,13 @@ import java.io.Serializable;
 @Entity(name = "client_detail")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Table(schema = "z_chess_security")
+@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class ClientDetail
         extends AuditModel
         implements Serializable
 {
     @Serial
     private static final long serialVersionUID = -3639493262081429501L;
-
-    public static int SERIAL_CLIENT_DETAIL = PermissionEntity.SERIAL_PERMISSION + 1;
 
     @Id
     private String   appId;
@@ -86,12 +86,6 @@ public class ClientDetail
     @Column(name = "auto_approve_scopes",
             columnDefinition = "text[]")
     private String[] autoApproveScopes = {};
-
-    @Override
-    public int serial()
-    {
-        return SERIAL_CLIENT_DETAIL;
-    }
 
     public String getAppId()
     {

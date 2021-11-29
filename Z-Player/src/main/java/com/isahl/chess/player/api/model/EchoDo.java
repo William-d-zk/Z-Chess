@@ -26,29 +26,18 @@ package com.isahl.chess.player.api.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.message.JsonProtocol;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
 public class EchoDo
         extends JsonProtocol
 {
 
-    public final static int _SERIAL = BIZ_PLAYER_API_SERIAL + 1;
-
     private String mContent;
-
-    @Override
-    public int serial()
-    {
-        return _SERIAL;
-    }
-
-    @Override
-    public int _super()
-    {
-        return BIZ_PLAYER_API_SERIAL;
-    }
 
     public String getContent()
     {

@@ -24,30 +24,35 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
 public abstract class BaseMeta
-        extends JsonProtocol
+        extends InnerProtocol
         implements IReset
 {
+
+    public BaseMeta(Operation operation, Strategy strategy)
+    {
+        super(operation, strategy);
+    }
+
+    public BaseMeta()
+    {
+        super();
+    }
 
     @JsonIgnore
     protected RandomAccessFile mFile;
 
-    void flush()
+    public void flush()
     {
         try {
             mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(length());
-            mFile.write(data);
+            mFile.write(encode().array());
             mFile.getFD()
                  .sync();
         }
@@ -56,7 +61,7 @@ public abstract class BaseMeta
         }
     }
 
-    void close()
+    public void close()
     {
         flush();
         try {
@@ -66,4 +71,12 @@ public abstract class BaseMeta
             e.printStackTrace();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends BaseMeta> T from(RandomAccessFile file)
+    {
+        mFile = file;
+        return (T) this;
+    }
+
 }

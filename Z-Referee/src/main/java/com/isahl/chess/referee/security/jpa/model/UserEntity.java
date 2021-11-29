@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -53,6 +55,7 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
                       columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class UserEntity
         extends AuditModel
         implements UserDetails,
@@ -93,14 +96,6 @@ public class UserEntity
     public long getId()
     {
         return id;
-    }
-
-    public static int SERIAL_USER = AUDIT_MODEL_SERIAL + 1000;
-
-    @Override
-    public int serial()
-    {
-        return SERIAL_USER;
     }
 
     public String getUsername()

@@ -94,4 +94,25 @@ public enum QttType
             default -> throw new IllegalArgumentException();
         };
     }
+
+    public static int serialOf(QttType type)
+    {
+        return switch(type) {
+            case CONNECT -> 0x111;
+            case CONNACK -> 0x112;
+            case PUBLISH -> 0x113;
+            case PUBACK -> 0x114;
+            case PUBREC -> 0x115;
+            case PUBREL -> 0x116;
+            case PUBCOMP -> 0x117;
+            case SUBSCRIBE -> 0x118;
+            case SUBACK -> 0x119;
+            case UNSUBSCRIBE -> 0x11A;
+            case UNSUBACK -> 0x11B;
+            case PINGREQ -> 0x11C;
+            case PINGRESP -> 0x11D;
+            case DISCONNECT -> 0x11E;
+            case AUTH -> 0x11F;
+        };
+    }
 }

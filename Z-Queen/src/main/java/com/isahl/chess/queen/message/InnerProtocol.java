@@ -23,20 +23,150 @@
 
 package com.isahl.chess.queen.message;
 
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.db.model.IStorage;
+
+import java.io.DataInput;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  */
 public abstract class InnerProtocol
-        implements IProtocol
+        implements IStorage
 {
-    protected int mLength;
+
+    protected final Operation   _Operation;
+    protected final Strategy    _Strategy;
+    protected final CreatorType _Type;
+
+    protected long pKey, fKey;
+
+    protected byte[] mPayload;
+
+    enum CreatorType
+    {
+        ANONYMOUS,
+        CUSTOM
+    }
+
+    protected InnerProtocol(Operation operation, Strategy strategy)
+    {
+        this(operation, strategy, CreatorType.CUSTOM);
+    }
+
+    public InnerProtocol()
+    {
+        this(Operation.OP_NULL, Strategy.CLEAN, CreatorType.ANONYMOUS);
+    }
+
+    private InnerProtocol(Operation operation, Strategy strategy, CreatorType type)
+    {
+        _Operation = operation;
+        _Strategy = strategy;
+        _Type = type;
+    }
 
     @Override
     public int length()
     {
-        return mLength;
+        /*
+         operation (1)
+         strategy (1)
+         serial(2)
+         primaryKey (8)
+         hasForeignKey (1) ? (9) : (1)
+         */
+        return 8 + 2 + 1 + 1 + (hasForeignKey() ? 9 : 1) + (mPayload == null ? 0 : mPayload.length);
+    }
+
+    @Override
+    public long primaryKey()
+    {
+        return pKey;
+    }
+
+    @Override
+    public long foreignKey()
+    {
+        return fKey;
+    }
+
+    public void bind(long key)
+    {
+        fKey = key;
+    }
+
+    public void generate(long primaryKey)
+    {
+        pKey = primaryKey;
+    }
+
+    @Override
+    public void put(byte[] payload)
+    {
+        mPayload = payload;
+    }
+
+    @Override
+    public ByteBuffer payload()
+    {
+        return mPayload != null ? ByteBuffer.wrap(mPayload) : null;
+    }
+
+    @Override
+    public boolean hasForeignKey()
+    {
+        return fKey != 0;
+    }
+
+    @Override
+    public Strategy strategy()
+    {
+        return _Strategy;
+    }
+
+    @Override
+    public Operation operation()
+    {
+        return _Operation;
+    }
+
+    @Override
+    public void decode(ByteBuffer input)
+    {
+        IStorage.super.decode(input);
+        pKey = input.getLong();
+        if(input.get() > 0) {
+            fKey = input.getLong();
+        }
+    }
+
+    public interface Factory<T extends InnerProtocol>
+    {
+        default T create(int serial, ByteBuffer input)
+        {
+            T ip = build(serial);
+            if(ip != null) {
+                ip.decode(input);
+            }
+            return ip;
+        }
+
+        T build(int serial);
+    }
+
+    public static <T extends InnerProtocol> T load(Factory<T> provider, DataInput input) throws IOException
+    {
+        int length = IoUtil.readVariableIntLength(input);
+        byte[] vLength = IoUtil.variableLength(length);
+        ByteBuffer buffer = ByteBuffer.allocate(length + vLength.length);
+        buffer.put(vLength);
+        int serial = input.readUnsignedShort();
+        buffer.putShort((short) serial);
+        input.readFully(buffer.array(), buffer.position(), buffer.remaining());
+        return provider.create(serial, buffer.clear());
     }
 
 }

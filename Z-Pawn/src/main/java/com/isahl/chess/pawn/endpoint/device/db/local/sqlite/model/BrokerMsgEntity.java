@@ -25,6 +25,8 @@ package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
@@ -35,10 +37,9 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import java.io.Serial;
 
-import static com.isahl.chess.pawn.endpoint.device.db.PawnConstants.DB_SERIAL_LOCAL_MSG_ENTITY;
-
 @Entity(name = "msg_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class BrokerMsgEntity
         extends AuditModel
         implements ICancelable
@@ -152,12 +153,6 @@ public class BrokerMsgEntity
     public void setContent(byte[] content)
     {
         this.content = content;
-    }
-
-    @Override
-    public int serial()
-    {
-        return DB_SERIAL_LOCAL_MSG_ENTITY;
     }
 
     public final static String BROKER_PRIMARY_FORMAT   = "%#20x-%7d-B";

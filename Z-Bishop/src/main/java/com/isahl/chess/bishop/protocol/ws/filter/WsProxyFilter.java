@@ -35,8 +35,6 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import java.nio.ByteBuffer;
-
 /**
  * @author william.d.zk
  * @date 2019-05-07
@@ -64,7 +62,7 @@ public class WsProxyFilter<A extends IPContext>
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return new AioPacket(ByteBuffer.wrap(input.payload()));
+        return new AioPacket(input.payload());
     }
 
     @Override

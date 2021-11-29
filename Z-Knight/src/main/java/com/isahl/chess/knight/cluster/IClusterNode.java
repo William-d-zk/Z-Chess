@@ -23,8 +23,8 @@
 
 package com.isahl.chess.knight.cluster;
 
-import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.sort.ZSortHolder;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;

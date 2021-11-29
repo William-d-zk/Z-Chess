@@ -24,9 +24,10 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -97,18 +98,15 @@ public abstract class QttCommand
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        mMsgId = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        return pos;
+        mMsgId = input.getShort() & 0xFFFF;
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        pos += IoUtil.writeShort((int) mMsgId, data, pos);
-        return pos;
+        output.putShort((short) mMsgId);
     }
 
     @Override

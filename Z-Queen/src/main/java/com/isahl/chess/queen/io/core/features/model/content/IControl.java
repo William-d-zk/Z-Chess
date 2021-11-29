@@ -37,15 +37,10 @@ public interface IControl
         extends IFrame,
                 IQoS,
                 IMapping,
-                IDisposable
+                IDisposable,
+                IStreamProtocol
 {
     <C extends IContext> C context();
-
-    @Override
-    default int _super()
-    {
-        return PROTOCOL_BISHOP_CONTROL_SERIAL;
-    }
 
     @Override
     default int priority()

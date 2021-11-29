@@ -25,33 +25,68 @@ package com.isahl.chess.bishop.protocol.mqtt.factory;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
+import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
-import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IFactory;
+
+import java.nio.ByteBuffer;
+
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
  * @date 2020/4/11
  */
 public class QttFactory
-        implements ICommand.Factory<IControl, QttFrame, QttContext>
+        implements IFactory<QttFrame, QttContext>
 {
+    private static final QttFactory _Instance = new QttFactory();
 
-    @Override
-    public IControl create(QttFrame frame, QttContext context)
+    public static <T extends MqttProtocol & IControl> T Create(QttFrame frame, QttContext context)
     {
-        return CREATE(frame, context);
+        return _Instance.create(frame, context);
     }
 
     @Override
-    public IControl create(int serial, byte[] data, QttContext context)
+    @SuppressWarnings("unchecked")
+    public <T extends IControl> T create(int serial, ByteBuffer input)
+    {
+        IControl control = build(serial);
+        if(control != null) {
+            control.decode(input);
+        }
+        return (T) control;
+    }
+
+    @Override
+    public <T extends IControl> T create(QttFrame frame, QttContext context)
+    {
+        return build(frame, context);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends IControl, E extends MqttProtocol & IControl> T build(QttFrame frame, QttContext context)
+    {
+        E control = build(frame._sub());
+        if(control != null) {
+            control.put(frame.ctrl());
+            control.putContext(context);
+            control.decode(frame.payload(), context);
+        }
+        return (T) control;
+    }
+
+    private <T extends MqttProtocol & IControl> T build(int serial)
     {
         if(serial < 0x111 || serial > 0x11F) {
             return null;
         }
-        QttCommand qttCommand = switch(serial) {
+        return (T) switch(serial) {
+            case 0x111 -> new X111_QttConnect();
+            case 0x112 -> new X112_QttConnack();
             case 0x113 -> new X113_QttPublish();
             case 0x114 -> new X114_QttPuback();
             case 0x115 -> new X115_QttPubrec();
@@ -61,60 +96,12 @@ public class QttFactory
             case 0x119 -> new X119_QttSuback();
             case 0x11A -> new X11A_QttUnsubscribe();
             case 0x11B -> new X11B_QttUnsuback();
-            default -> null;
-        };
-        if(qttCommand != null) {
-            qttCommand.putContext(context);
-            qttCommand.decode(data, context);
-            return qttCommand;
-        }
-        QttControl qttControl = switch(serial) {
-            case 0x111 -> new X111_QttConnect();
-            case 0x112 -> new X112_QttConnack();
             case 0x11C -> new X11C_QttPingreq();
             case 0x11D -> new X11D_QttPingresp();
             case 0x11E -> new X11E_QttDisconnect();
             case 0x11F -> new X11F_QttAuth();
-            default -> null;
+            default -> throw new IllegalArgumentException(format("mqtt type error: %#x", serial));
         };
-        qttControl.putContext(context);
-        qttControl.decode(data);
-        return qttControl;
     }
 
-    public static IControl CREATE(QttFrame frame, QttContext context)
-    {
-        QttCommand qttCommand = switch(frame.getType()) {
-            case PUBLISH -> new X113_QttPublish();
-            case PUBACK -> new X114_QttPuback();
-            case PUBREC -> new X115_QttPubrec();
-            case PUBREL -> new X116_QttPubrel();
-            case PUBCOMP -> new X117_QttPubcomp();
-            case SUBSCRIBE -> new X118_QttSubscribe();
-            case SUBACK -> new X119_QttSuback();
-            case UNSUBSCRIBE -> new X11A_QttUnsubscribe();
-            case UNSUBACK -> new X11B_QttUnsuback();
-            default -> null;
-        };
-        if(qttCommand != null) {
-            qttCommand.putContext(context);
-            qttCommand.put(frame.ctrl());
-            qttCommand.decode(frame.payload(), context);
-            return qttCommand;
-        }
-        QttControl qttControl = switch(frame.getType()) {
-            case CONNECT -> new X111_QttConnect();
-            case CONNACK -> new X112_QttConnack();
-            case PINGREQ -> new X11C_QttPingreq();
-            case PINGRESP -> new X11D_QttPingresp();
-            case DISCONNECT -> new X11E_QttDisconnect();
-            case AUTH -> new X11F_QttAuth();
-            default -> null;
-        };
-        if(qttControl != null) {
-            qttControl.putContext(context);
-            qttControl.decode(frame.payload());
-        }
-        return qttControl;
-    }
 }

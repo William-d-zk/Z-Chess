@@ -33,6 +33,7 @@ import javax.persistence.Id;
  * @author william.d.zk
  * @date 2021/3/5
  */
+
 public class OauthClientDetails
 {
     @Id

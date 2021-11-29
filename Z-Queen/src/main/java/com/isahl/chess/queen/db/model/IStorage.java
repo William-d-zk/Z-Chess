@@ -24,6 +24,7 @@ package com.isahl.chess.queen.db.model;
 
 import com.isahl.chess.board.base.ISerial;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -42,6 +43,8 @@ public interface IStorage
 
     Operation operation();
 
+    boolean hasForeignKey();
+
     Strategy strategy();
 
     enum Strategy
@@ -49,12 +52,34 @@ public interface IStorage
         /**
          * 状态值需要进行持久化
          */
-        RETAIN,
+        RETAIN(Byte.parseByte("1")),
         /**
-         * 会话状态不保持
-         * 每次声明会话都清除之前的状态。
+         * 仅与session 在内存中保持；
+         * 数据状态保持与会话一致
          */
-        CLEAN
+        CLEAN(Byte.parseByte("0")),
+        INVALID(Byte.MIN_VALUE);
+
+        final byte _Code;
+
+        Strategy(byte code)
+        {
+            _Code = code;
+        }
+
+        public static Strategy valueOf(byte value)
+        {
+            return switch(value) {
+                case 0 -> CLEAN;
+                case 1 -> RETAIN;
+                default -> INVALID;
+            };
+        }
+
+        public byte getCode()
+        {
+            return _Code;
+        }
     }
 
     enum Operation
@@ -67,8 +92,8 @@ public interface IStorage
         OP_DELETE(Byte.parseByte("00011001", 2)),
         OP_RESET(Byte.parseByte("00100000", 2)),
         OP_RETRY(Byte.parseByte("01000000", 2)),
-        OP_INVALID(Byte.MIN_VALUE),
-        OP_FROZEN(Byte.parseByte("-127"));
+        OP_INVALID(Byte.MIN_VALUE),// "10000000",Byte.parseByte 无法识别负数 2进制
+        OP_FROZEN(Byte.parseByte("-127"));// "10000001"
 
         private final byte _Value;
 
@@ -96,6 +121,44 @@ public interface IStorage
                          .orElse(OP_INVALID);
         }
 
+        public static Operation valueOf(byte value)
+        {
+            return switch(value) {
+                case 0 -> OP_NULL;
+                case 1 -> OP_MODIFY;
+                case 5 -> OP_INSERT;
+                case 7 -> OP_APPEND;
+                case 17 -> OP_REMOVE;
+                case 25 -> OP_DELETE;
+                case 32 -> OP_RESET;
+                case 64 -> OP_RETRY;
+                case -127 -> OP_FROZEN;
+                default -> OP_INVALID;
+            };
+        }
     }
 
+    @Override
+    default ByteBuffer encode()
+    {
+        ByteBuffer output = ISerial.super.encode()
+                                         .put(operation().getValue())
+                                         .put(strategy().getCode())
+                                         .putLong(primaryKey())
+                                         .put((byte) (hasForeignKey() ? 1 : 0));
+        if(hasForeignKey()) {
+            output.putLong(foreignKey());
+        }
+        return output;
+    }
+
+    @Override
+    default void decode(ByteBuffer input)
+    {
+        ISerial.super.decode(input);
+        /*
+        skip operation|strategy
+         */
+        input.position(input.position() + 2);
+    }
 }

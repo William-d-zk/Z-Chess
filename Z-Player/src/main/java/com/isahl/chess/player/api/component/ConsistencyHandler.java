@@ -40,8 +40,8 @@ public class ConsistencyHandler
     @Override
     public boolean onConsistencyCall(IConsistent result)
     {
-        byte[] sub = result.encode();
-        String json = new String(sub, StandardCharsets.UTF_8);
+        String json = new String(result.encode()
+                                       .array(), StandardCharsets.UTF_8);
         _Logger.debug("consistency %s", json);
         return false;
     }

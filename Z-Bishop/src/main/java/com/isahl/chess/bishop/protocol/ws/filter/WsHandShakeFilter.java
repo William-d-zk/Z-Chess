@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.ctrl.WsHandshake;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -62,7 +62,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
         if(output.isClientOk() || output.isServerAccept()) {
             context.updateOut();
         }
-        return new AioPacket(ByteBuffer.wrap(output.encode()));
+        return new AioPacket(output.encode());
     }
 
     @Override

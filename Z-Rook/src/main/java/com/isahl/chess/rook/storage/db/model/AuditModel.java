@@ -31,9 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -68,9 +66,8 @@ import java.time.LocalDateTime;
         "updated_at"
 },
                       allowGetters = true)
-@ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public abstract class AuditModel
-        extends JsonProtocol
+        extends InnerProtocol
         implements Serializable
 {
     @Column(name = "created_at",
@@ -118,11 +115,4 @@ public abstract class AuditModel
         return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
     }
 
-    @Override
-    public int _super()
-    {
-        return AUDIT_MODEL_SERIAL;
-    }
-
-    public final static int AUDIT_MODEL_SERIAL = STORAGE_ROOK_DB_SERIAL + 1;
 }

@@ -23,9 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device;
 
-import com.isahl.chess.bishop.protocol.sort.ZSortHolder;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.protocol.ws.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;

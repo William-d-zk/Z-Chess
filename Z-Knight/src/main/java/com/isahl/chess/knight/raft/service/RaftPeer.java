@@ -23,8 +23,8 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ZCommand;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.command.raft.*;
+import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
@@ -38,9 +38,9 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.knight.raft.features.IRaftControl;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
-import com.isahl.chess.knight.raft.features.IRaftControl;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -50,8 +50,8 @@ import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.lmax.disruptor.RingBuffer;
 
@@ -815,7 +815,12 @@ public class RaftPeer
 
     public <T extends IProtocol> List<ITriple> onImmediate(T request, IManager manager, long origin)
     {
-        List<ITriple> responses = append(request.serial(), request.encode(), _SelfMachine.getPeerId(), origin, manager);
+        List<ITriple> responses = append(request.serial(),
+                                         request.encode()
+                                                .array(),
+                                         _SelfMachine.getPeerId(),
+                                         origin,
+                                         manager);
         if(responses == null) {
             stepDown(_SelfMachine.getTerm());
             return null;
@@ -889,7 +894,6 @@ public class RaftPeer
                                          origin,
                                          subSerial,
                                          content);
-        newEntry.setOperation(IStorage.Operation.OP_INSERT);
         if(_RaftMapper.append(newEntry)) {
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _SelfMachine.apply(_RaftMapper);

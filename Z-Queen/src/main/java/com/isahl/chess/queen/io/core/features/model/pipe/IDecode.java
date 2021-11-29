@@ -23,20 +23,13 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author william.d.zk
  * @date 2019-07-14
  */
 public interface IDecode
 {
-
-    /**
-     * @param data input/received buffer
-     * @param pos  decode start position
-     * @return decode completed position
-     * <p>
-     * return-pos >= start-pos
-     */
-    int decodec(byte[] data, int pos);
-
+    void decodec(ByteBuffer input);
 }

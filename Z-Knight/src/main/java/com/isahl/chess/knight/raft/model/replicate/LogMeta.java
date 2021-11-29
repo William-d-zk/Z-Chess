@@ -24,28 +24,31 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL,
+                  serial = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL + 1)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LogMeta
         extends BaseMeta
 {
-    private final static int _SERIAL = CORE_KING_INTERNAL_SERIAL + 1;
+
+    private static Logger LOG = Logger.getLogger("cluster.knight." + LogMeta.class.getSimpleName());
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
@@ -87,6 +90,90 @@ public class LogMeta
     private Set<RaftNode> mGateSet;
 
     @Override
+    public int length()
+    {
+        int length = 8 + // start
+                     8 + // term
+                     8 + // index
+                     8 + // index term
+                     8 + // candidate
+                     8 + // commit
+                     8; // applied
+        length++;
+        if(mPeerSet != null && !mPeerSet.isEmpty()) {
+            for(RaftNode node : mPeerSet) {length += node.length();}
+        }
+        length++;
+        if(mGateSet != null && !mGateSet.isEmpty()) {
+            for(RaftNode node : mGateSet) {length += node.length();}
+        }
+        return length + super.length();
+    }
+
+    @Override
+    public ByteBuffer encode()
+    {
+        ByteBuffer output = super.encode()
+                                 .putLong(getStart())
+                                 .putLong(getTerm())
+                                 .putLong(getIndex())
+                                 .putLong(getIndexTerm())
+                                 .putLong(getCandidate())
+                                 .putLong(getCommit())
+                                 .putLong(getApplied());
+        if(mPeerSet != null && !mPeerSet.isEmpty()) {
+            output.put((byte) mPeerSet.size());
+            for(RaftNode node : mPeerSet) {
+                output.put(node.encode()
+                               .flip());
+            }
+        }
+        else {
+            output.put((byte) 0);
+        }
+        if(!mGateSet.isEmpty()) {
+            output.put((byte) mGateSet.size());
+            for(RaftNode node : mGateSet) {
+                output.put(node.encode()
+                               .flip());
+            }
+        }
+        else {
+            output.put((byte) 0);
+        }
+        return output;
+    }
+
+    @Override
+    public void decode(ByteBuffer input)
+    {
+        super.decode(input);
+        setStart(input.getLong());
+        setTerm(input.getLong());
+        setIndex(input.getLong());
+        setIndexTerm(input.getLong());
+        setCandidate(input.getLong());
+        setCommit(input.getLong());
+        setApplied(input.getLong());
+        int pc = input.get() & 0xFF;
+        if(pc > 0) {
+            mPeerSet = new TreeSet<>();
+            for(int i = 0; i < pc; i++) {
+                RaftNode peer = new RaftNode();
+                peer.decode(input);
+            }
+        }
+        int gc = input.get() & 0xFF;
+        if(gc > 0) {
+            mGateSet = new TreeSet<>();
+            for(int i = 0; i < gc; i++) {
+                RaftNode gate = new RaftNode();
+                gate.decode(input);
+            }
+        }
+    }
+
+    @Override
     public void reset()
     {
         mStart = MIN_START;
@@ -122,6 +209,7 @@ public class LogMeta
             @JsonProperty("gate_set")
                     Set<RaftNode> gateSet)
     {
+        super(Operation.OP_INSERT, Strategy.RETAIN);
         mStart = start;
         mTerm = term;
         mIndex = index;
@@ -133,53 +221,17 @@ public class LogMeta
         mGateSet = gateSet;
     }
 
-    private LogMeta()
+    public LogMeta()
     {
+        super();
         mStart = MIN_START;
     }
 
-    public static LogMeta loadFromFile(RandomAccessFile file)
-    {
-        try {
-            if(file.length() > 0) {
-                file.seek(0);
-                int mLength = file.readInt();
-                if(mLength > 0) {
-                    byte[] data = new byte[mLength];
-                    file.read(data);
-                    LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                    if(logMeta != null) {
-                        logMeta.setFile(file);
-                        logMeta.decode(data);
-                        return logMeta;
-                    }
-                }
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-        return new LogMeta().setFile(file);
-    }
-
-    @JsonIgnore
-    public LogMeta setFile(RandomAccessFile source)
-    {
-        mFile = source;
-        return this;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _SERIAL;
-    }
-
-    @Override
-    public int _super()
-    {
-        return CORE_KING_INTERNAL_SERIAL;
-    }
+    public static Factory<LogMeta> _Factory = serial->{
+        LogMeta meta = new LogMeta();
+        if(meta.serial() == serial) {return meta;}
+        return null;
+    };
 
     public long getStart()
     {

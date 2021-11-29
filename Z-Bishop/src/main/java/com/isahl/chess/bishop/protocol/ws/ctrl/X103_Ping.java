@@ -51,7 +51,7 @@ public class X103_Ping
     @Override
     public X103_Ping duplicate()
     {
-        return new X103_Ping(payload());
+        return new X103_Ping(_Payload);
     }
 
     @Override

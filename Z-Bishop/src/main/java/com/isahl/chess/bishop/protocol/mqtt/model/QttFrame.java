@@ -23,9 +23,10 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.features.model.channels.IVariableLength;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 
 import java.nio.ByteBuffer;
@@ -34,19 +35,19 @@ import java.nio.ByteBuffer;
  * @author william.d.zk
  * @date 2019-05-02
  */
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_FRAME_SERIAL)
 public class QttFrame
         extends MqttProtocol
         implements IReset,
-                   IFrame,
-                   IVariableLength
+                   IFrame
 {
     @Override
     public boolean isCtrl()
     {
-        int head = getOpCode() & 240;
-        return head == QttType.CONNECT.getValue() || head == QttType.CONNACK.getValue() ||
-               head == QttType.PINGREQ.getValue() || head == QttType.PINGRESP.getValue() ||
-               head == QttType.DISCONNECT.getValue() || head == QttType.AUTH.getValue();
+        return switch(QttType.valueOf(getOpCode())) {
+            case CONNECT, CONNACK, PINGREQ, PINGRESP, DISCONNECT, AUTH -> true;
+            default -> false;
+        };
     }
 
     @Override
@@ -84,7 +85,7 @@ public class QttFrame
     }
 
     @Override
-    public int lackLength(int position)
+    public int lack(int position)
     {
         mPayloadLength += (mLengthCode & 0x7F) << (position * 7);
         if(isLengthCodeLack()) {return 1;}
@@ -107,14 +108,6 @@ public class QttFrame
     }
 
     @Override
-    public byte[] payload()
-    {
-        return mPayload;
-    }
-
-    private final static int MQTT_FRAME = PROTOCOL_BISHOP_FRAME_SERIAL + 2;
-
-    @Override
     public int length()
     {
         return 1 + mPayloadLength +
@@ -122,39 +115,29 @@ public class QttFrame
     }
 
     @Override
-    public int serial()
+    public void decodec(ByteBuffer input)
     {
-        return MQTT_FRAME;
-    }
-
-    @Override
-    public int decodec(byte[] data, int pos)
-    {
-        setOpCode(data[pos++]);
-        if(pos < data.length) {
-            mPayloadLength = IoUtil.readVariableIntLength(ByteBuffer.wrap(data, pos, data.length - pos));
-            pos += mPayloadLength;
+        setOpCode(input.get());
+        if(input.hasRemaining()) {
+            mPayloadLength = IoUtil.readVariableIntLength(input);
             mPayload = new byte[mPayloadLength];
-            pos = IoUtil.read(data, pos, mPayload);
+            input.get(mPayload);
         }
-        return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        pos += IoUtil.writeByte(mFrameOpCode, data, pos);
-        byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
-        pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
+        output.put(mFrameOpCode);
+        output.put(IoUtil.variableLength(mPayloadLength));
         if(mPayloadLength > 0) {
-            pos += IoUtil.write(mPayload, data, pos);
+            output.put(mPayload);
         }
-        return pos;
     }
 
     @Override
-    public int command()
+    public int _sub()
     {
-        return getType().getValue();
+        return QttType.serialOf(getType());
     }
 }

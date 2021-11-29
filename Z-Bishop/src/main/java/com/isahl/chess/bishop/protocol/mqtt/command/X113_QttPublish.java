@@ -26,8 +26,8 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.util.IoUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -69,31 +69,28 @@ public class X113_QttPublish
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        int topicSize = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        mTopic = new String(data, pos, topicSize, StandardCharsets.UTF_8);
-        pos += topicSize;
+        int topicSize = input.getShort() & 0xFFFF;
+        mTopic = new String(input.array(), input.position(), topicSize, StandardCharsets.UTF_8);
+        input.position(input.position() + topicSize);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            pos = super.decodec(data, pos);
+            super.decodec(input);
         }
-        put(new byte[data.length - pos]);
-        pos = IoUtil.read(data, pos, this.payload());
-        return pos;
+        mPayload = new byte[input.remaining()];
+        input.get(mPayload);
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
         byte[] topicBytes = mTopic.getBytes(StandardCharsets.UTF_8);
-        pos += IoUtil.writeShort(topicBytes.length, data, pos);
-        pos += IoUtil.write(topicBytes, data, pos);
+        output.putShort((short) topicBytes.length);
+        output.put(topicBytes);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            pos = super.encodec(data, pos);
+            super.encodec(output);
         }
-        pos += IoUtil.write(this.payload(), data, pos);
-        return pos;
+        output.put(mPayload);
     }
 
     @Override
@@ -105,7 +102,7 @@ public class X113_QttPublish
                              getLevel(),
                              getMsgId(),
                              getTopic(),
-                             this.payload() == null ? "NULL" : new String(this.payload(), StandardCharsets.UTF_8));
+                             mPayload == null ? "NULL" : new String(mPayload, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -114,7 +111,7 @@ public class X113_QttPublish
         X113_QttPublish n113 = new X113_QttPublish();
         n113.setTopic(getTopic());
         n113.setLevel(getLevel());
-        n113.put(payload());
+        n113.put(mPayload);
         return n113;
     }
 }

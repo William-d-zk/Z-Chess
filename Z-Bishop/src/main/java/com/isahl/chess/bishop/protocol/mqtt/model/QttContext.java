@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;

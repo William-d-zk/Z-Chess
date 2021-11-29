@@ -53,9 +53,9 @@ public class AioPacket
     }
 
     @Override
-    public byte[] payload()
+    public ByteBuffer payload()
     {
-        return mBuf.array();
+        return mBuf;
     }
 
     @Override
@@ -196,23 +196,19 @@ public class AioPacket
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        int length = Math.min(data.length - pos, mBuf.remaining());
-        pos += IoUtil.write(data, pos, mBuf.array(), mBuf.position(), length);
-        //此处不应执行 buffer.flip() 控制暂存或打包的操作应在外层进行控制
-        mBuf.position(mBuf.position() + length);
-        return pos;
+        mBuf.put(input);
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        int length = Math.min(data.length - pos, mBuf.remaining());
-        pos += IoUtil.write(data, pos, mBuf.array(), mBuf.position(), length);
-        //此处不应执行 buffer.flip() 控制暂存或打包的操作应在外层进行控制
-        mBuf.position(mBuf.position() + length);
-        // since jdk13 buffer.put(byte[],offset,length)  没必要更新
-        return pos;
+        /*
+        int len = Math.min(output.remain,mBuf.remain)
+        mBuf.pos → mBuf.pos<=mBuf.limit && mBuf.pos=mBuf.pos + len
+        output.pos → output.pos=output.pos+len
+         */
+        output.put(mBuf);
     }
 }

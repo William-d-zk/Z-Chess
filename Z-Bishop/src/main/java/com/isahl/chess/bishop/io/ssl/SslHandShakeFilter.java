@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X105_SslHandShake;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X105_SslHandShake;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
@@ -56,10 +56,10 @@ public class SslHandShakeFilter<A extends IPContext>
         ByteBuffer netOutBuffer = null;
         do {
             if(netOutBuffer == null) {
-                netOutBuffer = context.doWrap(ByteBuffer.wrap(output.encode()));
+                netOutBuffer = context.doWrap(output.encode());
             }
             else {
-                netOutBuffer = IoUtil.appendBuffer(netOutBuffer, context.doWrap(ByteBuffer.wrap(output.encode())));
+                netOutBuffer = IoUtil.appendBuffer(netOutBuffer, context.doWrap(output.encode()));
             }
             handshakeStatus = context.getHandShakeStatus();
         }
@@ -99,19 +99,12 @@ public class SslHandShakeFilter<A extends IPContext>
     public IControl decode(SSLZContext<A> context, IPacket input)
     {
         IPacket unwrapped = context.getCarrier();
-
-        X105_SslHandShake x105;
-        if(unwrapped != null && unwrapped.getBuffer()
-                                         .hasRemaining())
-        {
-            byte[] hello = new byte[unwrapped.getBuffer()
-                                             .remaining()];
-            unwrapped.getBuffer()
-                     .get(hello);
-            x105 = new X105_SslHandShake(hello);
+        X105_SslHandShake x105 = new X105_SslHandShake();
+        if(unwrapped != null) {
+            x105.decode(unwrapped.getBuffer(), context);
         }
         else {
-            x105 = new X105_SslHandShake(null);
+            x105 = new X105_SslHandShake();
         }
         SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
         x105.setHandshakeStatus(handshakeStatus);
@@ -161,8 +154,8 @@ public class SslHandShakeFilter<A extends IPContext>
     @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && context.isProxy() && context instanceof SSLZContext &&
-           context.isOutFrame())
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && context.isProxy() &&
+           context instanceof SSLZContext && context.isOutFrame())
         {
             return new Pair<>(seek((SSLZContext<A>) context, (IControl) output), context);
         }

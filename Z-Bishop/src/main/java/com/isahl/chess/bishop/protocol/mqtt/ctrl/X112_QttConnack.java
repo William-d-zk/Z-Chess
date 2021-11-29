@@ -28,7 +28,8 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.base.util.IoUtil;
+
+import java.nio.ByteBuffer;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -125,19 +126,17 @@ public class X112_QttConnack
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        pos += IoUtil.writeByte(mPresent ? 1 : 0, data, pos);
-        pos += IoUtil.writeByte(mResponseCode, data, pos);
-        return pos;
+        output.put((byte) (mPresent ? 1 : 0));
+        output.put(mResponseCode);
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        mPresent = data[pos++] > 0;
-        mResponseCode = data[pos++];
-        return pos;
+        mPresent = input.get() > 0;
+        mResponseCode = input.get();
     }
 
     public boolean isIllegalState()
@@ -153,6 +152,6 @@ public class X112_QttConnack
     @Override
     public String toString()
     {
-        return String.format("%#x connack:[present:%s,result:%s]", command(), mPresent, getCode());
+        return String.format("%#x connack:[present:%s,result:%s]", serial(), mPresent, getCode());
     }
 }

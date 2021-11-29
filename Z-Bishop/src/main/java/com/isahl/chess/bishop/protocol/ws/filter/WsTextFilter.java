@@ -25,8 +25,8 @@ package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.bishop.protocol.ws.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.ws.zchat.model.ctrl.X10A_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X10A_PlainText;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
@@ -51,7 +51,8 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public WsFrame encode(T context, ICommand output)
     {
         WsFrame frame = new WsFrame();
-        frame.put(output.payload());
+        frame.put(output.payload()
+                        .array());
         frame.put(output.ctrl());
         return frame;
     }
@@ -60,7 +61,8 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public ICommand decode(T context, IFrame input)
     {
         ICommand command = new X10A_PlainText();
-        command.put(input.payload());
+        command.put(input.payload()
+                         .array());
         return command;
     }
 
@@ -90,7 +92,9 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && context.isInConvert() && context instanceof IWsContext) {
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && context.isInConvert() &&
+           context instanceof IWsContext)
+        {
             //filter 一定连在WsFrameFilter之后,从而不再判断额外的信息。
             return new Pair<>(ResultType.HANDLED, context);
         }

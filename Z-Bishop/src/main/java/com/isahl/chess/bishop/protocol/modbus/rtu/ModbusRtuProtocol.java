@@ -24,8 +24,9 @@
 package com.isahl.chess.bishop.protocol.modbus.rtu;
 
 import com.isahl.chess.king.base.util.CryptoUtil;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -46,41 +47,35 @@ public abstract class ModbusRtuProtocol
     {
     }
 
-    protected int    mLength;
     protected byte   mAddress;
     protected byte   mCtrl;
     protected byte[] mPayload;
     protected int    mCrc;
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void encodec(ByteBuffer output)
     {
-        int off = pos;
-        pos += IoUtil.writeByte(mAddress, data, pos);
-        pos += IoUtil.writeByte(mCtrl, data, pos);
-        pos += IoUtil.write(mPayload, data, pos);
-        pos += IoUtil.writeShort(mCrc = CryptoUtil.crc16_modbus(data, off, pos - off), data, pos);
-        return pos;
+        int off = output.position();
+        output.put(mAddress);
+        output.put(mCtrl);
+        output.put(mPayload);
+        output.putShort((short) (mCrc = CryptoUtil.crc16_modbus(output.array(), off, output.position() - off)));
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void decodec(ByteBuffer input)
     {
-        int off = pos;
-        mAddress = data[pos++];
-        mCtrl = data[pos++];
-        mPayload = new byte[data.length - 2 - pos];
-        pos += IoUtil.read(data, pos, mPayload);
-        mCrc = IoUtil.readShort(data, pos);
-        pos += 2;
-        mLength = pos - off;
-        return pos;
+        mAddress = input.get();
+        mCtrl = input.get();
+        mPayload = new byte[input.remaining() - 2];
+        input.get(mPayload);
+        mCrc = input.getShort();
     }
 
     @Override
     public int length()
     {
-        return mLength > 0 ? mLength : (mLength = 4 + (mPayload == null ? 0 : mPayload.length));
+        return 4 + (mPayload == null ? 0 : mPayload.length);
     }
 
     public int getCrc()

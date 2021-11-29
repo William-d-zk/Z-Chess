@@ -27,6 +27,8 @@ import com.isahl.chess.king.base.features.IDuplicate;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author william.d.zk
  * @date 2019-05-25
@@ -47,15 +49,12 @@ public abstract class MqttProtocol
     protected int        mVersion;
     protected QttContext mContext;
 
-    private byte[]  mPayload;
-    private boolean mDuplicate;
-    private boolean mRetain;
-    private byte    mQosLevel;
-    private QttType mType;
+    protected byte[]  mPayload;
+    private   QttType mType;
 
     private void checkOpCode()
     {
-        if(getLevel() == Level.ALMOST_ONCE && mDuplicate) {
+        if(getLevel() == Level.ALMOST_ONCE && isDuplicate()) {
             throw new IllegalStateException("level == 0 && duplicate");
         }
     }
@@ -72,7 +71,6 @@ public abstract class MqttProtocol
 
     public void setDuplicate(boolean duplicate)
     {
-        this.mDuplicate = duplicate;
         if(duplicate) {
             mFrameOpCode |= DUPLICATE_FLAG;
         }
@@ -84,12 +82,11 @@ public abstract class MqttProtocol
     @Override
     public boolean isDuplicate()
     {
-        return mDuplicate;
+        return (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
     }
 
     public void setRetain(boolean retain)
     {
-        this.mRetain = retain;
         if(retain) {
             mFrameOpCode |= RETAIN_FLAG;
         }
@@ -100,15 +97,14 @@ public abstract class MqttProtocol
 
     public boolean isRetain()
     {
-        return mRetain;
+        return (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
     }
 
     public void setLevel(Level level)
     {
-        mQosLevel = (byte) level.getValue();
         mFrameOpCode &= ~QOS_MASK;
-        mFrameOpCode |= mQosLevel << 1;
-        if(mQosLevel == 0) {
+        mFrameOpCode |= level.getValue() << 1;
+        if(level.getValue() == 0) {
             setDuplicate(false);
         }
     }
@@ -129,9 +125,6 @@ public abstract class MqttProtocol
         mFrameOpCode = opCode;
         mType = QttType.valueOf(getOpCode());
         if(mType == null) {throw new IllegalArgumentException();}
-        mDuplicate = (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
-        mRetain = (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
-        mQosLevel = (byte) ((mFrameOpCode & QOS_MASK) >> 1);
         checkOpCode();
     }
 
@@ -148,7 +141,7 @@ public abstract class MqttProtocol
 
     public IQoS.Level getLevel()
     {
-        return IQoS.Level.valueOf(mQosLevel);
+        return IQoS.Level.valueOf((mFrameOpCode & QOS_MASK) >> 1);
     }
 
     public int getVersion()
@@ -174,9 +167,9 @@ public abstract class MqttProtocol
     }
 
     @Override
-    public byte[] payload()
+    public ByteBuffer payload()
     {
-        return mPayload;
+        return ByteBuffer.wrap(mPayload);
     }
 
     @Override
