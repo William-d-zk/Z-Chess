@@ -39,10 +39,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,9 +64,9 @@ public class SerialProcessor
             final Context _Context = _ZProcessor.mEnvironment.getContext();
             final Trees _Trees = Trees.instance(_ZProcessor.mEnvironment);
 
-            Map<Integer, Integer> globalMap = new HashMap<>();
-            Map<String, Integer> classMap = new HashMap<>();
-            Map<String, Pair<Integer, Integer>> fieldMap = new HashMap<>();
+            Map<Integer, Integer> globalMap = new TreeMap<>();
+            Map<String, Integer> classMap = new TreeMap<>();
+            Map<String, Pair<Integer, Integer>> fieldMap = new TreeMap<>();
             try {
                 for(Field field : ISerial.class.getFields()) {
                     int value = field.getInt(ISerial.class);
