@@ -23,11 +23,9 @@
 
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 
 /**
  * @author william.d.zk
@@ -37,11 +35,6 @@ public class ZClusterFactory
         extends ZChatFactory
 {
     private final static ZClusterFactory _Instance = new ZClusterFactory();
-
-    public static <T extends ZProtocol & IControl> T Create(IFrame frame, ZContext context)
-    {
-        return _Instance.create(frame, context);
-    }
 
     protected <T extends ZProtocol & IControl> T build(int serial)
     {

@@ -30,6 +30,7 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
+import com.isahl.chess.queen.message.InnerProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -115,27 +117,34 @@ public class Mapper
                 _Index2SegmentMap.put(segment.getStartIndex(), segment);
             }
         }
-        String metaFileName = _LogMetaDir + File.separator + ".metadata";
+        String logMetaName = _LogMetaDir + File.separator + ".metadata";
         try {
-            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mLogMeta = LogMeta.load(LogMeta._Factory, metaFile);
+            RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
+            mLogMeta = InnerProtocol.load(LogMeta.class, metaFile);
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("log meta file not exist, name: %s", metaFileName);
+            _Logger.warning("log meta file not exist, name: %s", logMetaName);
         }
         catch(IOException e) {
             _Logger.warning("log meta load file error", e);
         }
-        metaFileName = _SnapshotDir + File.separator + ".metadata";
+        catch(InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
         try {
-            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mSnapshotMeta = SnapshotMeta.load(SnapshotMeta._Factory, metaFile);
+            RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
+            mSnapshotMeta = InnerProtocol.load(SnapshotMeta.class, metaFile);
+
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name: %s", metaFileName);
+            _Logger.warning("meta file not exist, name: %s", snapshotMetaName);
         }
         catch(IOException e) {
             _Logger.warning("snapshot meta load file error", e);
+        }
+        catch(InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
         }
         File configFile = getConfigFile();
         try {
@@ -326,7 +335,7 @@ public class Mapper
                                      return new Segment(sub, start, end, canWrite);
                                  }
                              }
-                             catch(IOException | IllegalArgumentException e) {
+                             catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
                                  e.printStackTrace();
                              }
                              return null;
@@ -396,7 +405,7 @@ public class Mapper
                         }
                         else {throw new IOException("create file failed");}
                     }
-                    catch(IOException e) {
+                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
                         _Logger.warning("create segment file failed %s", e, newFileName);
                         return false;
                     }

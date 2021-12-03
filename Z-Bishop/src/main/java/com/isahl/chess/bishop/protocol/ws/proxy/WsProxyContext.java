@@ -73,26 +73,7 @@ public class WsProxyContext<A extends IPContext>
         if(mTransfer == null) {
             mTransfer = new AioPacket(1 << 12, false);
         }
-        if(mTransfer.getBuffer()
-                    .capacity() < mTransfer.getBuffer()
-                                           .position() + packet.getBuffer()
-                                                               .limit())
-        {
-            AioPacket newBuf = new AioPacket(mTransfer.getBuffer()
-                                                      .capacity() * 2 + packet.getBuffer()
-                                                                              .limit(), false);
-            newBuf.getBuffer()
-                  .put(mTransfer.getBuffer()
-                                .array())
-                  .put(packet.getBuffer()
-                             .array());
-            mTransfer = newBuf;
-        }
-        else {
-            mTransfer.getBuffer()
-                     .put(packet.getBuffer()
-                                .array());
-        }
+        mTransfer.append(packet);
         return mTransfer;
     }
 }

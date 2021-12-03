@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
@@ -40,16 +39,13 @@ import java.util.TreeSet;
 
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL,
-                  serial = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL + 1)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 1)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LogMeta
         extends BaseMeta
 {
-
-    private static Logger LOG = Logger.getLogger("cluster.knight." + LogMeta.class.getSimpleName());
-
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
      * <p>
@@ -227,12 +223,6 @@ public class LogMeta
         mStart = MIN_START;
     }
 
-    public static Factory<LogMeta> _Factory = serial->{
-        LogMeta meta = new LogMeta();
-        if(meta.serial() == serial) {return meta;}
-        return null;
-    };
-
     public long getStart()
     {
         return mStart;
@@ -326,5 +316,4 @@ public class LogMeta
     {
         return mIndexTerm;
     }
-
 }

@@ -64,11 +64,6 @@ public class AioPacket
         return mBuf;
     }
 
-    @Override
-    public IPacket wrapper(ByteBuffer buffer)
-    {
-        return new AioPacket(buffer);
-    }
 
     @Override
     public boolean isSending()
@@ -125,7 +120,7 @@ public class AioPacket
     @Override
     public int length()
     {
-        return mBuf.capacity();
+        return mBuf.limit();
     }
 
     @Override
@@ -193,6 +188,15 @@ public class AioPacket
     public void expand(int size)
     {
         mBuf = IoUtil.expandBuffer(mBuf, size);
+    }
+
+    public void append(IPacket other)
+    {
+        if(mBuf.remaining() < other.length()) {
+            expand(other.length() - mBuf.remaining());
+        }
+        put(other.encode()
+                 .flip());
     }
 
     @Override

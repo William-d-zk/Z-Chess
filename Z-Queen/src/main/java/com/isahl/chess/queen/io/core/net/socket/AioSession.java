@@ -69,14 +69,14 @@ public class AioSession<C extends IPContext>
     /*
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
-    private final ByteBuffer      _RecvBuf;
-    private final C               _Context;
-    private final int      _HashCode;
-    private final IDismiss _DismissCallback;
-    private final int      _QueueSizeMax;
-    private final IAioSort<C>     _Sort;
-    private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
-    private final boolean         _MultiBind;
+    private final ByteBuffer    _RecvBuf;
+    private final C             _Context;
+    private final int           _HashCode;
+    private final IDismiss      _DismissCallback;
+    private final int           _QueueSizeMax;
+    private final IAioSort<C>   _Sort;
+    private final AtomicInteger _State = new AtomicInteger(SESSION_CREATED);
+    private final boolean       _MultiBind;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -315,12 +315,14 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public C getContext()
     {
         return _Context;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends IPContext> T getContext(Class<T> clazz)
     {
         if(_Context.getClass() == clazz) {
@@ -430,9 +432,7 @@ public class AioSession<C extends IPContext>
             int size = Math.min(mSendingBlank, buf.remaining());
             mWroteExpect += size;
             mSending.limit(pos + size);
-            for(int i = 0; i < size; i++, mSendingBlank--, pos++) {
-                mSending.put(pos, buf.get());
-            }
+            mSending.put(pos, buf, buf.position(), mSendingBlank);
             if(buf.hasRemaining()) {
                 return WRITE_STATUS.UNFINISHED;
             }

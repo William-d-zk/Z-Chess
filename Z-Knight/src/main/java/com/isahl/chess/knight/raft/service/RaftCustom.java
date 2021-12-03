@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X106_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -33,7 +32,6 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
-import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.events.cluster.IConsistencyReject;
@@ -55,10 +53,9 @@ public class RaftCustom
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>() {};
-    private final RaftPeer                      _RaftPeer;
-    private final List<IConsistencyHandler>     _HandlerList                 = new LinkedList<>();
-    private final IConsistencyReject            _Reject;
+    private final RaftPeer                  _RaftPeer;
+    private final List<IConsistencyHandler> _HandlerList = new LinkedList<>();
+    private final IConsistencyReject        _Reject;
 
     public RaftCustom(RaftPeer raftPeer, IConsistencyReject reject)
     {

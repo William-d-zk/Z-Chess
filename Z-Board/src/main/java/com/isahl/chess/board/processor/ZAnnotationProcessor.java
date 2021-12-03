@@ -5,27 +5,29 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import javax.annotation.processing.*;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.format;
+
 /**
  * @author william.d.zk
  */
-@SupportedAnnotationTypes({
-        "com.isahl.chess.board.annotation.ISerialGenerator",
-        "com.isahl.chess.board.annotation.ISerialFactory"
+@SupportedAnnotationTypes({ "com.isahl.chess.board.annotation.ISerialGenerator",
+                            "com.isahl.chess.board.annotation.ISerialFactory"
 })
 public class ZAnnotationProcessor
         extends AbstractProcessor
 {
     protected Filer                      mFiler;
-    protected Messager                   mMessager;
     protected Elements                   mElementUtils;
     protected JavacProcessingEnvironment mEnvironment;
+    protected Writer                     mWriter;
 
     private final List<IAnnotationProcessor> _ProcessorQueue = new LinkedList<>();
 
@@ -36,10 +38,29 @@ public class ZAnnotationProcessor
         mEnvironment = (JavacProcessingEnvironment) processingEnv;
         mElementUtils = processingEnv.getElementUtils();
         mFiler = processingEnv.getFiler();
-        mMessager = processingEnv.getMessager();
-        note("custom processor: %s", getClass().getSimpleName());
+        note(format("custom processor: %s", getClass().getSimpleName()));
         addProcessor(new SerialProcessor(this));
         addProcessor(new FactoryProcessor(this));
+    }
+
+    public ZAnnotationProcessor()
+    {
+        try {
+            String path = System.getProperty("user.home") + File.separator + "Z-Chess" + File.separator + "processor";
+            File directory = new File(path);
+            File sf;
+            if(!directory.exists() && !directory.mkdirs()) {
+                return;
+            }
+            sf = new File(path + File.separator + "annotation.log");
+            if(!sf.exists() && !sf.createNewFile()) {
+                return;
+            }
+            mWriter = new PrintWriter(sf);
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -50,26 +71,17 @@ public class ZAnnotationProcessor
                 break;
             }
         }
-        return false;
+        return true;
     }
 
     protected void note(String msg)
     {
-        mMessager.printMessage(Diagnostic.Kind.NOTE, msg);
-        System.out.println(msg);
-    }
-
-    protected void note(String format, Object... args)
-    {
-        mMessager.printMessage(Diagnostic.Kind.NOTE, String.format(format, args));
-        System.out.println(String.format(format, args));
-    }
-
-    protected void write(Writer writer, StringBuilder builder, String... contents) throws IOException
-    {
-        for(String str : contents) {
-            writer.write(str);
-            builder.append(str);
+        try {
+            mWriter.write(format("%s\n", msg));
+            mWriter.flush();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
         }
     }
 

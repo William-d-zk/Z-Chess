@@ -39,9 +39,9 @@ public class ZCommandFilter<T extends ZContext>
         extends AioFilterChain<T, IControl, IFrame>
 {
 
-    private final IFactory<IFrame, T> _CommandFactory;
+    private final IoFactory<IFrame, T> _CommandFactory;
 
-    public ZCommandFilter(IFactory<IFrame, T> factory)
+    public ZCommandFilter(IoFactory<IFrame, T> factory)
     {
         super("z_command");
         _CommandFactory = Objects.requireNonNull(factory);

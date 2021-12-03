@@ -36,7 +36,7 @@ import com.isahl.chess.bishop.protocol.zchat.factory.ZSymmetryFactory;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZControlFilter;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.content.IFactory;
+import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -49,7 +49,7 @@ public class WsZSort
     public WsZSort(Mode mode, Type type)
     {
         super(mode, type, "ws-zchat");
-        IFactory<IFrame, ZContext> factory = switch(mode) {
+        IoFactory<IFrame, ZContext> factory = switch(mode) {
             case CLUSTER -> new ZClusterFactory();
             case LINK -> switch(type) {
                 case SERVER -> new ZServerFactory();

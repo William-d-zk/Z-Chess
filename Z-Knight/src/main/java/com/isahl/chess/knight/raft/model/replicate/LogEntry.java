@@ -40,7 +40,7 @@ import java.nio.ByteBuffer;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends InnerProtocol
@@ -119,12 +119,6 @@ public class LogEntry
                      2;  //sub
         return length + super.length();
     }
-
-    public static Factory<LogEntry> _Factory = serial->{
-        LogEntry entry = new LogEntry();
-        if(serial == entry.serial()) {return entry;}
-        return null;
-    };
 
     @Override
     public ByteBuffer encode()

@@ -30,7 +30,7 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IFactory;
+import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
 
 import java.nio.ByteBuffer;
 
@@ -41,7 +41,7 @@ import static java.lang.String.format;
  * @date 2020/4/11
  */
 public class QttFactory
-        implements IFactory<QttFrame, QttContext>
+        implements IoFactory<QttFrame, QttContext>
 {
     private static final QttFactory _Instance = new QttFactory();
 

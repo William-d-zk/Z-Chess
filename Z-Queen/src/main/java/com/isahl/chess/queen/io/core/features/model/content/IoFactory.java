@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  * @author william.d.zk
  * @see IRespConnected
  */
-public interface IFactory<I extends IFrame, C extends IContext>
+public interface IoFactory<I extends IFrame, C extends IContext>
 {
     <T extends IControl> T create(I frame, C context);
 

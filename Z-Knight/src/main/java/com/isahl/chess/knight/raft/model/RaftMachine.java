@@ -45,7 +45,7 @@ import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
  * @author william.d.zk
  * @date 2019/12/10
  */
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftMachine
         extends InnerProtocol

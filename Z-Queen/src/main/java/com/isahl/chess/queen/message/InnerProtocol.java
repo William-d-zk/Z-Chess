@@ -28,6 +28,7 @@ import com.isahl.chess.queen.db.model.IStorage;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -143,30 +144,21 @@ public abstract class InnerProtocol
         }
     }
 
-    public interface Factory<T extends InnerProtocol>
-    {
-        default T create(int serial, ByteBuffer input)
-        {
-            T ip = build(serial);
-            if(ip != null) {
-                ip.decode(input);
-            }
-            return ip;
-        }
-
-        T build(int serial);
-    }
-
-    public static <T extends InnerProtocol> T load(Factory<T> provider, DataInput input) throws IOException
+    public static <T extends InnerProtocol> T load(Class<T> clazz,
+                                                   DataInput input) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
     {
         int length = IoUtil.readVariableIntLength(input);
         byte[] vLength = IoUtil.variableLength(length);
         ByteBuffer buffer = ByteBuffer.allocate(length + vLength.length);
         buffer.put(vLength);
-        int serial = input.readUnsignedShort();
-        buffer.putShort((short) serial);
-        input.readFully(buffer.array(), buffer.position(), buffer.remaining());
-        return provider.create(serial, buffer.clear());
+        T t = clazz.getDeclaredConstructor()
+                   .newInstance();
+        if(length > 0 && t.serial() == input.readUnsignedShort()) { //vLength ≥ 1
+            buffer.putShort((short) t.serial());
+            input.readFully(buffer.array(), buffer.position(), buffer.remaining());
+            t.decode(buffer.clear());
+        }
+        return t;
     }
 
 }

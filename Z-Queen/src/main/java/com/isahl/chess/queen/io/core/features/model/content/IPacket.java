@@ -50,8 +50,6 @@ public interface IPacket
 
     ByteBuffer getBuffer();
 
-    IPacket wrapper(ByteBuffer buffer);
-
     IPacket flip();
 
     void put(ByteBuffer src);
@@ -59,6 +57,8 @@ public interface IPacket
     void replace(ByteBuffer src);
 
     void expand(int size);
+
+    void append(IPacket other);
 
     enum Status
     {
