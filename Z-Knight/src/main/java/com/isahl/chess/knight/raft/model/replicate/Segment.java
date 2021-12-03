@@ -25,11 +25,13 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.queen.message.InnerProtocol;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +90,10 @@ public class Segment
         return logEntry;
     }
 
-    public Segment(File file, long startIndex, long endIndex, boolean canWrite) throws IOException
+    public Segment(File file,
+                   long startIndex,
+                   long endIndex,
+                   boolean canWrite) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
         mFileName = file.getAbsolutePath();
         _FileDirectory = file.getParent();
@@ -159,21 +164,21 @@ public class Segment
         }
     }
 
-    private void loadRecord() throws IOException
+    private void loadRecord() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
         long offset = 0;
         long startIndex = -1;
         long endIndex = 0;
         if(mFileSize == 0) {return;}
         while(offset < mFileSize) {
-            long entryStart = mRandomAccessFile.getFilePointer();
-            LogEntry entry = LogEntry.load(LogEntry._Factory, mRandomAccessFile);
-            if(entry != null) {
+            long start = mRandomAccessFile.getFilePointer();
+            LogEntry entry = InnerProtocol.load(LogEntry.class, mRandomAccessFile);
+            if(entry.getIndex() > 0) {
                 endIndex = entry.getIndex();
                 if(startIndex < 0) {
                     startIndex = endIndex;
                 }
-                _Records.add((int) (endIndex - startIndex), new Record(entryStart, entry));
+                _Records.add((int) (endIndex - startIndex), new Record(start, entry));
             }
             offset = mRandomAccessFile.getFilePointer();
         }

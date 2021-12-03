@@ -39,12 +39,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -57,6 +56,8 @@ public class SerialProcessor
 
     public SerialProcessor(ZAnnotationProcessor zProcessor) {_ZProcessor = zProcessor;}
 
+    private boolean mHasMethodSerial, mHasMethodSuper, mHasFieldSerial;
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
@@ -64,15 +65,14 @@ public class SerialProcessor
             final Context _Context = _ZProcessor.mEnvironment.getContext();
             final Trees _Trees = Trees.instance(_ZProcessor.mEnvironment);
 
-            Map<Integer, Integer> globalMap = new TreeMap<>();
-            Map<String, Integer> classMap = new TreeMap<>();
-            Map<String, Pair<Integer, Integer>> fieldMap = new TreeMap<>();
+            Map<String, Pair<Integer, Integer>> classMap = new TreeMap<>();
+            Map<Integer, Pair<String, Integer>> parentCountMap = new TreeMap<>();
+            Set<Integer> serialSet = new TreeSet<>();
             try {
                 for(Field field : ISerial.class.getFields()) {
-                    int value = field.getInt(ISerial.class);
+                    int parent = field.getInt(ISerial.class);
                     String name = field.getName();
-                    fieldMap.put(name, Pair.of(value, 0));
-                    globalMap.put(value, 0);
+                    parentCountMap.put(parent, Pair.of(name, 0));
                 }
             }
             catch(IllegalAccessException e) {
@@ -96,21 +96,22 @@ public class SerialProcessor
                 if(globalFile.length() > 0) {
                     String line;
                     Pattern fieldPattern = Pattern.compile("(\\w+):(\\d+)=(\\d+)");
-                    Pattern classPattern = Pattern.compile("(.+)\\[(\\d+)]");
+                    Pattern classPattern = Pattern.compile("(.+)\\[(\\d+)]@<(\\d+)>");
                     while((line = globalFile.readLine()) != null) {
                         Matcher matcher = fieldPattern.matcher(line);
                         if(matcher.matches()) {
                             String field = matcher.group(1);
-                            int key = Integer.parseInt(matcher.group(2));
+                            int parent = Integer.parseInt(matcher.group(2));
                             int count = Integer.parseInt(matcher.group(3));
-                            globalMap.put(key, count);
-                            fieldMap.put(field, Pair.of(key, count));
+                            parentCountMap.put(parent, Pair.of(field, count));
                         }
                         matcher = classPattern.matcher(line);
                         if(matcher.matches()) {
                             String className = matcher.group(1);
                             int serial = Integer.parseInt(matcher.group(2));
-                            classMap.put(className, serial);
+                            int parent = Integer.parseInt(matcher.group(3));
+                            classMap.put(className, Pair.of(parent, serial));
+                            serialSet.add(serial);
                         }
                     }
 
@@ -134,59 +135,81 @@ public class SerialProcessor
                                                                   .toString();
                         String className = pkgName + "." + element.getSimpleName()
                                                                   .toString();
-                        _ZProcessor.note("annotation class:%s", className);
-                        boolean hasSerial = false;
-                        boolean hasSuper = false;
+                        note(format("annotation class: %s", className));
                         List<? extends Element> enclosedElements = element.getEnclosedElements();
                         for(Element enclosed : enclosedElements) {
                             if(enclosed.getKind() == ElementKind.METHOD) {
                                 switch(enclosed.getSimpleName()
                                                .toString()) {
-                                    case "serial" -> hasSerial = true;
-                                    case "_super" -> hasSuper = true;
+                                    case "serial" -> mHasMethodSerial = true;
+                                    case "_super" -> mHasMethodSuper = true;
+                                }
+                            }
+                            if(enclosed.getKind() == ElementKind.FIELD) {
+                                switch(enclosed.getSimpleName()
+                                               .toString()) {
+                                    case "_SERIAL" -> mHasFieldSerial = true;
                                 }
                             }
                         }
                         ISerialGenerator generator = element.getAnnotation(ISerialGenerator.class);
-                        int parent = generator.parent();
-                        int serial = generator.serial();
+                        final int parent = generator.parent();
+                        final int serial = generator.serial();
                         final int cs;
-                        if(serial < 0 && !classMap.containsKey(className)) {
-                            serial = parent + globalMap.computeIfPresent(parent, (k, v)->v + 1);
-                            _ZProcessor.note("+ class:%s,%d [%d]", className, parent, serial);
-                        }
-                        if(classMap.containsKey(className)) {
-                            serial = classMap.get(className);
-                            _ZProcessor.note("= class:%s,%d [%d]", className, parent, serial);
-                        }
+
+                        //update serial-field-count key 必然存在
+                        parentCountMap.computeIfPresent(parent, (k, v)->Pair.of(v.fst, v.snd + 1));
+
                         if(serial > 0) {
-                            int count = serial - parent;
-                            globalMap.computeIfPresent(parent, (k, v)->Math.max(count, v));
-                            _ZProcessor.note("- class:%s,%d [%d]", className, parent, serial);
+                            cs = classMap.computeIfAbsent(className, k->{
+                                if(!serialSet.add(serial)) {
+                                    String oldName = null;
+                                    for(Map.Entry<String, Pair<Integer, Integer>> e : classMap.entrySet()) {
+                                        if(e.getValue().snd == serial) {
+                                            oldName = e.getKey();
+                                            break;
+                                        }
+                                    }
+                                    if(oldName != null) {
+                                        for(int i = parent + 1; ; i++) {
+                                            if(serialSet.add(i)) {
+                                                classMap.put(oldName, Pair.of(parent, i));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                return Pair.of(parent, serial);
+                            }).snd;
                         }
-                        cs = serial;
+                        else {
+                            cs = classMap.computeIfAbsent(className, k->{
+                                for(int i = parent + 1; ; i++) {
+                                    if(serialSet.add(i)) {
+                                        return Pair.of(parent, i);
+                                    }
+                                }
+                            }).snd;
+                        }
 
                         JCTree tree = (JCTree) _Trees.getTree(element);
-                        tree.accept(new SerialTranslator(_Context,
-                                                         hasSuper,
-                                                         hasSerial,
-                                                         generator.parent(),
-                                                         classMap.computeIfAbsent(className, (ck)->cs)));
+                        tree.accept(new SerialTranslator(this, _Context, generator.parent(), cs));
                     });
             try {
                 globalFile.setLength(0);
-                for(Map.Entry<String, Pair<Integer, Integer>> entry : fieldMap.entrySet()) {
-                    globalFile.write(String.format("%s:%d=%d\r\n",
-                                                   entry.getKey(),
-                                                   entry.getValue().fst,
-                                                   globalMap.get(entry.getValue().fst))
-                                           .getBytes(StandardCharsets.UTF_8));
+                for(Map.Entry<Integer, Pair<String, Integer>> entry : parentCountMap.entrySet()) {
+                    globalFile.write(format("%s:%d=%d\n",
+                                            entry.getValue().fst,
+                                            entry.getKey(),
+                                            entry.getValue().snd).getBytes(StandardCharsets.UTF_8));
                 }
-                for(Map.Entry<String, Integer> entry : classMap.entrySet()) {
-                    globalFile.write(String.format("%s[%d]\r\n", entry.getKey(), entry.getValue())
-                                           .getBytes(StandardCharsets.UTF_8));
+                for(Map.Entry<String, Pair<Integer, Integer>> entry : classMap.entrySet()) {
+                    globalFile.write(format("%s[%d]@<%d>\n",
+                                            entry.getKey(),
+                                            entry.getValue().snd,
+                                            entry.getValue().fst).getBytes(StandardCharsets.UTF_8));
                 }
-
+                globalFile.close();
             }
             catch(IOException e) {
                 e.printStackTrace();
@@ -201,4 +224,23 @@ public class SerialProcessor
         return false;
     }
 
+    public void note(String msg)
+    {
+        _ZProcessor.note(msg);
+    }
+
+    public boolean existMethodSuper()
+    {
+        return mHasMethodSuper;
+    }
+
+    public boolean existMethodSerial()
+    {
+        return mHasMethodSerial;
+    }
+
+    public boolean existFieldSerial()
+    {
+        return mHasFieldSerial;
+    }
 }

@@ -43,7 +43,7 @@ import java.nio.ByteBuffer;
  * @date 2020/7/13
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 public class SnapshotEntry
         extends InnerProtocol
         implements ITraceable,

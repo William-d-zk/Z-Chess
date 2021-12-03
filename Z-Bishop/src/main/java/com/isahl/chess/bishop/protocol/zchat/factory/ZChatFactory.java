@@ -4,13 +4,13 @@ import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.*;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IFactory;
+import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 
 import java.nio.ByteBuffer;
 
 public class ZChatFactory
-        implements IFactory<IFrame, ZContext>
+        implements IoFactory<IFrame, ZContext>
 {
     @Override
     public <T extends IControl> T create(IFrame frame, ZContext context)

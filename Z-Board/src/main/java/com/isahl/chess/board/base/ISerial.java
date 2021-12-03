@@ -38,6 +38,7 @@ public interface ISerial
     int CORE_KING_INTERNAL_SERIAL        = 0x400;// 0x401~0x4FE(1025~1278)
     int CORE_KING_JSON_SERIAL            = 0x800;// 0xA01~0xAFE(2561~2814)
     int STORAGE_ROOK_DB_SERIAL           = 0xA00;// 0x801~0x8FE(2049~2302)
+    int CLUSTER_KNIGHT_RAFT_SERIAL       = 0xB00;// 0xB01~0xBFE(2817~3055)
     int CLUSTER_KNIGHT_CONSISTENT_SERIAL = 0xE00;// 0xE01~0xEFE(3584~3838)
     int BIZ_PLAYER_API_SERIAL            = 0xF00;// 0xF01~0xFFE(3841~4094)`
 
@@ -170,4 +171,5 @@ public interface ISerial
         }
         throw new ArrayIndexOutOfBoundsException("malformed length");
     }
+
 }

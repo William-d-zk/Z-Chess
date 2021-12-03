@@ -135,13 +135,15 @@ public class Rc4
         if(!buffer.hasRemaining() || key == null) {return;}
         ksa(key);
         int limit = buffer.limit();
+        byte[] dst = buffer.array();
         for(int x = buffer.position(); x < limit; x++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);
             int k = S[((S[i] & 0xFF) + (S[j] & 0xFF)) & 0xFF] & 0xFF;
-            buffer.put(x, (byte) (buffer.get(x) ^ k));
+            dst[x] = (byte) (dst[x] ^ k);
         }
+        buffer.position(buffer.limit());
     }
 
     @Override

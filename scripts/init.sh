@@ -22,6 +22,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+cd ../Z-Board || exit
+mvn -P dev clean install -Dmaven.test.skip=true
+
 cd ~ || exit
 rm -rf Z-Chess
 mkdir -p Z-Chess/raft00

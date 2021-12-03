@@ -32,8 +32,8 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.nio.ByteBuffer;
 
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL,
-                  serial = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL + 2)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SnapshotMeta
         extends BaseMeta
@@ -96,12 +96,6 @@ public class SnapshotMeta
         mTerm = 0;
         flush();
     }
-
-    static Factory<SnapshotMeta> _Factory = serial->{
-        SnapshotMeta meta = new SnapshotMeta();
-        if(meta.serial() == serial) {return meta;}
-        return null;
-    };
 
     public void setCommit(long commit)
     {

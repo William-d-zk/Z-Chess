@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -40,13 +39,11 @@ import java.nio.charset.StandardCharsets;
  * @date 2021/06/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 public class RaftNode
         extends InnerProtocol
         implements Comparable<RaftNode>
 {
-
-    static final Logger LOG = Logger.getLogger("cluster.knight." + RaftNode.class.getSimpleName());
 
     private String    mHost;
     private int       mPort;

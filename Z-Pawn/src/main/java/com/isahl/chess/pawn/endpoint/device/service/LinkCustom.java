@@ -104,7 +104,7 @@ public class LinkCustom
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
             case 0x76, 0x79 -> {
-                IProtocol consensusBody = ClusterFactory.create(consistency._sub(), consistency.payload());
+                IProtocol consensusBody = ClusterFactory.oneOf(consistency._sub(), consistency.payload());
                 return (T) consensusBody;
             }
             default -> {
