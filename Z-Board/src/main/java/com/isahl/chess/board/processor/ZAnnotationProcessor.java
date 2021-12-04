@@ -18,8 +18,9 @@ import static java.lang.String.format;
 /**
  * @author william.d.zk
  */
-@SupportedAnnotationTypes({ "com.isahl.chess.board.annotation.ISerialGenerator",
-                            "com.isahl.chess.board.annotation.ISerialFactory"
+@SupportedAnnotationTypes({
+        "com.isahl.chess.board.annotation.ISerialGenerator",
+        "com.isahl.chess.board.annotation.ISerialFactory"
 })
 public class ZAnnotationProcessor
         extends AbstractProcessor
