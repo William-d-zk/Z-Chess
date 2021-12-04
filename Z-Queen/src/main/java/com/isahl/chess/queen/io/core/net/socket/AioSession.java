@@ -135,8 +135,8 @@ public class AioSession<C extends IPContext>
         //------------------------------------------------------------
         option.configChannel(channel);
         mIndex = INVALID_INDEX;
-        mSending = _Context.getWrBuffer();
-        mSending.flip();
+        mSending = _Context.getWrBuffer()
+                           .flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
     }
 
@@ -379,8 +379,8 @@ public class AioSession<C extends IPContext>
         if(isClosed()) {return WRITE_STATUS.CLOSED;}
         mWroteExpect -= wroteCnt;
         if(mWroteExpect == 0) {
-            mSending.clear();
-            mSending.flip();
+            mSending.clear()
+                    .flip();
             if(isEmpty()) {
                 recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
@@ -411,7 +411,7 @@ public class AioSession<C extends IPContext>
                         continue;
                     case UNFINISHED:
                         fps.send();
-                        break Loop;
+                        break Loop;//mSending fill full
                     case IN_SENDING:
                         fps.sent();
                     default:
@@ -420,6 +420,7 @@ public class AioSession<C extends IPContext>
             }
         }
         while(Objects.nonNull(fps));
+        //mSending 被填满，或者缓冲队列中没有待发数据
         _Logger.debug("session remain buffed %d", size());
     }
 
@@ -427,12 +428,12 @@ public class AioSession<C extends IPContext>
     {
         ByteBuffer buf = ps.getBuffer();
         if(Objects.nonNull(buf) && buf.hasRemaining()) {
-            int pos = mSending.limit();
-            mSendingBlank = mSending.capacity() - pos;
+            int w_pos = mSending.limit();
+            mSendingBlank = mSending.capacity() - w_pos;
             int size = Math.min(mSendingBlank, buf.remaining());
-            mWroteExpect += size;
-            mSending.limit(pos + size);
-            mSending.put(pos, buf, buf.position(), mSendingBlank);
+            mSending.limit(w_pos + size);
+            mSending.put(w_pos, buf, buf.position(), size);
+            buf.position(buf.position() + size);
             if(buf.hasRemaining()) {
                 return WRITE_STATUS.UNFINISHED;
             }
@@ -450,7 +451,7 @@ public class AioSession<C extends IPContext>
     private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException
     {
         if(stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
-            _Logger.debug("flush %d | %s", mSending.remaining(), this);
+            _Logger.debug("flush %d | %s", mWroteExpect = mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
             advanceState(_State, SESSION_FLUSHED, CAPACITY);
         }

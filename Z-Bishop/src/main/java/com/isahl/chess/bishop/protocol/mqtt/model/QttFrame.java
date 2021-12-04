@@ -68,11 +68,11 @@ public class QttFrame
         mPayloadLength = -1;
         mFrameOpCode = 0;
         mLengthCode = 0;
+        mPayload = null;
     }
 
-    private byte   mLengthCode;
-    private int    mPayloadLength;
-    private byte[] mPayload;
+    private byte mLengthCode;
+    private int  mPayloadLength;
 
     public void setLengthCode(byte lengthCode)
     {

@@ -66,14 +66,12 @@ public class EncodeHandler
     {
         if(event.hasError()) {
             switch(event.getErrorType()) {
-                case FILTER_ENCODE:
-                case ILLEGAL_STATE:
-                case ILLEGAL_BIZ_STATE:
-                default:
-                    /*
-                     * 透传到 EncodedHandler 去投递 _Error
-                     */
-                    break;
+                case FILTER_ENCODE, ILLEGAL_STATE, ILLEGAL_BIZ_STATE -> {}
+                default -> {
+                }
+                /*
+                 * 透传到 EncodedHandler 去投递 _Error
+                 */
             }
         }
         else {
