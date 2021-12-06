@@ -33,7 +33,7 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x05)
 public class X05_EncryptStart
         extends ZControl

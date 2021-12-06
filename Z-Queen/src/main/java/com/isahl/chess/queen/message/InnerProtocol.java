@@ -113,7 +113,7 @@ public abstract class InnerProtocol
     @Override
     public ByteBuffer payload()
     {
-        return mPayload != null ? ByteBuffer.wrap(mPayload) : null;
+        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
     }
 
     @Override

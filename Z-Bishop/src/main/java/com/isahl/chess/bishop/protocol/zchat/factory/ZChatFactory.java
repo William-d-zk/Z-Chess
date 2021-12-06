@@ -2,6 +2,7 @@ package com.isahl.chess.bishop.protocol.zchat.factory;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X109_Consensus;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.*;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IoFactory;

@@ -29,7 +29,7 @@ import com.isahl.chess.board.base.ISerial;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x108)
 public class X108_Shutdown
         extends ZControl

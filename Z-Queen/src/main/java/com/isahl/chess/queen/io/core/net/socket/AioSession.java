@@ -59,8 +59,8 @@ public class AioSession<C extends IPContext>
         extends LinkedList<IPacket>
         implements ISession
 {
-    private final Logger                    _Logger = Logger.getLogger(
-            "io.queen.session." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;
@@ -138,6 +138,7 @@ public class AioSession<C extends IPContext>
         mSending = _Context.getWrBuffer()
                            .flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
+        _Logger.debug("session:keepalive [%d]S", _ReadTimeOutInSecond);
     }
 
     @Override

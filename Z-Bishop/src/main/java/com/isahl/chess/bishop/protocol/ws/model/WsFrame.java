@@ -116,7 +116,7 @@ public class WsFrame
     @Override
     public ByteBuffer payload()
     {
-        return ByteBuffer.wrap(mPayload);
+        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
     }
 
     @Override
