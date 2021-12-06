@@ -894,7 +894,7 @@ public interface IoUtil
 
     static String longArrayToHex(long[] l)
     {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder("{");
         if(l != null) {
             for(int i = 0; i < l.length; i++) {
                 sb.append(String.format("%#x", l[i]));
@@ -903,7 +903,22 @@ public interface IoUtil
                 }
             }
         }
-        sb.append("]");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    static String longArrayToHex(Long[] l)
+    {
+        StringBuilder sb = new StringBuilder("{");
+        if(l != null) {
+            for(int i = 0; i < l.length; i++) {
+                sb.append(String.format("%#x", l[i]));
+                if(i < l.length - 1) {
+                    sb.append(',');
+                }
+            }
+        }
+        sb.append("}");
         return sb.toString();
     }
 

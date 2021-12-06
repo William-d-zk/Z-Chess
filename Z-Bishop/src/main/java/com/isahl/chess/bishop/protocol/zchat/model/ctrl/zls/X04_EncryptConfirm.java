@@ -34,7 +34,7 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x04)
 public class X04_EncryptConfirm
         extends ZControl

@@ -65,7 +65,7 @@ public abstract class WsControl
     @Override
     public ByteBuffer payload()
     {
-        return ByteBuffer.wrap(_Payload);
+        return _Payload == null ? null : ByteBuffer.wrap(_Payload);
     }
 
     public void put(byte[] payload)

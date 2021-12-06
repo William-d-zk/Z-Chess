@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
 import com.isahl.chess.king.base.features.IDuplicate;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
@@ -38,6 +39,8 @@ public abstract class MqttProtocol
                    IQoS,
                    IDuplicate
 {
+    protected final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+
     public final static byte VERSION_V3_1_1 = 4;
     public final static byte VERSION_V5_0   = 5;
 
@@ -169,7 +172,7 @@ public abstract class MqttProtocol
     @Override
     public ByteBuffer payload()
     {
-        return ByteBuffer.wrap(mPayload);
+        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
     }
 
     @Override

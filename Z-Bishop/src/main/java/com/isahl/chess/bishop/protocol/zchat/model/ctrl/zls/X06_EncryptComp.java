@@ -32,7 +32,7 @@ import java.nio.ByteBuffer;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x06)
 public class X06_EncryptComp
         extends ZControl

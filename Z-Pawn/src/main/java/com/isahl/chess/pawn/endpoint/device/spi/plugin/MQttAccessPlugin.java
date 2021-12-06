@@ -37,6 +37,7 @@ import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
@@ -104,6 +105,7 @@ public class MQttAccessPlugin
         switch(content.serial()) {
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
+
                 if(x113.isRetain()) {
                     retain(x113.getTopic(), x113);
                 }
@@ -235,7 +237,7 @@ public class MQttAccessPlugin
                 }
             }
             case 0x118, 0x11A, 0x11E -> {
-                _Logger.info("%s ,wait for consistent notify", input);
+                _Logger.info("link control [%s] ", input);
                 return new Triple<>(null, input, SINGLE);
             }
             case 0x11F -> {
@@ -419,7 +421,6 @@ public class MQttAccessPlugin
     @Override
     public Map<Long, IQoS.Level> broker(String topic)
     {
-        _Logger.debug("broker topic: %s", topic);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
                                  .map(entry->{
@@ -542,6 +543,12 @@ public class MQttAccessPlugin
                                           kIdx);
             }
         });
+
+        _Logger.debug("broker[%s]→%s | %s",
+                      x113.getTopic(),
+                      IoUtil.longArrayToHex(routes.keySet()
+                                                  .toArray(new Long[0])),
+                      x113.toString());
     }
 
 }

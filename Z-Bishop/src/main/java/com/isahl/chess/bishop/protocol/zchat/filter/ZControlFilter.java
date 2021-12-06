@@ -174,7 +174,7 @@ public class ZControlFilter<T extends ZContext>
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
             if(context instanceof ZContext && context.isOutConvert()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
