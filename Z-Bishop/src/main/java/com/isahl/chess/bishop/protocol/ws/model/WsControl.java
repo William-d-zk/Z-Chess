@@ -23,84 +23,84 @@
 package com.isahl.chess.bishop.protocol.ws.model;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author William.d.zk
  */
 public abstract class WsControl
-        implements IControl
+        implements IControl<WsContext>
 {
 
-    protected final byte[]    _Payload;
-    private final   byte      _CtrlCode;
-    private         ISession  mSession;
-    private         WsContext mContext;
+    protected byte      mFrameHeader;
+    protected byte[]    mPayload;
+    private   ISession  mSession;
+    private   WsContext mContext;
 
-    public WsControl(byte code, byte[] payload)
+    public WsControl(byte opCode)
     {
-        _CtrlCode = code;
-        _Payload = payload;
+        header(opCode);
     }
 
     @Override
-    public void dispose()
+    public ByteBuf payload()
     {
-        reset();
+        return mPayload == null ? null : ByteBuf.wrap(mPayload);
     }
 
     @Override
-    public void reset()
+    public void header(int header)
     {
-        putSession(null);
+        mFrameHeader = (byte) header;
     }
 
     @Override
-    public ByteBuffer payload()
+    public byte header()
     {
-        return _Payload == null ? null : ByteBuffer.wrap(_Payload);
-    }
-
-    public void put(byte[] payload)
-    {
-        throw new UnsupportedOperationException();
+        return mFrameHeader;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public void withSub(IoSerial sub)
     {
-        output.put(_Payload);
+        mPayload = sub.encode()
+                      .array();
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public ByteBuf suffix(ByteBuf output)
     {
-
+        if(mPayload != null) {
+            output.put(mPayload);
+        }
+        return output;
     }
 
     @Override
-    public void put(byte ctrl)
+    public int prefix(ByteBuf input)
     {
-        throw new UnsupportedOperationException();
+        return input.readableBytes();
     }
 
     @Override
-    public byte ctrl()
+    public void fold(ByteBuf input, int remain)
     {
-        return _CtrlCode;
+        if(remain > 0) {
+            mPayload = new byte[remain];
+            input.get(mPayload);
+        }
     }
 
     @Override
     public boolean isCtrl()
     {
-        return true;
+        return (mFrameHeader & 0x08) != 0;
     }
 
     @Override
@@ -110,15 +110,16 @@ public abstract class WsControl
     }
 
     @Override
-    public void putSession(ISession session)
+    public WsControl with(ISession session)
     {
         mSession = session;
+        return this;
     }
 
     @Override
     public int length()
     {
-        return Objects.nonNull(_Payload) ? _Payload.length : 0;
+        return mPayload == null ? 0 : mPayload.length;
     }
 
     @Override
@@ -126,24 +127,29 @@ public abstract class WsControl
     {
         return String.format("cmd: %#x, %s",
                              serial(),
-                             _Payload == null ? "[NULL] payload" : new String(_Payload, StandardCharsets.UTF_8));
+                             mPayload == null ? "[NULL] payload" : new String(mPayload, StandardCharsets.UTF_8));
     }
 
-    @Override
-    public Level getLevel()
-    {
-        return ALMOST_ONCE;
-    }
-
-    public void putContext(WsContext context)
+    public void wrap(WsContext context)
     {
         mContext = context;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public WsContext context()
     {
         return mContext;
+    }
+
+    @Override
+    public IoSerial subContent()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deserializeSub(IoFactory factory)
+    {
+        throw new UnsupportedOperationException();
     }
 }

@@ -23,9 +23,11 @@
 
 package com.isahl.chess.king.base.util;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class IoUtilTest
 {
@@ -53,5 +55,15 @@ public class IoUtilTest
         byte[] p = IoUtil.writeLongArray(2L << 62);
         System.out.println(String.format("%#x", 2L << 62));
         System.out.println(String.format("%#x", IoUtil.readLong(p, 0)));
+    }
+
+    @Test
+    void copy()
+    {
+        ByteBuf buffer = ByteBuf.allocate(10);
+        buffer.put("abcd".getBytes(StandardCharsets.UTF_8));
+        buffer.get();
+        buffer.discard();
+        buffer.get();
     }
 }

@@ -25,15 +25,16 @@ package com.isahl.chess.bishop.protocol.mqtt.filter;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import java.nio.ByteBuffer;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.*;
 
 /**
  * @author william.d.zk
@@ -52,65 +53,15 @@ public class QttFrameFilter
     @Override
     public IPacket encode(QttContext context, QttFrame output)
     {
-        return new AioPacket(output.encode()
-                                   .flip());
-    }
-
-    @Override
-    public ResultType peek(QttContext context, IPacket input)
-    {
-        ByteBuffer recvBuf = input.getBuffer();
-        ByteBuffer cRvBuf = context.getRvBuffer();
-        QttFrame carrier = context.getCarrier();
-        int lack = context.lack();
-        switch(context.position()) {
-            case -1:
-                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
-                context.setCarrier(carrier = new QttFrame());
-                byte value = recvBuf.get();
-                carrier.put(value);
-                lack = context.lackLength(1, 1);
-            case 0:
-                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
-                carrier.setLengthCode(recvBuf.get());
-                lack = context.lackLength(1, carrier.lack(context.position()) + context.position() + 1);
-            case 1:
-            default:
-                if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
-                int target = context.position() + lack;
-                do {
-                    if(carrier.isLengthCodeLack()) {
-                        carrier.setLengthCode(recvBuf.get());
-                        lack = context.lackLength(1,
-                                                  target = carrier.lack(context.position()) + context.position() + 1);
-                    }
-                    else {
-                        int length = Math.min(recvBuf.remaining(), lack);
-                        for(int i = 0; i < length; i++) {
-                            cRvBuf.put(recvBuf.get());
-                        }
-                        lack = context.lackLength(length, target);
-                        if(lack > 0 && !recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
-                        if(carrier.getPayloadLength() > 0) {
-                            byte[] payload = new byte[carrier.getPayloadLength()];
-                            cRvBuf.flip();
-                            cRvBuf.get(payload);
-                            carrier.put(payload);
-                        }
-                        cRvBuf.clear();
-                        return ResultType.NEXT_STEP;
-                    }
-                }
-                while(recvBuf.hasRemaining());
-                return ResultType.NEED_DATA;
-        }
+        return new AioPacket(output.encode());
     }
 
     @Override
     public QttFrame decode(QttContext context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
-        context.finish();
+        frame.decode(context.getRvBuffer());
+        context.reset();
         return frame;
     }
 
@@ -118,30 +69,47 @@ public class QttFrameFilter
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
-            if(context instanceof QttContext && context.isOutFrame()) {
+            if(context.isOutFrame() && context instanceof QttContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof QttContext) {return new Pair<>(ResultType.NEXT_STEP, acting);}
+                if(context.isOutFrame() && acting instanceof QttContext) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
+    }
+
+    private ResultType peek(IPContext context, IProtocol input)
+    {
+        if(context.isInFrame() && context instanceof QttContext qtt_ctx && input instanceof IPacket in_packet) {
+            ByteBuf netBuf = in_packet.getBuffer();
+            ByteBuf ctxBuf = qtt_ctx.getRvBuffer();
+            QttFrame carrier = qtt_ctx.getCarrier();
+            if(carrier == null) {
+                qtt_ctx.setCarrier(carrier = new QttFrame());
+            }
+            ctxBuf.putExactly(netBuf);
+            return carrier.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
+        }
+        return ResultType.IGNORE;
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            if(context instanceof QttContext && context.isInFrame()) {
-                return new Pair<>(peek((QttContext) context, (IPacket) input), context);
-            }
+            ResultType check = peek(context, input);
+            if(check != IGNORE) {return new Pair<>(check, context);}
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof QttContext && acting.isInFrame()) {
-                    return new Pair<>(peek((QttContext) acting, (IPacket) input), acting);
+                check = peek(acting, input);
+                if(check == NEXT_STEP || check == NEED_DATA) {
+                    return new Pair<>(check, acting);
                 }
             }
         }

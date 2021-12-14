@@ -26,6 +26,7 @@ package com.isahl.chess.knight.raft.model.replicate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
@@ -120,7 +121,7 @@ public class Mapper
         String logMetaName = _LogMetaDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
-            mLogMeta = InnerProtocol.load(LogMeta.class, metaFile);
+            mLogMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("log meta file not exist, name: %s", logMetaName);
@@ -128,13 +129,11 @@ public class Mapper
         catch(IOException e) {
             _Logger.warning("log meta load file error", e);
         }
-        catch(InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+
         String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
-            mSnapshotMeta = InnerProtocol.load(SnapshotMeta.class, metaFile);
+            mSnapshotMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
 
         }
         catch(FileNotFoundException e) {
@@ -143,9 +142,7 @@ public class Mapper
         catch(IOException e) {
             _Logger.warning("snapshot meta load file error", e);
         }
-        catch(InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+
         File configFile = getConfigFile();
         try {
             FileInputStream fis = new FileInputStream(configFile);
@@ -288,12 +285,6 @@ public class Mapper
     }
 
     @Override
-    public void updateCandidate(long candidate)
-    {
-        mLogMeta.setCandidate(candidate);
-    }
-
-    @Override
     public void updateLogApplied(long applied)
     {
         mLogMeta.setApplied(applied);
@@ -375,7 +366,7 @@ public class Mapper
         if(entry == null) {return false;}
         long newEndIndex = getEndIndex() + 1;
         if(entry.getIndex() == newEndIndex) {
-            int size = entry.size();
+            int size = entry.sizeOf();
             boolean needNewFile = false;
             if(_Index2SegmentMap.isEmpty()) {
                 needNewFile = true;

@@ -21,27 +21,53 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.routes;
+package com.isahl.chess.bishop.protocol.zchat.custom;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.queen.events.routes.IControlCustom;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 
 /**
  * @author william.d.zk
  * @date 2020/5/7
  */
-public interface IMappingCustom
+abstract class ZBaseControlCustom<E extends IControlCustom>
+        implements IControlCustom
 {
-    /**
-     * @param manager session manager
-     * @param session input session
-     * @param content input
-     * @return triple
-     * first: response ->
-     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
-     * third: operator-type
-     */
-    ITriple handle(IManager manager, ISession session, IControl content);
+
+    private final   Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+    protected final E      _Then;
+
+    protected ZBaseControlCustom(E then)
+    {
+        _Then = then;
+    }
+
+    @Override
+    public ITriple handle(IManager manager, ISession session, IControl content)
+    {
+        _Logger.debug("mapping receive %s", content);
+        switch(content.serial()) {
+            case 0x01:
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+                /*
+                 * 内嵌逻辑，在ZCommandFilter中已经处理结束
+                 * 此处仅执行转发逻辑
+                 */
+                return new Triple<>(content, null, WRITE);
+            default:
+                if(_Then == null) {return null;}
+                return _Then.handle(manager, session, content);
+        }
+    }
 }

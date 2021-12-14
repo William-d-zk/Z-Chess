@@ -25,8 +25,7 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author William.d.zk
@@ -36,18 +35,16 @@ import java.nio.ByteBuffer;
 public class X01_EncryptRequest
         extends ZControl
 {
-    public int pubKeyId = -1;
+    private int mPubKeyId = -1;
 
-    @Override
-    public void decodec(ByteBuffer input)
+    public int getPubKeyId()
     {
-        pubKeyId = input.getInt();
+        return mPubKeyId;
     }
 
-    @Override
-    public void encodec(ByteBuffer output)
+    public void setPubKeyId(int pubKeyId)
     {
-        output.putInt(pubKeyId);
+        mPubKeyId = pubKeyId;
     }
 
     @Override
@@ -59,12 +56,27 @@ public class X01_EncryptRequest
     @Override
     public String toString()
     {
-        return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
+        return String.format("%s\npublic-key-id:%d", super.toString(), mPubKeyId);
     }
 
     @Override
     public Level getLevel()
     {
         return Level.AT_LEAST_ONCE;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putInt(mPubKeyId);
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mPubKeyId = input.getInt();
+        return remain - 4;
     }
 }

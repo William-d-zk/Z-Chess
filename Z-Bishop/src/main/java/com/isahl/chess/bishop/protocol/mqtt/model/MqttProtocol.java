@@ -23,128 +23,37 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.king.base.features.IDuplicate;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  * @date 2019-05-25
  */
 public abstract class MqttProtocol
-        implements IProtocol,
-                   IQoS,
-                   IDuplicate
+        implements IProtocol
 {
     protected final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
     public final static byte VERSION_V3_1_1 = 4;
     public final static byte VERSION_V5_0   = 5;
 
-    private final static byte DUPLICATE_FLAG = 1 << 3;
-    private final static byte RETAIN_FLAG    = 1;
-    private final static byte QOS_MASK       = 3 << 1;
+    protected final static byte DUPLICATE_FLAG = 1 << 3;
+    protected final static byte RETAIN_FLAG    = 1;
+    protected final static byte QOS_MASK       = 3 << 1;
 
-    protected byte       mFrameOpCode;
-    protected int        mVersion;
-    protected QttContext mContext;
-
-    protected byte[]  mPayload;
-    private   QttType mType;
-
-    private void checkOpCode()
-    {
-        if(getLevel() == Level.ALMOST_ONCE && isDuplicate()) {
-            throw new IllegalStateException("level == 0 && duplicate");
-        }
-    }
-
-    public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QttType qttType)
-    {
-        byte ctrl = 0;
-        ctrl |= dup ? DUPLICATE_FLAG : 0;
-        ctrl |= retain ? RETAIN_FLAG : 0;
-        ctrl |= qosLevel.getValue() << 1;
-        ctrl |= qttType.getValue();
-        return ctrl;
-    }
-
-    public void setDuplicate(boolean duplicate)
-    {
-        if(duplicate) {
-            mFrameOpCode |= DUPLICATE_FLAG;
-        }
-        else {
-            mFrameOpCode &= ~DUPLICATE_FLAG;
-        }
-    }
-
-    @Override
-    public boolean isDuplicate()
-    {
-        return (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
-    }
-
-    public void setRetain(boolean retain)
-    {
-        if(retain) {
-            mFrameOpCode |= RETAIN_FLAG;
-        }
-        else {
-            mFrameOpCode &= ~RETAIN_FLAG;
-        }
-    }
-
-    public boolean isRetain()
-    {
-        return (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
-    }
-
-    public void setLevel(Level level)
-    {
-        mFrameOpCode &= ~QOS_MASK;
-        mFrameOpCode |= level.getValue() << 1;
-        if(level.getValue() == 0) {
-            setDuplicate(false);
-        }
-    }
+    protected byte   mFrameHeader;
+    protected int    mVersion;
+    protected byte[] mPayload;
 
     public QttType getType()
     {
-        return mType;
+        return QttType.valueOf(mFrameHeader);
     }
 
     public void setType(QttType type)
     {
-        this.mType = type;
-        mFrameOpCode |= type.getValue();
-    }
-
-    protected void setOpCode(byte opCode)
-    {
-        mFrameOpCode = opCode;
-        mType = QttType.valueOf(getOpCode());
-        if(mType == null) {throw new IllegalArgumentException();}
-        checkOpCode();
-    }
-
-    protected byte getOpCode()
-    {
-        return mFrameOpCode;
-    }
-
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_00_NETWORK_CONTROL;
-    }
-
-    public IQoS.Level getLevel()
-    {
-        return IQoS.Level.valueOf((mFrameOpCode & QOS_MASK) >> 1);
+        mFrameHeader |= type.getValue();
     }
 
     public int getVersion()
@@ -157,27 +66,4 @@ public abstract class MqttProtocol
         mVersion = version;
     }
 
-    public void putContext(QttContext context)
-    {
-        mContext = context;
-        if(context != null) {mVersion = context.getVersion();}
-    }
-
-    @Override
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
-    public ByteBuffer payload()
-    {
-        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
-    }
-
-    @Override
-    public int length()
-    {
-        return mPayload == null ? 0 : mPayload.length;
-    }
 }

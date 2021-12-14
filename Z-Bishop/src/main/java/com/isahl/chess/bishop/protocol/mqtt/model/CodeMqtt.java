@@ -73,13 +73,13 @@ public enum CodeMqtt
     SUBSCRIPTION_IDENTIFIERS_UNSUPPORTED(-1, 0xA1),
     WILDCARD_SUBSCRIPTION_UNSUPPORTED(-1, 0xA2);
 
-    private final byte _V3Code;
-    private final byte _V5Code;
+    private final int _V3Code;
+    private final int _V5Code;
 
     CodeMqtt(int v3, int v5)
     {
-        _V3Code = (byte) v3;
-        _V5Code = (byte) v5;
+        _V3Code = v3;
+        _V5Code = v5;
     }
 
     @Override

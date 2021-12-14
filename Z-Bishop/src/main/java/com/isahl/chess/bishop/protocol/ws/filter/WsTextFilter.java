@@ -23,15 +23,13 @@
 
 package com.isahl.chess.bishop.protocol.ws.filter;
 
+import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X10A_PlainText;
+import com.isahl.chess.bishop.protocol.ws.model.WsText;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.ICommand;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
@@ -39,8 +37,8 @@ import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class WsTextFilter<T extends ZContext & IWsContext>
-        extends AioFilterChain<T, ICommand, IFrame>
+public class WsTextFilter
+        extends AioFilterChain<WsContext, WsText, WsFrame>
 {
     public WsTextFilter()
     {
@@ -48,28 +46,26 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     }
 
     @Override
-    public WsFrame encode(T context, ICommand output)
+    public WsFrame encode(WsContext context, WsText output)
     {
         WsFrame frame = new WsFrame();
-        frame.put(output.payload()
-                        .array());
-        frame.put(output.ctrl());
+        frame.withSub(output);
+        frame.encode();
         return frame;
     }
 
     @Override
-    public ICommand decode(T context, IFrame input)
+    public WsText decode(WsContext context, WsFrame input)
     {
-        ICommand command = new X10A_PlainText();
-        command.put(input.payload()
-                         .array());
-        return command;
+        WsText text = new WsText();
+        text.decode(input.payload());
+        return text;
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof X10A_PlainText) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof WsText) {
             if(context instanceof IWsContext && context.isOutConvert()) {
                 //作为最尾端的filter出现，需要处理context的代理链
                 return new Pair<>(ResultType.NEXT_STEP, context);
@@ -106,14 +102,14 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
 
-        return (I) encode((T) context, (ICommand) output);
+        return (I) encode((WsContext) context, (WsText) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((T) context, (IFrame) input);
+        return (O) decode((WsContext) context, (WsFrame) input);
     }
 
 }

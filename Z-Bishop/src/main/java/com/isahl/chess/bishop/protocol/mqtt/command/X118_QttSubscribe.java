@@ -26,9 +26,8 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
@@ -47,16 +46,10 @@ public class X118_QttSubscribe
 
     public X118_QttSubscribe()
     {
-        put(generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE));
+        generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE);
     }
 
     private Map<String, Level> mSubscribes;
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 
     @Override
     public int priority()
@@ -67,7 +60,7 @@ public class X118_QttSubscribe
     @Override
     public int length()
     {
-        int length = super.length();
+        int length = 0;
         if(mSubscribes != null) {
             for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
                 String topic = entry.getKey();
@@ -75,7 +68,7 @@ public class X118_QttSubscribe
                 length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
             }
         }
-        return length;
+        return length + super.length();
     }
 
     public Map<String, Level> getSubscribes()
@@ -92,23 +85,22 @@ public class X118_QttSubscribe
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decodec(input);
-
-        while(input.hasRemaining()) {
-            int utfSize = input.getShort() & 0xFFFF;
-            String topic = IoUtil.readString(input.array(), input.position(), utfSize, StandardCharsets.UTF_8);
-            input.position(input.position() + utfSize);
-            Level level = Level.valueOf(input.get());
+        setMsgId(input.getUnsignedShort());
+        while(input.isReadable()) {
+            int length = input.getUnsignedShort();
+            String topic = input.readUTF(length);
+            Level level = Level.valueOf(input.getUnsigned());
             addSubscribe(topic, level);
         }
+        return 0;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        super.encodec(output);
+        output.putShort((short) getMsgId());
         if(mSubscribes != null) {
             for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
                 byte[] topic = entry.getKey()
@@ -116,9 +108,10 @@ public class X118_QttSubscribe
                 Level level = entry.getValue();
                 output.putShort((short) topic.length);
                 output.put(topic);
-                output.put((byte) level.getValue());
+                output.put(level.getValue());
             }
         }
+        return output;
     }
 
     @Override

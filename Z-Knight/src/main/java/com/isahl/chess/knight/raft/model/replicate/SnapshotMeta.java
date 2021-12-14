@@ -28,9 +28,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-
-import java.nio.ByteBuffer;
 
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
                   serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
@@ -66,27 +65,20 @@ public class SnapshotMeta
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode()
-                                 .putLong(getTerm())
-                                 .putLong(getCommit());
-        if(payload() != null) {
-            output.put(payload());
-        }
-        return output;
+        return super.suffix(output)
+                    .putLong(getTerm())
+                    .putLong(getCommit());
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
+        int remain = super.prefix(input);
         setTerm(input.getLong());
         setCommit(input.getLong());
-        if(input.hasRemaining()) {
-            mPayload = new byte[input.remaining()];
-            input.get(mPayload);
-        }
+        return remain - 16;
     }
 
     @Override
@@ -99,12 +91,12 @@ public class SnapshotMeta
 
     public void setCommit(long commit)
     {
-        this.mCommit = commit;
+        mCommit = commit;
     }
 
     public void setTerm(long term)
     {
-        this.mTerm = term;
+        mTerm = term;
     }
 
     public long getCommit()

@@ -21,29 +21,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.message;
+package com.isahl.chess.king.base.features.io;
 
-import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
+ * @date 2019-07-14
  */
-public abstract class JsonProtocol
-        implements ISerial
+public interface IEncode
 {
-    protected byte[] mPayload;
+    int sizeOf();
 
-    @Override
-    public ByteBuffer payload()
+    default ByteBuf encode()
     {
-        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
+        return suffix(ByteBuf.allocate(sizeOf()));
     }
 
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
+    ByteBuf suffix(ByteBuf output);
 }

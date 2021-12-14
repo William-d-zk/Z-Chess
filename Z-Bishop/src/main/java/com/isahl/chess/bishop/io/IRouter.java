@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.io;
 
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * @author william.d.zk
@@ -38,7 +39,7 @@ public interface IRouter
      * @param stateMessage message with state
      * @param session      session index
      */
-    void register(ICommand stateMessage, long session);
+      void register(ICommand<?> stateMessage, long session);
 
     /**
      * feed back message state
@@ -47,7 +48,7 @@ public interface IRouter
      * @param session      session index
      * @return 是否对消息完成了ack动作
      */
-    boolean ack(ICommand stateMessage, long session);
+     boolean ack(ICommand<?> stateMessage, long session);
 
     /**
      * clean session state machine for message stack

@@ -23,12 +23,12 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -44,11 +44,25 @@ public class X77_RaftNotify
     public X77_RaftNotify()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X77_RaftNotify(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
+    }
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
     }
 
     /*
@@ -65,19 +79,22 @@ public class X77_RaftNotify
     private long mOrigin;
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mIndex);
-        output.putLong(mClient);
-        output.putLong(mOrigin);
+        return super.suffix(output)
+                    .putLong(mIndex)
+                    .putLong(mClient)
+                    .putLong(mOrigin);
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mIndex = input.getLong();
         mClient = input.getLong();
         mOrigin = input.getLong();
+        return remain - 24;
     }
 
     @Override
@@ -115,12 +132,6 @@ public class X77_RaftNotify
     public void setClient(long client)
     {
         this.mClient = client;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
     }
 
 }

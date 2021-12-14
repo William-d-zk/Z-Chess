@@ -25,11 +25,13 @@ package com.isahl.chess.bishop.protocol.mqtt.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 
-import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -38,106 +40,132 @@ import java.nio.ByteBuffer;
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_FRAME_SERIAL)
 public class QttFrame
         extends MqttProtocol
-        implements IReset,
-                   IFrame
+        implements IFrame
 {
+
+    @Override
+    public void header(int header)
+    {
+        mFrameHeader = (byte) header;
+    }
+
+    @Override
+    public byte header()
+    {
+        return mFrameHeader;
+    }
+
     @Override
     public boolean isCtrl()
     {
-        return switch(QttType.valueOf(getOpCode())) {
+        return switch(QttType.valueOf(mFrameHeader)) {
             case CONNECT, CONNACK, PINGREQ, PINGRESP, DISCONNECT, AUTH -> true;
             default -> false;
         };
     }
 
     @Override
-    public void put(byte ctrl)
+    public int priority()
     {
-        setOpCode(ctrl);
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
     @Override
-    public byte ctrl()
+    public Level getLevel()
     {
-        return getOpCode();
+        return Level.valueOf((mFrameHeader & QOS_MASK) >> 1);
     }
 
     @Override
-    public void reset()
+    public ByteBuf payload()
     {
-        mPayloadLength = -1;
-        mFrameOpCode = 0;
-        mLengthCode = 0;
-        mPayload = null;
-    }
-
-    private byte mLengthCode;
-    private int  mPayloadLength;
-
-    public void setLengthCode(byte lengthCode)
-    {
-        mLengthCode = lengthCode;
-    }
-
-    public boolean isLengthCodeLack()
-    {
-        return (mLengthCode & 0x80) != 0;
-    }
-
-    @Override
-    public int lack(int position)
-    {
-        mPayloadLength += (mLengthCode & 0x7F) << (position * 7);
-        if(isLengthCodeLack()) {return 1;}
-        return mPayloadLength;
-    }
-
-    public int getPayloadLength()
-    {
-        return mPayloadLength;
-    }
-
-    @Override
-    public void put(byte[] payload)
-    {
-        if(payload != null && (payload.length > 268435455 || payload.length < 2)) {
-            throw new IndexOutOfBoundsException();
-        }
-        mPayload = payload;
-        mPayloadLength = mPayload == null ? 0 : mPayload.length;
+        return mPayload == null ? null : ByteBuf.wrap(mPayload);
     }
 
     @Override
     public int length()
     {
-        return 1 + mPayloadLength +
-               (mPayloadLength < 128 ? 1 : mPayloadLength < 16384 ? 2 : mPayloadLength < 2097152 ? 3 : 4);
+        return 1 + ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int lack(ByteBuf input)
     {
-        setOpCode(input.get());
-        if(input.hasRemaining()) {
-            mPayloadLength = IoUtil.readVariableIntLength(input);
-            mPayload = new byte[mPayloadLength];
-            input.get(mPayload);
+        int remain = input.readableBytes();
+        if(remain == 0) {
+            return 1;
+        }
+        else {
+            header(input.get(0));
+            try {
+                int vLength = input.vLength(1);
+                return 1 + ByteBuf.vSizeOf(vLength) - remain;
+            }
+            catch(ZException e) {
+                return 1;
+            }
         }
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public IoSerial subContent()
     {
-        output.put(mFrameOpCode);
-        output.put(IoUtil.variableLength(mPayloadLength));
-        if(mPayloadLength > 0) {
-            output.put(mPayload);
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public int _sub()
     {
         return QttType.serialOf(getType());
+    }
+
+    @Override
+    public void withSub(IoSerial sub)
+    {
+        mPayload = sub.encode()
+                      .array();
+    }
+
+    @Override
+    public void deserializeSub(IoFactory factory)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        mFrameHeader = input.get();
+        return input.vLength();
+    }
+
+    @Override
+    public void fold(ByteBuf input, int remain)
+    {
+        if(remain > 0) {
+            mPayload = new byte[remain];
+            input.get(mPayload);
+        }
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        output.put(mFrameHeader);
+        if(mPayload != null) {
+            output.vPutLength(mPayload.length);
+            output.put(mPayload);
+        }
+        else {output.put(0);}
+        return output;
+    }
+
+    public static int seekSubSerial(ByteBuf buffer)
+    {
+        Objects.requireNonNull(buffer);
+        buffer.markReader();
+        QttType qttType = QttType.valueOf(buffer.get());
+        buffer.resetReader();
+        return QttType.serialOf(qttType);
     }
 }

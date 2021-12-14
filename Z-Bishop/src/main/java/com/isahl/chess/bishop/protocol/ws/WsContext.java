@@ -22,10 +22,10 @@
  */
 package com.isahl.chess.bishop.protocol.ws;
 
-import com.isahl.chess.bishop.protocol.ws.ctrl.WsHandshake;
+import com.isahl.chess.bishop.protocol.ProtocolContext;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
@@ -33,21 +33,20 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import java.util.Base64;
 import java.util.Random;
 
-import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
-
 /**
  * @author William.d.zk
  */
 public class WsContext
-        extends ZContext
+        extends ProtocolContext<WsFrame>
         implements IWsContext
 {
 
     private final String _SecKey, _SecAcceptExpect;
     private final int    _MaxPayloadSize;
     private final byte[] _Mask;
-    private       int    mHandshakeState;
+
+    private int            mHandshakeState;
+    private X101_HandShake mWsHandshake;
 
     public WsContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
@@ -106,22 +105,6 @@ public class WsContext
     }
 
     @Override
-    public void ready()
-    {
-
-        switch(_Mode) {
-            case CLUSTER -> {
-                advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
-                advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
-            }
-            case LINK -> {
-                advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
-                advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-            }
-        }
-    }
-
-    @Override
     public void updateOut()
     {
         advanceOutState(ENCODE_PAYLOAD);
@@ -133,8 +116,18 @@ public class WsContext
         advanceInState(DECODE_PAYLOAD);
     }
 
-    public WsHandshake handshake(String host)
+    public X101_HandShake responseHandShake(String host)
     {
         return new X101_HandShake(host, getSeKey(), getWsVersion());
+    }
+
+    public X101_HandShake getHandshake()
+    {
+        return mWsHandshake;
+    }
+
+    public void setHandshake(X101_HandShake handShake)
+    {
+        mWsHandshake = handShake;
     }
 }

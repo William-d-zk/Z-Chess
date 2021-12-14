@@ -1,9 +1,8 @@
 package com.isahl.chess.queen.io.core.features.model.content;
 
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.IRespConnected;
-import com.isahl.chess.queen.io.core.features.model.session.IContext;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * 核心方法
@@ -14,9 +13,8 @@ import java.nio.ByteBuffer;
  * @author william.d.zk
  * @see IRespConnected
  */
-public interface IoFactory<I extends IFrame, C extends IContext>
+public interface IProtocolFactory<I extends IFrame, C extends IPContext>
+        extends IoFactory
 {
-    <T extends IControl> T create(I frame, C context);
-
-    <T extends IControl> T create(int serial, ByteBuffer input);
+    IControl<C> create(I frame, C context);
 }

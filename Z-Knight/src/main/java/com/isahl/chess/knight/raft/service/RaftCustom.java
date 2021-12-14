@@ -24,13 +24,12 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.component.ClusterFactory;
-import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
@@ -73,7 +72,7 @@ public class RaftCustom
      * third : operator-type [SINGLE|BATCH]
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl received)
+    public ITriple handle(IManager manager, ISession session, IControl<?> received)
     {
         /*
          * leader -> follow, self::follow
@@ -143,13 +142,7 @@ public class RaftCustom
                             .getState() == LEADER)
                 {
                     X75_RaftReq x75 = (X75_RaftReq) received;
-                    return _RaftPeer.onRequest(x75._sub(),
-                                               x75.payload()
-                                                  .array(),
-                                               x75.getClientId(),
-                                               x75.getOrigin(),
-                                               manager,
-                                               session);
+                    return _RaftPeer.onRequest(x75.subContent(), x75.getClientId(), x75.getOrigin(), manager, session);
                 }
                 else {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
@@ -159,9 +152,8 @@ public class RaftCustom
             }
             // client.received:x76
             case 0x76 -> {
-                X76_RaftResp x76 = (X76_RaftResp) received;
-                _Logger.debug("received: %s, %s", x76, RaftCode.valueOf(x76.getCode()));
-                return new Triple<>(null, x76, WRITE);
+                _Logger.debug(received.toString());
+                return new Triple<>(null, received, WRITE);
             }
             // leader → client
             case 0x77 -> {
@@ -170,7 +162,7 @@ public class RaftCustom
             }
             // peer *, behind in config → previous in config
             case 0x106 -> {
-                X106_Identity x106 = (X106_Identity) received;
+                X08_Identity x106 = (X08_Identity) received;
                 long peerId = x106.getIdentity();
                 long newIdx = x106.getSessionIdx();
                 _Logger.debug("===> map peerId:%#x @ %#x", peerId, newIdx);
@@ -213,9 +205,7 @@ public class RaftCustom
             if(leaderSession != null) {
                 _Logger.info("client → leader x75");
                 X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
-                x75.setSubSerial(request.serial());
-                x75.put(request.encode()
-                               .array());
+                x75.withSub(request);
                 x75.setOrigin(origin);
                 x75.setClientId(_RaftPeer.getMachine()
                                          .getPeerId());

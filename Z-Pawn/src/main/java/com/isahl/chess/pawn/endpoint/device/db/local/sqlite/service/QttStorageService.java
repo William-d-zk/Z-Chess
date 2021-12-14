@@ -167,7 +167,7 @@ public class QttStorageService
                 BrokerMsgEntity received = receivedOptional.get();
                 X113_QttPublish x113 = new X113_QttPublish();
                 x113.setTopic(received.getTopic());
-                x113.put(received.getContent());
+                x113.withSub(received);
                 _MessageRepository.deleteById(primaryKey);
                 return x113;
             }
@@ -200,7 +200,7 @@ public class QttStorageService
                     X113_QttPublish retained = new X113_QttPublish();
                     retained.setTopic(sessionEntity.getWillTopic());
                     retained.setLevel(sessionEntity.getWillLevel());
-                    retained.put(sessionEntity.getWillPayload());
+                    retained.withSub(sessionEntity);
                     subscribe.mRetained = retained;
                 }
             }

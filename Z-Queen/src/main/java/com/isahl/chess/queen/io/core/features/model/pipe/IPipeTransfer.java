@@ -54,7 +54,7 @@ public interface IPipeTransfer
                      .map(command->{
                          ISession targetSession = command.session();
                          if(targetSession == null) {
-                             command.putSession(session);
+                             command.with(session);
                              targetSession = session;
                          }
                          return new Triple<>(command, targetSession, targetSession.getEncoder());

@@ -30,8 +30,8 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
 
@@ -57,11 +57,9 @@ public class ConsistencyReject
             ISession session = _SessionManager.findSessionByIndex(origin);
             //执行关闭的session 属于 customer
             if(session != null) {
-                return new Triple<>(_RaftPeer.raftResp(WAL_FAILED,
-                                                       _RaftPeer.getPeerId(),
-                                                       origin,
-                                                       request.serial(),
-                                                       request.encode().array()), session, session.getError());
+                return new Triple<>(_RaftPeer.raftResp(WAL_FAILED, _RaftPeer.getPeerId(), origin, request),
+                                    session,
+                                    session.getError());
             }
         }
         return null;

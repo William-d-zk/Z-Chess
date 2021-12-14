@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
 
@@ -41,7 +42,30 @@ public class X116_QttPubrel
 
     public X116_QttPubrel()
     {
-        put(generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL));
+        generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL);
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        setMsgId(input.getUnsignedShort());
+        return input.readableBytes();
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        output.putShort((short) getMsgId());
+        if(mPayload != null) {
+            output.put(mPayload);
+        }
+        return output;
+    }
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 
     @Override

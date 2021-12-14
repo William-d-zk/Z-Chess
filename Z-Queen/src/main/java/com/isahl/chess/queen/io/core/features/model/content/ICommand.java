@@ -23,12 +23,14 @@
 
 package com.isahl.chess.queen.io.core.features.model.content;
 
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+
 /**
  * @author william.d.zk
  * @date 2019-05-17
  */
-public interface ICommand
-        extends IControl
+public interface ICommand<C extends IPContext>
+        extends IControl<C>
 {
 
     long getMsgId();

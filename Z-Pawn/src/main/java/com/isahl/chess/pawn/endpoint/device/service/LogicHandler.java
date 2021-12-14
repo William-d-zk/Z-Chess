@@ -80,7 +80,7 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     {
         List<? extends IControl> pushList = null;
         for(IAccessService service : _AccessService) {
-            if(service.isHandleProtocol(content)) {
+            if(service.isSupported(content)) {
                 pushList = service.handle(manager, session, content);
             }
         }
@@ -100,7 +100,7 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     public void serviceHandle(IProtocol request) throws Exception
     {
         for(IAccessService service : _AccessService) {
-            if(service.isHandleProtocol(request)) {
+            if(service.isSupported(request)) {
                 service.consume(request);
             }
         }

@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
@@ -32,14 +33,12 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.*;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -69,7 +68,6 @@ public class AioSession<C extends IPContext>
     /*
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
-    private final ByteBuffer    _RecvBuf;
     private final C             _Context;
     private final int           _HashCode;
     private final IDismiss      _DismissCallback;
@@ -83,29 +81,27 @@ public class AioSession<C extends IPContext>
     private long                                 mIndex = INVALID_INDEX;
     private long[]                               mBindIndex;
     /*
-     * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
-     */
-    private ByteBuffer                           mSending;
-    /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[]                               mPrefix;
+    private long[]                               mSessionPrefix;
     private int                                  mWroteExpect;
-    private int                                  mSendingBlank;
     /* reader */
     private CompletionHandler<Integer, ISession> mReader;
 
     @Override
     public String toString()
     {
-        return String.format("@%#x %s->%s index:%#x valid:%s wait_to_write %d queue_size %d",
+        return String.format("@%#x %s->%s index:%#x valid:%s wait_to_write[%d] queue_size[%d],wait_to_handle[%d]",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              mIndex,
                              isValid(),
-                             mSending.remaining(),
-                             size());
+                             _Context.getWrBuffer()
+                                     .readableBytes(),
+                             size(),
+                             _Context.getRvBuffer()
+                                     .readableBytes());
     }
 
     public AioSession(AsynchronousSocketChannel channel,
@@ -128,16 +124,12 @@ public class AioSession<C extends IPContext>
         _DismissCallback = sessionDismiss;
         _ReadTimeOutInSecond = option.getReadTimeOutInSecond();
         _WriteTimeOutInSecond = option.getWriteTimeOutInSecond();
-        _RecvBuf = ByteBuffer.allocate(option.getRcvByte());
         _QueueSizeMax = option.getSendQueueMax();
         _Sort = sort;
         _Context = sort.newContext(option);
         //------------------------------------------------------------
         option.configChannel(channel);
         mIndex = INVALID_INDEX;
-        mSending = _Context.getWrBuffer()
-                           .flip();
-        mSendingBlank = mSending.capacity() - mSending.limit();
         _Logger.debug("session:keepalive [%d]S", _ReadTimeOutInSecond);
     }
 
@@ -178,28 +170,12 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final void dispose()
-    {
-        clear();
-        _Context.dispose();
-        mReader = null;
-        mSending = null;
-        mPrefix = null;
-        reset();
-    }
-
-    @Override
     public final void close() throws IOException
     {
         if(isClosed()) {return;}
         advanceState(_State, SESSION_CLOSE, CAPACITY);
-        try {
-            _Context.dispose();
-        }
-        finally {
-            if(_Channel != null) {
-                _Channel.close();
-            }
+        if(_Channel != null) {
+            _Channel.close();
         }
     }
 
@@ -246,40 +222,45 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix }
+                                                : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
     }
 
     @Override
     public long prefixLoad(long prefix)
     {
-        _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
+        _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
+        int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
         if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s",
+                                                             prefix,
+                                                             longArrayToHex(mSessionPrefix)));
         }
-        return mPrefix[pos] & 0xFFFFFFFFL;
+        return mSessionPrefix[pos] & 0xFFFFFFFFL;
     }
 
     @Override
     public void prefixHit(long prefix)
     {
-        _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
+        _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
+        int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
         if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s",
+                                                             prefix,
+                                                             longArrayToHex(mSessionPrefix)));
         }
-        if((mPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
-            mPrefix[pos] += 1;
+        if((mSessionPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
+            mSessionPrefix[pos] += 1;
         }
         else {
-            mPrefix[pos] &= PREFIX_MAX;
+            mSessionPrefix[pos] &= PREFIX_MAX;
         }
     }
 
     @Override
     public final long[] getPrefixArray()
     {
-        return mPrefix;
+        return mSessionPrefix;
     }
 
     @Override
@@ -293,8 +274,9 @@ public class AioSession<C extends IPContext>
     {
         if(isClosed()) {return;}
         mReader = readHandler;
-        _RecvBuf.clear();
-        _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+        _Channel.read(_Context.getRvBuffer()
+                              .discard()
+                              .toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
@@ -304,15 +286,12 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final ByteBuffer read(int length)
+    public final ByteBuf read(int length)
     {
         if(length < 0) {throw new IllegalArgumentException();}
-        if(length != _RecvBuf.position()) {throw new ArrayIndexOutOfBoundsException();}
-        ByteBuffer read = ByteBuffer.allocate(length);
-        _RecvBuf.flip();
-        read.put(_RecvBuf);
-        read.flip();
-        return read;
+        _Context.getRvBuffer()
+                .seek(length);
+        return _Context.getRvBuffer();
     }
 
     @Override
@@ -380,8 +359,6 @@ public class AioSession<C extends IPContext>
         if(isClosed()) {return WRITE_STATUS.CLOSED;}
         mWroteExpect -= wroteCnt;
         if(mWroteExpect == 0) {
-            mSending.clear()
-                    .flip();
             if(isEmpty()) {
                 recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
@@ -427,15 +404,13 @@ public class AioSession<C extends IPContext>
 
     private WRITE_STATUS writePacket(IPacket ps)
     {
-        ByteBuffer buf = ps.getBuffer();
-        if(Objects.nonNull(buf) && buf.hasRemaining()) {
-            int w_pos = mSending.limit();
-            mSendingBlank = mSending.capacity() - w_pos;
-            int size = Math.min(mSendingBlank, buf.remaining());
-            mSending.limit(w_pos + size);
-            mSending.put(w_pos, buf, buf.position(), size);
-            buf.position(buf.position() + size);
-            if(buf.hasRemaining()) {
+        Objects.requireNonNull(ps);
+        ByteBuf buf = ps.getBuffer();
+        if(buf != null && buf.isReadable()) {
+            _Context.getWrBuffer()
+                    .discard()
+                    .putExactly(buf);
+            if(buf.isReadable()) {
                 return WRITE_STATUS.UNFINISHED;
             }
             else {
@@ -451,9 +426,14 @@ public class AioSession<C extends IPContext>
 
     private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException
     {
-        if(stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
-            _Logger.debug("flush %d | %s", mWroteExpect = mSending.remaining(), this);
-            _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
+        if(stateLessThan(_State.get(), SESSION_FLUSHED) && _Context.getWrBuffer()
+                                                                   .isReadable())
+        {
+            mWroteExpect = _Context.getWrBuffer()
+                                   .readableBytes();
+            _Logger.debug("flush expect[%d] | %s", mWroteExpect, this);
+            _Channel.write(_Context.getWrBuffer()
+                                   .toReadBuffer(), _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
             advanceState(_State, SESSION_FLUSHED, CAPACITY);
         }
     }

@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.raft.service;
 
+import com.isahl.chess.bishop.protocol.zchat.factory.ZClusterFactory;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
@@ -31,8 +32,9 @@ import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
@@ -48,7 +50,6 @@ import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -119,8 +120,6 @@ public class RaftPeer
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftMapper.getLogMeta()
                                         .getTerm());
-        _SelfMachine.setCandidate(_RaftMapper.getLogMeta()
-                                             .getCandidate());
         _SelfMachine.setCommit(_RaftMapper.getLogMeta()
                                           .getCommit());
         _SelfMachine.setApplied(_RaftMapper.getLogMeta()
@@ -417,7 +416,7 @@ public class RaftPeer
         peerMachine.setState(CANDIDATE);
         IControl response = lowTerm(term, candidate);
         if(response != null) {
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
         if(highTerm(term)) {
@@ -430,7 +429,7 @@ public class RaftPeer
             {
                 _Logger.debug("new term [ %d ] follower → elector | candidate: %#x", term, candidate);
                 response = stepUp(term, candidate);
-                response.putSession(session);
+                response.with(session);
                 return new Triple<>(response, null, SINGLE);
             }
             else {
@@ -448,7 +447,7 @@ public class RaftPeer
         else if(_SelfMachine.getCandidate() != candidate) {
             _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x", _SelfMachine.getCandidate(), candidate);
             response = reject(ALREADY_VOTE, candidate);
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
         return null;
@@ -471,7 +470,7 @@ public class RaftPeer
         peerMachine.setState(ELECTOR);
         IControl response = lowTerm(term, elector);
         if(response != null) {
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
         if(highTerm(term)) {
@@ -498,7 +497,7 @@ public class RaftPeer
         peerMachine.setState(LEADER);
         IControl response = lowTerm(term, leader);
         if(response != null) {
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
         if(highTerm(term)) {
@@ -509,7 +508,7 @@ public class RaftPeer
                        .getCode() < LEADER.getCode())
         {
             response = follow(term, leader, commit, preIndex, preIndexTerm);
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
         // leader
@@ -519,7 +518,7 @@ public class RaftPeer
                             _SelfMachine.getCandidate(),
                             leader);
             response = reject(SPLIT_CLUSTER, leader);
-            response.putSession(session);
+            response.with(session);
             return new Triple<>(response, null, SINGLE);
         }
     }
@@ -607,7 +606,7 @@ public class RaftPeer
                                           peerMachine.getIndex(),
                                           peerMachine.getIndexTerm());
                             IControl response = createAppend(peerMachine, 1);
-                            response.putSession(session);
+                            response.with(session);
                             return new Triple<>(response, null, SINGLE);
                         }
                         else {
@@ -813,14 +812,9 @@ public class RaftPeer
         _LogQueue.addAll(logList);
     }
 
-    public <T extends IProtocol> List<ITriple> onImmediate(T request, IManager manager, long origin)
+    public <T extends IoSerial> List<ITriple> onImmediate(T request, IManager manager, long origin)
     {
-        List<ITriple> responses = append(request.serial(),
-                                         request.encode()
-                                                .array(),
-                                         _SelfMachine.getPeerId(),
-                                         origin,
-                                         manager);
+        List<ITriple> responses = append(request, _SelfMachine.getPeerId(), origin, manager);
         if(responses == null) {
             stepDown(_SelfMachine.getTerm());
             return null;
@@ -829,8 +823,7 @@ public class RaftPeer
     }
 
     /**
-     * @param subSerial  payload-z_protocol-serial
-     * @param payload    payload data
+     * @param content    serial-content
      * @param client     raft client peer-id
      * @param origin     "device\request"-session-index
      * @param manager    session manager
@@ -840,22 +833,21 @@ public class RaftPeer
      * response. second [response → raft client]
      * response. third [operator-type]
      */
-    public ITriple onRequest(int subSerial,
-                             byte[] payload,
-                             long client,
-                             long origin,
-                             IManager manager,
-                             ISession raftClient)
+    public <T extends IoSerial> ITriple onRequest(T content,
+                                                  long client,
+                                                  long origin,
+                                                  IManager manager,
+                                                  ISession raftClient)
     {
-        List<ITriple> responsesToCluster = append(subSerial, payload, client, origin, manager);
+        List<ITriple> responsesToCluster = append(content, client, origin, manager);
         if(responsesToCluster != null && !responsesToCluster.isEmpty()) {
-            X76_RaftResp x76 = raftResp(SUCCESS, client, origin, subSerial, payload);
-            x76.putSession(raftClient);
+            X76_RaftResp x76 = raftResp(SUCCESS, client, origin, content);
+            x76.with(raftClient);
             return new Triple<>(responsesToCluster, x76, BATCH);
         }
         else {
-            X76_RaftResp x76 = raftResp(WAL_FAILED, client, origin, subSerial, payload);
-            x76.putSession(raftClient);
+            X76_RaftResp x76 = raftResp(WAL_FAILED, client, origin, content);
+            x76.with(raftClient);
             return new Triple<>(null, x76, SINGLE);
         }
     }
@@ -864,36 +856,26 @@ public class RaftPeer
     {
         LogEntry entry = getLogEntry(logIndex);
         if(entry != null) {
-            X76_RaftResp x76 = raftResp(SUCCESS,
-                                        entry.getClient(),
-                                        entry.getOrigin(),
-                                        entry._sub(),
-                                        entry.getContent());
+            X76_RaftResp x76 = raftResp(SUCCESS, entry.getClient(), entry.getOrigin(), entry.subContent());
             return new Triple<>(null, x76, SINGLE);
         }
         return null;
     }
 
-    public X76_RaftResp raftResp(RaftCode code, long client, long origin, int subSerial, byte[] payload)
+    public <T extends IoSerial> X76_RaftResp raftResp(RaftCode code, long client, long origin, T content)
     {
         X76_RaftResp x76 = new X76_RaftResp();
         x76.setClientId(client);
         x76.setOrigin(origin);
-        x76.setSubSerial(subSerial);
-        x76.put(payload);
-        x76.setCode((byte) code.getCode());
+        x76.setCode(code.getCode());
+        x76.withSub(content);
         return x76;
     }
 
-    private List<ITriple> append(int subSerial, byte[] content, long client, long origin, IManager manager)
+    private <T extends IoSerial> List<ITriple> append(T content, long client, long origin, IManager manager)
     {
         _Logger.debug("leader append new log");
-        LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
-                                         _SelfMachine.getIndex() + 1,
-                                         client,
-                                         origin,
-                                         subSerial,
-                                         content);
+        LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(), _SelfMachine.getIndex() + 1, client, origin, content);
         if(_RaftMapper.append(newEntry)) {
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _SelfMachine.apply(_RaftMapper);
@@ -920,7 +902,7 @@ public class RaftPeer
                                  x70.setIndex(_SelfMachine.getIndex());
                                  x70.setIndexTerm(_SelfMachine.getIndexTerm());
                                  x70.setCommit(_SelfMachine.getCommit());
-                                 x70.putSession(session);
+                                 x70.with(session);
                                  return x70;
                              }
                              _Logger.debug("elector :%#x session has not found", peerId);
@@ -945,7 +927,7 @@ public class RaftPeer
                              }
                              else {
                                  X72_RaftAppend x72 = createAppend(follower);
-                                 x72.putSession(session);
+                                 x72.with(session);
                                  return x72;
                              }
                          })
@@ -977,7 +959,7 @@ public class RaftPeer
                 break CHECK;
             }
             // preIndex < self.index && preIndex >= 0
-            List<LogEntry> entryList = new LinkedList<>();
+            ListSerial entryList = new ListSerial(ZClusterFactory._Instance);
             long next = preIndex + 1;//next >= 1
             if(next > MIN_START) {
                 if(next > _SelfMachine.getIndex()) {
@@ -1021,12 +1003,7 @@ public class RaftPeer
                 entryList.add(nextLog);
                 payloadSize += nextLog.length();
             }
-            if(!entryList.isEmpty()) {
-                /* 此处不检查 entryList.isEmpty() 也不会有有影响, 是因为
-                 * JsonUtil 对ObjectMapper做了设定, 不包含Empty项目
-                 */
-                x72.put(JsonUtil.writeValueAsBytes(entryList));
-            }
+            x72.withSub(entryList);
         }
         return x72;
     }
@@ -1116,8 +1093,7 @@ public class RaftPeer
         x79.setOrigin(raftLog.getOrigin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
-        x79.setSubSerial(raftLog._sub());
-        x79.put(raftLog.getContent());
+        x79.withSub(raftLog.subContent());
         return x79;
     }
 
@@ -1127,7 +1103,7 @@ public class RaftPeer
         x77.setOrigin(raftLog.getOrigin());
         x77.setIndex(raftLog.getIndex());
         x77.setClient(raftLog.getClient());
-        x77.putSession(session);
+        x77.with(session);
         return x77;
     }
 

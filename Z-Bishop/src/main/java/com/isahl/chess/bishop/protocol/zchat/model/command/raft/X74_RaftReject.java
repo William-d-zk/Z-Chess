@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
@@ -42,17 +42,25 @@ public class X74_RaftReject
     public X74_RaftReject(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X74_RaftReject()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     @Override
     public int priority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 
     @Override
@@ -70,8 +78,9 @@ public class X74_RaftReject
     private int  mState;
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mPeerId = input.getLong();
         mTerm = input.getLong();
         mIndex = input.getLong();
@@ -79,18 +88,20 @@ public class X74_RaftReject
         mReject = input.getLong();
         mCode = input.get();
         mState = input.get();
+        return remain - 42;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mPeerId);
-        output.putLong(mTerm);
-        output.putLong(mIndex);
-        output.putLong(mIndexTerm);
-        output.putLong(mReject);
-        output.put((byte) mCode);
-        output.put((byte) mState);
+        return super.suffix(output)
+                    .putLong(mPeerId)
+                    .putLong(mTerm)
+                    .putLong(mIndex)
+                    .putLong(mIndexTerm)
+                    .putLong(mReject)
+                    .put(mCode)
+                    .put(mState);
     }
 
     public long getPeerId()
@@ -161,12 +172,6 @@ public class X74_RaftReject
     public void setState(int state)
     {
         mState = state;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
     }
 
     @Override

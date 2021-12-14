@@ -23,6 +23,8 @@
 
 package com.isahl.chess.queen.io.core.features.model.session.proxy;
 
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+
 public interface IProxyContext<A extends IPContext>
 {
     A getActingContext();

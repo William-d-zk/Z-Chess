@@ -40,7 +40,7 @@ public class X11C_QttPingreq
 {
     public X11C_QttPingreq()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGREQ));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.PINGREQ);
         _Logger.debug("create 0x11C [ping]");
     }
 }

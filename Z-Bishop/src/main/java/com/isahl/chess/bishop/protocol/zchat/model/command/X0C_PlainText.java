@@ -20,41 +20,42 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.protocol.ws.ctrl;
 
-import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
-import com.isahl.chess.bishop.protocol.ws.model.WsControl;
-import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
+package com.isahl.chess.bishop.protocol.zchat.model.command;
 
-import java.nio.charset.StandardCharsets;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2021/2/14
  */
-public abstract class WsHandshake
-        extends WsControl
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x0C)
+public class X0C_PlainText
+        extends ZCommand
 {
-    public WsHandshake(String msg, int code)
+    public X0C_PlainText()
     {
-        super(WsFrame.frame_op_code_ctrl_handshake, msg.getBytes(StandardCharsets.UTF_8));
-        _Code = code;
+        super();
+        withId(true);
+    }
+
+    public X0C_PlainText(long msgId)
+    {
+        super();
+        setMsgId(msgId);
     }
 
     @Override
-    public String toString()
+    public int priority()
     {
-        return String.format("%s", new String(_Payload, StandardCharsets.UTF_8));
+        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
 
-    private final int _Code;
-
-    public boolean isClientOk()
+    @Override
+    public Level getLevel()
     {
-        return _Code == IWsContext.HS_State_CLIENT_OK;
-    }
-
-    public boolean isServerAccept()
-    {
-        return _Code == IWsContext.HS_State_ACCEPT_OK;
+        return Level.ALMOST_ONCE;
     }
 }

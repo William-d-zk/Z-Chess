@@ -31,7 +31,7 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
@@ -50,18 +50,17 @@ public class QttCommandFilter
     @Override
     public QttFrame encode(QttContext context, QttCommand output)
     {
-        output.putContext(context);
+        output.wrap(context);
         QttFrame frame = new QttFrame();
-        frame.put(output.ctrl());
-        frame.put(output.encode(context)
-                        .array());
+        frame.header(output.header());
+        frame.withSub(output);
         return frame;
     }
 
     @Override
     public QttCommand decode(QttContext context, QttFrame input)
     {
-        return QttFactory.Create(input, context);
+        return (QttCommand) QttFactory._Instance.create(input, context);
     }
 
     @Override
@@ -90,12 +89,12 @@ public class QttCommandFilter
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
-            if(context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
+            if(context.isInFrame() && context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) context).getActingContext();
-                if(acting instanceof QttContext) {return new Pair<>(ResultType.HANDLED, acting);}
+                if(context.isInFrame() && acting instanceof QttContext) {return new Pair<>(ResultType.HANDLED, acting);}
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

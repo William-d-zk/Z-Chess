@@ -22,24 +22,25 @@
  */
 package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.features.IDisposable;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IReset;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
  */
 public interface IContext
-        extends IReset,
-                IDisposable
+        extends IReset
 {
-    ByteBuffer getWrBuffer();
+    ByteBuf getRvBuffer();
 
-    ByteBuffer getRvBuffer();
+    ByteBuf getWrBuffer();
 
-    int getSendMaxSize();
+    default void ready()
+    {
 
+    }
+
+    /*###### 校准时间 #################################################################################################*/
     long getNetTransportDelay();
 
     /**
@@ -50,7 +51,5 @@ public interface IContext
     void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived);
 
     long getNtpArrivedTime();
-
-    void ready();
 
 }

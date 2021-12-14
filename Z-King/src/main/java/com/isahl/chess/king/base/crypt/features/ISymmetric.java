@@ -23,9 +23,8 @@
 
 package com.isahl.chess.king.base.crypt.features;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IReset;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
@@ -35,7 +34,7 @@ public interface ISymmetric
 {
     byte[] createKey(String seed);
 
-    void digest(ByteBuffer dst, byte[] key);
+    void digest(ByteBuf dst, byte[] key);
 
     void digest(byte[] dst, byte[] key);
 

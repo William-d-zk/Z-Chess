@@ -25,14 +25,11 @@ package com.isahl.chess.bishop.protocol.mqtt.factory;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 
 import static java.lang.String.format;
 
@@ -41,50 +38,28 @@ import static java.lang.String.format;
  * @date 2020/4/11
  */
 public class QttFactory
-        implements IoFactory<QttFrame, QttContext>
+        implements IProtocolFactory<QttFrame, QttContext>
 {
-    private static final QttFactory _Instance = new QttFactory();
+    public static final QttFactory _Instance = new QttFactory();
 
-    public static <T extends MqttProtocol & IControl> T Create(QttFrame frame, QttContext context)
+    @Override
+    public QttControl create(ByteBuf input)
     {
-        return _Instance.create(frame, context);
+        return build(QttFrame.seekSubSerial(input));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends IControl> T create(int serial, ByteBuffer input)
+    public QttControl create(QttFrame frame, QttContext context)
     {
-        IControl control = build(serial);
-        if(control != null) {
-            control.decode(input);
-        }
-        return (T) control;
+        return create(frame.payload());
     }
 
-    @Override
-    public <T extends IControl> T create(QttFrame frame, QttContext context)
-    {
-        return build(frame, context);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends IControl, E extends MqttProtocol & IControl> T build(QttFrame frame, QttContext context)
-    {
-        E control = build(frame._sub());
-        if(control != null) {
-            control.put(frame.ctrl());
-            control.putContext(context);
-            control.decode(frame.payload(), context);
-        }
-        return (T) control;
-    }
-
-    private <T extends MqttProtocol & IControl> T build(int serial)
+    private QttControl build(int serial)
     {
         if(serial < 0x111 || serial > 0x11F) {
             return null;
         }
-        return (T) switch(serial) {
+        return switch(serial) {
             case 0x111 -> new X111_QttConnect();
             case 0x112 -> new X112_QttConnack();
             case 0x113 -> new X113_QttPublish();

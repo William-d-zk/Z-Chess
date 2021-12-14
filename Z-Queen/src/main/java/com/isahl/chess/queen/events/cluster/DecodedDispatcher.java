@@ -109,15 +109,15 @@ public class DecodedDispatcher
 
     private void dispatch(IControl cmd, ISession session, IOperator<IControl, ISession, ITriple> op)
     {
-        cmd.putSession(session);
+        cmd.with(session);
         IPair nextPipe = getNextPipe(session.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
 
     protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
-        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, IOperator.Type.CLUSTER)
-                                                             : new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
+        return mode == ISort.Mode.CLUSTER && cmd.isCtrl() ? new Pair<>(_Cluster, IOperator.Type.CLUSTER)
+                                                          : new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
     }
 
     protected RingBuffer<QEvent> dispatchWorker(IControl cmd)

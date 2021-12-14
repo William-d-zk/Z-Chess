@@ -32,7 +32,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * @author William.d.zk
@@ -90,7 +90,7 @@ public interface IPipeDecoder
                         case HANDLED:
                             IControl cmd = pipeFilter.pipeDecode(context, protocol);
                             if(cmd != null) {
-                                cmd.putSession(session);
+                                cmd.with(session);
                                 if(commands == null) {
                                     commands = new IControl[]{ cmd };
                                 }

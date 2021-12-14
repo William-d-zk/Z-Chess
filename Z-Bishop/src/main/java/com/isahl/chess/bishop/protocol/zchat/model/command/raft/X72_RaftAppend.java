@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
@@ -41,11 +41,13 @@ public class X72_RaftAppend
     public X72_RaftAppend(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X72_RaftAppend()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     // leaderId
@@ -63,31 +65,40 @@ public class X72_RaftAppend
     }
 
     @Override
-    public int length()
+    public Level getLevel()
     {
-        return super.length() + 8 * 6;
+        return Level.AT_LEAST_ONCE;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int length()
     {
+        return super.length() + 48;
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
         mLeaderId = input.getLong();
         mTerm = input.getLong();
         mPreIndex = input.getLong();
         mPreIndexTerm = input.getLong();
         mCommit = input.getLong();
         mFollowerId = input.getLong();
+        return remain - 48;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mLeaderId);
-        output.putLong(mTerm);
-        output.putLong(mPreIndex);
-        output.putLong(mPreIndexTerm);
-        output.putLong(mCommit);
-        output.putLong(mFollowerId);
+        return super.suffix(output)
+                    .putLong(mLeaderId)
+                    .putLong(mTerm)
+                    .putLong(mPreIndex)
+                    .putLong(mPreIndexTerm)
+                    .putLong(mCommit)
+                    .putLong(mFollowerId);
     }
 
     public long getLeaderId()
@@ -151,15 +162,9 @@ public class X72_RaftAppend
     }
 
     @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
     public String toString()
     {
-        return String.format("X72_RaftAppend{%#x → %#x ; term:%d, pre:%d@%d  commit:%d payload[%d]",
+        return String.format("X72_RaftAppend{%#x → %#x ; term:%d, pre:%d@%d  commit:%d  payload[%d]",
                              mLeaderId,
                              mFollowerId,
                              mTerm,

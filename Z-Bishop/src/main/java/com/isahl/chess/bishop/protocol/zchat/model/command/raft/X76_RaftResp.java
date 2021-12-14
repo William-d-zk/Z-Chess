@@ -23,14 +23,12 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-
-import java.nio.ByteBuffer;
-
-import static com.isahl.chess.king.config.CodeKing.SUCCESS;
 
 /**
  * @author william.d.zk
@@ -45,36 +43,35 @@ public class X76_RaftResp
     public X76_RaftResp()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X76_RaftResp(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     private long mClientId;
-    private int  mSubSerial;
     private long mOrigin;
-    private byte mCode;
+    private int  mCode;
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
+    }
 
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x,origin:%#x,payload-serial:%#x }",
-                             mClientId,
-                             mOrigin,
-                             mSubSerial);
-    }
-
-    @Override
-    public int _sub()
-    {
-        return mSubSerial;
-    }
-
-    public void setSubSerial(int subSerial)
-    {
-        mSubSerial = subSerial;
+        return String.format("X76_RaftResp { client:%#x,origin:%#x,payload-serial:%#x }", mClientId, mOrigin, _sub());
     }
 
     public void setOrigin(long origin)
@@ -82,12 +79,13 @@ public class X76_RaftResp
         mOrigin = origin;
     }
 
-    public int getCode()
+    @Override
+    public int rxCode()
     {
         return mCode;
     }
 
-    public void setCode(byte code)
+    public void setCode(int code)
     {
         mCode = code;
     }
@@ -99,27 +97,32 @@ public class X76_RaftResp
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mClientId);
-        output.putLong(mOrigin);
-        output.putShort((short) mSubSerial);
-        output.put(mCode);
+        output = super.suffix(output)
+                      .putLong(mClientId)
+                      .putLong(mOrigin)
+                      .putInt(mCode);
+        if(mSubContent != null) {
+            output.put(mSubContent.encode());
+        }
+        return output;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mClientId = input.getLong();
         mOrigin = input.getLong();
-        mSubSerial = input.getShort() & 0xFFFF;
-        mCode = input.get();
+        mCode = input.getInt();
+        return remain - 20;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 19;
+        return super.length() + 20;
     }
 
     public long getClientId()
@@ -132,15 +135,4 @@ public class X76_RaftResp
         mClientId = clientId;
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isConsistency()
-    {
-        return getCode() == SUCCESS.getCode();
-    }
 }

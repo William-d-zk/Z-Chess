@@ -24,11 +24,11 @@
 package com.isahl.chess.bishop.protocol.zchat.model.command;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -36,75 +36,57 @@ import java.nio.ByteBuffer;
  */
 
 public abstract class ZCommand
-        extends ZProtocol
-        implements ICommand
+        extends ZControl
+        implements ICommand<ZContext>
 {
+    private long mMsgId;
+
     public ZCommand()
     {
         super();
         withId(true);
+        mFrameHeader |= getLevel().getValue() << ZFrame.frame_op_code_qos_bit_left;
     }
 
     public ZCommand(long msgId)
     {
         super();
-        withId(true).setMsgId(msgId);
-    }
-
-    private ISession mSession;
-
-    @Override
-    public void putSession(ISession session)
-    {
-        mSession = session;
+        setMsgId(msgId);
+        mFrameHeader |= getLevel().getValue() << ZFrame.frame_op_code_qos_bit_left;
     }
 
     @Override
-    public ISession session()
+    public void setMsgId(long msgId)
     {
-        return mSession;
+        withId(true);
+        mMsgId = msgId;
     }
 
     @Override
-    public void reset()
+    public long getMsgId()
     {
-        mSession = null;
+        return mMsgId;
     }
 
     @Override
-    public void put(byte ctrl)
+    public int length()
     {
-        setHeader(ctrl);
+        return super.length() + 8;
     }
 
     @Override
-    public byte ctrl()
+    public int prefix(ByteBuf input)
     {
-        return getHeader();
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return false;
-    }
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-
-    }
-
-    @Override
-    public void encodec(ByteBuffer output)
-    {
-
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public ZContext context()
-    {
-        return super.context();
+        input.markReader();
+        mAttr = input.get();
+        int cmd = input.getUnsigned();
+        if(cmd != serial()) {
+            throw new ZException("input.cmd[%d]≠self.serial[%d]", cmd, serial());
+        }
+        if(!isWithId()) {
+            throw new ZException("z-chat-command without msg-id?!");
+        }
+        setMsgId(input.getLong());
+        return input.readableBytes();
     }
 }

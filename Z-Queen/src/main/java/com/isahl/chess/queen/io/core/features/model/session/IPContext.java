@@ -21,23 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.session.proxy;
-
-import com.isahl.chess.queen.io.core.features.model.session.IContext;
+package com.isahl.chess.queen.io.core.features.model.session;
 
 import static com.isahl.chess.queen.io.core.features.model.session.ISession.COUNT_BITS;
 
+/**
+ * @author william.d.zk
+ */
 public interface IPContext
         extends IContext
 {
-    int lackLength(int length, int target);
-
-    int position();
-
-    int lack();
-
-    void finish();
-
     void advanceOutState(int state);
 
     void advanceInState(int state);
@@ -80,4 +73,8 @@ public interface IPContext
     boolean isInErrorState();
 
     boolean isOutErrorState();
+
+    boolean isOutInit();
+
+    boolean isInInit();
 }

@@ -24,18 +24,19 @@
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X108_Shutdown;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0A_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
@@ -62,6 +63,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 /**
  * @author william.d.zk
@@ -74,16 +76,16 @@ public class MQttAccessPlugin
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
 
-    private final IDeviceService                    _DeviceService;
-    private final IQttStorage                       _QttStorage;
+    private final IDeviceService                       _DeviceService;
+    private final IQttStorage                          _QttStorage;
     /*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
     /**
      * 在 link-consumer 中处理 subscribe 和 unsubscribe
      * 单线程执行，使用TreeMap 操作
      */
-    private final Map<Pattern, Subscribe>           _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
-    private final Map<Long, Map<Integer, IControl>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
-    private final Queue<Pair<Long, Instant>>        _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
+    private final Map<Pattern, Subscribe>              _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+    private final Map<Long, Map<Integer, ICommand<?>>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
+    private final Queue<Pair<Long, Instant>>           _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
     @Autowired
     public MQttAccessPlugin(IDeviceService deviceService, IQttStorage qttStorage)
@@ -93,15 +95,15 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public boolean isHandleProtocol(IProtocol protocol)
+    public boolean isSupported(IProtocol protocol)
     {
         return protocol.serial() >= 0x111 && protocol.serial() <= 0x11F;
     }
 
     @Override
-    public List<? extends IControl> handle(IManager manager, ISession session, IControl content)
+    public List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content)
     {
-        List<ICommand> pushList = null;
+        List<IControl<?>> pushList = null;
         switch(content.serial()) {
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
@@ -114,7 +116,7 @@ public class MQttAccessPlugin
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.setMsgId(x113.getMsgId());
-                        x114.putSession(session);
+                        x114.with(session);
                         pushList.add(x114);
                     case ALMOST_ONCE:
                         brokerTopic(manager, x113, broker(x113.getTopic()), pushList);
@@ -122,7 +124,7 @@ public class MQttAccessPlugin
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.setMsgId(x113.getMsgId());
-                        x115.putSession(session);
+                        x115.with(session);
                         pushList.add(x115);
                         register(x115, session.getIndex());
                         _QttStorage.receivedStorage((int) x113.getMsgId(),
@@ -177,7 +179,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public ITriple onLink(IManager manager, ISession session, IControl input)
+    public ITriple onLink(IManager manager, ISession session, IControl<?> input)
     {
         switch(input.serial()) {
             case 0x102 -> session.innerClose();
@@ -186,12 +188,12 @@ public class MQttAccessPlugin
                 X112_QttConnack x112 = new X112_QttConnack();
                 QttContext qttContext = session.getContext(QttContext.class);
                 qttContext.setVersion(x111.getVersion());
-                x112.putContext(qttContext);
+                x112.wrap(qttContext);
                 x112.responseOk();
                 if(QttContext.isNoSupportVersion(x111.getVersion())) {
                     x112.rejectUnsupportedVersion();
                 }
-                else if(!x111.isClean() && x111.getClientIdLength() == 0) {
+                else if(!x111.isClean() && x111.getClientId() == null) {
                     x112.rejectIdentifier();
                 }
                 long deviceId = ZUID.INVALID_PEER_ID;
@@ -219,8 +221,8 @@ public class MQttAccessPlugin
                 if(x112.isOk()) {
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
-                        X108_Shutdown x108 = new X108_Shutdown();
-                        x108.putSession(old);
+                        X0A_Shutdown x108 = new X0A_Shutdown();
+                        x108.with(old);
                         _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
                         return new Triple<>(x108, x111, SINGLE);
                     }
@@ -254,16 +256,13 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager,
-                                             long origin,
-                                             IProtocol consensusBody,
-                                             boolean isConsistency)
+    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
     {
         ISession session = manager.findSessionByIndex(origin);
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
-                if(isConsistency) {
+                if(x111.rxCode() == SUCCESS) {
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if(x111.isClean()) {
                         clean(origin);
@@ -273,21 +272,21 @@ public class MQttAccessPlugin
                 if(session != null) {
                     X112_QttConnack x112 = new X112_QttConnack();
                     QttContext context = session.getContext(QttContext.class);
-                    x112.putContext(context);
-                    if(isConsistency) {
+                    x112.wrap(context);
+                    if(x111.rxCode() == SUCCESS) {
                         x112.responseOk();
                     }
                     else {
                         x112.rejectServerUnavailable();
                     }
-                    x112.putSession(session);
+                    x112.with(session);
                     return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                 }
             }
             case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                if(subscribes != null && isConsistency) {
+                if(subscribes != null && x118.rxCode() == SUCCESS) {
                     subscribes.forEach((topic, level)->{
                         Subscribe subscribe = subscribe(topic, level, origin);
                         if(subscribe != null) {
@@ -298,7 +297,7 @@ public class MQttAccessPlugin
                     if(session != null) {
                         X119_QttSuback x119 = new X119_QttSuback();
                         x119.setMsgId(x118.getMsgId());
-                        x119.putSession(session);
+                        x119.with(session);
                         _Logger.info("subscribe topic:%s", x118.getSubscribes());
                         return Collections.singletonList(new Triple<>(x119, session, session.getEncoder()));
                     }
@@ -307,7 +306,7 @@ public class MQttAccessPlugin
             case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                if(topics != null && isConsistency) {
+                if(topics != null && x11A.rxCode() == SUCCESS) {
                     topics.forEach(topic->{
                         unsubscribe(topic, origin);
                         _QttStorage.sessionOnUnsubscribe(origin, topic);
@@ -315,7 +314,7 @@ public class MQttAccessPlugin
                     if(session != null) {
                         X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                         x11B.setMsgId(x11A.getMsgId());
-                        x11B.putSession(session);
+                        x11B.with(session);
                         _Logger.info("unsubscribe topic:%s", x11A.getTopics());
                         return Collections.singletonList(new Triple<>(x11B, session, session.getEncoder()));
                     }
@@ -339,11 +338,11 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public void register(ICommand stateMessage, long session)
+    public void register(ICommand<?> stateMessage, long session)
     {
         int msgId = (int) stateMessage.getMsgId();
         if(_QttIdentifierMap.computeIfPresent(session, (key, _MsgIdMessageMap)->{
-            IControl old = _MsgIdMessageMap.put(msgId, stateMessage);
+            IControl<?> old = _MsgIdMessageMap.put(msgId, stateMessage);
             if(old == null) {
                 _Logger.debug("retry receive: %s", stateMessage);
             }
@@ -351,7 +350,7 @@ public class MQttAccessPlugin
         }) == null)
         {
             //previous == null
-            final Map<Integer, IControl> _LocalIdMessageMap = new HashMap<>(16);
+            final Map<Integer, ICommand<?>> _LocalIdMessageMap = new HashMap<>(16);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttIdentifierMap.put(session, _LocalIdMessageMap);
             _Logger.debug("first receive: %s", stateMessage);
@@ -359,7 +358,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public boolean ack(ICommand stateMessage, long session)
+    public boolean ack(ICommand<?> stateMessage, long session)
     {
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
@@ -402,7 +401,7 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public void retain(String topic, MqttProtocol msg)
+    public void retain(String topic, QttControl msg)
     {
         Pattern pattern = topicToRegex(topic);
         if(msg.payload() == null || msg.payload()
@@ -523,13 +522,13 @@ public class MQttAccessPlugin
     private void brokerTopic(IManager manager,
                              X113_QttPublish x113,
                              Map<Long, IQoS.Level> routes,
-                             List<ICommand> pushList)
+                             List<IControl<?>> pushList)
     {
         routes.forEach((kIdx, lv)->{
             ISession session = manager.findSessionByIndex(kIdx);
             if(session != null) {
-                X113_QttPublish n113 = x113.duplicate();
-                n113.putSession(session);
+                X113_QttPublish n113 = x113.copy();
+                n113.with(session);
                 n113.setLevel(lv);
                 if(lv.getValue() > 0) {
                     n113.setMsgId(_QttStorage.generateMsgId(kIdx));

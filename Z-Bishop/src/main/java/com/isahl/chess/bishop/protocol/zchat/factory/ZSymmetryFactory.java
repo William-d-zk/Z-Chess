@@ -23,9 +23,6 @@
 
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
-import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-
 /**
  * @author william.d.zk
  * @date 2019-05-08
@@ -33,11 +30,5 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 public class ZSymmetryFactory
         extends ZChatFactory
 {
-    private static final ZSymmetryFactory _Instance = new ZSymmetryFactory();
-
-    @Override
-    protected <T extends ZProtocol & IControl> T build(int serial)
-    {
-        return super.build(serial);
-    }
+    public static final ZSymmetryFactory _Instance = new ZSymmetryFactory();
 }

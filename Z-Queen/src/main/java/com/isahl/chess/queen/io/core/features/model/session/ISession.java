@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.features.IDisposable;
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.queen.io.core.features.model.channels.IAddress;
@@ -35,7 +34,6 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 import java.io.Closeable;
 import java.nio.channels.Channel;
@@ -55,7 +53,6 @@ public interface ISession
         extends Queue<IPacket>,
                 IReset,
                 Closeable,
-                IDisposable,
                 IAddress,
                 IValid,
                 IConnectMode,
@@ -127,16 +124,16 @@ public interface ISession
         getDismissCallback().onDismiss(this);
     }
 
-    /* 最多支持8种状态 -3~4 */ int COUNT_BITS         = Integer.SIZE - 3;
-                        int CAPACITY           = (1 << COUNT_BITS) - 1;
-                        int SESSION_CREATED    = -3 << COUNT_BITS;
-                        int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
-                        int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
-                        int SESSION_PENDING    = 00 << COUNT_BITS;     /* 有待发数据，尚未完成编码 */
-                        int SESSION_SENDING    = 01 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
-                        int SESSION_FLUSHED    = 02 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
-                        int SESSION_CLOSE      = 03 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
-                        int SESSION_TERMINATED = 04 << COUNT_BITS;     /* 终态，清理结束 */
+    /* 最多支持8种状态 -3~4 */ int COUNT_BITS = Integer.SIZE - 3;
+    int CAPACITY           = (1 << COUNT_BITS) - 1;
+    int SESSION_CREATED    = -3 << COUNT_BITS;
+    int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
+    int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
+    int SESSION_PENDING    = 00 << COUNT_BITS;     /* 有待发数据，尚未完成编码 */
+    int SESSION_SENDING    = 01 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
+    int SESSION_FLUSHED    = 02 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
+    int SESSION_CLOSE      = 03 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
+    int SESSION_TERMINATED = 04 << COUNT_BITS;     /* 终态，清理结束 */
 
     default String getSessionStateStr(int c)
     {

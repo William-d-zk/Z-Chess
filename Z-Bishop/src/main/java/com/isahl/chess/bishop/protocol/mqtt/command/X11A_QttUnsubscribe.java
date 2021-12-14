@@ -23,13 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
-import com.isahl.chess.bishop.protocol.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,13 +46,7 @@ public class X11A_QttUnsubscribe
 {
     public X11A_QttUnsubscribe()
     {
-        put(generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE));
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
+        generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE);
     }
 
     @Override
@@ -66,11 +58,11 @@ public class X11A_QttUnsubscribe
     @Override
     public int length()
     {
-        int length = super.length();
+        int length = 0;
         for(String topic : _Topics) {
             length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
         }
-        return length;
+        return length + super.length();
     }
 
     private final List<String> _Topics = new ArrayList<>(3);
@@ -86,26 +78,27 @@ public class X11A_QttUnsubscribe
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decodec(input);
-        while(input.hasRemaining()) {
-            int utfSize = input.getShort() & 0xFFFF;
-            String topic = IoUtil.readString(input.array(), input.position(), utfSize, StandardCharsets.UTF_8);
-            input.position(input.position() + utfSize);
+        setMsgId(input.getUnsignedShort());
+        while(input.isReadable()) {
+            int topicLength = input.getUnsignedShort();
+            String topic = input.readUTF(topicLength);
             _Topics.add(topic);
         }
+        return 0;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        super.encodec(output);
+        output.putShort((short) getMsgId());
         for(String topic : _Topics) {
-            byte[] data = topic.getBytes(StandardCharsets.UTF_8);
-            output.putShort((short) data.length);
-            output.put(data);
+            byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
+            output.putShort((short) topicBytes.length);
+            output.put(topicBytes);
         }
+        return output;
     }
 
     @Override

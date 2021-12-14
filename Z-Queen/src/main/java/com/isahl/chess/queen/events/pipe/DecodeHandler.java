@@ -35,7 +35,7 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 

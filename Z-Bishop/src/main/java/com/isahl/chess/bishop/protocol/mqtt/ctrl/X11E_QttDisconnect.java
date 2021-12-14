@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.exception.ZException;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -40,12 +41,12 @@ public class X11E_QttDisconnect
 {
     public X11E_QttDisconnect()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT);
     }
 
     @Override
-    public boolean isMapping()
+    public void transfer()
     {
-        return true;
+        throw new ZException("mqtt disconnect");
     }
 }

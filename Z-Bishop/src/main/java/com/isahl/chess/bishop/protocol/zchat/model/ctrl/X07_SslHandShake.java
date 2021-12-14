@@ -25,18 +25,18 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 import javax.net.ssl.SSLEngineResult;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x105)
-public class X105_SslHandShake
+                  serial = 0x07)
+public class X07_SslHandShake
         extends ZControl
 {
 
-    public X105_SslHandShake()
+    public X07_SslHandShake()
     {
         super();
     }
@@ -68,15 +68,18 @@ public class X105_SslHandShake
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mHandshakeStatus = input.get();
+        return remain - 1;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.put(mHandshakeStatus);
+        return super.suffix(output)
+                    .put(mHandshakeStatus);
     }
 
     @Override
@@ -91,6 +94,11 @@ public class X105_SslHandShake
         return String.format("X105_SslHandShake{HandshakeStatus=%s;[HELLO]:%s}",
                              getHandshakeStatus(),
                              mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "NULL");
+    }
+
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
     }
 
 }

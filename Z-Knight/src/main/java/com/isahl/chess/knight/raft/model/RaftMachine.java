@@ -28,13 +28,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
@@ -53,7 +53,6 @@ public class RaftMachine
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
-    private long          mPeerId;
     private long          mTerm;      // 触发选举时 mTerm > mIndexTerm
     private long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
     private long          mIndexTerm; // 本地日志对应的Term
@@ -68,9 +67,8 @@ public class RaftMachine
 
     @Override
     public int length()
-    {
-        int length = 8 + // peer
-                     8 + // term
+    {   //peer @ pKey
+        int length = 8 + // term
                      8 + // index
                      8 + // index-term
                      8 + // match-index
@@ -83,21 +81,15 @@ public class RaftMachine
                      1;  // gate-set-size
         if(mPeerSet != null && !mPeerSet.isEmpty()) {
             for(RaftNode node : mPeerSet) {
-                length += node.length();
+                length += node.sizeOf();
             }
         }
         if(mGateSet != null && !mGateSet.isEmpty()) {
             for(RaftNode gate : mGateSet) {
-                length += gate.length();
+                length += gate.sizeOf();
             }
         }
         return length + super.length();
-    }
-
-    @Override
-    public long primaryKey()
-    {
-        return mPeerId;
     }
 
     @JsonCreator
@@ -111,7 +103,7 @@ public class RaftMachine
     public RaftMachine(long peerId, Operation operation)
     {
         super(operation, Strategy.RETAIN);
-        mPeerId = peerId;
+        pKey = peerId;
         mMatchIndex = INDEX_NAN;
         mIndex = INDEX_NAN;
     }
@@ -122,11 +114,9 @@ public class RaftMachine
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
-        mPeerId = pKey = input.getLong();
-        input.get();//skip has foreign key flag
+        int remain = super.prefix(input);
         mTerm = input.getLong();
         mIndex = input.getLong();
         mIndexTerm = input.getLong();
@@ -136,51 +126,56 @@ public class RaftMachine
         mCandidate = input.getLong();
         mLeader = input.getLong();
         mState = input.get();
-        mPeerSet = buildSet(input);
-        mGateSet = buildSet(input);
+        remain -= 67;
+        int pLength = buildSet(input, mPeerSet = new TreeSet<>());
+        int gLength = buildSet(input, mGateSet = new TreeSet<>());
+        if(pLength == 0) {
+            mPeerSet = null;
+        }
+        if(gLength == 0) {
+            mGateSet = null;
+        }
+        return remain - pLength - gLength;
     }
 
-    private Set<RaftNode> buildSet(ByteBuffer input)
+    private int buildSet(ByteBuf input, Set<RaftNode> set)
     {
         int size = input.get() & 0xFF;
         if(size > 0) {
-            TreeSet<RaftNode> set = new TreeSet<>();
+            int position = input.readerIdx();
             for(int i = 0; i < size; i++) {
                 RaftNode node = new RaftNode();
                 node.decode(input);
-                node.finish(input);
                 set.add(node);
             }
-            return set;
+            return input.readerIdx() - position;
         }
-        return null;
+        return 0;
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode();
-        output.putLong(mTerm);
-        output.putLong(mIndex);
-        output.putLong(mIndexTerm);
-        output.putLong(mMatchIndex);
-        output.putLong(mApplied);
-        output.putLong(mCommit);
-        output.putLong(mCandidate);
-        output.putLong(mLeader);
-        output.put((byte) mState);
-        output.put((byte) (mPeerSet == null ? 0 : mPeerSet.size()));
+        output = super.suffix(output)
+                      .putLong(mTerm)
+                      .putLong(mIndex)
+                      .putLong(mIndexTerm)
+                      .putLong(mMatchIndex)
+                      .putLong(mApplied)
+                      .putLong(mCommit)
+                      .putLong(mCandidate)
+                      .putLong(mLeader)
+                      .put(mState);
+        output.put(mPeerSet == null ? 0 : mPeerSet.size());
         if(mPeerSet != null && mPeerSet.size() > 0) {
             for(RaftNode node : mPeerSet) {
-                output.put(node.encode()
-                               .array());
+                output.put(node.encode());
             }
         }
-        output.put((byte) (mGateSet == null ? 0 : mGateSet.size()));
+        output.put(mGateSet == null ? 0 : mGateSet.size());
         if(mGateSet != null && mGateSet.size() > 0) {
             for(RaftNode node : mGateSet) {
-                output.put(node.encode()
-                               .array());
+                output.put(node.encode());
             }
         }
         return output;
@@ -219,7 +214,7 @@ public class RaftMachine
     @Override
     public long getPeerId()
     {
-        return mPeerId;
+        return primaryKey();
     }
 
     @Override
@@ -340,10 +335,10 @@ public class RaftMachine
     public void beLeader(IRaftMapper mapper)
     {
         mState = LEADER.getCode();
-        mLeader = mPeerId;
-        mMatchIndex = mCommit;
-        mapper.updateTerm(mTerm);
-        mapper.updateCandidate(mCandidate = mPeerId);
+        mLeader = getPeerId();
+        mMatchIndex = getCommit();
+        mapper.updateTerm(getTerm());
+        mCandidate = getPeerId();
     }
 
     @Override
@@ -352,7 +347,7 @@ public class RaftMachine
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(++mTerm);
-        mapper.updateCandidate(mCandidate = mPeerId);
+        mCandidate = getPeerId();
     }
 
     @Override
@@ -361,7 +356,7 @@ public class RaftMachine
         mState = ELECTOR.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(mTerm = term);
-        mapper.updateCandidate(mCandidate = candidate);
+        mCandidate = candidate;
     }
 
     @Override
@@ -370,19 +365,19 @@ public class RaftMachine
         mState = FOLLOWER.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(mTerm = term);
-        mapper.updateCandidate(mCandidate = INVALID_PEER_ID);
+        mCandidate = INVALID_PEER_ID;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public RaftMachine createCandidate()
     {
-        RaftMachine candidate = new RaftMachine(mPeerId, OP_INSERT);
+        RaftMachine candidate = new RaftMachine(getPeerId(), OP_INSERT);
         candidate.setTerm(mTerm + 1);
         candidate.setIndex(mIndex);
         candidate.setIndexTerm(mIndexTerm);
         candidate.setState(CANDIDATE);
-        candidate.setCandidate(mPeerId);
+        candidate.setCandidate(getPeerId());
         candidate.setLeader(INVALID_PEER_ID);
         candidate.setCommit(mCommit);
         return candidate;
@@ -392,13 +387,13 @@ public class RaftMachine
     @SuppressWarnings("unchecked")
     public RaftMachine createLeader()
     {
-        RaftMachine leader = new RaftMachine(mPeerId, OP_APPEND);
+        RaftMachine leader = new RaftMachine(getPeerId(), OP_APPEND);
         leader.setTerm(mTerm);
         leader.setIndex(mIndex);
         leader.setIndexTerm(mIndexTerm);
         leader.setCommit(mCommit);
-        leader.setLeader(mPeerId);
-        leader.setCandidate(mPeerId);
+        leader.setLeader(getPeerId());
+        leader.setCandidate(getPeerId());
         leader.setState(LEADER);
         return leader;
     }
@@ -407,7 +402,7 @@ public class RaftMachine
     @SuppressWarnings("unchecked")
     public RaftMachine createFollower()
     {
-        RaftMachine follower = new RaftMachine(mPeerId, OP_MODIFY);
+        RaftMachine follower = new RaftMachine(getPeerId(), OP_MODIFY);
         follower.setTerm(mTerm);
         follower.setIndex(mIndex);
         follower.setIndexTerm(mIndexTerm);
@@ -422,7 +417,7 @@ public class RaftMachine
     @SuppressWarnings("unchecked")
     public RaftMachine createLearner()
     {
-        RaftMachine follower = new RaftMachine(mPeerId, OP_MODIFY);
+        RaftMachine follower = new RaftMachine(getPeerId(), OP_MODIFY);
         follower.setTerm(mTerm);
         follower.setIndex(mIndex);
         follower.setIndexTerm(mIndexTerm);
@@ -440,7 +435,6 @@ public class RaftMachine
         mTerm = term;
         mLeader = leader;
         mCandidate = leader;
-        mapper.updateCandidate(mLeader);
         mapper.updateTerm(mTerm);
     }
 
@@ -510,16 +504,16 @@ public class RaftMachine
                                      \t\tgates:%s
                                      }
                                      """,
-                             mPeerId,
+                             getPeerId(),
                              getState(),
-                             mTerm,
-                             mIndex,
-                             mIndexTerm,
-                             mMatchIndex,
-                             mCommit,
-                             mApplied,
-                             mLeader,
-                             mCandidate,
+                             getTerm(),
+                             getIndex(),
+                             getIndexTerm(),
+                             getMatchIndex(),
+                             getCommit(),
+                             getApplied(),
+                             getLeader(),
+                             getCandidate(),
                              set2String(mPeerSet),
                              set2String(mGateSet));
     }

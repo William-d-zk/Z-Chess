@@ -25,7 +25,7 @@ package com.isahl.chess.queen.events.cluster;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.db.model.IStorage;
-import com.isahl.chess.queen.events.routes.IMappingCustom;
+import com.isahl.chess.queen.events.routes.IControlCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -37,7 +37,7 @@ import java.util.List;
  * @date 2020/4/20
  */
 public interface IClusterCustom<T extends IStorage>
-        extends IMappingCustom
+        extends IControlCustom
 {
     /**
      * Cluster.Leader heartbeat timeout event

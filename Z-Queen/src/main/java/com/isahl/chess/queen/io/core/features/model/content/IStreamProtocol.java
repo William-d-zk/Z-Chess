@@ -22,10 +22,9 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.session.IContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * stream protocol 存在stream control的状态更新机制
@@ -34,7 +33,7 @@ import java.nio.ByteBuffer;
  * @author William.d.zk
  * @see IContext
  */
-public interface IStreamProtocol
+public interface IStreamProtocol<C extends IPContext>
         extends IProtocol
 {
     /**
@@ -42,8 +41,9 @@ public interface IStreamProtocol
      *
      * @param ctx
      */
-    default <C extends IPContext> void afterEncode(C ctx)
+    default ByteBuf suffix(ByteBuf output, C ctx)
     {
+        return output;
     }
 
     /**
@@ -51,34 +51,47 @@ public interface IStreamProtocol
      *
      * @param ctx
      */
-    default <C extends IPContext> void afterDecode(C ctx)
+    default void fold(C ctx)
     {
     }
 
     /**
      * 扩展IProtocol 未对IContext进行约定
      * 编码过程
-     *
+     * <p>
+     * //@formatter:off
+     * encode(ctx){
+     *     suffix(encode(){
+     *               suffix(output)
+     *            }
+     *     ,ctx)
+     * }
+     * //@formatter:on
      * @param ctx
      * @return
      */
-    default <C extends IPContext> ByteBuffer encode(C ctx)
+    default ByteBuf encode(C ctx)
     {
-        ByteBuffer output = encode();
-        afterEncode(ctx);
-        return output;
+        return suffix(encode(), ctx);
     }
 
     /**
      * 扩展IProtocol 未对IContext进行约定
      * 解码过程
-     *
+     * //@formatter:off
+     * decode(input,ctx){
+     *      decode(input){
+     *          fold(input, prefix(input))
+     *      }
+     *      fold(ctx)
+     * }
+     * //@formatter:on
      * @param input
      * @param ctx
      */
-    default <C extends IPContext> void decode(ByteBuffer input, C ctx)
+    default void decode(ByteBuf input, C ctx)
     {
         decode(input);
-        afterDecode(ctx);
+        fold(ctx);
     }
 }

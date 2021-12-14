@@ -22,36 +22,24 @@
  */
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  * @date 2019-05-25
  */
 public abstract class QttCommand
-        extends MqttProtocol
-        implements ICommand
+        extends QttControl
+        implements ICommand<QttContext>
 {
-
-    private ISession mSession;
-
-    private long mMsgId = -1;
+    protected short mMsgId;
 
     @Override
-    public void put(byte ctrl)
+    public void setMsgId(long msgId)
     {
-        setOpCode(ctrl);
-    }
-
-    @Override
-    public void setMsgId(long id)
-    {
-        mMsgId = id;
+        mMsgId = (short) msgId;
     }
 
     @Override
@@ -61,64 +49,9 @@ public abstract class QttCommand
     }
 
     @Override
-    public byte ctrl()
-    {
-        return getOpCode();
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return false;
-    }
-
-    @Override
-    public void reset()
-    {
-        put(null);
-        putSession(null);
-    }
-
-    @Override
-    public void putSession(ISession session)
-    {
-        mSession = session;
-    }
-
-    @Override
-    public ISession session()
-    {
-        return mSession;
-    }
-
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
-    }
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-        mMsgId = input.getShort() & 0xFFFF;
-    }
-
-    @Override
-    public void encodec(ByteBuffer output)
-    {
-        output.putShort((short) mMsgId);
-    }
-
-    @Override
     public int length()
     {
         return super.length() + 2;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public QttContext context()
-    {
-        return mContext;
-    }
 }

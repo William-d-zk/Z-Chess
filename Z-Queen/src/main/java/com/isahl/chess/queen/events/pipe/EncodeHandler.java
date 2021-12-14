@@ -34,8 +34,8 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
@@ -83,7 +83,6 @@ public class EncodeHandler
                     IOperator<IControl, ISession, ITriple> writeOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", IOperator.Type.WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
-                    cmd.dispose();
                 }
                 case WROTE -> {
                     IPair pairWroteContent = event.getContent();
@@ -102,8 +101,7 @@ public class EncodeHandler
     private <A> void encodeHandler(QEvent event, A a, ISession session, IOperator<A, ISession, ITriple> operator)
     {
         IPContext context = session.getContext();
-        if(context instanceof IEContext) {
-            IEContext eContext = (IEContext) context;
+        if(context instanceof IEContext eContext) {
             eContext.setEncryptHandler(_EncryptHandler);
         }
         try {

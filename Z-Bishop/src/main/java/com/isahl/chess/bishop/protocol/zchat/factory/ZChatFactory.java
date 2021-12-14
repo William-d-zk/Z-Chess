@@ -1,57 +1,46 @@
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X109_Consensus;
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0B_Consensus;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0C_PlainText;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.*;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls.*;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 
 public class ZChatFactory
-        implements IoFactory<IFrame, ZContext>
+        implements IProtocolFactory<ZFrame, ZContext>
 {
-    @Override
-    public <T extends IControl> T create(IFrame frame, ZContext context)
-    {
-        return build(frame, context);
-    }
+    public final static ZChatFactory _Instance = new ZChatFactory();
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends IControl> T create(int serial, ByteBuffer input)
+    public ZControl create(ZFrame frame, ZContext context)
     {
-        IControl control = build(serial);
-        if(control != null) {
-            control.decode(input);
-        }
-        return (T) control;
+        return create(frame.payload());
     }
 
-    @SuppressWarnings("unchecked")
-    protected <T extends IControl, E extends ZProtocol & IControl> T build(IFrame frame, ZContext context)
+    @Override
+    public ZControl create(ByteBuf input)
     {
-        E control = build(frame._sub());
-        if(control != null) {
-            control.put(frame.ctrl());
-            control.putContext(context);
-            control.decode(frame.payload(), context);
-        }
-        return (T) control;
+        return build(ZFrame.seekSubSerial(input));
     }
 
-    @SuppressWarnings("unchecked")
-    protected <T extends ZProtocol & IControl> T build(int serial)
+    protected ZControl build(int serial)
     {
-        return (T) switch(serial) {
-            case 0x10A -> new X10A_PlainText();
-            case 0x105 -> new X105_SslHandShake();
-            case 0x106 -> new X106_Identity();
-            case 0x107 -> new X107_Redirect();
-            case 0x108 -> new X108_Shutdown();
-            case 0x109 -> new X109_Consensus();
+        return switch(serial) {
+            case 0x01 -> new X01_EncryptRequest();
+            case 0x02 -> new X02_AsymmetricPub();
+            case 0x03 -> new X03_Cipher();
+            case 0x04 -> new X04_EncryptConfirm();
+            case 0x05 -> new X05_EncryptStart();
+            case 0x06 -> new X06_EncryptComp();
+            case 0x07 -> new X07_SslHandShake();
+            case 0x08 -> new X08_Identity();
+            case 0x09 -> new X09_Redirect();
+            case 0x0A -> new X0A_Shutdown();
+            case 0x0B -> new X0B_Consensus();
+            case 0x0C -> new X0C_PlainText();
             default -> null;
         };
     }

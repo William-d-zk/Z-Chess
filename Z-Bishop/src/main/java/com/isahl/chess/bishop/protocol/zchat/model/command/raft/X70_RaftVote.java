@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
@@ -42,11 +42,13 @@ public class X70_RaftVote
     public X70_RaftVote(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X70_RaftVote()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     @Override
@@ -70,25 +72,28 @@ public class X70_RaftVote
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mCandidateId = input.getLong();
         mTerm = input.getLong();
         mIndex = input.getLong();
         mIndexTerm = input.getLong();
         mElectorId = input.getLong();
         mCommit = input.getLong();
+        return remain - 48;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mCandidateId);
-        output.putLong(mTerm);
-        output.putLong(mIndex);
-        output.putLong(mIndexTerm);
-        output.putLong(mElectorId);
-        output.putLong(mCommit);
+        return super.suffix(output)
+                    .putLong(mCandidateId)
+                    .putLong(mTerm)
+                    .putLong(mIndex)
+                    .putLong(mIndexTerm)
+                    .putLong(mElectorId)
+                    .putLong(mCommit);
     }
 
     public long getCandidateId()
@@ -152,12 +157,6 @@ public class X70_RaftVote
     }
 
     @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
     public String toString()
     {
         return String.format("X70_RaftVote{candidate=%#x  term: %d,last: %d@%d, commit=%d, elector=%#x}",
@@ -167,5 +166,11 @@ public class X70_RaftVote
                              mIndexTerm,
                              mCommit,
                              mElectorId);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 }

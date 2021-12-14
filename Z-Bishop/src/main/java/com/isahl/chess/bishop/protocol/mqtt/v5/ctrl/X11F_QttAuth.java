@@ -38,6 +38,6 @@ public class X11F_QttAuth
 
     public X11F_QttAuth()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.AUTH));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.AUTH);
     }
 }

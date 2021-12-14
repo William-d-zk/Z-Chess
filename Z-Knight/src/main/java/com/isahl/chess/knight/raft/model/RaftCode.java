@@ -23,9 +23,11 @@
 
 package com.isahl.chess.knight.raft.model;
 
+import com.isahl.chess.king.config.KingCode;
+
 public enum RaftCode
 {
-    SUCCESS(0, "success"),
+    SUCCESS(KingCode.SUCCESS, "success"),
     LOWER_TERM(1, "term < current,reject"),
     CONFLICT(2, "pre-log-index&pre-log-term inconsistent,reject"),
     ILLEGAL_STATE(3, "illegal state,reject"),

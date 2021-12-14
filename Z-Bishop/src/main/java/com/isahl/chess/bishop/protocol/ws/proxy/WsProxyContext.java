@@ -25,11 +25,9 @@ package com.isahl.chess.bishop.protocol.ws.proxy;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
-import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 /**
  * @author william.d.zk
@@ -39,8 +37,7 @@ public class WsProxyContext<A extends IPContext>
         implements IProxyContext<A>
 {
 
-    private final A       _ActingContext;
-    private       IPacket mTransfer;
+    private final A _ActingContext;
 
     public WsProxyContext(INetworkOption option, ISort.Mode mode, ISort.Type type, A actingContext)
     {
@@ -67,13 +64,4 @@ public class WsProxyContext<A extends IPContext>
         _ActingContext.ready();
     }
 
-    /*这是一个协议性代理上下文特有的处理机制，粘包时，这个操作异常重要*/
-    public IPacket append(IPacket packet)
-    {
-        if(mTransfer == null) {
-            mTransfer = new AioPacket(1 << 12, false);
-        }
-        mTransfer.append(packet);
-        return mTransfer;
-    }
 }

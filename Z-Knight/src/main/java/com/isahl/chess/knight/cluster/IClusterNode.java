@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.cluster;
 
 import com.isahl.chess.bishop.sort.ZSortHolder;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;
@@ -97,7 +97,7 @@ public interface IClusterNode
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                    return new Triple<>(new X08_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
                                         session,
                                         SINGLE);
                 }
@@ -159,7 +159,7 @@ public interface IClusterNode
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                    return new Triple<>(new X08_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
                                         session,
                                         SINGLE);
                 }

@@ -24,14 +24,13 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,10 +59,10 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl input)
+    public ITriple handle(IManager manager, ISession session, IControl<?> input)
     {
         for(IAccessService service : _AccessServices) {
-            if(service.isHandleProtocol(input)) {
+            if(service.isSupported(input)) {
                 return service.onLink(manager, session, input);
             }
         }
@@ -71,11 +70,11 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IControl request, long origin, boolean isConsistency)
+    public List<ITriple> notify(IManager manager, IControl<?> request, long origin)
     {
         for(IAccessService service : _AccessServices) {
-            if(service.isHandleProtocol(request)) {
-                return service.onConsistencyResult(manager, origin, request, isConsistency);
+            if(service.isSupported(request)) {
+                return service.onConsistencyResult(manager, origin, request);
             }
         }
         return null;
@@ -99,13 +98,12 @@ public class LinkCustom
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
+    public <T extends IoSerial> T adjudge(IConsistent consistency, ISession session)
     {
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
             case 0x76, 0x79 -> {
-                IProtocol consensusBody = ClusterFactory.oneOf(consistency._sub(), consistency.payload());
-                return (T) consensusBody;
+                return (T) consistency.subContent();
             }
             default -> {
                 return null;

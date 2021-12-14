@@ -30,8 +30,8 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 /**
@@ -42,7 +42,6 @@ public interface IPipeEncoder
 {
     default IPacket protocolWrite(IControl output, ISession session)
     {
-
         IPContext context = session.getContext();
         if(context == null || output == null) {return null;}
         IFilterChain previous = session.getFilterChain()

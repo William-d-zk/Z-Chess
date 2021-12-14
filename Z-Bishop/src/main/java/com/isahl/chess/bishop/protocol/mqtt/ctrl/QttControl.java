@@ -25,10 +25,14 @@ package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.IDuplicate;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -36,32 +40,20 @@ import java.nio.ByteBuffer;
  */
 public abstract class QttControl
         extends MqttProtocol
-        implements IControl
+        implements IControl<QttContext>,
+                   IDuplicate
 {
-    private ISession mSession;
+    protected QttContext mContext;
+    protected byte[]     mPayload;
+    private   ISession   mSession;
 
-    @Override
-    public byte ctrl()
+    protected void generateCtrl(boolean dup, boolean retain, IQoS.Level qosLevel, QttType qttType)
     {
-        return getOpCode();
-    }
-
-    @Override
-    public void put(byte ctrl)
-    {
-        setOpCode(ctrl);
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return true;
-    }
-
-    @Override
-    public void putSession(ISession session)
-    {
-        mSession = session;
+        mFrameHeader = 0;
+        mFrameHeader |= dup ? DUPLICATE_FLAG : 0;
+        mFrameHeader |= retain ? RETAIN_FLAG : 0;
+        mFrameHeader |= qosLevel.getValue() << 1;
+        mFrameHeader |= qttType.getValue();
     }
 
     @Override
@@ -71,28 +63,137 @@ public abstract class QttControl
     }
 
     @Override
-    public void reset()
+    public QttControl with(ISession session)
     {
-        putSession(null);
-        put(null);
+        mSession = session;
+        return this;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public QttContext context()
     {
         return mContext;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public void wrap(QttContext context)
     {
-
+        mContext = context;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public boolean isCtrl()
     {
+        return switch(QttType.valueOf(mFrameHeader)) {
+            case CONNECT, CONNACK, PINGREQ, PINGRESP, DISCONNECT, AUTH -> true;
+            default -> false;
+        };
+    }
 
+    @Override
+    public byte header()
+    {
+        return mFrameHeader;
+    }
+
+    @Override
+    public void header(int header)
+    {
+        mFrameHeader = (byte) header;
+    }
+
+    @Override
+    public IoSerial subContent()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void withSub(IoSerial sub)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deserializeSub(IoFactory factory)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public IQoS.Level getLevel()
+    {
+        return IQoS.Level.valueOf((mFrameHeader & QOS_MASK) >> 1);
+    }
+
+    public void setLevel(IQoS.Level level)
+    {
+        mFrameHeader &= ~QOS_MASK;
+        mFrameHeader |= level.getValue() << 1;
+        if(level == Level.ALMOST_ONCE) {
+            mFrameHeader &= ~DUPLICATE_FLAG;
+        }
+    }
+
+    public boolean isRetain()
+    {
+        return (mFrameHeader & RETAIN_FLAG) == RETAIN_FLAG;
+    }
+
+    public void setRetain()
+    {
+        mFrameHeader |= RETAIN_FLAG;
+    }
+
+    @Override
+    public boolean isDuplicate()
+    {
+        return (mFrameHeader & DUPLICATE_FLAG) == DUPLICATE_FLAG;
+    }
+
+    public IDuplicate duplicate()
+    {
+        mFrameHeader |= DUPLICATE_FLAG;
+        return this;
+    }
+
+    private void checkOpCode()
+    {
+        if(getLevel() == IQoS.Level.ALMOST_ONCE && isDuplicate()) {
+            throw new IllegalStateException("level == 0 && duplicate");
+        }
+    }
+
+    @Override
+    public ByteBuf payload()
+    {
+        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+    }
+
+    @Override
+    public void fold(ByteBuf input, int remain)
+    {
+        if(remain > 0) {
+            mPayload = new byte[remain];
+            input.get(mPayload);
+        }
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return output;
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        return input.readableBytes();
+    }
+
+    @Override
+    public int length()
+    {
+        return  mPayload == null ? 0 : mPayload.length;
     }
 }

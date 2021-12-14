@@ -28,40 +28,36 @@ import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
-import com.isahl.chess.bishop.protocol.zchat.factory.ZClusterFactory;
-import com.isahl.chess.bishop.protocol.zchat.factory.ZConsumerFactory;
-import com.isahl.chess.bishop.protocol.zchat.factory.ZServerFactory;
-import com.isahl.chess.bishop.protocol.zchat.factory.ZSymmetryFactory;
+import com.isahl.chess.bishop.protocol.zchat.factory.*;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZControlFilter;
+import com.isahl.chess.bishop.protocol.zchat.filter.ZFrameFilter;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.content.IoFactory;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
 public class WsZSort
         extends BaseSort<WsContext>
 {
 
-    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
+    private final WsHandShakeFilter _Head = new WsHandShakeFilter();
 
     public WsZSort(Mode mode, Type type)
     {
         super(mode, type, "ws-zchat");
-        IoFactory<IFrame, ZContext> factory = switch(mode) {
+        ZChatFactory factory = switch(mode) {
             case CLUSTER -> new ZClusterFactory();
             case LINK -> switch(type) {
-                case SERVER -> new ZServerFactory();
-                case SYMMETRY -> new ZSymmetryFactory();
-                case CLIENT -> new ZConsumerFactory();
+                case SERVER -> ZServerFactory._Instance;
+                case SYMMETRY -> ZSymmetryFactory._Instance;
+                case CLIENT -> ZConsumerFactory._Instance;
                 case INNER -> throw new IllegalArgumentException("ws-zchat no support INNER type");
             };
         };
-        _Head.linkFront(new WsFrameFilter<>())
-             .linkFront(new WsControlFilter<>())
-             .linkFront(new ZControlFilter<>(factory))
-             .linkFront(new ZCommandFilter<>(factory));
+        _Head.linkFront(new WsFrameFilter())
+             .linkFront(new WsControlFilter())
+             .linkFront(new ZFrameFilter())
+             .linkFront(new ZControlFilter())
+             .linkFront(new ZCommandFilter(factory));
     }
 
     @Override
