@@ -68,6 +68,11 @@ public class LogEntry
         mSubContent = content;
     }
 
+    public LogEntry()
+    {
+        super();
+    }
+
     public long getTerm()
     {
         return mTerm;

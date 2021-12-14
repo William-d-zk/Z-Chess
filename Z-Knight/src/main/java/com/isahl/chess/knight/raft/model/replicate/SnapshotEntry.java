@@ -29,10 +29,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.board.base.IFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.model.BinarySerial;
+import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -55,13 +55,12 @@ public class SnapshotEntry<T extends IoSerial>
     @Serial
     private static final long serialVersionUID = -8360451804196525728L;
 
-    private long     mOrigin;
-    private long     mIndex;
-    private long     mTerm;
-    private long     mCommit;
-    private long     mApplied;
-    private T        mContent;
-    private IFactory mFactory;
+    private long mOrigin;
+    private long mIndex;
+    private long mTerm;
+    private long mCommit;
+    private long mApplied;
+    private T    mContent;
 
     @Override
     public int length()
@@ -99,10 +98,9 @@ public class SnapshotEntry<T extends IoSerial>
         mContent = content;
     }
 
-    public SnapshotEntry(IFactory factory)
+    public SnapshotEntry()
     {
         super();
-        mFactory = factory;
     }
 
     @Override
@@ -174,8 +172,7 @@ public class SnapshotEntry<T extends IoSerial>
     public void fold(ByteBuf input, int remain)
     {
         if(remain > 0) {
-            mContent = (T) Objects.requireNonNull(mFactory)
-                                  .build(BinarySerial.seekSerial(input));
+            mContent = (T) ClusterFactory._Instance.build(BinarySerial.seekSerial(input));
             Objects.requireNonNull(mContent)
                    .decode(input);
         }
