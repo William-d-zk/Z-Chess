@@ -25,13 +25,12 @@ package com.isahl.chess.audience.client.component;
 
 import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
@@ -48,9 +47,9 @@ import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
@@ -120,9 +119,7 @@ public class ClientPool
             }
 
             @Override
-            public List<ITriple> logicHandle(IManager manager,
-                                             ISession session,
-                                             IControl content) throws Exception
+            public List<ITriple> logicHandle(IManager manager, ISession session, IControl content) throws Exception
             {
                 return null;
             }
@@ -223,13 +220,13 @@ public class ClientPool
             {
                 switch(ZSortHolder) {
                     case WS_ZCHAT_CONSUMER, WS_QTT_CONSUMER -> {
-                        IWsContext wsContext = session.getContext();
-                        return new Triple<>(wsContext.handshake(host), session, SINGLE);
+                        WsContext wsContext = session.getContext();
+                        return new Triple<>(wsContext.responseHandShake(host), session, SINGLE);
                     }
                     case WS_ZCHAT_CONSUMER_SSL, WS_QTT_CONSUMER_SSL -> {
                         SSLZContext<WsContext> sslContext = session.getContext();
-                        IWsContext wsContext = sslContext.getActingContext();
-                        return new Triple<>(wsContext.handshake(host), session, SINGLE);
+                        WsContext wsContext = sslContext.getActingContext();
+                        return new Triple<>(wsContext.responseHandShake(host), session, SINGLE);
                     }
                     case QTT_SYMMETRY -> {
                         try {

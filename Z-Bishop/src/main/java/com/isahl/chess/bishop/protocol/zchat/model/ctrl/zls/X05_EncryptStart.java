@@ -22,12 +22,12 @@
  */
 package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -38,17 +38,19 @@ import java.util.Objects;
 public class X05_EncryptStart
         extends ZControl
 {
-    public int symmetricKeyId;
-    public int salt;
+    private int mSymmetricKeyId;
+    private int mSalt;
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        symmetricKeyId = input.getShort() & 0xFFFF;
+        int remain = super.prefix(input);
+        mSymmetricKeyId = input.getUnsignedShort();
         int a = input.get();
         int b = input.get();
         int c = input.get();
-        salt = a | (b << 8) | (c << 16);
+        mSalt = a | (b << 8) | (c << 16);
+        return remain - 5;
     }
 
     @Override
@@ -58,32 +60,54 @@ public class X05_EncryptStart
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) symmetricKeyId);
-        output.put((byte) salt);
-        output.put((byte) (salt >> 8));
-        output.put((byte) (salt >> 16));
+        return super.suffix(output)
+                    .putShort((short) mSymmetricKeyId)
+                    .put(mSalt)
+                    .put(mSalt >> 8)
+                    .put(mSalt >> 16);
     }
 
     @Override
-    public <C extends IPContext> void afterDecode(C ctx)
+    public void fold(ZContext ctx)
     {
         Objects.requireNonNull(ctx)
                .updateIn();
     }
 
     @Override
-    public <C extends IPContext> void afterEncode(C ctx)
+    public ByteBuf suffix(ByteBuf output, ZContext ctx)
     {
         Objects.requireNonNull(ctx)
                .updateOut();
+        return output;
+    }
+
+    public int getSymmetricKeyId()
+    {
+        return mSymmetricKeyId;
+    }
+
+    public void setSymmetricKeyId(int symmetricKeyId)
+    {
+        this.mSymmetricKeyId = symmetricKeyId;
+    }
+
+    public int getSalt()
+    {
+        return mSalt;
+    }
+
+    public void setSalt(int salt)
+    {
+        this.mSalt = salt;
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s,rc4-key:%d", super.toString(), symmetricKeyId);
+        return String.format("%s,rc4-key:%d", super.toString(), mSymmetricKeyId);
     }
 
     @Override

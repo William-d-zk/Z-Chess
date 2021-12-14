@@ -25,7 +25,6 @@ package com.isahl.chess.queen.events.model;
 import com.isahl.chess.king.base.disruptor.features.event.IEvent;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.IError;
-import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.lmax.disruptor.EventFactory;
@@ -38,8 +37,7 @@ import static com.isahl.chess.king.base.features.IError.Type.NO_ERROR;
  * @author William.d.zk
  */
 public class QEvent
-        implements IReset,
-                   IEvent
+        implements IEvent
 {
     public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
     private             IError.Type          mErrType      = NO_ERROR;

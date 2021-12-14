@@ -23,10 +23,10 @@
 
 package com.isahl.chess.king.base.crypt.util;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.crypt.features.ISymmetric;
 import com.isahl.chess.king.base.util.ArrayUtil;
 
-import java.nio.ByteBuffer;
 import java.util.Random;
 
 /**
@@ -130,20 +130,19 @@ public class Rc4
     }
 
     @Override
-    public void digest(ByteBuffer buffer, byte[] key)
+    public void digest(ByteBuf buffer, byte[] key)
     {
-        if(!buffer.hasRemaining() || key == null) {return;}
+        if(!buffer.isReadable() || key == null) {return;}
         ksa(key);
-        int limit = buffer.limit();
+        int limit = buffer.readableBytes();
         byte[] dst = buffer.array();
-        for(int x = buffer.position(); x < limit; x++) {
+        for(int p = buffer.readerIdx(); p < limit; p++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);
             int k = S[((S[i] & 0xFF) + (S[j] & 0xFF)) & 0xFF] & 0xFF;
-            dst[x] = (byte) (dst[x] ^ k);
+            dst[p] = (byte) (dst[p] ^ k);
         }
-        buffer.position(buffer.limit());
     }
 
     @Override

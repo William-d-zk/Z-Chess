@@ -31,24 +31,19 @@ import java.nio.charset.StandardCharsets;
 public interface I18nUtil
 {
     int CHARSET_ASCII       = 0x00;
-    int CHARSET_UTF_8       = 0x01 << 4;
-    int CHARSET_UTF_8_NB    = 0x02 << 4;
-    int CHARSET_UTC_BE      = 0x03 << 4;
-    int CHARSET_UTC_LE      = 0x04 << 4;
-    int CHARSET_GBK         = 0x05 << 4;
-    int CHARSET_GB2312      = 0x06 << 4;
-    int CHARSET_GB18030     = 0x07 << 4;
-    int CHARSET_ISO_8859_1  = 0x08 << 4;
-    int CHARSET_ISO_8859_15 = 0x09 << 4;
-    int SERIAL_TEXT         = 0x01;
-    int SERIAL_BINARY       = 0x02;
-    int SERIAL_JSON         = 0x03;
-    int SERIAL_XML          = 0x04;
-    int SERIAL_PROXY        = 0x05;
+    int CHARSET_UTF_8       = 0x01;
+    int CHARSET_UTF_8_NB    = 0x02;
+    int CHARSET_UTC_BE      = 0x03;
+    int CHARSET_UTC_LE      = 0x04;
+    int CHARSET_GBK         = 0x05;
+    int CHARSET_GB2312      = 0x06;
+    int CHARSET_GB18030     = 0x07;
+    int CHARSET_ISO_8859_1  = 0x08;
+    int CHARSET_ISO_8859_15 = 0x09;
 
     static Charset getCharset(byte data)
     {
-        return switch(data & 0xF0) {
+        return switch(data & 0x0F) {
             case CHARSET_ASCII -> StandardCharsets.US_ASCII;
             case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
             case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
@@ -92,48 +87,6 @@ public interface I18nUtil
             case "ISO-8859-15" -> CHARSET_ISO_8859_15;
             default -> CHARSET_UTF_8;
         };
-    }
-
-    static String getSerialType(int type)
-    {
-        return switch(type & 0xF) {
-            case SERIAL_TEXT -> "text";
-            case SERIAL_BINARY -> "binary";
-            case SERIAL_JSON -> "json";
-            case SERIAL_XML -> "xml";
-            case SERIAL_PROXY -> "proxy";
-            default -> "unknown";
-        };
-    }
-
-    static byte getCharsetSerial(int charset_, int serial_)
-    {
-        return (byte) (charset_ | serial_);
-    }
-
-    static boolean isTypeBin(byte type_c)
-    {
-        return (type_c & 0x0F) == SERIAL_BINARY;
-    }
-
-    static boolean isTypeTxt(byte type_c)
-    {
-        return (type_c & 0x0F) != SERIAL_TEXT;
-    }
-
-    static boolean isTypeJson(byte type_c)
-    {
-        return (type_c & 0x0F) != SERIAL_JSON;
-    }
-
-    static boolean isTypeXml(byte type_c)
-    {
-        return (type_c & 0x0F) != SERIAL_XML;
-    }
-
-    static boolean checkType(byte type_c, byte expect)
-    {
-        return (type_c & 0x0F) == expect;
     }
 
 }

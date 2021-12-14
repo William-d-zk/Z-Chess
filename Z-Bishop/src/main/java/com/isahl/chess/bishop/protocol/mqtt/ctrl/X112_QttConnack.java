@@ -27,9 +27,8 @@ import com.isahl.chess.bishop.protocol.mqtt.model.CodeMqtt;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.ICode;
-
-import java.nio.ByteBuffer;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -44,23 +43,17 @@ public class X112_QttConnack
 {
 
     private boolean mPresent;
-    private byte    mResponseCode;
+    private int     mResponseCode;
 
     public X112_QttConnack()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNACK));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.CONNACK);
     }
 
     @Override
     public int length()
     {
         return 2;
-    }
-
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
     public boolean isPresent()
@@ -75,12 +68,12 @@ public class X112_QttConnack
 
     public CodeMqtt getCode()
     {
-        return CodeMqtt.valueOf(mResponseCode & 0xFF, mVersion);
+        return CodeMqtt.valueOf(mResponseCode, mVersion);
     }
 
     private void setCode(ICode code)
     {
-        mResponseCode = (byte) code.getCode(mVersion);
+        mResponseCode = code.getCode(mVersion);
     }
 
     public void responseOk()
@@ -126,17 +119,18 @@ public class X112_QttConnack
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.put((byte) (mPresent ? 1 : 0));
-        output.put(mResponseCode);
+        return output.put(mPresent ? 1 : 0)
+                     .put(mResponseCode);
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        mPresent = input.get() > 0;
-        mResponseCode = input.get();
+        mPresent = input.getUnsigned() > 0;
+        mResponseCode = input.getUnsigned();
+        return input.readableBytes();
     }
 
     public boolean isIllegalState()

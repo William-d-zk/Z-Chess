@@ -24,29 +24,23 @@
 package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
-import com.isahl.chess.bishop.protocol.ws.ctrl.WsHandshake;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
-import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-
-import static com.isahl.chess.bishop.protocol.ws.features.IWsContext.*;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.*;
 
 /**
  * @author William.d.zk
  */
-public class WsHandShakeFilter<T extends ZContext & IWsContext>
-        extends AioFilterChain<T, WsHandshake, IPacket>
+public class WsHandShakeFilter
+        extends AioFilterChain<WsContext, X101_HandShake, IPacket>
 {
     private final static String CRLF      = "\r\n";
     private final static String CRLF_CRLF = CRLF + CRLF;
@@ -57,7 +51,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     }
 
     @Override
-    public IPacket encode(T context, WsHandshake output)
+    public IPacket encode(WsContext context, X101_HandShake output)
     {
         if(output.isClientOk() || output.isServerAccept()) {
             context.updateOut();
@@ -65,169 +59,29 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
         return new AioPacket(output.encode());
     }
 
-    @Override
-    public ResultType peek(T context, IPacket input)
+    private ResultType peek(IPContext context, IProtocol input)
     {
-        ByteBuffer recvBuf = input.getBuffer();
-        ByteBuffer cRvBuf = context.getRvBuffer();
-        while(recvBuf.hasRemaining()) {
-            byte c = recvBuf.get();
-            cRvBuf.put(c);
-            if(c == '\n' && cRvBuf.position() > 4) {
-                String x = new String(cRvBuf.array(), cRvBuf.position() - 4, 4);
-                if(CRLF_CRLF.equals(x)) {
-                    cRvBuf.flip();
-                    x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit(), StandardCharsets.UTF_8);
-                    _Logger.debug("receive handshake\r\n%s", x);
-                    String[] split = x.split(CRLF);
-                    StringBuilder response = new StringBuilder();
-                    for(String row : split) {
-                        String[] rowSplit = row.split("\\s+", 2);
-                        String httpKey = rowSplit[0].toUpperCase();
-                        switch(context.getType()) {
-                            case SERVER:
-                                switch(httpKey) {
-                                    case "GET" -> {
-                                        rowSplit = row.split("\\s+");
-                                        if(!"HTTP/1.1".equalsIgnoreCase(rowSplit[2])) {
-                                            _Logger.warning("http protocol version is low than 1.1");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_GET);
-                                    }
-                                    case "UPGRADE:" -> {
-                                        if(!"websocket".equalsIgnoreCase(rowSplit[1])) {
-                                            _Logger.warning("upgrade no web-socket");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_UPGRADE);
-                                        response.append(row)
-                                                .append(CRLF);
-                                    }
-                                    case "CONNECTION:" -> {
-                                        if(!"Upgrade".equalsIgnoreCase(rowSplit[1])) {
-                                            _Logger.warning("connection no upgrade");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_CONNECTION);
-                                        response.append(row)
-                                                .append(CRLF);
-                                    }
-                                    case "SEC-WEBSOCKET-PROTOCOL:" -> {
-                                        if(!rowSplit[1].contains("z-push") && !rowSplit[1].contains("z-chat") &&
-                                           !rowSplit[1].contains("mqtt"))
-                                        {
-                                            _Logger.warning("sec-websokcet-protocol failed");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_SEC_PROTOCOL);
-                                        response.append(row)
-                                                .append(CRLF);
-                                    }
-                                    case "SEC-WEBSOCKET-VERSION:" -> {
-                                        if(rowSplit[1].contains("7") || rowSplit[1].contains("8")) {
-                                            _Logger.debug("sec-websokcet-version : %s, ignore", rowSplit[1]);
-                                        }
-                                        if(!rowSplit[1].contains("13")) {
-                                            _Logger.warning("sec-websokcet-version to low");
-                                            return ResultType.ERROR;
-                                        }
-                                        else {
-                                            // just support version 13
-                                            context.updateHandshakeState(WsContext.HS_State_SEC_VERSION);
-                                            response.append(row)
-                                                    .append(CRLF);
-                                        }
-                                    }
-                                    case "HOST:" -> {
-                                        context.updateHandshakeState(WsContext.HS_State_HOST);
-                                        response.append(row)
-                                                .append(CRLF);
-                                    }
-                                    case "ORIGIN:" -> {
-                                        context.updateHandshakeState(WsContext.HS_State_ORIGIN);
-                                        response.append(row)
-                                                .append(CRLF);
-                                    }
-                                    case "SEC-WEBSOCKET-KEY:" -> {
-                                        context.updateHandshakeState(WsContext.HS_State_SEC_KEY);
-                                        response.append(String.format("Sec-WebSocket-Accept: %s\r\n",
-                                                                      context.getSecAccept(rowSplit[1])));
-                                    }
-                                    default -> _Logger.warning("unchecked httpKey and content: [%s %s]",
-                                                               httpKey,
-                                                               rowSplit[1]);
-                                }
-                                break;
-                            case CLIENT:
-                                switch(httpKey) {
-                                    case "HTTP/1.1" -> {
-                                        if(!rowSplit[1].contains("101 Switching Protocols")) {
-                                            _Logger.warning("handshake error !:");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_HTTP_101);
-                                    }
-                                    case "UPGRADE:" -> {
-                                        if(!"websocket".equalsIgnoreCase(rowSplit[1])) {
-                                            _Logger.warning("upgrade no web-socket");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_UPGRADE);
-                                    }
-                                    case "CONNECTION:" -> {
-                                        if(!"Upgrade".equalsIgnoreCase(rowSplit[1])) {
-                                            _Logger.warning("connection no upgrade");
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_CONNECTION);
-                                    }
-                                    case "SEC-WEBSOCKET-ACCEPT:" -> {
-                                        if(!rowSplit[1].startsWith(context.getSecAcceptExpect())) {
-                                            _Logger.warning("key error: expect-> " + context.getSecAcceptExpect() +
-                                                            " | result-> " + rowSplit[1]);
-                                            return ResultType.ERROR;
-                                        }
-                                        context.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
-                                    }
-                                    default -> _Logger.debug("unchecked httpKey and content: [%s %s]",
-                                                             httpKey,
-                                                             rowSplit[1]);
-                                }
-                                break;
-                            default:
-                                _Logger.warning("cluster handshake ? session initialize error!");
-                                return ResultType.ERROR;
-                        }
-                    }
-                    if(ISort.Type.SERVER == context.getType()) {
-                        context.setCarrier(new X101_HandShake(
-                                (context.checkState(HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
-                                                                        : "HTTP/1.1 400 Bad Request\r\n") +
-                                response.toString() + CRLF,
-                                context.checkState(HS_State_CLIENT_OK) ? HS_State_CLIENT_OK : HS_State_ERROR));
-                        return ResultType.HANDLED;
-                    }
-                    else if(ISort.Type.CLIENT == context.getType()) {
-                        if(context.checkState(HS_State_ACCEPT_OK)) {
-                            context.setCarrier(new X101_HandShake(x, HS_State_ACCEPT_OK));
-                            return ResultType.HANDLED;
-                        }
-                        _Logger.warning("client handshake error!");
-                        return ResultType.ERROR;
-                    }
-                }
-                if(!recvBuf.hasRemaining()) {return ResultType.NEED_DATA;}
+        if(context.isInInit() && context instanceof WsContext ws_ctx && input instanceof IPacket in_packet) {
+            ByteBuf netBuf = in_packet.getBuffer();
+            ByteBuf ctxBuf = ws_ctx.getRvBuffer();
+            X101_HandShake handshake = ws_ctx.getHandshake();
+            if(handshake == null) {
+                ws_ctx.setHandshake(handshake = new X101_HandShake());
+                handshake.wrap(ws_ctx);
             }
+            ctxBuf.putExactly(netBuf);
+            return handshake.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
         }
-        return ResultType.NEED_DATA;
+        return IGNORE;
+
     }
 
     @Override
-    public WsHandshake decode(T context, IPacket input)
+    public X101_HandShake decode(WsContext context, IPacket input)
     {
-        WsHandshake handshake = context.getCarrier();
-        context.finish();
+        X101_HandShake handshake = context.getHandshake();
+        handshake.decode(context.getRvBuffer(), context);
+        context.reset();
         if(handshake.isClientOk() || handshake.isServerAccept()) {
             context.updateIn();
         }
@@ -237,45 +91,35 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        //WsHandshake 继承自WsControl
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof WsHandshake) {
-            if(context instanceof IWsContext && context.isOutFrame()) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
+            if(context.isOutInit() && context instanceof WsContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while(acting.isProxy() || acting instanceof IWsContext) {
-                if(acting instanceof IWsContext && acting.isOutFrame()) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {break;}
+            while(acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if(acting.isOutInit() && acting instanceof WsContext) {return new Pair<>(ResultType.NEXT_STEP, acting);}
             }
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return new Pair<>(IGNORE, context);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            if(context instanceof IWsContext && context.isInFrame()) {
-                return new Pair<>(peek((T) context, (IPacket) input), context);
-            }
+            ResultType check = peek(context, input);
+            if(check != IGNORE) {return new Pair<>(check, context);}
             IPContext acting = context;
-            while(acting.isProxy() || acting instanceof IWsContext) {
-                if(acting instanceof IWsContext && acting.isInFrame()) {
-                    return new Pair<>(peek((T) acting, (IPacket) input), acting);
+            while(acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                check = peek(acting, input);
+                if(check == NEXT_STEP || check == NEED_DATA) {
+                    return new Pair<>(check, acting);
                 }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {break;}
             }
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return new Pair<>(IGNORE, context);
     }
 
     @Override
@@ -287,13 +131,13 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
          * WS->MQTT
          * 代理结构时，需要区分 context 是否为IWsContext
          */
-        return (I) encode((T) context, (WsHandshake) output);
+        return (I) encode((WsContext) context, (X101_HandShake) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((T) context, (IPacket) input);
+        return (O) decode((WsContext) context, (IPacket) input);
     }
 }

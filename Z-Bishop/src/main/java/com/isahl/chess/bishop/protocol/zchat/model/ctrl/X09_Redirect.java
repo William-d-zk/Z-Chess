@@ -25,22 +25,22 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x107)
-public class X107_Redirect
+                  serial = 0x09)
+public class X09_Redirect
         extends ZControl
 {
 
     private int mPort;
 
-    public X107_Redirect()
+    public X09_Redirect()
     {
         super();
     }
@@ -66,24 +66,33 @@ public class X107_Redirect
     }
 
     @Override
-    public X107_Redirect duplicate()
+    public X09_Redirect copy()
     {
-        X107_Redirect x107 = new X107_Redirect();
+        X09_Redirect x107 = new X09_Redirect();
         x107.setHost(getHost());
         x107.setPort(getPort());
         return x107;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        mPort = input.getShort() & 0xFFFF;
+        int remain = super.prefix(input);
+        mPort = input.getUnsignedShort();
+        return remain - 2;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) mPort);
+        return super.suffix(output)
+                    .putShort((short) mPort);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
     }
 
     @Override

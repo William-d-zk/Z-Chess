@@ -26,8 +26,8 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -45,7 +45,7 @@ public class X113_QttPublish
 
     public X113_QttPublish()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBLISH));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.PUBLISH);
     }
 
     private String mTopic;
@@ -53,14 +53,21 @@ public class X113_QttPublish
     @Override
     public int length()
     {
-        return super.length() + 2 + (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0) +
-               (getLevel().getValue() > ALMOST_ONCE.getValue() ? 0 : -2);
+        int length = 2 + (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0); // topic
+        length += (getLevel().getValue() > ALMOST_ONCE.getValue() ? 0 : -2);//msg-id
+        return super.length() + length; //payload
     }
 
-    public void setTopic(String topic)
+    @Override
+    public int priority()
     {
-        Objects.requireNonNull(topic);
-        this.mTopic = topic;
+        return QOS_PRIORITY_07_ROUTE_MESSAGE;
+    }
+
+    public X113_QttPublish setTopic(String topic)
+    {
+        mTopic = Objects.requireNonNull(topic);
+        return this;
     }
 
     public String getTopic()
@@ -69,28 +76,29 @@ public class X113_QttPublish
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        int topicSize = input.getShort() & 0xFFFF;
-        mTopic = new String(input.array(), input.position(), topicSize, StandardCharsets.UTF_8);
-        input.position(input.position() + topicSize);
+        int topicLength = input.getUnsignedShort();
+        mTopic = input.readUTF(topicLength);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            super.decodec(input);
+            setMsgId(input.getUnsignedShort());
         }
-        mPayload = new byte[input.remaining()];
-        input.get(mPayload);
+        return input.readableBytes();
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
         byte[] topicBytes = mTopic.getBytes(StandardCharsets.UTF_8);
         output.putShort((short) topicBytes.length);
         output.put(topicBytes);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            super.encodec(output);
+            output.putShort((short) getMsgId());
         }
-        output.put(mPayload);
+        if(mPayload != null) {
+            output.put(mPayload);
+        }
+        return output;
     }
 
     @Override
@@ -106,12 +114,13 @@ public class X113_QttPublish
     }
 
     @Override
-    public X113_QttPublish duplicate()
+    public X113_QttPublish copy()
     {
         X113_QttPublish n113 = new X113_QttPublish();
         n113.setTopic(getTopic());
         n113.setLevel(getLevel());
-        n113.put(mPayload);
+        n113.mPayload = new byte[mPayload.length];
+        System.arraycopy(mPayload, 0, n113.mPayload, 0, mPayload.length);
         return n113;
     }
 }

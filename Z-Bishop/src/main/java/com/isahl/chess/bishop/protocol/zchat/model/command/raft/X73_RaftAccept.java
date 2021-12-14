@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
@@ -40,11 +40,13 @@ public class X73_RaftAccept
     public X73_RaftAccept()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X73_RaftAccept(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     private long mFollowerId;
@@ -54,29 +56,44 @@ public class X73_RaftAccept
     private long mLeaderId;
 
     @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
+    }
+
+    @Override
     public int length()
     {
         return super.length() + 40;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mFollowerId = input.getLong();
         mTerm = input.getLong();
         mCatchUp = input.getLong();
         mCatchUpTerm = input.getLong();
         mLeaderId = input.getLong();
+        return remain - 40;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mFollowerId);
-        output.putLong(mTerm);
-        output.putLong(mCatchUp);
-        output.putLong(mCatchUpTerm);
-        output.putLong(mLeaderId);
+        return super.suffix(output)
+                    .putLong(mFollowerId)
+                    .putLong(mTerm)
+                    .putLong(mCatchUp)
+                    .putLong(mCatchUpTerm)
+                    .putLong(mLeaderId);
     }
 
     public long getTerm()
@@ -127,12 +144,6 @@ public class X73_RaftAccept
     public long getLeaderId()
     {
         return mLeaderId;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
     }
 
     @Override

@@ -3,9 +3,9 @@ package com.isahl.chess.knight.raft.component;
 import com.isahl.chess.board.annotation.ISerialFactory;
 import com.isahl.chess.board.base.IFactory;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.message.InnerProtocol;
 
-import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,31 +16,28 @@ public class ClusterFactory
 
     public static final ClusterFactory _Instance = new ClusterFactory();
 
-    public static <T extends InnerProtocol> List<T> listOf(int serial, ByteBuffer input)
+    public static <T extends InnerProtocol> List<T> listOf(int serial, ByteBuf input)
     {
         List<T> list = new LinkedList<>();
-        while(input.hasRemaining()) {
+        while(input.isReadable()) {
             T t = oneOf(serial, input);
-            if(t != null) {
-                t.finish(input);
-            }
             list.add(t);
         }
         return list.isEmpty() ? null : list;
     }
 
-    public static <T extends InnerProtocol> T oneOf(int serial, ByteBuffer input)
+    public static <T extends InnerProtocol> T oneOf(int serial, ByteBuf input)
     {
         return _Instance.one(serial, input);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends InnerProtocol> T one(int serial, ByteBuffer input)
+    public <T extends InnerProtocol> T one(int serial, ByteBuf input)
     {
-        ISerial one = build(serial);
+        T one = (T) build(serial);
         if(one != null) {
             one.decode(input);
-            return (T) one;
+            return one;
         }
         return null;
     }

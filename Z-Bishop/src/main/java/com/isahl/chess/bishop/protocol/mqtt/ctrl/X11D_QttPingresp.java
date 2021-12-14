@@ -41,7 +41,7 @@ public class X11D_QttPingresp
 
     public X11D_QttPingresp()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP);
         _Logger.debug("0x11D [pong]");
     }
 }

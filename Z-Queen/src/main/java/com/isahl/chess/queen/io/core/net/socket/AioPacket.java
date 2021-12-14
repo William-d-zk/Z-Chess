@@ -24,7 +24,8 @@ package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 
 import java.nio.ByteBuffer;
@@ -34,36 +35,29 @@ import java.nio.ByteBuffer;
  */
 @ISerialGenerator(parent = ISerial.IO_QUEEN_PACKET_SERIAL)
 public class AioPacket
+        extends ByteBuf
         implements IPacket
 {
 
-    private ByteBuffer mBuf;
-    private Status     mStatus = Status.No_Send;
-    private int        mRightIdempotentBit;
-    private int        mLeftIdempotentBit;
+    private Status mStatus = Status.No_Send;
+    private int    mRightIdempotentBit;
+    private int    mLeftIdempotentBit;
 
     public AioPacket(int size, boolean direct)
     {
-        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size)) : null;
+        super(size, direct);
     }
 
-    public AioPacket(ByteBuffer buf)
+    public AioPacket(ByteBuf exist)
     {
-        mBuf = buf;
+        super(exist);
     }
 
     @Override
-    public ByteBuffer payload()
+    public ByteBuf getBuffer()
     {
-        return mBuf;
+        return this;
     }
-
-    @Override
-    public ByteBuffer getBuffer()
-    {
-        return mBuf;
-    }
-
 
     @Override
     public boolean isSending()
@@ -120,7 +114,7 @@ public class AioPacket
     @Override
     public int length()
     {
-        return mBuf.limit();
+        return 1 + capacity;
     }
 
     @Override
@@ -140,79 +134,45 @@ public class AioPacket
     }
 
     @Override
-    public IPacket flip()
+    public int prefix(ByteBuf input)
     {
-        mBuf.flip();
-        return this;
+        int length = input.vLength();
+        int serial = input.get();
+        if(serial != serial()) {
+            throw new ZException("serial[%d vs %d] no expected", serial, serial());
+        }
+        return length - 1;
     }
 
     @Override
-    public void put(byte[] payload)
+    public void fold(ByteBuf input, int remain)
     {
-        if(mBuf.isDirect() && mBuf.capacity() < payload.length) {
-            mBuf = ByteBuffer.allocateDirect(payload.length);
-            IoUtil.write(payload, 0, mBuf.array(), 0, payload.length);
-        }
-        else if(mBuf.capacity() < payload.length) {
-            mBuf = ByteBuffer.wrap(payload);
-        }
-        else {
-            mBuf.clear();
-            IoUtil.write(payload, 0, mBuf.array(), 0, payload.length);
-            mBuf.limit(payload.length);
+        if(remain > 0) {
+            byte[] array = new byte[remain];
+            input.get(array);
+            buffer = ByteBuffer.wrap(array);
+            capacity = remain;
         }
     }
 
     @Override
-    public void put(ByteBuffer src)
+    public int sizeOf()
     {
-        if(mBuf.capacity() < src.remaining()) {
-            int size = src.remaining();
-            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);
-        }
-        else {
-            mBuf.clear();
-        }
-        IoUtil.write(src.array(), src.position(), mBuf.array(), mBuf.position(), src.remaining());
-        //mBuf.position == 0
-        mBuf.limit(src.remaining());
+        return vSizeOf(length());
     }
 
     @Override
-    public void replace(ByteBuffer src)
+    public ByteBuf suffix(ByteBuf output)
     {
-        mBuf = src;
+        return output.vPutLength(length())
+                     .put(serial());
     }
 
     @Override
-    public void expand(int size)
+    public ByteBuf encode()
     {
-        mBuf = IoUtil.expandBuffer(mBuf, size);
+        return IPacket.super.encode()
+                            .put(buffer.array());
     }
 
-    public void append(IPacket other)
-    {
-        if(mBuf.remaining() < other.length()) {
-            expand(other.length() - mBuf.remaining());
-        }
-        put(other.encode()
-                 .flip());
-    }
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-        mBuf.put(input);
-    }
-
-    @Override
-    public void encodec(ByteBuffer output)
-    {
-        /*
-        int len = Math.min(output.remain,mBuf.remain)
-        mBuf.pos → mBuf.pos<=mBuf.limit && mBuf.pos=mBuf.pos + len
-        output.pos → output.pos=output.pos+len
-         */
-        output.put(mBuf);
-    }
 }

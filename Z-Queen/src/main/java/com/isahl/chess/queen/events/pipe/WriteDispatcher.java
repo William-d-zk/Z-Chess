@@ -98,28 +98,26 @@ public class WriteDispatcher
                     _Logger.debug("content:%s,%s", writeContent, event.getEventType());
                     IControl cmd = writeContent.getFirst();
                     ISession session = writeContent.getSecond();
-                    if(cmd.isShutdown()) {
-                        if(!session.isValid()) {
-                            error(_Error,
-                                  INITIATIVE_CLOSE,
-                                  new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getError());
+                    if(session != null) {
+                        try {
+                            cmd.transfer();
+                            publish(dispatchEncoder(session.hashCode()),
+                                    IOperator.Type.WRITE,
+                                    new Pair<>(cmd, session),
+                                    session.getEncoder());
+
+                        }
+                        catch(ZException e) {
+                            error(_Error, INITIATIVE_CLOSE, new Pair<>(e, session), session.getError());
                         }
                     }
-                    else {
-                        publish(dispatchEncoder(session.hashCode()),
-                                IOperator.Type.WRITE,
-                                new Pair<>(cmd, session),
-                                session.getEncoder());
-
-                    }
                 }
-                case WROTE// from io-wrote
-                        -> {
+                // from io-wrote
+                case WROTE -> {
                     IPair wroteContent = event.getContent();
                     int wroteCount = wroteContent.getFirst();
                     ISession session = wroteContent.getSecond();
-                    if(session.isValid()) {
+                    if(session != null) {
                         publish(dispatchEncoder(session.hashCode()),
                                 IOperator.Type.WROTE,
                                 new Pair<>(wroteCount, session),
@@ -133,29 +131,18 @@ public class WriteDispatcher
                 case LOGIC, DISPATCH -> {
                     List<ITriple> writeContents = event.getContentList();
                     for(ITriple content : writeContents) {
-                        IControl command = content.getFirst();
+                        IControl cmd = content.getFirst();
                         ISession session = content.getSecond();
-                        if(command.isShutdown()) {
-                            if(session != null && session.isValid()) {
-                                error(_Error,
-                                      INITIATIVE_CLOSE,
-                                      new Pair<>(new ZException("session to shutdown"), session),
-                                      session.getError());
+                        if(session != null) {
+                            try {
+                                publish(dispatchEncoder(session.hashCode()),
+                                        IOperator.Type.WRITE,
+                                        new Pair<>(cmd, session),
+                                        content.getThird());
                             }
-                            /*
-                             * session == null 意味着 _SessionManager.find..失败
-                             * !session.isValid 意味着 session 已经被关闭
-                             * 这两种情形都忽略执行即可
-                             */
-                            else {
-                                _Logger.warning("dispatch failed [ %s ]", session);
+                            catch(ZException e) {
+                                error(_Error, INITIATIVE_CLOSE, new Pair<>(e, session), session.getError());
                             }
-                        }
-                        else {
-                            publish(dispatchEncoder(session.hashCode()),
-                                    IOperator.Type.WRITE,
-                                    new Pair<>(command, session),
-                                    content.getThird());
                         }
                     }
                 }

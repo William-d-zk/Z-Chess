@@ -23,12 +23,12 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -44,27 +44,29 @@ public class X75_RaftReq
     public X75_RaftReq()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X75_RaftReq(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
+    }
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 
     private long mClientId;
-    private int  mSubSerial;
     private long mOrigin;
-
-    @Override
-    public int _sub()
-    {
-        return mSubSerial;
-    }
-
-    public void setSubSerial(int serial)
-    {
-        mSubSerial = serial;
-    }
 
     public void setOrigin(long origin)
     {
@@ -78,25 +80,26 @@ public class X75_RaftReq
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mClientId);
-        output.putLong(mOrigin);
-        output.putShort((short) mSubSerial);
+        return super.suffix(output)
+                    .putLong(mClientId)
+                    .putLong(mOrigin);
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mClientId = input.getLong();
         mOrigin = input.getLong();
-        mSubSerial = input.getShort() & 0xFFFF;
+        return remain - 16;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 18;
+        return super.length() + 16;
     }
 
     public long getClientId()
@@ -110,18 +113,12 @@ public class X75_RaftReq
     }
 
     @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
     public String toString()
     {
         return String.format(" X75_RaftRequest { client:%#x, origin:%#x,sub-serial:%#x,payload[%d] }",
                              mClientId,
                              mOrigin,
-                             mSubSerial,
+                             mSubContent != null ? _sub() : -1,
                              mPayload == null ? 0 : mPayload.length);
     }
 }

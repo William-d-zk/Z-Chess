@@ -27,6 +27,8 @@ import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 /**
  * @author William.d.zk
  */
@@ -42,12 +44,19 @@ public class X104_Pong
 
     public X104_Pong(byte[] payload)
     {
-        super(WsFrame.frame_op_code_ctrl_pong, payload);
+        super(WsFrame.frame_op_code_ctrl_pong);
+        mPayload = payload;
     }
 
     @Override
-    public X104_Pong duplicate()
+    public X104_Pong copy()
     {
-        return new X104_Pong(_Payload);
+        return new X104_Pong(mPayload);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return ALMOST_ONCE;
     }
 }

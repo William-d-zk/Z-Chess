@@ -29,22 +29,22 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
 import com.isahl.chess.queen.io.core.features.model.session.IFailed;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 public abstract class BaseSort<C extends IPContext>
         implements IAioSort<C>
 {
     private final AioWriter     _AioWriter     = new AioWriter();
-    private final ICloser      _CloseOperator = new Closer();
-    private final IFailed      _ErrorOperator = new Failed();
-    private final IPipeEncoder _Encoder       = new PipeEncoder(_AioWriter);
-    private final IPipeTransfer  _Transfer      = new PipeTransfer();
-    private final IPipeDecoder   _Decoder       = new PipeDecoder();
-    private final SessionIgnore  _Ignore        = new SessionIgnore();
-    private final Mode           _Mode;
-    private final Type           _Type;
-    private final String         _Protocol;
+    private final ICloser       _CloseOperator = new Closer();
+    private final IFailed       _ErrorOperator = new Failed();
+    private final IPipeEncoder  _Encoder       = new PipeEncoder(_AioWriter);
+    private final IPipeTransfer _Transfer      = new PipeTransfer();
+    private final IPipeDecoder  _Decoder       = new PipeDecoder();
+    private final SessionIgnore _Ignore        = new SessionIgnore();
+    private final Mode          _Mode;
+    private final Type          _Type;
+    private final String        _Protocol;
 
     protected BaseSort(Mode mode, Type type, String protocol)
     {

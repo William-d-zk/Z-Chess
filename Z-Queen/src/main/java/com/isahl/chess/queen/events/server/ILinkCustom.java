@@ -25,10 +25,10 @@ package com.isahl.chess.queen.events.server;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.events.cluster.IConsistencyJudge;
-import com.isahl.chess.queen.events.routes.IMappingCustom;
+import com.isahl.chess.queen.events.routes.IControlCustom;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ import java.util.List;
  * @date 2020/4/20
  */
 public interface ILinkCustom
-        extends IMappingCustom,
+        extends IControlCustom,
                 IConsistencyJudge
 {
 
@@ -46,9 +46,10 @@ public interface ILinkCustom
      *
      * @param manager session - manager
      * @param request 需要执行一致性要求的请求
+     * @param origin  提交这个请求的cluster-peer-id
      * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(IManager manager, IControl request, long origin, boolean isConsistency);
+    List<ITriple> notify(IManager manager, IControl<?> request, long origin);
 
     /**
      * 当出现了关闭 session 的需要时

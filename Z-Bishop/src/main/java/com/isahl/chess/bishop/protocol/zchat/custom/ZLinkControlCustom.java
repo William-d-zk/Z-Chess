@@ -23,51 +23,55 @@
 
 package com.isahl.chess.bishop.protocol.zchat.custom;
 
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.events.routes.IMappingCustom;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.events.server.ILinkCustom;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2020/5/7
+ * @date 2020/4/20
  */
-abstract class ZBaseMappingCustom<E extends IMappingCustom>
-        implements IMappingCustom
+public class ZLinkControlCustom
+        extends ZBaseControlCustom<ILinkCustom>
+        implements ILinkCustom
 {
 
-    private final   Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
-    protected final E      _Then;
-
-    protected ZBaseMappingCustom(E then)
+    public ZLinkControlCustom(ILinkCustom then)
     {
-        _Then = then;
+        super(then);
     }
 
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl content)
+    public List<ITriple> notify(IManager manager, IControl<?> request, long origin)
     {
-        _Logger.debug("mapping receive %s", content);
-        switch(content.serial()) {
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-                /*
-                 * 内嵌逻辑，在ZCommandFilter中已经处理结束
-                 * 此处仅执行转发逻辑
-                 */
-                return new Triple<>(content, null, WRITE);
-            default:
-                if(_Then == null) {return null;}
-                return _Then.handle(manager, session, content);
+        return _Then != null ? _Then.notify(manager, request, origin) : null;
+    }
+
+    @Override
+    public void close(ISession session)
+    {
+        if(_Then != null) {
+            _Then.close(session);
         }
+    }
+
+    @Override
+    public <T extends IProtocol> IOperator<IConsistent, ISession, T> getOperator()
+    {
+        return this::adjudge;
+    }
+
+    @Override
+    public <T extends IoSerial> T adjudge(IConsistent consistency, ISession session)
+    {
+        return _Then != null ? _Then.adjudge(consistency, session) : null;
     }
 }

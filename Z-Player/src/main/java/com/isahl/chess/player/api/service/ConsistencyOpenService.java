@@ -37,7 +37,6 @@ import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -67,8 +66,7 @@ public class ConsistencyOpenService
     public ICode submit(String content)
     {
         if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
-        ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                                _RaftPeer.generateId());
+        ConsistentProtocol consistency = new ConsistentProtocol(content, _RaftPeer.generateId());
         ICode result = submit(consistency, _DeviceNode, _RaftCustom.getReject());
 
         if(result.getCode() == KingCode.SUCCESS) {

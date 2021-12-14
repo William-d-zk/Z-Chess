@@ -25,9 +25,8 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
@@ -37,55 +36,65 @@ import java.nio.ByteBuffer;
 public class X02_AsymmetricPub
         extends ZControl
 {
+    private int mPubKeyId = -1;
 
-    public  byte[] pubKey;
-    public  int    pubKeyId;
-    private int    mKeyLength;
-
-    @Override
-    public void decodec(ByteBuffer input)
+    public int getPubKeyId()
     {
-        pubKeyId = input.getInt();
-        mKeyLength = input.getShort() & 0xFFFF;
-        if(mKeyLength > 0) {
-            pubKey = new byte[mKeyLength];
-            input.get(pubKey);
-        }
+        return mPubKeyId;
     }
 
-    @Override
-    public void encodec(ByteBuffer output)
+    public void setPubKeyId(int pubKeyId)
     {
-        output.putInt(pubKeyId);
-        output.putShort((short) mKeyLength);
-        output.put(pubKey);
-    }
-
-    @Override
-    public void dispose()
-    {
-        pubKey = null;
-        super.dispose();
+        this.mPubKeyId = pubKeyId;
     }
 
     @Override
     public int length()
     {
-        return super.length() + mKeyLength + 6;
+        return super.length() + 4;
     }
 
     public X02_AsymmetricPub setPubKey(int _id, byte[] key)
     {
-        pubKey = key;
-        pubKeyId = _id;
-        mKeyLength = key == null ? 0 : key.length;
+        mPubKeyId = _id;
+        mPayload = key;
         return this;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putInt(mPubKeyId);
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mPubKeyId = input.getInt();
+        return remain - 4;
+    }
+
+    public byte[] getPubKey()
+    {
+        return mPayload;
+    }
+
+    public void setPubKey(byte[] pubKey)
+    {
+        mPayload = pubKey;
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s,public-key: %d | %s", super.toString(), pubKeyId, IoUtil.bin2Hex(pubKey));
+        return String.format("%s\npublic-key: %d | %s", super.toString(), mPubKeyId, IoUtil.bin2Hex(mPayload));
     }
 
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
+    }
 }

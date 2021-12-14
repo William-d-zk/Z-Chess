@@ -25,9 +25,8 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
-import java.util.Objects;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.util.IoUtil;
 
 /**
  * @author William.d.zk
@@ -37,44 +36,70 @@ import java.util.Objects;
 public class X03_Cipher
         extends ZControl
 {
-    public int    pubKeyId;
-    public int    symmetricKeyId;
-    public byte[] cipher;
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-        pubKeyId = input.getInt();
-        symmetricKeyId = input.getShort() & 0xFFFF;
-        cipher = new byte[input.remaining()];
-        input.get(cipher);
-    }
+    private int mPubKeyId;
+    private int mSymmetricKeyId;
 
     @Override
     public int length()
     {
-        return super.length() + 6 + (Objects.isNull(cipher) ? 0 : cipher.length);
+        return super.length() + 6;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putInt(pubKeyId);
-        output.putShort((short) symmetricKeyId);
-        output.put(cipher);
+        return super.suffix(output)
+                    .putInt(mPubKeyId)
+                    .putShort((short) mSymmetricKeyId);
     }
 
     @Override
-    public void dispose()
+    public int prefix(ByteBuf input)
     {
-        cipher = null;
-        super.dispose();
+        int remain = super.prefix(input);
+        mPubKeyId = input.getInt();
+        mSymmetricKeyId = input.getShort();
+        return remain - 6;
+    }
+
+    public int getPubKeyId()
+    {
+        return mPubKeyId;
+    }
+
+    public void setPubKeyId(int pubKeyId)
+    {
+        this.mPubKeyId = pubKeyId;
+    }
+
+    public int getSymmetricKeyId()
+    {
+        return mSymmetricKeyId;
+    }
+
+    public void setSymmetricKeyId(int symmetricKeyId)
+    {
+        this.mSymmetricKeyId = symmetricKeyId;
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s,public-key: %d | rc4-key: %d", super.toString(), pubKeyId, symmetricKeyId);
+        return String.format("%s\npublic-key: %d | rc4-key: %d [%s]",
+                             super.toString(),
+                             mPubKeyId,
+                             mSymmetricKeyId,
+                             IoUtil.bin2Hex(mPayload));
+    }
+
+    public void setCipher(byte[] cipher)
+    {
+        mPayload = cipher;
+    }
+
+    public byte[] getCipher()
+    {
+        return mPayload;
     }
 
     @Override

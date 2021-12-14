@@ -29,10 +29,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
@@ -65,10 +65,6 @@ public class LogMeta
      */
     private long          mTerm;
     /**
-     * 当前状态机候选人
-     */
-    private long          mCandidate;
-    /**
      * 集群中已知的最大的被提交的日志index
      */
     private long          mCommit;
@@ -92,9 +88,8 @@ public class LogMeta
                      8 + // term
                      8 + // index
                      8 + // index term
-                     8 + // candidate
                      8 + // commit
-                     8; // applied
+                     8;  // applied
         length++;
         if(mPeerSet != null && !mPeerSet.isEmpty()) {
             for(RaftNode node : mPeerSet) {length += node.length();}
@@ -103,70 +98,79 @@ public class LogMeta
         if(mGateSet != null && !mGateSet.isEmpty()) {
             for(RaftNode node : mGateSet) {length += node.length();}
         }
-        return length + super.length();
+        return length + super.length(); //primary key => System.current-mills
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode()
-                                 .putLong(getStart())
-                                 .putLong(getTerm())
-                                 .putLong(getIndex())
-                                 .putLong(getIndexTerm())
-                                 .putLong(getCandidate())
-                                 .putLong(getCommit())
-                                 .putLong(getApplied());
+        output = super.suffix(output)
+                      .putLong(getStart())
+                      .putLong(getTerm())
+                      .putLong(getIndex())
+                      .putLong(getIndexTerm())
+                      .putLong(getCommit())
+                      .putLong(getApplied());
         if(mPeerSet != null && !mPeerSet.isEmpty()) {
-            output.put((byte) mPeerSet.size());
+            output.put(mPeerSet.size());
             for(RaftNode node : mPeerSet) {
-                output.put(node.encode()
-                               .flip());
+                output.put(node.encode());
             }
         }
         else {
-            output.put((byte) 0);
+            output.put(0);
         }
         if(!mGateSet.isEmpty()) {
-            output.put((byte) mGateSet.size());
+            output.put(mGateSet.size());
             for(RaftNode node : mGateSet) {
-                output.put(node.encode()
-                               .flip());
+                output.put(node.encode());
             }
         }
         else {
-            output.put((byte) 0);
+            output.put(0);
         }
         return output;
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
+        int remain = super.prefix(input);
         setStart(input.getLong());
         setTerm(input.getLong());
         setIndex(input.getLong());
         setIndexTerm(input.getLong());
-        setCandidate(input.getLong());
         setCommit(input.getLong());
         setApplied(input.getLong());
-        int pc = input.get() & 0xFF;
-        if(pc > 0) {
-            mPeerSet = new TreeSet<>();
-            for(int i = 0; i < pc; i++) {
+        mPeerSet = upSet(input);
+        mGateSet = upSet(input);
+        remain -= 50;
+        if(mPeerSet != null) {
+            for(RaftNode node : mPeerSet) {
+                remain -= ByteBuf.vSizeOf(node.length());
+            }
+        }
+        if(mGateSet != null) {
+            for(RaftNode node : mGateSet) {
+                remain -= ByteBuf.vSizeOf(node.length());
+            }
+        }
+        return remain;
+    }
+
+    private Set<RaftNode> upSet(ByteBuf input)
+    {
+        int count = input.get() & 0xFF;
+        if(count > 0) {
+            Set<RaftNode> set = new TreeSet<>();
+            for(int i = 0; i < count; i++) {
                 RaftNode peer = new RaftNode();
                 peer.decode(input);
+                set.add(peer);
             }
+            return set;
         }
-        int gc = input.get() & 0xFF;
-        if(gc > 0) {
-            mGateSet = new TreeSet<>();
-            for(int i = 0; i < gc; i++) {
-                RaftNode gate = new RaftNode();
-                gate.decode(input);
-            }
-        }
+        return null;
     }
 
     @Override
@@ -176,7 +180,6 @@ public class LogMeta
         mIndex = 0;
         mIndexTerm = 0;
         mTerm = 0;
-        mCandidate = 0;
         mCommit = 0;
         mApplied = 0;
         if(mPeerSet != null) {mPeerSet.clear();}
@@ -194,8 +197,6 @@ public class LogMeta
                     long index,
             @JsonProperty("index_term")
                     long indexTerm,
-            @JsonProperty("candidate")
-                    long candidate,
             @JsonProperty("commit")
                     long commit,
             @JsonProperty("applied")
@@ -210,7 +211,6 @@ public class LogMeta
         mTerm = term;
         mIndex = index;
         mIndexTerm = indexTerm;
-        mCandidate = candidate;
         mCommit = commit;
         mApplied = applied;
         mPeerSet = peerSet;
@@ -241,16 +241,6 @@ public class LogMeta
     public void setTerm(long term)
     {
         mTerm = term;
-    }
-
-    public long getCandidate()
-    {
-        return mCandidate;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        mCandidate = candidate;
     }
 
     public long getCommit()

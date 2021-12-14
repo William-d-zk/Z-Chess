@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,15 +21,37 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.pipe;
+package com.isahl.chess.king.base.model;
 
-import java.nio.ByteBuffer;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
- * @date 2019-07-14
  */
-public interface IEncode
+@ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
+public class TextSerial
+        extends BinarySerial
 {
-    void encodec(ByteBuffer output);
+
+    public TextSerial(String text)
+    {
+        mPayload = text.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public TextSerial()
+    {
+    }
+
+    public String getText()
+    {
+        return mPayload == null ? null : new String(mPayload, StandardCharsets.UTF_8);
+    }
+
+    public void setText(String text)
+    {
+        mPayload = text.getBytes(StandardCharsets.UTF_8);
+    }
 }

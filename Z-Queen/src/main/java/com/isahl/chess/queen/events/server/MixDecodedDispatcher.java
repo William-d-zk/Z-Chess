@@ -55,7 +55,7 @@ public class MixDecodedDispatcher
     protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
         if(mode == ISort.Mode.LINK) {
-            if(cmd.isMapping()) {
+            if(cmd.isCtrl()) {
                 return new Pair<>(_Link, IOperator.Type.LINK);
             }
             else {

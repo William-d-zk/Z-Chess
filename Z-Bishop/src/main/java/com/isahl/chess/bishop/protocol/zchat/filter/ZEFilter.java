@@ -26,7 +26,7 @@ import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
@@ -88,6 +88,9 @@ public class ZEFilter<T extends ZContext & IEContext>
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
+            if(context instanceof IEContext && context.isOutConvert()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
+            }
             IPContext acting = context;
             while(acting.isProxy()) {
                 if(acting instanceof IEContext && acting.isOutConvert()) {
@@ -104,6 +107,9 @@ public class ZEFilter<T extends ZContext & IEContext>
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
+            if(context instanceof IEContext && context.isInConvert()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
+            }
             IPContext acting = context;
             while(acting.isProxy()) { //EContext 本身就是 ProxyContext
                 if(acting instanceof IEContext && acting.isInConvert()) {

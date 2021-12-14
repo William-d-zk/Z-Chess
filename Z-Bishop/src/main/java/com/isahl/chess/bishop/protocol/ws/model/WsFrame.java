@@ -24,210 +24,73 @@ package com.isahl.chess.bishop.protocol.ws.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 
-import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_FRAME_SERIAL)
 public class WsFrame
-        implements IReset,
-                   IFrame
+        implements IFrame
 {
-    public final static byte    frame_op_code_ctrl_close                 = 0x08;
-    public final static byte    frame_op_code_ctrl_ping                  = 0x09;
-    public final static byte    frame_op_code_ctrl_pong                  = 0x0A;
-    public final static byte    frame_op_code_ctrl_handshake             = 0x00;
-    public final static byte    frame_op_code_mask                       = 0x0F;
-    public final static byte    frame_fin_more                           = 0x00;
-    public final static byte    frame_fin_no_more                        = (byte) 0x80;
-    public final static byte    frame_rsv_1_mask                         = 0x40;
-    public final static byte    frame_rsv_2_mask                         = 0x20;
-    public final static byte    frame_rsv_3_mask                         = 0x10;
-    public final static byte    frame_op_code_no_ctrl_count              = 0x00;
-    public final static byte    frame_op_code_no_ctrl_txt                = 0x01;
-    public final static byte    frame_op_code_no_ctrl_bin                = 0x02;
-    public final static byte    frame_op_code_no_ctrl_json               = 0x03;
-    public final static byte    frame_op_code_no_ctrl_zq                 = 0x04;
-    public final static byte    frame_max_header_size                    = 14;
-    public final static int     frame_payload_length_7_no_mask_position  = 1;
-    public final static int     frame_payload_length_7_mask_position     = 5;
-    public final static int     frame_payload_length_16_no_mask_position = 3;
-    public final static int     frame_payload_length_16_mask_position    = 7;
-    public final static int     frame_payload_length_63_no_mask_position = 9;
-    public final static int     frame_payload_length_63_mask_position    = 13;
-    public              byte    frame_op_code;
-    public              boolean frame_fin;
-    public              boolean frame_fragment;
-    private             byte[]  mMask;
-    private             byte[]  mPayload;
-    private             long    mPayloadLength                           = -1;
+    public final static byte frame_op_code_ctrl_handshake = 0x00;
+    public final static byte frame_op_code_ctrl_text      = 0x01;
+    public final static byte frame_op_code_ctrl_binary    = 0x02;
+    public final static byte frame_op_code_ctrl_close     = 0x08;
+    public final static byte frame_op_code_ctrl_ping      = 0x09;
+    public final static byte frame_op_code_ctrl_pong      = 0x0A;
+    public final static byte frame_op_code_mask           = 0x0F;
+    public final static byte frame_fin_more               = 0x00;
+    public final static int  frame_fin_no_more            = 0x80;
+    public final static byte frame_rsv_1_mask             = 0x40;
+    public final static byte frame_rsv_2_mask             = 0x20;
+    public final static byte frame_rsv_3_mask             = 0x10;
+
+    public  byte     mFrameHeader;
+    private byte[]   mMask;
+    private byte[]   mPayload;
     // mask | first payload_length
-    private             byte    mMaskCode;
-    private             int     mMaskLength;
-    private             int     mSub;
+    private IoSerial mSubContent;
 
-    public WsFrame()
+    public boolean isFrameFin()
     {
-        setTypeBin();
+        return (mFrameHeader & 0x80) != 0;
     }
 
-    public static byte getFragmentFrame()
+    public boolean isFrameMore()
     {
-        return frame_fin_more;
-    }
-
-    public static byte getFragmentEndFrame()
-    {
-        return frame_fin_no_more;
-    }
-
-    public static byte getFirstFragmentFrame(byte frame_op_code)
-    {
-        return frame_op_code;
-    }
-
-    public static byte getFrame(byte frame_op_code)
-    {
-        return (byte) (frame_fin_no_more | frame_op_code);
-    }
-
-    public static byte getOpCode(byte value)
-    {
-        return (byte) (frame_op_code_mask & value);
-    }
-
-    public static boolean isFrameFin(byte value)
-    {
-        return (value & 0x80) != 0;
+        return (mFrameHeader & 0x80) == 0;
     }
 
     public void doMask()
     {
-        if(mMaskLength > 0 && mPayloadLength > 0) {
-            for(int i = 0; i < mPayloadLength; i++) {mPayload[i] ^= mMask[i & 3];}
+        if(mMask != null && mPayload != null) {
+            for(int i = 0; i < mPayload.length; i++) {mPayload[i] ^= mMask[i & 3];}
         }
     }
 
     @Override
-    public ByteBuffer payload()
+    public ByteBuf payload()
     {
-        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
-    }
-
-    @Override
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-        mPayloadLength = payload == null ? 0 : payload.length;
-    }
-
-    public byte[] getMask()
-    {
-        return mMask;
+        return mPayload == null ? null : ByteBuf.wrap(mPayload);
     }
 
     public void setMask(byte[] mask)
     {
-        if(mask != null) {
-            mMask = mask;
-            mMaskLength = mask.length;
-        }
-    }
-
-    public long getPayloadLength()
-    {
-        return mPayloadLength;
-    }
-
-    public void setPayloadLength(long length)
-    {
-        mPayloadLength = length;
-    }
-
-    public int getMaskLength()
-    {
-        return mMaskLength;
-    }
-
-    public byte[] getPayloadLengthArray()
-    {
-        if(mPayloadLength <= 0) {return new byte[]{ (byte) (mMask == null ? 0 : 0x80) };}
-        int t_size = mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1;
-        byte[] x = new byte[t_size];
-        if(mPayloadLength > 0xFFFF) {
-            x[0] = 0x7F;
-            IoUtil.writeLong(mPayloadLength, x, 1);
-        }
-        else if(mPayloadLength > 0x7D) {
-            x[0] = 0x7E;
-            IoUtil.writeShort((int) mPayloadLength, x, 1);
-        }
-        else {x[0] = (byte) mPayloadLength;}
-        if(mMask != null) {mMaskCode = x[0] |= 0x80;}
-        return x;
-    }
-
-    public WsFrame setTypeTxt()
-    {
-        frame_op_code = frame_op_code_no_ctrl_txt;
-        return this;
-    }
-
-    public WsFrame setTypeBin()
-    {
-        frame_op_code = frame_op_code_no_ctrl_bin;
-        return this;
-    }
-
-    public WsFrame setTypeZQ()
-    {
-        frame_op_code = frame_op_code_no_ctrl_zq;
-        return this;
-    }
-
-    public WsFrame setTypeJson()
-    {
-        frame_op_code = frame_op_code_no_ctrl_json;
-        return this;
+        mMask = Objects.requireNonNull(mask);
     }
 
     @Override
     public int length()
     {
-        return 1 + mMaskLength + (int) mPayloadLength + (mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1);
+        return 1 + (mMask == null ? 0 : 4) +
+               (mPayload == null ? 1 : (mPayload.length > 0xFFFF ? 9 : mPayload.length > 0x7D ? 3 : 1));
 
-    }
-
-    @Override
-    public int lack(int position)
-    {
-        int result = (mMaskCode & 0x80) != 0 ? 4 : 0;
-        return switch(mMaskCode & 0x7F) {
-            case 0x7F -> 9 + result;
-            case 0x7E -> 3 + result;
-            default -> 1 + result;
-        };
-    }
-
-    public void setMaskCode(byte b)
-    {
-        mMaskCode = b;
-    }
-
-    public byte getLengthCode()
-    {
-        return (byte) (mMaskCode & 0x7F);
-    }
-
-    public byte getFrameFin()
-    {
-        if(frame_fragment) {return frame_fin ? getFragmentEndFrame() : getFragmentFrame();}
-        else {return getFrame(frame_op_code);}
     }
 
     public boolean checkRSV(byte value)
@@ -236,95 +99,162 @@ public class WsFrame
     }
 
     @Override
-    public void put(byte frame_ctrl_code)
+    public void header(int header)
     {
-        frame_op_code = frame_ctrl_code;
+        mFrameHeader = (byte) header;
     }
 
     @Override
-    public byte ctrl()
+    public byte header()
     {
-        return (byte) (frame_op_code & 0x0F);
+        return mFrameHeader;
     }
 
     @Override
     public boolean isCtrl()
     {
-        return (frame_op_code & 0x08) != 0;
+        return (mFrameHeader & 0x08) != 0;
     }
 
     @Override
-    public void reset()
+    public int lack(ByteBuf input)
     {
-        mMask = null;
-        mPayload = null;
-        mPayloadLength = -1;
-        mMaskLength = -1;
-        mMaskCode = 0;
-        frame_op_code = 0;
-        frame_fragment = false;
-        frame_fin = false;
-    }
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-        byte attr = input.get();
-        frame_op_code = getOpCode(attr);
-        frame_fin = isFrameFin(attr);
-        mMaskCode = input.get();
-        int p = lack(input.position());
-        switch(p) {
-            case WsFrame.frame_payload_length_7_no_mask_position:
-                setPayloadLength(mMaskCode & 0x7F);
-                setMask(null);
-                break;
-            case WsFrame.frame_payload_length_16_no_mask_position:
-                setPayloadLength(input.getShort() & 0xFFFF);
-                setMask(null);
-                break;
-            case WsFrame.frame_payload_length_7_mask_position:
-                setPayloadLength(mMaskCode & 0x7F);
-                byte[] mask = new byte[4];
-                input.get(mask);
-                setMask(mask);
-                break;
-            case WsFrame.frame_payload_length_16_mask_position:
-                setPayloadLength(input.getShort() & 0xFFFF);
-                mask = new byte[4];
-                input.get(mask);
-                setMask(mask);
-                break;
-            case WsFrame.frame_payload_length_63_no_mask_position:
-                setPayloadLength(input.getLong());
-                setMask(null);
-                break;
-            case WsFrame.frame_payload_length_63_mask_position:
-                setPayloadLength(input.getLong());
-                mask = new byte[4];
-                input.get(mask);
-                setMask(mask);
-                break;
+        int remain = input.readableBytes();
+        if(remain < 2) {
+            return 1;
+        }
+        else {
+            header(input.get(0));
+            int code = input.get(1);
+            int lack = code & 0x7F;
+            boolean withMask = (code & 0x80) > 0;
+            switch(lack) {
+                case 0x7F -> {
+                    int target = withMask ? 14 : 10;
+                    if(remain < target) {
+                        return target - remain;
+                    }
+                    else {
+                        return (int) (input.getLong(2) + target - remain);
+                    }
+                }
+                case 0x7E -> {
+                    int target = withMask ? 6 : 4;
+                    if(remain < target) {
+                        return target - remain;
+                    }
+                    else {
+                        return input.getUnsignedShort(2) + target - remain;
+                    }
+                }
+                default -> {
+                    int target = withMask ? 4 : 2;
+                    if(remain < target) {
+                        return target - remain;
+                    }
+                    else {return lack + target - remain;}
+                }
+            }
         }
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public int prefix(ByteBuf input)
     {
-        output.put(getFrameFin());
-        output.put(getPayloadLengthArray());
-        if(getMaskLength() > 0) {
-            output.put(getMask());
+        mFrameHeader = input.get();
+        int code = input.get();
+        boolean withMask = (code & 0x80) > 0;
+        int payloadLength = code & 0x7F;
+        if(payloadLength > 0x7E) {
+            payloadLength = (int) input.getLong();
         }
-        if(getPayloadLength() > 0) {
+        else if(payloadLength > 0x7D) {
+            payloadLength = input.getUnsignedShort();
+        }
+        if(withMask) {
+            mMask = new byte[4];
+            input.get(mMask);
+        }
+        return payloadLength;
+    }
+
+    @Override
+    public void fold(ByteBuf input, int remain)
+    {
+        if(remain > 0) {
+            mPayload = new byte[remain];
+            input.get(mPayload);
             doMask();
+        }
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        output.put(mFrameHeader);
+        int attr = 0;
+        output.markWriter();
+        if(mPayload != null) {
+            if(mPayload.length > 0xFFFF) {
+                attr |= 0x7F;
+                output.putLong(mPayload.length);
+            }
+            else if(mPayload.length > 0x7D) {
+                attr |= 0x7E;
+                output.putShort((short) mPayload.length);
+            }
+            else {
+                output.put(mPayload.length);
+            }
+        }
+        if(mMask != null) {
+            output.put(mMask);
+            attr |= 0x80;
+            doMask();
+        }
+        output.put(attr, output.writerMark());
+        if(mPayload != null) {
             output.put(mPayload);
         }
+        return output;
     }
 
     @Override
-    public int _sub()
+    public IoSerial subContent()
     {
-        return mSub;
+        return mSubContent;
     }
+
+    @Override
+    public void withSub(IoSerial sub)
+    {
+        //IoSerial payload ≤ 256MB不会超过payload, 对多fragment场景支持欠缺
+        mPayload = sub.encode()
+                      .array();
+        mSubContent = sub;
+    }
+
+    @Override
+    public void deserializeSub(IoFactory factory)
+    {
+        ByteBuf payload = payload();
+        mSubContent = factory.create(payload);
+        mSubContent.decode(payload);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
+    }
+
+    public static int seekSubSerial(ByteBuf buffer)
+    {
+        Objects.requireNonNull(buffer);
+        buffer.markReader();
+        int serial = buffer.get() & 0x0F;
+        buffer.resetReader();
+        return serial;
+    }
+
 }

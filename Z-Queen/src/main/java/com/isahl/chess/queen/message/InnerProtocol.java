@@ -23,18 +23,20 @@
 
 package com.isahl.chess.queen.message;
 
+import com.isahl.chess.board.base.IFactory;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.db.model.IStorage;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  */
 public abstract class InnerProtocol
+        extends BinarySerial
         implements IStorage
 {
 
@@ -43,8 +45,6 @@ public abstract class InnerProtocol
     protected final CreatorType _Type;
 
     protected long pKey, fKey;
-
-    protected byte[] mPayload;
 
     enum CreatorType
     {
@@ -75,11 +75,11 @@ public abstract class InnerProtocol
         /*
          operation (1)
          strategy (1)
-         serial(2)
          primaryKey (8)
-         hasForeignKey (1) ? (9) : (1)
+         hasForeignKey ? (9) : (1)
+         payload.length
          */
-        return 8 + 2 + 1 + 1 + (hasForeignKey() ? 9 : 1) + (mPayload == null ? 0 : mPayload.length);
+        return 1 + 1 + 8 + (hasForeignKey() ? 9 : 1) + super.length();
     }
 
     @Override
@@ -105,18 +105,6 @@ public abstract class InnerProtocol
     }
 
     @Override
-    public void put(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
-    public ByteBuffer payload()
-    {
-        return mPayload == null ? null : ByteBuffer.wrap(mPayload);
-    }
-
-    @Override
     public boolean hasForeignKey()
     {
         return fKey != 0;
@@ -134,29 +122,47 @@ public abstract class InnerProtocol
         return _Operation;
     }
 
-    @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        IStorage.super.decode(input);
+        int remain = super.prefix(input);
+        input.skip(2);
+        remain -= 2;
         pKey = input.getLong();
+        remain -= 8;
         if(input.get() > 0) {
             fKey = input.getLong();
+            remain -= 8;
         }
+        return remain - 1;
     }
 
-    public static <T extends InnerProtocol> T load(Class<T> clazz,
-                                                   DataInput input) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
+    @Override
+    public ByteBuf suffix(ByteBuf output)
     {
+        output = super.suffix(output)
+                      .put(operation().getValue())
+                      .put(strategy().getCode())
+                      .putLong(pKey)
+                      .put(hasForeignKey() ? 1 : 0);
+        if(hasForeignKey()) {
+            output.putLong(fKey);
+        }
+        return output;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends InnerProtocol> T load(IFactory factory, DataInput input) throws IOException
+    {
+        //TODO 升级成zero-copy 模式【mapping-buffer】
         int length = IoUtil.readVariableIntLength(input);
-        byte[] vLength = IoUtil.variableLength(length);
-        ByteBuffer buffer = ByteBuffer.allocate(length + vLength.length);
-        buffer.put(vLength);
-        T t = clazz.getDeclaredConstructor()
-                   .newInstance();
-        if(length > 0 && t.serial() == input.readUnsignedShort()) { //vLength ≥ 1
-            buffer.putShort((short) t.serial());
-            input.readFully(buffer.array(), buffer.position(), buffer.remaining());
-            t.decode(buffer.clear());
+        ByteBuf buffer = ByteBuf.allocate(ByteBuf.vSizeOf(length));
+        buffer.vPutLength(length);
+        int serial = input.readUnsignedShort();
+        T t = (T) factory.build(serial);
+        if(length > 0 && t.serial() == serial) { //vLength ≥ 1
+            buffer.putShort((short) serial);
+            input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
+            t.decode(buffer);
         }
         return t;
     }

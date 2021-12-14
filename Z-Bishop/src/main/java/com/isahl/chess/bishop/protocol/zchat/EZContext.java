@@ -21,28 +21,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.filter;
+package com.isahl.chess.bishop.protocol.zchat;
 
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
-import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
-
-public class EZContext<A extends IPContext>
+public class EZContext
         extends ZContext
-        implements IEContext,
-                   IProxyContext<A>
+        implements IEContext
 {
     private final CryptoUtil _CryptoUtil = new CryptoUtil();
-    private final A          _ActingContext;
 
     private int     mPubKeyId = -2;
     private boolean mUpdateKeyIn, mUpdateKeyOut;
@@ -51,41 +43,9 @@ public class EZContext<A extends IPContext>
     private Rc4 mEncryptRc4, mDecryptRc4;
     private IEncryptor mEncryptHandler;
 
-    public EZContext(INetworkOption option, ISort.Mode mode, ISort.Type type, A acting)
+    public EZContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
         super(option, mode, type);
-        _ActingContext = acting;
-    }
-
-    @Override
-    public A getActingContext()
-    {
-        return _ActingContext;
-    }
-
-    @Override
-    public void reset()
-    {
-        mUpdateKeyIn = false;
-        mUpdateKeyOut = false;
-        mPubKeyId = -2;
-        mSymmetricKeyId = 0;
-        super.reset();
-    }
-
-    @Override
-    public void dispose()
-    {
-        mEncryptHandler = null;
-        mSymmetricKeyIn = mSymmetricKeyOut = mSymmetricKeyReroll = null;
-        if(mEncryptRc4 != null) {
-            mEncryptRc4.reset();
-        }
-        if(mDecryptRc4 != null) {
-            mDecryptRc4.reset();
-        }
-        mEncryptRc4 = mDecryptRc4 = null;
-        super.dispose();
     }
 
     @Override
@@ -253,17 +213,4 @@ public class EZContext<A extends IPContext>
         return _EncodeState.get() == ENCODE_PAYLOAD;
     }
 
-    @Override
-    public boolean isProxy()
-    {
-        return true;
-    }
-
-    @Override
-    public void ready()
-    {
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-        _ActingContext.ready();
-    }
 }

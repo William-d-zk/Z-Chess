@@ -23,9 +23,9 @@
 
 package com.isahl.chess.knight.cluster.features;
 
-import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.ICode;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.cluster.IClusterNode;
@@ -38,7 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends ISerial> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
+    default <T extends IoSerial> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
     {
         if(request == null || node == null) {
             return CodeKing.MISS;

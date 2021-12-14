@@ -23,25 +23,20 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
  */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends InnerProtocol
         implements ITraceable,
@@ -62,36 +57,15 @@ public class LogEntry
     web api 中表达了某次请求的session
      */
     private long mOrigin;
-    private int  mSubSerial;
 
-    @JsonCreator
-    public LogEntry(
-            @JsonProperty("term")
-                    long term,
-            @JsonProperty("index")
-                    long index,
-            @JsonProperty("client")
-                    long client,
-            @JsonProperty("origin")
-                    long origin,
-            @JsonProperty("sub")
-                    int sub,
-            @JsonProperty("content")
-                    byte[] content)
+    public LogEntry(long term, long index, long client, long origin, IoSerial content)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mTerm = term;
-        mIndex = index;
+        pKey = mIndex = index;
         mClient = client;
         mOrigin = origin;
-        mSubSerial = sub;
-        put(content);
-        pKey = mIndex;
-    }
-
-    public LogEntry()
-    {
-        super();
+        mSubContent = content;
     }
 
     public long getTerm()
@@ -104,58 +78,33 @@ public class LogEntry
         return mIndex;
     }
 
-    public byte[] getContent()
-    {
-        return mPayload;
-    }
-
     @Override
     public int length()
     {
         int length = 8 + //term
-                     8 + //index
                      8 + //client
-                     8 + //origin
-                     2;  //sub
-        return length + super.length();
+                     8;  //origin
+        return length + super.length(); //pKey == index
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode();
-        output.putLong(getTerm());
-        output.putLong(getIndex());
-        output.putLong(getClient());
-        output.putLong(getOrigin());
-        output.putShort((short) _sub());
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
-        return output;
+        return super.suffix(output)
+                    .putLong(getTerm())
+                    .putLong(getClient())
+                    .putLong(getOrigin());
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
+        int remain = super.prefix(input);
+        mIndex = pKey;
         mTerm = input.getLong();
-        pKey = mIndex = input.getLong();
         mClient = input.getLong();
         mOrigin = input.getLong();
-        mSubSerial = input.getShort() & 0xFFFF;
-        if(input.hasRemaining()) {
-            mPayload = new byte[input.remaining()];
-            input.get(mPayload);
-        }
-    }
-
-    @Override
-    @JsonInclude
-    @JsonProperty("sub")
-    public int _sub()
-    {
-        return mSubSerial;
+        return remain - 24;
     }
 
     public long getClient()
@@ -173,11 +122,11 @@ public class LogEntry
     public String toString()
     {
         return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub-serial:%#x, sub-size:%d }",
-                             mIndex,
-                             mTerm,
-                             mClient,
-                             mOrigin,
-                             mSubSerial,
+                             getIndex(),
+                             getTerm(),
+                             getClient(),
+                             getOrigin(),
+                             _sub(),
                              mPayload == null ? 0 : mPayload.length);
     }
 

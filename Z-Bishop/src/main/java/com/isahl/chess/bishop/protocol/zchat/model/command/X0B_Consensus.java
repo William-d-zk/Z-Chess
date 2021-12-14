@@ -20,81 +20,42 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
+
+package com.isahl.chess.bishop.protocol.zchat.model.command;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
-import java.nio.ByteBuffer;
-
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2020/4/6
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x106)
-public class X106_Identity
-        extends ZControl
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x0B)
+public class X0B_Consensus
+        extends ZCommand
 {
-
-    private long mPeer, mSession;
-
-    public X106_Identity(long peer, long session)
+    public X0B_Consensus()
     {
         super();
-        mPeer = peer;
-        mSession = session;
+        withId(true);
     }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 16;
-    }
-
-    public X106_Identity()
+    public X0B_Consensus(long msgId)
     {
         super();
-    }
-
-    public long getIdentity()
-    {
-        return mPeer;
-    }
-
-    public long getSessionIdx()
-    {
-        return mSession;
+        setMsgId(msgId);
     }
 
     @Override
-    public boolean isMapping()
+    public int priority()
     {
-        return true;
+        return QOS_PRIORITY_07_ROUTE_MESSAGE;
     }
 
     @Override
-    public X106_Identity duplicate()
+    public Level getLevel()
     {
-        return new X106_Identity(mPeer, mSession);
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("X106 %#x @ %#x", mPeer, mSession);
-    }
-
-    @Override
-    public void decodec(ByteBuffer input)
-    {
-        mPeer = input.getLong();
-        mSession = input.getLong();
-    }
-
-    @Override
-    public void encodec(ByteBuffer output)
-    {
-        output.putLong(mPeer);
-        output.putLong(mSession);
+        return Level.ALMOST_ONCE;
     }
 }

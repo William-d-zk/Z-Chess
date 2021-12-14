@@ -29,14 +29,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.board.base.IFactory;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -44,21 +47,33 @@ import java.nio.ByteBuffer;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class SnapshotEntry
+public class SnapshotEntry<T extends IoSerial>
         extends InnerProtocol
         implements ITraceable,
-                   IStorage,
                    Serializable
 {
     @Serial
     private static final long serialVersionUID = -8360451804196525728L;
 
-    private long mOrigin;
-    private long mIndex;
-    private long mTerm;
-    private long mCommit;
-    private long mApplied;
-    private int  mSubSerial;
+    private long     mOrigin;
+    private long     mIndex;
+    private long     mTerm;
+    private long     mCommit;
+    private long     mApplied;
+    private T        mContent;
+    private IFactory mFactory;
+
+    @Override
+    public int length()
+    {
+        int length = 8 + // index
+                     8 + // term
+                     8 + // origin
+                     8 + // commit
+                     8;  // applied
+
+        return length + super.length();
+    }
 
     @JsonCreator
     public SnapshotEntry(
@@ -71,7 +86,9 @@ public class SnapshotEntry
             @JsonProperty("commit")
                     long commit,
             @JsonProperty("applied")
-                    long applied)
+                    long applied,
+            @JsonProperty("content")
+                    T content)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mOrigin = origin;
@@ -79,11 +96,13 @@ public class SnapshotEntry
         mTerm = term;
         mCommit = commit;
         mApplied = applied;
+        mContent = content;
     }
 
-    public SnapshotEntry()
+    public SnapshotEntry(IFactory factory)
     {
-        super(Operation.OP_INSERT, Strategy.RETAIN);
+        super();
+        mFactory = factory;
     }
 
     @Override
@@ -117,38 +136,48 @@ public class SnapshotEntry
     @JsonProperty("sub")
     public int _sub()
     {
-        return mSubSerial;
+        return mContent == null ? -1 : mContent.serial();
+    }
+
+    public T getContent()
+    {
+        return mContent;
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode();
-        output.putLong(getIndex());
-        output.putLong(getTerm());
-        output.putLong(getCommit());
-        output.putLong(getApplied());
-        output.putLong(getOrigin());
-        output.putShort((short) _sub());
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
+        output = super.suffix(output)
+                      .putLong(getIndex())
+                      .putLong(getTerm())
+                      .putLong(getCommit())
+                      .putLong(getApplied())
+                      .putLong(getOrigin());
+        if(mContent != null) {output.put(mContent.encode());}
         return output;
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
-        pKey = mIndex = input.getLong();
+        int remain = super.prefix(input);
+        mIndex = input.getLong();
         mTerm = input.getLong();
         mCommit = input.getLong();
         mApplied = input.getLong();
         mOrigin = input.getLong();
-        mSubSerial = input.getShort() & 0xFFFF;
-        if(input.hasRemaining()) {
-            mPayload = new byte[input.remaining()];
-            input.get(mPayload);
+        return remain - 40;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void fold(ByteBuf input, int remain)
+    {
+        if(remain > 0) {
+            mContent = (T) Objects.requireNonNull(mFactory)
+                                  .build(BinarySerial.seekSerial(input));
+            Objects.requireNonNull(mContent)
+                   .decode(input);
         }
     }
 

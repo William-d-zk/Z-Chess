@@ -22,13 +22,13 @@
  */
 package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -39,74 +39,85 @@ import java.util.Objects;
 public class X04_EncryptConfirm
         extends ZControl
 {
-    public int code;
-    public int symmetricKeyId;
-
-    /* SHA256 */
-    private byte[] mSign;
+    private int mCode;
+    private int mSymmetricKeyId;
 
     public byte[] getSign()
     {
-        return mSign;
+        return mPayload;
     }
 
     public void setSign(byte[] sign)
     {
-        mSign = sign;
+        mPayload = sign;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 36;
+        return super.length() + 6;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
-    {
-        code = input.getShort();
-        symmetricKeyId = input.getShort() & 0xFFFF;
-        mSign = new byte[32];
-        input.get(mSign);
-    }
-
-    @Override
-    public void encodec(ByteBuffer output)
-    {
-        output.putShort((short) code);
-        output.putShort((short) symmetricKeyId);
-        output.put(mSign);
-    }
-
-    @Override
-    public <C extends IPContext> void afterEncode(C ctx)
+    public ByteBuf suffix(ByteBuf output, ZContext ctx)
     {
         Objects.requireNonNull(ctx)
                .updateOut();
+        return output;
     }
 
     @Override
-    public <C extends IPContext> void afterDecode(C ctx)
+    public void fold(ZContext ctx)
     {
         Objects.requireNonNull(ctx)
                .updateIn();
     }
 
     @Override
-    public String toString()
+    public int prefix(ByteBuf input)
     {
-        return String.format("%s,code:%s,rc4-key: %d ,sign: %s",
-                             super.toString(),
-                             code,
-                             symmetricKeyId,
-                             IoUtil.bin2Hex(mSign));
+        int remain = super.prefix(input);
+        mCode = input.getInt();
+        mSymmetricKeyId = input.getUnsignedShort();
+        return remain - 6;
     }
 
     @Override
-    public void dispose()
+    public ByteBuf suffix(ByteBuf output)
     {
-        mSign = null;
-        super.dispose();
+        return super.suffix(output)
+                    .putInt(mCode)
+                    .putShort((short) mSymmetricKeyId);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%s\ncode:%s,rc4-key: %d ,sign: %s",
+                             super.toString(),
+                             mCode,
+                             mSymmetricKeyId,
+                             IoUtil.bin2Hex(mPayload));
+    }
+
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(int code)
+    {
+        mCode = code;
+    }
+
+    public int getSymmetricKeyId()
+    {
+        return mSymmetricKeyId;
+    }
+
+    public void setSymmetricKeyId(int symmetricKeyId)
+    {
+        mSymmetricKeyId = symmetricKeyId;
     }
 
     @Override

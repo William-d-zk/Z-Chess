@@ -86,6 +86,10 @@ public interface IQoS
          */
         EXACTLY_ONCE(2),
         /**
+         * 不符合预期设定的QoS 等级
+         */
+        NO_EXPECTED(3),
+        /**
          * 故障
          */
         FAILURE(0x80);
@@ -108,6 +112,7 @@ public interface IQoS
                 case 0 -> ALMOST_ONCE;
                 case 1 -> AT_LEAST_ONCE;
                 case 2 -> EXACTLY_ONCE;
+                case 3 -> NO_EXPECTED;
                 case 0x80 -> FAILURE;
                 default -> throw new UnsupportedOperationException(String.format("wrong level code %d,%#x",
                                                                                  level,

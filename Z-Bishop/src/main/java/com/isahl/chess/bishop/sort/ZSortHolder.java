@@ -23,14 +23,15 @@
 
 package com.isahl.chess.bishop.sort;
 
-import com.isahl.chess.bishop.protocol.zchat.ZlsZSort;
 import com.isahl.chess.bishop.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.sort.ssl.SslZSort;
 import com.isahl.chess.bishop.sort.ws.WsTextZSort;
 import com.isahl.chess.bishop.sort.ws.proxy.WsProxyZSort;
 import com.isahl.chess.bishop.sort.zchat.WsZSort;
+import com.isahl.chess.bishop.sort.zchat.ZlsZSort;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 import static com.isahl.chess.king.env.ZUID.*;
@@ -50,9 +51,7 @@ public enum ZSortHolder
                                        ISort.Type.SERVER,
                                        new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
-    WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER,
-                                         ISort.Type.SYMMETRY,
-                                         new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY))),
+    WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
     WS_PLAIN_TEXT_SERVER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
     WS_PLAIN_TEXT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
                                             ISort.Type.SERVER,
@@ -101,29 +100,21 @@ public enum ZSortHolder
 
     public int getSlot()
     {
-        ISort.Mode mode = _Sort.getMode();
-        ISort.Type type = _Sort.getType();
-        return switch(mode) {
-            case LINK -> TYPE_CONSUMER_SLOT;
-            case CLUSTER -> switch(type) {
-                case INNER -> TYPE_INTERNAL_SLOT;
-                case SERVER -> TYPE_PROVIDER_SLOT;
-                case SYMMETRY, CLIENT -> TYPE_CLUSTER_SLOT;
-            };
-        };
+        return getAttribute().getFirst();
     }
 
-    public long getType()
+    private Pair<Integer, Long> getAttribute()
     {
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
         return switch(mode) {
-            case LINK -> TYPE_CONSUMER;
+            case LINK -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CONSUMER);
             case CLUSTER -> switch(type) {
-                case INNER -> TYPE_INTERNAL;
-                case SERVER -> TYPE_PROVIDER;
-                case SYMMETRY, CLIENT -> TYPE_CLUSTER;
+                case INNER -> Pair.of(TYPE_INTERNAL_SLOT, TYPE_INTERNAL);
+                case SERVER -> Pair.of(TYPE_PROVIDER_SLOT, TYPE_PROVIDER);
+                case SYMMETRY, CLIENT -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CLUSTER);
             };
         };
     }
+
 }

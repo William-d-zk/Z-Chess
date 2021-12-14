@@ -20,25 +20,83 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
- * @author william.d.zk
+ * @author William.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x108)
-public class X108_Shutdown
+                  serial = 0x08)
+public class X08_Identity
         extends ZControl
 {
 
-    @Override
-    public boolean isShutdown()
+    private long mPeer, mSession;
+
+    public X08_Identity(long peer, long session)
     {
-        return true;
+        super();
+        mPeer = peer;
+        mSession = session;
     }
 
+    @Override
+    public int length()
+    {
+        return super.length() + 16;
+    }
+
+    public X08_Identity()
+    {
+        super();
+    }
+
+    public long getIdentity()
+    {
+        return mPeer;
+    }
+
+    public long getSessionIdx()
+    {
+        return mSession;
+    }
+
+    @Override
+    public X08_Identity copy()
+    {
+        return new X08_Identity(mPeer, mSession);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("X106 %#x @ %#x", mPeer, mSession);
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mPeer = input.getLong();
+        mSession = input.getLong();
+        return remain - 16;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(mPeer)
+                    .putLong(mSession);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
+    }
 }

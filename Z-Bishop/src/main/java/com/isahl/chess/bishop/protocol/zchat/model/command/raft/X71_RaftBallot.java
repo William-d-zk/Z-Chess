@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
@@ -42,17 +42,25 @@ public class X71_RaftBallot
     public X71_RaftBallot(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X71_RaftBallot()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     @Override
     public int priority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 
     private long mElectorId;
@@ -69,25 +77,28 @@ public class X71_RaftBallot
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mElectorId = input.getLong();
         mTerm = input.getLong();
         mIndex = input.getLong();
         mIndexTerm = input.getLong();
         mCandidateId = input.getLong();
         mCommit = input.getLong();
+        return remain - 48;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mElectorId);
-        output.putLong(mTerm);
-        output.putLong(mIndex);
-        output.putLong(mIndexTerm);
-        output.putLong(mCandidateId);
-        output.putLong(mCommit);
+        return super.suffix(output)
+                    .putLong(mElectorId)
+                    .putLong(mTerm)
+                    .putLong(mIndex)
+                    .putLong(mIndexTerm)
+                    .putLong(mCandidateId)
+                    .putLong(mCommit);
     }
 
     public long getElectorId()
@@ -148,12 +159,6 @@ public class X71_RaftBallot
     public void setCommit(long commit)
     {
         mCommit = commit;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
     }
 
     @Override

@@ -23,10 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.modbus.rtu;
 
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -53,23 +54,39 @@ public abstract class ModbusRtuProtocol
     protected int    mCrc;
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        int off = output.position();
-        output.put(mAddress);
-        output.put(mCtrl);
-        output.put(mPayload);
-        output.putShort((short) (mCrc = CryptoUtil.crc16_modbus(output.array(), off, output.position() - off)));
+        output.markWriter();
+        output.put(mAddress)
+              .put(mCtrl)
+              .put(mPayload)
+              .putShort((short) (mCrc = CryptoUtil.crc16_modbus(output.array(),
+                                                                output.writerMark(),
+                                                                output.writerIdx() - output.writerMark())));
+        return output;
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        input.markReader();
         mAddress = input.get();
         mCtrl = input.get();
-        mPayload = new byte[input.remaining() - 2];
-        input.get(mPayload);
-        mCrc = input.getShort();
+        return input.readableBytes();
+    }
+
+    @Override
+    public void fold(ByteBuf input, int remain)
+    {
+        if(remain > 0) {
+            mPayload = new byte[remain - 2];
+            input.get(mPayload);
+            mCrc = input.getUnsignedShort();
+            if(CryptoUtil.crc16_modbus(input.array(), input.readerMark(), input.readerIdx() - input.readerMark()) !=
+               mCrc)
+            {throw new ZException("modbus crc error");}
+
+        }
     }
 
     @Override
@@ -92,5 +109,12 @@ public abstract class ModbusRtuProtocol
     {
         return mAddress;
     }
+
+    @Override
+    public void withSub(IoSerial sub)
+    {
+
+    }
+
 
 }

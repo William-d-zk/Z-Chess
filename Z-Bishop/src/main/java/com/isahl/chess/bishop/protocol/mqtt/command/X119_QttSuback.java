@@ -26,8 +26,8 @@ package com.isahl.chess.bishop.protocol.mqtt.command;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class X119_QttSuback
 
     public X119_QttSuback()
     {
-        put(generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK));
+        generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK);
     }
 
     private List<Level> mResultList;
@@ -71,24 +71,32 @@ public class X119_QttSuback
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decodec(input);
-        mResultList = new ArrayList<>(input.remaining());
-        while(input.hasRemaining()) {
-            mResultList.add(Level.valueOf(input.get()));
+        setMsgId(input.getUnsignedShort());
+        mResultList = new ArrayList<>();
+        while(input.isReadable()) {
+            mResultList.add(Level.valueOf(input.getUnsigned()));
         }
+        return 0;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        super.encodec(output);
+        output.putShort((short) getMsgId());
         if(mResultList != null) {
             for(Level qosLevel : mResultList) {
-                output.put((byte) qosLevel.getValue());
+                output.put(qosLevel.getValue());
             }
         }
+        return output;
+    }
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 
     @Override

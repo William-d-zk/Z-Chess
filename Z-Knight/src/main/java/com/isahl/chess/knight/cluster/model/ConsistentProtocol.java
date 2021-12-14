@@ -29,9 +29,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.message.JsonProtocol;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.model.TextSerial;
 
 /**
  * @author william.d.zk
@@ -40,58 +38,29 @@ import java.nio.ByteBuffer;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
 public class ConsistentProtocol
-        extends JsonProtocol
+        extends TextSerial
 {
 
-    private long mId;
+    private final long _ClientId;
 
     @JsonCreator
     public ConsistentProtocol(
-            @JsonProperty("content")
-                    byte[] content,
-            @JsonProperty("id")
+            @JsonProperty("text")
+                    String text,
+            @JsonProperty("client_id")
                     long id)
     {
-        mPayload = content;
-        mId = id;
+        _ClientId = id;
+        setText(text);
     }
 
-    public ConsistentProtocol()
+    public long getClientId()
     {
-
-    }
-
-    @Override
-    public void decode(ByteBuffer input)
-    {
-        super.decode(input);
-        mId = input.getLong();
-        mPayload = new byte[input.remaining()];
-        input.get(mPayload);
-    }
-
-    @Override
-    public ByteBuffer encode()
-    {
-        ByteBuffer output = super.encode();
-        output.putLong(mId);
-        output.put(mPayload);
-        return output;
-    }
-
-    public long getId()
-    {
-        return mId;
-    }
-
-    public byte[] getContent()
-    {
-        return mPayload;
+        return _ClientId;
     }
 
     public int length()
     {
-        int length = 8; // id
-        return length + super.length();
+        return 8 + super.length();
     }
 }

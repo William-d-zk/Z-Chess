@@ -23,8 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
-import com.isahl.chess.bishop.protocol.zchat.model.base.ZProtocol;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 
 /**
  * @author william.d.zk
@@ -33,12 +32,12 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 public class ZServerFactory
         extends ZChatFactory
 {
-    private static final ZServerFactory _Instance = new ZServerFactory();
+    public static final ZServerFactory _Instance = new ZServerFactory();
 
     @Override
-    protected <T extends ZProtocol & IControl> T build(int serial)
+    protected ZCommand build(int serial)
     {
-        return (T) switch(serial) {
+        return switch(serial) {
             case 0x20 -> null;
             case 0x21 -> null;
             case 0x22 -> null;
@@ -46,7 +45,7 @@ public class ZServerFactory
             case 0x24 -> null;
             case 0x25 -> null;
             case 0x6F -> null;
-            default -> super.build(serial);
+            default -> null;
         };
     }
 }

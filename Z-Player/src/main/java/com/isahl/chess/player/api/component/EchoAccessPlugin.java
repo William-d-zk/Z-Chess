@@ -24,6 +24,7 @@
 package com.isahl.chess.player.api.component;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.player.api.model.EchoDo;
@@ -42,19 +43,19 @@ public class EchoAccessPlugin
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     @Override
-    public boolean isHandleProtocol(IProtocol protocol)
+    public boolean isSupported(IProtocol protocol)
     {
-        return protocol.serial() == 0x801;
+        return protocol.serial() == 0x0C;
     }
 
     @Override
-    public List<? extends IControl> handle(IManager manager, ISession session, IControl content)
+    public List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ITriple onLink(IManager manager, ISession session, IControl input)
+    public ITriple onLink(IManager manager, ISession session, IControl<?> input)
     {
         throw new UnsupportedOperationException();
     }
@@ -62,13 +63,11 @@ public class EchoAccessPlugin
     @Override
     public void onOffline(ISession session)
     {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager,
-                                             long origin,
-                                             IProtocol consensusBody,
-                                             boolean isConsistency)
+    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
     {
         throw new UnsupportedOperationException();
     }
@@ -77,7 +76,5 @@ public class EchoAccessPlugin
     public void consume(IProtocol request)
     {
         EchoDo echo = (EchoDo) request;
-        String content = echo.getContent();
-        _Logger.debug("echo: [ %s ]", content);
     }
 }

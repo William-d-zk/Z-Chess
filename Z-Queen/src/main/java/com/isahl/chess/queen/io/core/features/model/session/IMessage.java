@@ -30,12 +30,8 @@ import com.isahl.chess.king.base.features.IDuplicate;
 public interface IMessage
         extends IDuplicate
 {
-    default ISession session()
-    {
-        return null;
-    }
+    ISession session();
 
-    default void putSession(ISession session)
-    {
-    }
+    IMessage with(ISession session);
+
 }

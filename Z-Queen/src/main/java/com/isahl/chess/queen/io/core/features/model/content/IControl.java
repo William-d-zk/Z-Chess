@@ -22,9 +22,10 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import com.isahl.chess.king.base.features.IDisposable;
-import com.isahl.chess.queen.io.core.features.model.session.IContext;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.ICode;
+import com.isahl.chess.queen.io.core.features.model.session.IMessage;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
@@ -33,38 +34,21 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author William.d.zk
  * @see ISession
  */
-public interface IControl
+public interface IControl<C extends IPContext>
         extends IFrame,
-                IQoS,
-                IMapping,
-                IDisposable,
-                IStreamProtocol
+                IMessage,
+                IStreamProtocol<C>
 {
-    <C extends IContext> C context();
+    C context();
 
-    @Override
-    default int priority()
+    void wrap(C context);
+
+    default void transfer() {}
+
+    default void failed(ICode code) {}
+
+    default int lack(ByteBuf input)
     {
-        return QOS_PRIORITY_00_NETWORK_CONTROL;
+        return 0;
     }
-
-    /**
-     * 当前 Command 是否对route-mapping 存在影响
-     *
-     * @return success / failed
-     */
-    default boolean isMapping()
-    {
-        return false;
-    }
-
-    default boolean isShutdown()
-    {
-        return false;
-    }
-
-    default void failed(int code)
-    {
-    }
-
 }

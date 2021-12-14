@@ -30,7 +30,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
@@ -53,9 +53,8 @@ public class WsProxyFilter<A extends IPContext>
     public WsFrame encode(WsProxyContext<A> context, IPacket output)
     {
         WsFrame frame = new WsFrame();
-        frame.put(output.getBuffer()
-                        .array());
-        frame.put(WsFrame.frame_op_code_no_ctrl_bin);
+        frame.withSub(output);
+        frame.encode();
         return frame;
     }
 
@@ -83,7 +82,7 @@ public class WsProxyFilter<A extends IPContext>
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
             IPContext acting = context;
             while(acting.isProxy()) {
                 if(acting instanceof IWsContext && acting.isInConvert()) {

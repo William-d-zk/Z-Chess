@@ -27,6 +27,8 @@ import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 /**
  * @author William.d.zk
  */
@@ -35,7 +37,6 @@ import com.isahl.chess.board.base.ISerial;
 public class X102_Close
         extends WsControl
 {
-
     public X102_Close()
     {
         this(null);
@@ -43,18 +44,19 @@ public class X102_Close
 
     public X102_Close(byte[] payload)
     {
-        super(WsFrame.frame_op_code_ctrl_close, payload);
+        super(WsFrame.frame_op_code_ctrl_close);
+        mPayload = payload;
     }
 
     @Override
-    public X102_Close duplicate()
+    public X102_Close copy()
     {
-        return new X102_Close(_Payload);
+        return new X102_Close(mPayload);
     }
 
     @Override
-    public boolean isMapping()
+    public Level getLevel()
     {
-        return true;
+        return ALMOST_ONCE;
     }
 }

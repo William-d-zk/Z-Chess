@@ -27,11 +27,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -65,45 +65,33 @@ public class RaftNode
     }
 
     @Override
-    public ByteBuffer encode()
+    public ByteBuf suffix(ByteBuf output)
     {
-        ByteBuffer output = super.encode()
-                                 .putShort((short) getPort())
-                                 .putShort((short) getGatePort())
-                                 .put(getState().getCode());
-        if(!IoUtil.isBlank(getHost())) {
-            output.putShort((short) getHost().length());
-        }
-        else {
-            output.putShort((short) 0);
-        }
-        if(!IoUtil.isBlank(getGateHost())) {
-            output.putShort((short) getGateHost().length());
-        }
-        else {
-            output.putShort((short) 0);
-        }
+        output = super.suffix(output)
+                      .putShort((short) getPort())
+                      .putShort((short) getGatePort())
+                      .put(getState().getCode());
+        byte[] hostBytes = hostBytes();
+        byte[] gateHostBytes = gateHostBytes();
+        output.vPutLength(hostBytes == null ? 1 : ByteBuf.vSizeOf(hostBytes.length))
+              .put(hostBytes())
+              .vPutLength(gateHostBytes == null ? 1 : ByteBuf.vSizeOf(gateHostBytes.length))
+              .put(gateHostBytes());
         return output;
     }
 
     @Override
-    public void decode(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
-        super.decode(input);
-        input.get();// skip foreign key flag
-        setPort(input.getShort() & 0xFFFF);
-        setGatePort(input.getShort() & 0xFFFF);
+        int remain = super.prefix(input);
+        setPort(input.getUnsignedShort());
+        setGatePort(input.getUnsignedShort());
         setState(RaftState.valueOf(input.get()));
-        int hl = input.getShort() & 0xFFFF;
-        if(hl > 0) {
-            setHost(new String(input.array(), input.position(), hl, StandardCharsets.UTF_8));
-            input.position(input.position() + hl);
-        }
-        int gl = input.getShort() & 0xFFFF;
-        if(gl > 0) {
-            setGateHost(new String(input.array(), input.position(), gl, StandardCharsets.UTF_8));
-            input.position(input.position() + gl);
-        }
+        int hl = input.vLength();
+        setHost(input.readUTF(hl));
+        int gl = input.vLength();
+        setGateHost(input.readUTF(gl));
+        return remain - 5 - ByteBuf.vSizeOf(hl) - ByteBuf.vSizeOf(gl);
     }
 
     @Override
@@ -111,15 +99,9 @@ public class RaftNode
     {
         int length = 2 + // port
                      2 + // gate port
-                     1 + // state
-                     2 + // host length
-                     2;  // gate host length
-        if(!IoUtil.isBlank(mHost)) {
-            length += mHost.length();
-        }
-        if(!IoUtil.isBlank(mGateHost)) {
-            length += mGateHost.length();
-        }
+                     1; // state
+        length += IoUtil.isBlank(getHost()) ? 1 : ByteBuf.vSizeOf(getHost().length());
+        length += IoUtil.isBlank(getGateHost()) ? 1 : ByteBuf.vSizeOf(getGateHost().length());
         return length + super.length();
     }
 
@@ -136,6 +118,11 @@ public class RaftNode
     public String getHost()
     {
         return mHost;
+    }
+
+    public byte[] hostBytes()
+    {
+        return IoUtil.isBlank(getHost()) ? null : getHost().getBytes(StandardCharsets.UTF_8);
     }
 
     public void setHost(String host)
@@ -195,6 +182,11 @@ public class RaftNode
     public String getGateHost()
     {
         return mGateHost;
+    }
+
+    public byte[] gateHostBytes()
+    {
+        return IoUtil.isBlank(getGateHost()) ? null : getGateHost().getBytes(StandardCharsets.UTF_8);
     }
 
     public void setGateHost(String host)

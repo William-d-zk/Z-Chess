@@ -28,24 +28,13 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.king.base.model.TextSerial;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
 public class EchoDo
-        extends JsonProtocol
+        extends TextSerial
 {
 
-    private String mContent;
-
-    public String getContent()
-    {
-        return mContent;
-    }
-
-    public void setContent(String content)
-    {
-        this.mContent = content;
-    }
 }

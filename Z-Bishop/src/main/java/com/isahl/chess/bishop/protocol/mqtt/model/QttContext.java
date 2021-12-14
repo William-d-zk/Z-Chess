@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.bishop.protocol.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.ProtocolContext;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
@@ -40,16 +40,15 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPA
  * @author william.d.zk
  */
 public class QttContext
-        extends ZContext
+        extends ProtocolContext<QttFrame>
 {
     private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{
             "5.0",
             "3.1.1"
-    },
-                                                            new int[]{
-                                                                    VERSION_V5_0,
-                                                                    VERSION_V3_1_1
-                                                            });
+    }, new int[]{
+            VERSION_V5_0,
+            VERSION_V3_1_1
+    });
 
     public QttContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
@@ -80,13 +79,6 @@ public class QttContext
         return mVersion;
     }
 
-    @Override
-    public void ready()
-    {
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-    }
-
     /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame
      * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
      * */
@@ -104,4 +96,10 @@ public class QttContext
         return stateAtLeast(state, ENCODE_FRAME) && stateLessThan(state, ENCODE_ERROR);
     }
 
+    @Override
+    public void ready()
+    {
+        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
+        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+    }
 }

@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.protocol.mqtt.service;
 
 import com.isahl.chess.bishop.io.IRouter;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
 import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
@@ -39,7 +40,7 @@ public interface IQttRouter
         extends IRouter
 {
 
-    void retain(String topic, MqttProtocol msg);
+    void retain(String topic, QttControl msg);
 
     /**
      * 向特定主题发送消息

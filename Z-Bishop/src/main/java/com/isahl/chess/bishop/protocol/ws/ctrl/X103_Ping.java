@@ -45,13 +45,14 @@ public class X103_Ping
 
     public X103_Ping(byte[] payload)
     {
-        super(WsFrame.frame_op_code_ctrl_ping, payload);
+        super(WsFrame.frame_op_code_ctrl_ping);
+        mPayload = payload;
     }
 
     @Override
-    public X103_Ping duplicate()
+    public X103_Ping copy()
     {
-        return new X103_Ping(_Payload);
+        return new X103_Ping(mPayload);
     }
 
     @Override

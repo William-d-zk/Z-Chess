@@ -32,9 +32,4 @@ import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 public interface IConsistent
         extends ITraceable,
                 IProtocol
-{
-    default boolean isConsistency()
-    {
-        return true;
-    }
-}
+{}

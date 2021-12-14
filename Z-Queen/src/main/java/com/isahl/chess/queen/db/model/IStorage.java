@@ -24,7 +24,6 @@ package com.isahl.chess.queen.db.model;
 
 import com.isahl.chess.board.base.ISerial;
 
-import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -136,29 +135,5 @@ public interface IStorage
                 default -> OP_INVALID;
             };
         }
-    }
-
-    @Override
-    default ByteBuffer encode()
-    {
-        ByteBuffer output = ISerial.super.encode()
-                                         .put(operation().getValue())
-                                         .put(strategy().getCode())
-                                         .putLong(primaryKey())
-                                         .put((byte) (hasForeignKey() ? 1 : 0));
-        if(hasForeignKey()) {
-            output.putLong(foreignKey());
-        }
-        return output;
-    }
-
-    @Override
-    default void decode(ByteBuffer input)
-    {
-        ISerial.super.decode(input);
-        /*
-        skip operation|strategy
-         */
-        input.position(input.position() + 2);
     }
 }

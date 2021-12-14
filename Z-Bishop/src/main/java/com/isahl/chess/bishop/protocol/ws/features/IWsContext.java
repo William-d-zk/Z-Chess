@@ -24,7 +24,6 @@
 package com.isahl.chess.bishop.protocol.ws.features;
 
 import com.isahl.chess.king.base.util.CryptoUtil;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
 import java.util.Base64;
 
@@ -70,5 +69,4 @@ public interface IWsContext
 
     boolean checkState(int state);
 
-    IControl handshake(String host);
 }

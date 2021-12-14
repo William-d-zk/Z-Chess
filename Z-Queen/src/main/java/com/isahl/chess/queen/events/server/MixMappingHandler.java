@@ -35,15 +35,15 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.events.routes.IMappingCustom;
+import com.isahl.chess.queen.events.routes.IControlCustom;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.lmax.disruptor.RingBuffer;
 
@@ -136,12 +136,10 @@ public class MixMappingHandler<T extends IStorage>
                         if(result != null) {
                             IOperator.Type type = result.getThird();
                             switch(type) {
-                                case SINGLE -> {
-                                    publish(_Writer,
-                                            WRITE,
-                                            new Pair<>(result.getFirst(), session),
-                                            session.getEncoder());
-                                }
+                                case SINGLE -> publish(_Writer,
+                                                       WRITE,
+                                                       new Pair<>(result.getFirst(), session),
+                                                       session.getEncoder());
                                 case BATCH -> publish(_Writer, result.getFirst());
                             }
                         }
@@ -157,8 +155,8 @@ public class MixMappingHandler<T extends IStorage>
                     }
                 }
                 case LINK -> {
-                    IControl received = event.getContent()
-                                             .getFirst();
+                    IControl<?> received = event.getContent()
+                                                .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
                     if(received != null && session != null) {
@@ -176,10 +174,9 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                IControl response = result.getSecond();
+                                IControl<?> response = result.getSecond();
                                 if(response != null) {
-                                    publish(_Writer,
-                                            _LinkCustom.notify(_SessionManager, response, session.getIndex(), true));
+                                    publish(_Writer, _LinkCustom.notify(_SessionManager, response, session.getIndex()));
                                 }
                             }
                             else {
@@ -196,8 +193,8 @@ public class MixMappingHandler<T extends IStorage>
                     core.ClusterProcessor → core._LinkEvent(_Transfer) → core.LinkProcessor → _LinkCustom
                  */
                 case CLUSTER -> {
-                    IControl received = event.getContent()
-                                             .getFirst();
+                    IControl<?> received = event.getContent()
+                                                .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
                     if(received != null && session != null) {
@@ -297,14 +294,13 @@ public class MixMappingHandler<T extends IStorage>
                      */
                     ISession session = event.getContent()
                                             .getSecond();
-                    IOperator<IConsistent, ISession, IControl> adjudgeOperator = event.getEventOp();
+                    IOperator<IConsistent, ISession, IControl<?>> adjudgeOperator = event.getEventOp();
                     if(consistency != null) {
                         try {
                             publish(_Writer,
                                     _LinkCustom.notify(_SessionManager,
                                                        adjudgeOperator.handle(consistency, session),
-                                                       consistency.getOrigin(),
-                                                       consistency.isConsistency()));
+                                                       consistency.getOrigin()));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
@@ -335,7 +331,7 @@ public class MixMappingHandler<T extends IStorage>
         return _Logger;
     }
 
-    private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IControl received)
+    private ITriple doCustom(IControlCustom custom, IManager manager, ISession session, IControl<?> received)
     {
         ITriple result = custom.handle(manager, session, received);
         _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);
@@ -343,7 +339,7 @@ public class MixMappingHandler<T extends IStorage>
             IOperator.Type type = result.getThird();
             switch(type) {
                 case SINGLE -> {
-                    IControl response = result.getFirst();
+                    IControl<?> response = result.getFirst();
                     if(response != null) {
                         publish(_Writer,
                                 WRITE,

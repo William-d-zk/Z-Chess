@@ -23,12 +23,12 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -43,21 +43,30 @@ public class X79_RaftAdjudge
     public X79_RaftAdjudge()
     {
         super();
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X79_RaftAdjudge(long msgId)
     {
         super(msgId);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     private long mIndex;
     private long mClient;
     private long mOrigin;
-    /*
-    X79在单节点内部流转，需要将所有信息附加在结构上，便于传递，
-    Link & Cluster 之间存在 线程隔离
-     */
-    private int  mSubSerial;
+
+    @Override
+    public int priority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
+    }
 
     @Override
     public String toString()
@@ -77,27 +86,28 @@ public class X79_RaftAdjudge
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putLong(mIndex);
-        output.putLong(mClient);
-        output.putLong(mOrigin);
-        output.putShort((short) mSubSerial);
+        return super.suffix(output)
+                    .putLong(mIndex)
+                    .putLong(mClient)
+                    .putLong(mOrigin);
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mIndex = input.getLong();
         mClient = input.getLong();
         mOrigin = input.getLong();
-        mSubSerial = input.getShort();
+        return remain - 24;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 26;
+        return super.length() + 24;
     }
 
     public long getClient()
@@ -120,20 +130,4 @@ public class X79_RaftAdjudge
         this.mIndex = index;
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
-    public int _sub()
-    {
-        return mSubSerial;
-    }
-
-    public void setSubSerial(int subSerial)
-    {
-        mSubSerial = subSerial;
-    }
 }

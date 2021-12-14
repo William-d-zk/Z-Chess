@@ -26,8 +26,7 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author William.d.zk
@@ -46,15 +45,18 @@ public class X06_EncryptComp
     }
 
     @Override
-    public void decodec(ByteBuffer input)
+    public int prefix(ByteBuf input)
     {
+        int remain = super.prefix(input);
         mCode = input.getInt();
+        return remain - 4;
     }
 
     @Override
-    public void encodec(ByteBuffer output)
+    public ByteBuf suffix(ByteBuf output)
     {
-        output.putInt(mCode);
+        return super.suffix(output)
+                    .putInt(mCode);
     }
 
     @Override
@@ -66,5 +68,11 @@ public class X06_EncryptComp
     public int getCode()
     {
         return mCode;
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 }

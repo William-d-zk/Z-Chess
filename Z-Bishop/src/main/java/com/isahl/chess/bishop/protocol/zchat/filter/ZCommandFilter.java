@@ -22,11 +22,14 @@
  */
 package com.isahl.chess.bishop.protocol.zchat.filter;
 
-import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.zchat.factory.ZChatFactory;
+import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
+import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.*;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.content.IFrame;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 
@@ -35,45 +38,47 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public class ZCommandFilter<T extends ZContext>
-        extends AioFilterChain<T, IControl, IFrame>
+public class ZCommandFilter
+        extends AioFilterChain<ZContext, ZCommand, ZFrame>
 {
 
-    private final IoFactory<IFrame, T> _CommandFactory;
+    private final ZChatFactory _ZChatFactory;
 
-    public ZCommandFilter(IoFactory<IFrame, T> factory)
+    public ZCommandFilter(ZChatFactory factory)
     {
         super("z_command");
-        _CommandFactory = Objects.requireNonNull(factory);
+        _ZChatFactory = Objects.requireNonNull(factory);
     }
 
     @Override
-    public WsFrame encode(T context, IControl output)
+    public ZFrame encode(ZContext context, ZCommand output)
     {
-        WsFrame frame = new WsFrame();
+        ZFrame frame = new ZFrame();
+        frame.header(output.header());
         frame.put(output.encode(context)
                         .array());
-        frame.put(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
     }
 
     @Override
-    public IControl decode(T context, IFrame input)
+    public ZCommand decode(ZContext context, ZFrame frame)
     {
-        return _CommandFactory.create(input, context);
+        ZCommand command = (ZCommand) _ZChatFactory.create(frame, context);
+        command.decode(frame.payload(), context);
+        return command;
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)) {
-            if(context instanceof ZContext && context.isOutConvert()) {
+            if(context.isOutConvert() && context instanceof ZContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof ZContext && acting.isOutConvert()) {
+                if(acting.isOutConvert() && acting instanceof ZContext) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
             }
@@ -84,14 +89,14 @@ public class ZCommandFilter<T extends ZContext>
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
-            if(context instanceof ZContext && context.isInConvert()) {
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
+            if(context.isInConvert() && context instanceof ZContext) {
                 return new Pair<>(ResultType.HANDLED, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof ZContext && acting.isInConvert()) {
+                if(acting.isInConvert() && acting instanceof ZContext) {
                     return new Pair<>(ResultType.HANDLED, acting);
                 }
             }
@@ -103,14 +108,14 @@ public class ZCommandFilter<T extends ZContext>
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return (I) encode((T) context, (ICommand) output);
+        return (I) encode((ZContext) context, (ZCommand) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((T) context, (IFrame) input);
+        return (O) decode((ZContext) context, (ZFrame) input);
     }
 
 }

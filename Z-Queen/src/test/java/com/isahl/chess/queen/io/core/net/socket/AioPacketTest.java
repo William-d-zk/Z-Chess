@@ -1,5 +1,6 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -12,11 +13,8 @@ class AioPacketTest
     {
         AioPacket packet = new AioPacket(10, false);
         packet.put("test".getBytes(StandardCharsets.UTF_8));
-        ByteBuffer encoded = packet.encode();
-        encoded.flip();
+        ByteBuf encoded = packet.encode();
 
-        AioPacket decoded = new AioPacket(ByteBuffer.allocate(encoded.capacity()));
-        decoded.decode(encoded);
 
     }
 }

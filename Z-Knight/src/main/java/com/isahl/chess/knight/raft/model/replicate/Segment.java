@@ -23,8 +23,10 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.knight.raft.component.ClusterFactory;
 import com.isahl.chess.queen.message.InnerProtocol;
 import org.apache.commons.io.FileUtils;
 
@@ -45,7 +47,7 @@ public class Segment
 
     public static class Record
     {
-        private final long     _Offset;
+        private final long        _Offset;
         private final LogEntry _Entry;
 
         public Record(long offset, LogEntry entry)
@@ -83,7 +85,7 @@ public class Segment
         if(index < _StartIndex || index > mEndIndex) {return null;}
         int indexInList = (int) (index - _StartIndex);
         LogEntry logEntry = _Records.get(indexInList)
-                                    .getEntry();
+                                       .getEntry();
         if(logEntry.getIndex() != index) {
             _Logger.warning("segment get log-entry %d [%s]", index, logEntry);
         }
@@ -172,7 +174,7 @@ public class Segment
         if(mFileSize == 0) {return;}
         while(offset < mFileSize) {
             long start = mRandomAccessFile.getFilePointer();
-            LogEntry entry = InnerProtocol.load(LogEntry.class, mRandomAccessFile);
+            LogEntry entry = InnerProtocol.load(ClusterFactory._Instance, mRandomAccessFile);
             if(entry.getIndex() > 0) {
                 endIndex = entry.getIndex();
                 if(startIndex < 0) {
@@ -211,7 +213,7 @@ public class Segment
     {
         try {
             long offset = mRandomAccessFile.getFilePointer();
-            ByteBuffer output = entry.encode();
+            ByteBuf output = entry.encode();
             mRandomAccessFile.write(output.array());
             _Records.add(new Record(offset, entry));
             mEndIndex = entry.getIndex();

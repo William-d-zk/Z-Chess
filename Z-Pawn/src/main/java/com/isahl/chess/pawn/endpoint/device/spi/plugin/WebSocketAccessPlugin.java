@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.bishop.protocol.ws.ctrl.X104_Pong;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -44,13 +45,13 @@ public class WebSocketAccessPlugin
 {
 
     @Override
-    public boolean isHandleProtocol(IProtocol protocol)
+    public boolean isSupported(IProtocol protocol)
     {
         return protocol.serial() >= 0x101 && protocol.serial() <= 0x105;
     }
 
     @Override
-    public List<? extends IControl> handle(IManager manager, ISession session, IControl content)
+    public List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content)
     {
 
         switch(content.serial()) {
@@ -62,7 +63,7 @@ public class WebSocketAccessPlugin
     }
 
     @Override
-    public ITriple onLink(IManager manager, ISession session, IControl input)
+    public ITriple onLink(IManager manager, ISession session, IControl<?> input)
     {
         return null;
     }
@@ -74,10 +75,7 @@ public class WebSocketAccessPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager,
-                                             long origin,
-                                             IProtocol consensusBody,
-                                             boolean isConsistency)
+    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
     {
         return null;
     }

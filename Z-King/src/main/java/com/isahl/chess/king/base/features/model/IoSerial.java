@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2021.  Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,16 +21,45 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.content;
+package com.isahl.chess.king.base.features.model;
 
-import com.isahl.chess.queen.io.core.features.model.session.IMessage;
+import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.io.IDecode;
+import com.isahl.chess.king.base.features.io.IEncode;
 
-/**
- * @author william.d.zk
- * @date 2019-05-21
- */
-public interface IMapping
-        extends IMessage
+public interface IoSerial
+        extends ISerial,
+                IEncode,
+                IDecode
 {
-    boolean isMapping();
+    @Override
+    default int sizeOf()
+    {
+        return ByteBuf.vSizeOf(length());
+    }
+
+    IoSerial subContent();
+
+    @Override
+    default int _sub()
+    {
+        IoSerial sub = subContent();
+        return sub == null ? -1 : sub.serial();
+    }
+
+    void withSub(IoSerial sub);
+
+    void deserializeSub(IoFactory factory);
+
+    /**
+     * 当 serial 对象执行异步处理时
+     * 获取其执行结果
+     *
+     * @return result
+     */
+    default int rxCode()
+    {
+        return 0;
+    }
 }

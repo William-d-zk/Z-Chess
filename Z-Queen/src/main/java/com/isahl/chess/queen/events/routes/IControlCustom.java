@@ -21,29 +21,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
+package com.isahl.chess.queen.events.routes;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
-import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.util.I18nUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author william.d.zk
- * @date 2021/2/14
+ * @date 2020/5/7
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x10A)
-public class X10A_PlainText
-        extends ZCommand
+public interface IControlCustom
 {
-    public X10A_PlainText()
-    {
-        super();
-        setCharset(UTF_8);
-        setSerialType(I18nUtil.SERIAL_TEXT);
-    }
-
+    /**
+     * @param manager session manager
+     * @param session input session
+     * @param content input
+     * @return triple
+     * first: response ->
+     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
+     * third: operator-type
+     */
+    ITriple handle(IManager manager, ISession session, IControl<?> content);
 }

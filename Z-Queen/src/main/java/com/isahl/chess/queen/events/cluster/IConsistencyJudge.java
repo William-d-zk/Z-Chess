@@ -24,6 +24,7 @@
 package com.isahl.chess.queen.events.cluster;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -43,5 +44,5 @@ public interface IConsistencyJudge
      * @param session     cluster 通讯用的
      * @return 一致性结果
      */
-    <T extends IProtocol> T adjudge(IConsistent consistency, ISession session);
+    <T extends IoSerial> T adjudge(IConsistent consistency, ISession session);
 }

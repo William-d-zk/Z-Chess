@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,15 +21,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.pipe;
-
-import java.nio.ByteBuffer;
+package com.isahl.chess.bishop.protocol.ws.model;
 
 /**
  * @author william.d.zk
- * @date 2019-07-14
  */
-public interface IDecode
+public class WsText
+        extends WsControl
 {
-    void decodec(ByteBuffer input);
+
+    public WsText()
+    {
+        super(WsFrame.frame_op_code_ctrl_text);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.ALMOST_ONCE;
+    }
+
 }

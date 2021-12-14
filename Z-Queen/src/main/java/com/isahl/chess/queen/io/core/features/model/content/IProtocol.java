@@ -22,40 +22,14 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.io.core.features.model.pipe.IDecode;
-import com.isahl.chess.queen.io.core.features.model.pipe.IEncode;
-import com.isahl.chess.queen.io.core.features.model.routes.IPortChannel;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
 /**
  * @author William.d.zk
  */
 public interface IProtocol
-        extends ISerial,
-                IEncode,
-                IDecode,
-                IPortChannel
+        extends IoSerial
 {
-    @Override
-    default ByteBuffer encode()
-    {
-        int len = length();
-        if(len > 0) {
-            ByteBuffer buf = ByteBuffer.allocate(len);
-            encodec(buf);
-            return buf;
-        }
-        return null;
-    }
-
-    @Override
-    default void decode(ByteBuffer input)
-    {
-        decodec(input);
-    }
-
     default boolean inIdempotent(int bitIdempotent)
     {
         return true;
@@ -65,5 +39,4 @@ public interface IProtocol
     {
         return true;
     }
-
 }
