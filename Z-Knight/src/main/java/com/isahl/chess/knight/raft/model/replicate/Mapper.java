@@ -122,6 +122,10 @@ public class Mapper
         try {
             RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
             mLogMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
+            if(mLogMeta == null) {
+                mLogMeta = new LogMeta();
+            }
+            mLogMeta.from(metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("log meta file not exist, name: %s", logMetaName);
@@ -134,7 +138,10 @@ public class Mapper
         try {
             RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
             mSnapshotMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
-
+            if(mSnapshotMeta == null) {
+                mSnapshotMeta = new SnapshotMeta();
+            }
+            mSnapshotMeta.from(metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("meta file not exist, name: %s", snapshotMetaName);

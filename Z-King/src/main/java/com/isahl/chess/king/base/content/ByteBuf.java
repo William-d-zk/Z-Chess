@@ -279,7 +279,7 @@ public class ByteBuf
 
     public boolean isOffsetReadable(int offset)
     {
-        return readerIdx + offset < writerIdx;
+        return readerIdx + offset <= writerIdx;
     }
 
     private void checkOffset(int offset)
@@ -291,7 +291,7 @@ public class ByteBuf
 
     public boolean isCapacityWritable(int capacity)
     {
-        return writerIdx + capacity < this.capacity;
+        return writerIdx + capacity <= this.capacity;
     }
 
     private void checkCapacity(int capacity)
