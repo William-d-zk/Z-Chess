@@ -120,7 +120,7 @@ public class LogMeta
         else {
             output.put(0);
         }
-        if(!mGateSet.isEmpty()) {
+        if(mGateSet != null && !mGateSet.isEmpty()) {
             output.put(mGateSet.size());
             for(RaftNode node : mGateSet) {
                 output.put(node.encode());
@@ -145,12 +145,12 @@ public class LogMeta
         mPeerSet = upSet(input);
         mGateSet = upSet(input);
         remain -= 50;
-        if(mPeerSet != null) {
+        if(mPeerSet != null && !mPeerSet.isEmpty()) {
             for(RaftNode node : mPeerSet) {
                 remain -= ByteBuf.vSizeOf(node.length());
             }
         }
-        if(mGateSet != null) {
+        if(mGateSet != null && !mGateSet.isEmpty()) {
             for(RaftNode node : mGateSet) {
                 remain -= ByteBuf.vSizeOf(node.length());
             }

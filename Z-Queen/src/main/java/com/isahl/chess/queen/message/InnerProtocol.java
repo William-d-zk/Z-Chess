@@ -155,16 +155,20 @@ public abstract class InnerProtocol
     {
         //TODO 升级成zero-copy 模式【mapping-buffer】
         int length = IoUtil.readVariableIntLength(input);
-        ByteBuf buffer = ByteBuf.allocate(ByteBuf.vSizeOf(length));
-        buffer.vPutLength(length);
-        int serial = input.readUnsignedShort();
-        T t = (T) factory.build(serial);
-        if(length > 0 && t.serial() == serial) { //vLength ≥ 1
-            buffer.putShort((short) serial);
-            input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
-            t.decode(buffer);
+        if(length > 0) {
+            ByteBuf buffer = ByteBuf.allocate(ByteBuf.vSizeOf(length));
+            buffer.vPutLength(length);
+            int serial = input.readUnsignedShort();
+            T t = (T) factory.build(serial);
+            if(t.serial() == serial) { //vLength ≥ 1
+                buffer.putShort((short) serial);
+                input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
+                buffer.seek(buffer.writableBytes());
+                t.decode(buffer);
+            }
+            return t;
         }
-        return t;
+        return null;
     }
 
 }

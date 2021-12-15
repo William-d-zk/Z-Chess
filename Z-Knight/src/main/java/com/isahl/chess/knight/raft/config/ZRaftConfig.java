@@ -60,9 +60,8 @@ public class ZRaftConfig
     @PostConstruct
     public void load() throws IOException
     {
-        if(mConfig.getNodes() == null || mConfig.getNodes()
-                                                .isEmpty())
-        {return;}
+        if(mConfig.getNodes() == null ||
+           mConfig.getNodes().isEmpty()){return;}
         getUid().setNodeId(-1);
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
