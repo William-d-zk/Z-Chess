@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -62,15 +61,12 @@ public class WsHandShakeFilter
     private ResultType peek(IPContext context, IProtocol input)
     {
         if(context.isInInit() && context instanceof WsContext ws_ctx && input instanceof IPacket in_packet) {
-            ByteBuf netBuf = in_packet.getBuffer();
-            ByteBuf ctxBuf = ws_ctx.getRvBuffer();
             X101_HandShake handshake = ws_ctx.getHandshake();
             if(handshake == null) {
                 ws_ctx.setHandshake(handshake = new X101_HandShake());
                 handshake.wrap(ws_ctx);
             }
-            ctxBuf.putExactly(netBuf);
-            return handshake.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
+            return handshake.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
         }
         return IGNORE;
 

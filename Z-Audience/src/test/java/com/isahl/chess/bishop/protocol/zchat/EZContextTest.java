@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,38 +21,35 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.mqtt.model;
+package com.isahl.chess.bishop.protocol.zchat;
 
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author william.d.zk
- * @date 2019-05-25
- */
-public abstract class MqttProtocol
-        implements IProtocol
+class EZContextTest
 {
-    protected final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
-
-    public final static byte VERSION_V3_1_1 = 4;
-    public final static byte VERSION_V5_0   = 5;
-
-    protected final static byte DUPLICATE_FLAG = 1 << 3;
-    protected final static byte RETAIN_FLAG    = 1;
-    protected final static byte QOS_MASK       = 3 << 1;
-
-    protected byte   mFrameHeader;
-    protected byte[] mPayload;
-
-    public QttType getType()
+    class A
     {
-        return QttType.valueOf(mFrameHeader);
+
     }
 
-    public void setType(QttType type)
+    interface aa
     {
-        mFrameHeader |= type.getValue();
+
     }
 
+    class B
+            extends A
+            implements aa
+    {
+
+    }
+
+    @Test
+    void test()
+    {
+        aa ia = new B();
+        B b = new B();
+
+        System.out.println( b.getClass().getSuperclass() == A.class);
+    }
 }

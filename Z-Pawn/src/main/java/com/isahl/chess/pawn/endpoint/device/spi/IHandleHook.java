@@ -33,5 +33,5 @@ import java.util.List;
  */
 public interface IHandleHook
 {
-    void handle(IControl content, List<? extends IControl> pushList);
+    void handle(IControl<?> content, List<? extends IControl<?>> pushList);
 }

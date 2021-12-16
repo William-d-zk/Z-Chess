@@ -50,7 +50,6 @@ public class QttCommandFilter
     @Override
     public QttFrame encode(QttContext context, QttCommand output)
     {
-        output.wrap(context);
         QttFrame frame = new QttFrame();
         frame.header(output.header());
         frame.withSub(output);
@@ -60,7 +59,9 @@ public class QttCommandFilter
     @Override
     public QttCommand decode(QttContext context, QttFrame input)
     {
-        return (QttCommand) QttFactory._Instance.create(input, context);
+        QttCommand command = (QttCommand) QttFactory._Instance.create(input, context);
+        command.decode(input.payload());
+        return command;
     }
 
     @Override

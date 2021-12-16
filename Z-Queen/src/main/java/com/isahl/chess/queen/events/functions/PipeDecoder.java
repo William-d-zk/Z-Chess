@@ -41,9 +41,14 @@ public class PipeDecoder
     @Override
     public ITriple handle(IPacket input, ISession session)
     {
-        IControl[] received = filterRead(input, session);
-        /*一旦read出现异常将抛出到event-handler进行处理，
-         无异常时才继续session.readNext()操作*/
+        IControl<?>[] received = filterRead(input, session);
+        /*
+            一旦read出现异常将抛出到event-handler进行处理，
+            无异常时才继续session.readNext()操作;
+            不在 read 事件触发时直接进行readNext()，还将保护io-ring-buffer容量问题，
+            防止过量事件挤占io-event-queue;
+            当然这对大数据量高带宽传输支持不良，对session-context-read-buffer容量存在压力。
+        */
         session.readNext();
         return received != null ? new Triple<>(received, session, session.getTransfer()) : null;
     }

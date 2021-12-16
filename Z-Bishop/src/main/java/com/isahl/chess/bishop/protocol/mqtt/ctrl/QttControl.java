@@ -34,6 +34,8 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
+import java.util.Objects;
+
 /**
  * @author william.d.zk
  * @date 2019-05-13
@@ -66,6 +68,7 @@ public abstract class QttControl
     public QttControl with(ISession session)
     {
         mSession = session;
+        wrap(session.getContext(QttContext.class));
         return this;
     }
 
@@ -76,9 +79,10 @@ public abstract class QttControl
     }
 
     @Override
-    public void wrap(QttContext context)
+    public QttControl wrap(QttContext context)
     {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
+        return this;
     }
 
     @Override
@@ -188,12 +192,12 @@ public abstract class QttControl
     @Override
     public int prefix(ByteBuf input)
     {
-        return input.readableBytes();
+        return input == null ? 0 : input.readableBytes();
     }
 
     @Override
     public int length()
     {
-        return  mPayload == null ? 0 : mPayload.length;
+        return mPayload == null ? 0 : mPayload.length;
     }
 }

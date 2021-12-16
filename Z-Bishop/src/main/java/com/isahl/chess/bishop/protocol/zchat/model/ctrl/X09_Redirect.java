@@ -100,4 +100,10 @@ public class X09_Redirect
     {
         return super.length() + 2;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

@@ -24,7 +24,6 @@ package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -58,14 +57,11 @@ public class WsFrameFilter
     public ResultType peek(IPContext context, IProtocol input)
     {
         if(context.isInFrame() && context instanceof WsContext ws_ctx && input instanceof IPacket in_packet) {
-            ByteBuf netBuf = in_packet.getBuffer();
-            ByteBuf ctxBuf = ws_ctx.getRvBuffer();
             WsFrame carrier = ws_ctx.getCarrier();
             if(carrier == null) {
                 ws_ctx.setCarrier(carrier = new WsFrame());
             }
-            ctxBuf.putExactly(netBuf);
-            return carrier.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
+            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
         }
         return ResultType.IGNORE;
     }
@@ -74,7 +70,7 @@ public class WsFrameFilter
     public WsFrame decode(WsContext context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
-        frame.decode(context.getRvBuffer());
+        frame.decode(input.getBuffer());
         context.reset();
         return frame;
     }

@@ -48,7 +48,7 @@ public interface ILocalPublisher
     ReentrantLock getLock(IOperator.Type type);
 
     @Override
-    default boolean send(ISession session, IOperator.Type type, IControl... toSends)
+    default boolean send(ISession session, IOperator.Type type, IControl<?>... toSends)
     {
         if(session == null || toSends == null || toSends.length == 0) {return false;}
         final RingBuffer<QEvent> _LocalSendEvent = getPublisher(type);

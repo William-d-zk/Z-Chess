@@ -107,4 +107,9 @@ public class X11A_QttUnsubscribe
         return String.format("unsubscribe msg-id:%d topics:%s", getMsgId(), _Topics);
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

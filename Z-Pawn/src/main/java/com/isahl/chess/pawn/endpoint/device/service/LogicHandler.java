@@ -76,9 +76,9 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     }
 
     @Override
-    public List<ITriple> logicHandle(IManager manager, ISession session, IControl content) throws ZException
+    public List<ITriple> logicHandle(IManager manager, ISession session, IControl<?> content) throws ZException
     {
-        List<? extends IControl> pushList = null;
+        List<? extends IControl<?>> pushList = null;
         for(IAccessService service : _AccessService) {
             if(service.isSupported(content)) {
                 pushList = service.handle(manager, session, content);

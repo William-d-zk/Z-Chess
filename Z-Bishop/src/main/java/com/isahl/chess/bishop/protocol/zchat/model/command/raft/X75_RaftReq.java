@@ -121,4 +121,10 @@ public class X75_RaftReq
                              mSubContent != null ? _sub() : -1,
                              mPayload == null ? 0 : mPayload.length);
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

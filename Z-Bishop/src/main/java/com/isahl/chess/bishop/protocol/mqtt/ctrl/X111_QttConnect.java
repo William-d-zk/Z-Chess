@@ -59,6 +59,7 @@ public class X111_QttConnect
 
     private byte   mAttr;
     private int    mKeepAlive;
+    private byte   mVersion;
     private String mUserName;
     private String mPassword;
     private String mClientId;
@@ -90,6 +91,12 @@ public class X111_QttConnect
                 getKeepAlive());
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
     enum Flag
     {
         UserName(0x80),
@@ -103,7 +110,7 @@ public class X111_QttConnect
 
         Flag(int mask)
         {
-            _Mask = (byte) mask;
+            _Mask = mask;
         }
 
         int getMask()
@@ -132,6 +139,19 @@ public class X111_QttConnect
     public void setClean()
     {
         mAttr |= Flag.Clean.getMask();
+    }
+
+    public void setVersion(byte version)
+    {
+        mVersion = version;
+        if(mContext != null) {
+            mContext.setVersion(mVersion);
+        }
+    }
+
+    public int getVersion()
+    {
+        return mVersion;
     }
 
     public void setKeepAlive(int seconds)
@@ -269,11 +289,11 @@ public class X111_QttConnect
         }
         int mqtt = input.getInt();
         if(mqtt != _MQTT) {throw new IllegalArgumentException("FixHead Protocol name wrong");}
-        mVersion = input.get();
+        setVersion(input.get());
         mAttr = input.get();
+        setKeepAlive(input.getUnsignedShort());
         checkWillOpCode();
         checkReserved();
-        setKeepAlive(input.getUnsignedShort());
         return input.readableBytes();
     }
 

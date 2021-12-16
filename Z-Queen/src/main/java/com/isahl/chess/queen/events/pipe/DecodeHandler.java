@@ -34,8 +34,8 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
@@ -85,7 +85,7 @@ public class DecodeHandler
         try {
             ITriple result = packetOperator.handle(packet, session);
             if(result != null) {
-                IControl[] commands = result.getFirst();
+                IControl<?>[] commands = result.getFirst();
                 _Logger.trace("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
             }
@@ -102,9 +102,9 @@ public class DecodeHandler
     }
 
     protected void transfer(QEvent event,
-                            IControl[] commands,
+                            IControl<?>[] commands,
                             ISession session,
-                            IOperator<IControl[], ISession, ITriple> operator)
+                            IOperator<IControl<?>[], ISession, ITriple> operator)
     {
         event.produce(IOperator.Type.DISPATCH, new Pair<>(commands, session), operator);
     }

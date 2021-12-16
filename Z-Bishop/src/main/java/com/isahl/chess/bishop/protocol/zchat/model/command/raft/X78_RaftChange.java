@@ -97,4 +97,10 @@ public class X78_RaftChange
         mOrigin = input.getLong();
         return remain - 8;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

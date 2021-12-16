@@ -274,9 +274,9 @@ public class AioSession<C extends IPContext>
     {
         if(isClosed()) {return;}
         mReader = readHandler;
-        _Channel.read(_Context.getRvBuffer()
-                              .discard()
-                              .toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+        ByteBuf ctx_received = _Context.getRvBuffer();
+        if(ctx_received.writableBytes() < (ctx_received.capacity() << 1)) {ctx_received.discard();}
+        _Channel.read(ctx_received.toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
@@ -288,10 +288,8 @@ public class AioSession<C extends IPContext>
     @Override
     public final ByteBuf read(int length)
     {
-        if(length < 0) {throw new IllegalArgumentException();}
-        _Context.getRvBuffer()
-                .seek(length);
-        return _Context.getRvBuffer();
+        return _Context.getRvBuffer()
+                       .seek(length);
     }
 
     @Override
@@ -308,11 +306,21 @@ public class AioSession<C extends IPContext>
         if(_Context.getClass() == clazz) {
             return (T) _Context;
         }
+        else if(!_Context.isProxy() && _Context.getClass()
+                                               .getSuperclass() == clazz)
+        {
+            return (T) _Context;
+        }
         else {
             IPContext context = _Context;
             while(context.isProxy()) {
                 context = ((IProxyContext<?>) context).getActingContext();
                 if(context.getClass() == clazz) {return (T) context;}
+                else if(context.getClass()
+                               .getSuperclass() == clazz)
+                {
+                    return (T) context;
+                }
             }
             throw new ZException("not found context instanceof %s", clazz.getSimpleName());
         }

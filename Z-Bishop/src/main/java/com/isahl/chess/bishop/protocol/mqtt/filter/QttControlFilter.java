@@ -50,11 +50,6 @@ public class QttControlFilter
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
-        output.wrap(context);
-        /*
-            Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
-            层完成这一操作 [Server]
-         */
         if(output.serial() == 0x112) {
             X112_QttConnack x112 = (X112_QttConnack) output;
             if(x112.isOk()) {
@@ -72,6 +67,7 @@ public class QttControlFilter
     public QttControl decode(QttContext context, QttFrame input)
     {
         QttControl control = QttFactory._Instance.create(input, context);
+        control.decode(input.payload());
          /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]

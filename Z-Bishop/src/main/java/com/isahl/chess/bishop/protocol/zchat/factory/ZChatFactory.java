@@ -17,7 +17,7 @@ public class ZChatFactory
     @Override
     public ZControl create(ZFrame frame, ZContext context)
     {
-        return create(frame.payload());
+        return create(frame.payload()).wrap(context);
     }
 
     @Override

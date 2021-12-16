@@ -130,9 +130,11 @@ public abstract class WsControl
                              mPayload == null ? "[NULL] payload" : new String(mPayload, StandardCharsets.UTF_8));
     }
 
-    public void wrap(WsContext context)
+    @Override
+    public WsControl wrap(WsContext context)
     {
         mContext = context;
+        return this;
     }
 
     @Override

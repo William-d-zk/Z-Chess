@@ -68,12 +68,12 @@ public class X112_QttConnack
 
     public CodeMqtt getCode()
     {
-        return CodeMqtt.valueOf(mResponseCode, mVersion);
+        return CodeMqtt.valueOf(mResponseCode, mContext.getVersion());
     }
 
     private void setCode(ICode code)
     {
-        mResponseCode = code.getCode(mVersion);
+        mResponseCode = code.getCode(mContext.getVersion());
     }
 
     public void responseOk()

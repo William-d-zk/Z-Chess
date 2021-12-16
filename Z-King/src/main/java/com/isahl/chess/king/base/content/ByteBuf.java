@@ -58,9 +58,11 @@ public class ByteBuf
 
     public ByteBuf(ByteBuf exist)
     {
-        this(exist.capacity, exist._Direct);
-        if(buffer != null) {buffer.put(exist.array());}
-        writerIdx = capacity;
+        _Direct = exist._Direct;
+        capacity = exist.capacity;
+        buffer = exist.buffer;
+        readerIdx = exist.readerIdx;
+        writerIdx = exist.writerIdx;
     }
 
     public ByteBuf()

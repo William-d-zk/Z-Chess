@@ -186,4 +186,10 @@ public class X74_RaftReject
                              mCode,
                              mState);
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

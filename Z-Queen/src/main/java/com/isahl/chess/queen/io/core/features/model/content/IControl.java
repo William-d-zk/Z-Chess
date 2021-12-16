@@ -41,7 +41,7 @@ public interface IControl<C extends IPContext>
 {
     C context();
 
-    void wrap(C context);
+    IControl<C> wrap(C context);
 
     default void transfer() {}
 

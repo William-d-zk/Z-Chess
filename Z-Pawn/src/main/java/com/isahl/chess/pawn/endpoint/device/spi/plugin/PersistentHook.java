@@ -39,7 +39,7 @@ public class PersistentHook
 {
 
     @Override
-    public void handle(IControl content, List<? extends IControl> pushList)
+    public void handle(IControl<?> content, List<? extends IControl<?>> pushList)
     {
 
     }

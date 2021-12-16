@@ -40,13 +40,13 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 public interface IPipeDecoder
         extends IOperator<IPacket, ISession, ITriple>
 {
-    default IControl[] filterRead(IPacket input, ISession session)
+    default IControl<?>[] filterRead(IPacket input, ISession session)
     {
         IPContext context = session.getContext();
         if(context == null || input == null) {return null;}
         final IFilterChain _Header = session.getFilterChain()
                                             .getChainHead();
-        IControl[] commands = null;
+        IControl<?>[] commands = null;
         IProtocol protocol = input;
         IPacket proxy = null;
 
@@ -61,7 +61,7 @@ public interface IPipeDecoder
                     context = peekResult.getSecond();
                     switch(resultType) {
                         case ERROR:
-                            throw new ZException("error input: %s ;filter: %s ", protocol, next.getName());
+                            throw new ZException("error input: %s ; filter: %s ", protocol, next.getName());
                         case NEED_DATA:
                             if(commands != null) {
                                 /*
@@ -88,14 +88,14 @@ public interface IPipeDecoder
                             protocol = proxy = pipeFilter.pipeDecode(context, protocol);
                             break;
                         case HANDLED:
-                            IControl cmd = pipeFilter.pipeDecode(context, protocol);
+                            IControl<?> cmd = pipeFilter.pipeDecode(context, protocol);
                             if(cmd != null) {
                                 cmd.with(session);
                                 if(commands == null) {
                                     commands = new IControl[]{ cmd };
                                 }
                                 else {
-                                    IControl[] nCmd = new IControl[commands.length + 1];
+                                    IControl<?>[] nCmd = new IControl[commands.length + 1];
                                     IoUtil.addArray(commands, nCmd, cmd);
                                     commands = nCmd;
                                 }

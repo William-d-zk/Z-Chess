@@ -63,7 +63,6 @@ public class EchoAccessPlugin
     @Override
     public void onOffline(ISession session)
     {
-        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -34,4 +34,6 @@ public interface IMessage
 
     IMessage with(ISession session);
 
+   default boolean isMapping(){return false;}
+
 }

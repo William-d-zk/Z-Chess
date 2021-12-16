@@ -33,6 +33,7 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 
 import javax.net.ssl.*;
+import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
@@ -141,7 +142,7 @@ public class SSLZContext<A extends IPContext>
             switch(result.getStatus()) {
                 case OK, BUFFER_UNDERFLOW -> {
                     doTask();
-                    return netOutBuffer;
+                    return netOutBuffer.seek(produced);
                 }
                 case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl wrap error:%s", result.getStatus());
             }
@@ -156,13 +157,14 @@ public class SSLZContext<A extends IPContext>
     {
         try {
             ByteBuf appInBuffer = ByteBuf.allocate(_AppInBufferSize);
-            SSLEngineResult result = _SslEngine.unwrap(netInBuffer.toReadBuffer(), appInBuffer.toWriteBuffer());
+            ByteBuffer inputBuffer = netInBuffer.toReadBuffer();
+            SSLEngineResult result = _SslEngine.unwrap(inputBuffer, appInBuffer.toWriteBuffer());
             int consumed = result.bytesConsumed();
             int produced = result.bytesProduced();
             switch(result.getStatus()) {
                 case OK -> doTask();
                 case BUFFER_UNDERFLOW -> {
-                    if(netInBuffer.isReadable()) {
+                    if(inputBuffer.hasRemaining()) {
                         throw new ZException(new IllegalStateException(),
                                              "state error,unwrap under flow & input has remain");
                     }
@@ -171,7 +173,8 @@ public class SSLZContext<A extends IPContext>
                 case CLOSED -> throw new ZException("ssl unwrap closed:%s", result.getStatus());
                 case BUFFER_OVERFLOW -> throw new ZException("ssl unwrap overflow");
             }
-            return produced > 0 ? appInBuffer : null;
+            netInBuffer.skip(consumed);
+            return produced > 0 ? appInBuffer.seek(produced) : null;
         }
         catch(SSLException e) {
             throw new ZException(e, "ssl unwrap error");

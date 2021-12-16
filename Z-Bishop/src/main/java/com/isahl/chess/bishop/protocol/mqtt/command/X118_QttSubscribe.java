@@ -121,5 +121,9 @@ public class X118_QttSubscribe
                              getMsgId(),
                              mSubscribes != null ? mSubscribes.toString() : null);
     }
-
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

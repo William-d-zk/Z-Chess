@@ -173,4 +173,10 @@ public class X70_RaftVote
     {
         return Level.AT_LEAST_ONCE;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }
