@@ -46,12 +46,12 @@ public class PipeEncoder
     }
 
     @Override
-    public ITriple handle(IControl command, ISession session)
+    public ITriple handle(IControl<?> output, ISession session)
     {
-        IPacket send = protocolWrite(command, session);
+        IPacket send = protocolWrite(output, session);
         //write 错误将向event handler 抛出异常，并终止向session 执行写操作。
         if(send != null) {
-            _Logger.debug("%s ", command);
+            _Logger.debug("%s ", output);
             session.write(send, _AioWriter);
         }
         return null;

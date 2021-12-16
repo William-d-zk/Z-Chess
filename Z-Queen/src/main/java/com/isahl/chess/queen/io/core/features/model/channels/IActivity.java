@@ -29,7 +29,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 public interface IActivity
 {
-    boolean send(ISession session, IOperator.Type eventType, IControl... toSends);
+    boolean send(ISession session, IOperator.Type eventType, IControl<?>... toSends);
 
     void close(ISession session, IOperator.Type eventType);
 }

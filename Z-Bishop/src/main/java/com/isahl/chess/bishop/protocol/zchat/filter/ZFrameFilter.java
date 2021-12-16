@@ -24,7 +24,6 @@ package com.isahl.chess.bishop.protocol.zchat.filter;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -60,7 +59,7 @@ public class ZFrameFilter
     public ZFrame decode(ZContext context, IPacket input)
     {
         ZFrame frame = context.getCarrier();
-        frame.decode(context.getRvBuffer());
+        frame.decode(input.getBuffer());
         context.reset();
         return frame;
     }
@@ -86,14 +85,11 @@ public class ZFrameFilter
     private ResultType peek(IPContext context, IProtocol input)
     {
         if(context.isInFrame() && context instanceof ZContext z_ctx && input instanceof IPacket in_packet) {
-            ByteBuf netBuf = in_packet.getBuffer();
-            ByteBuf ctxBuf = z_ctx.getRvBuffer();
             ZFrame carrier = z_ctx.getCarrier();
             if(carrier == null) {
                 z_ctx.setCarrier(carrier = new ZFrame());
             }
-            ctxBuf.putExactly(netBuf);
-            return carrier.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
+            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
         }
         return ResultType.IGNORE;
     }

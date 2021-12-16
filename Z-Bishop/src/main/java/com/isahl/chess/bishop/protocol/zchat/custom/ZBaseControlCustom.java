@@ -50,7 +50,7 @@ abstract class ZBaseControlCustom<E extends IControlCustom>
     }
 
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl content)
+    public ITriple handle(IManager manager, ISession session, IControl<?> content)
     {
         _Logger.debug("mapping receive %s", content);
         switch(content.serial()) {

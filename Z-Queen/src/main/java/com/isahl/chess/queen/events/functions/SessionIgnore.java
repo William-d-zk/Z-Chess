@@ -31,11 +31,11 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  */
 public class SessionIgnore
-        implements IOperator<IControl, ISession, IControl>
+        implements IOperator<IControl<?>, ISession, IControl<?>>
 {
 
     @Override
-    public IControl handle(IControl input, ISession session)
+    public IControl<?> handle(IControl<?> input, ISession session)
     {
         return input;
     }

@@ -59,7 +59,7 @@ public class QttFrame
     public boolean isCtrl()
     {
         return switch(QttType.valueOf(mFrameHeader)) {
-            case CONNECT, CONNACK, PINGREQ, PINGRESP, DISCONNECT, AUTH -> true;
+            case CONNECT, CONNACK, DISCONNECT, AUTH, PINGREQ, PINGRESP -> true;
             default -> false;
         };
     }

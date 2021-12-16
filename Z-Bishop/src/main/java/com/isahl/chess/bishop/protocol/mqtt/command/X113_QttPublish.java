@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -53,7 +54,7 @@ public class X113_QttPublish
     @Override
     public int length()
     {
-        int length = 2 + (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0); // topic
+        int length = 2 + (mTopic != null ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0); // topic
         length += (getLevel().getValue() > ALMOST_ONCE.getValue() ? 0 : -2);//msg-id
         return super.length() + length; //payload
     }
@@ -78,8 +79,7 @@ public class X113_QttPublish
     @Override
     public int prefix(ByteBuf input)
     {
-        int topicLength = input.getUnsignedShort();
-        mTopic = input.readUTF(topicLength);
+        mTopic = input.readUTF(input.getUnsignedShort());
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
             setMsgId(input.getUnsignedShort());
         }
@@ -120,7 +120,7 @@ public class X113_QttPublish
         n113.setTopic(getTopic());
         n113.setLevel(getLevel());
         n113.mPayload = new byte[mPayload.length];
-        System.arraycopy(mPayload, 0, n113.mPayload, 0, mPayload.length);
+        IoUtil.addArray(mPayload, n113.mPayload);
         return n113;
     }
 }

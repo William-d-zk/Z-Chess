@@ -38,9 +38,9 @@ import com.isahl.chess.queen.io.core.net.socket.AioPacket;
  * @author William.d.zk
  */
 public interface IPipeEncoder
-        extends IOperator<IControl, ISession, ITriple>
+        extends IOperator<IControl<?>, ISession, ITriple>
 {
-    default IPacket protocolWrite(IControl output, ISession session)
+    default IPacket protocolWrite(IControl<?> output, ISession session)
     {
         IPContext context = session.getContext();
         if(context == null || output == null) {return null;}

@@ -186,9 +186,8 @@ public class MQttAccessPlugin
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) input;
                 X112_QttConnack x112 = new X112_QttConnack();
-                QttContext qttContext = session.getContext(QttContext.class);
-                qttContext.setVersion(x111.getVersion());
-                x112.wrap(qttContext);
+                x112.with(session);
+                x112.wrap(x111.context());
                 x112.responseOk();
                 if(QttContext.isNoSupportVersion(x111.getVersion())) {
                     x112.rejectUnsupportedVersion();
@@ -271,15 +270,13 @@ public class MQttAccessPlugin
                 }
                 if(session != null) {
                     X112_QttConnack x112 = new X112_QttConnack();
-                    QttContext context = session.getContext(QttContext.class);
-                    x112.wrap(context);
+                    x112.with(session);
                     if(x111.rxCode() == SUCCESS) {
                         x112.responseOk();
                     }
                     else {
                         x112.rejectServerUnavailable();
                     }
-                    x112.with(session);
                     return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                 }
             }
@@ -296,8 +293,8 @@ public class MQttAccessPlugin
                     });
                     if(session != null) {
                         X119_QttSuback x119 = new X119_QttSuback();
-                        x119.setMsgId(x118.getMsgId());
                         x119.with(session);
+                        x119.setMsgId(x118.getMsgId());
                         _Logger.info("subscribe topic:%s", x118.getSubscribes());
                         return Collections.singletonList(new Triple<>(x119, session, session.getEncoder()));
                     }
@@ -313,8 +310,8 @@ public class MQttAccessPlugin
                     });
                     if(session != null) {
                         X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                        x11B.setMsgId(x11A.getMsgId());
                         x11B.with(session);
+                        x11B.setMsgId(x11A.getMsgId());
                         _Logger.info("unsubscribe topic:%s", x11A.getTopics());
                         return Collections.singletonList(new Triple<>(x11B, session, session.getEncoder()));
                     }
@@ -363,13 +360,13 @@ public class MQttAccessPlugin
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         int msgId = (int) stateMessage.getMsgId();
-        boolean[] acked = {
+        boolean[] ack = {
                 true,
                 true
         };
-        if(acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
+        if(ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
-            acked[1] = old.remove(msgId) != null;
+            ack[1] = old.remove(msgId) != null;
             return old.isEmpty() ? old : null;
         }) != null)
         {
@@ -387,7 +384,7 @@ public class MQttAccessPlugin
                 it.remove();
             }
         }
-        return acked[0] & acked[1];
+        return ack[0] & ack[1];
     }
 
     @Override

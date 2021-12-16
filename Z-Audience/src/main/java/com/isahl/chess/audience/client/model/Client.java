@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Client
 {
-    private final        Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
-    private final        Map<IControl, Integer> _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
+    private final        Queue<IControl<?>>        _RecvMsgQueue = new LinkedList<>();
+    private final        Map<IControl<?>, Integer> _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
     private final        ZUID                   _ZUID;
     private final        Device                 _Device;
     private final static AtomicInteger          DEVICE_ID     = new AtomicInteger(1);
@@ -44,12 +44,12 @@ public class Client
         _Device = new Device(String.format("audience.device-for-test.%d", DEVICE_ID.getAndIncrement()));
     }
 
-    public void offer(IControl recv)
+    public void offer(IControl<?> recv)
     {
         _RecvMsgQueue.offer(recv);
     }
 
-    public IControl packet(IControl content)
+    public IControl<?> packet(IControl<?> content)
     {
         content.setSequence(_ZUID.getId(ZUID.TYPE_CONSUMER));
         IQoS.Level level = content.getLevel();

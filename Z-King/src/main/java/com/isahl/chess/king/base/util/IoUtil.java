@@ -731,6 +731,16 @@ public interface IoUtil
         }
     }
 
+    static void addArray(byte[] src, byte[] dst, byte... add)
+    {
+        if(src != null && dst != null && dst.length >= src.length) {
+            arraycopy(src, 0, dst, 0, src.length);
+            if(add != null && add.length > 0 && dst.length >= src.length + add.length) {
+                arraycopy(add, 0, dst, src.length, add.length);
+            }
+        }
+    }
+
     static void addArray(Object[] src, Object[] dst, int pos)
     {
         if(src != null && dst != null && dst.length >= pos + src.length) {

@@ -93,7 +93,7 @@ public class IoDispatcher
                 break;
             case CONSISTENCY_REJECT:
                 IPair consistencyRejected = event.getContent();
-                IControl reject = consistencyRejected.getFirst();
+                IControl<?> reject = consistencyRejected.getFirst();
                 _Logger.debug("consistency reject: %s", consistencyRejected);
                 ISession session = consistencyRejected.getSecond();
                 IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();

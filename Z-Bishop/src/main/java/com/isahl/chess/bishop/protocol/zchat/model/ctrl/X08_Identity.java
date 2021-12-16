@@ -99,4 +99,10 @@ public class X08_Identity
     {
         return Level.AT_LEAST_ONCE;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

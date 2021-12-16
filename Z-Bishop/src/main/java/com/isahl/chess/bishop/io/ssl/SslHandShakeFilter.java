@@ -125,12 +125,7 @@ public class SslHandShakeFilter<A extends IPContext>
         {
             SSLEngineResult.HandshakeStatus handshakeStatus = ssl_ctx.getHandShakeStatus();
             ByteBuf netInBuffer = in_packet.getBuffer();
-            ByteBuf localBuffer = ssl_ctx.getRvBuffer();
             ByteBuf appInBuffer = null;
-            if(localBuffer.isReadable()) {
-                localBuffer.append(netInBuffer);
-                netInBuffer = localBuffer;
-            }
             boolean loop = netInBuffer.isReadable();
             while(loop) {
                 switch(handshakeStatus) {

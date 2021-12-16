@@ -83,9 +83,9 @@ public class DecodedDispatcher
                 case DISPATCH -> {
                     IPair dispatchContent = event.getContent();
                     ISession session = dispatchContent.getSecond();
-                    IControl[] commands = dispatchContent.getFirst();
+                    IControl<?>[] commands = dispatchContent.getFirst();
                     if(Objects.nonNull(commands)) {
-                        for(IControl cmd : commands) {
+                        for(IControl<?> cmd : commands) {
                             // dispatch 到对应的 处理器里
                             dispatch(cmd, session, event.getEventOp());
                         }
@@ -97,30 +97,28 @@ public class DecodedDispatcher
                     RingBuffer<QEvent> publisher = _LogicWorkers[content.hashCode() & _WorkerMask];
                     publish(publisher, IOperator.Type.SERVICE, new Pair<>(content, null), null);
                 }
-                default -> {
-                    _Logger.warning("decoded dispatcher event type error: %s",
-                                    event.getEventType()
-                                         .name());
-                }
+                default -> _Logger.warning("decoded dispatcher event type error: %s",
+                                           event.getEventType()
+                                                .name());
             }
         }
         event.reset();
     }
 
-    private void dispatch(IControl cmd, ISession session, IOperator<IControl, ISession, ITriple> op)
+    private void dispatch(IControl<?> cmd, ISession session, IOperator<IControl<?>, ISession, ITriple> op)
     {
         cmd.with(session);
         IPair nextPipe = getNextPipe(session.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
 
-    protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
+    protected IPair getNextPipe(ISort.Mode mode, IControl<?> cmd)
     {
-        return mode == ISort.Mode.CLUSTER && cmd.isCtrl() ? new Pair<>(_Cluster, IOperator.Type.CLUSTER)
-                                                          : new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
+        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, IOperator.Type.CLUSTER)
+                                                             : new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
     }
 
-    protected RingBuffer<QEvent> dispatchWorker(IControl cmd)
+    protected RingBuffer<QEvent> dispatchWorker(IControl<?> cmd)
     {
         return _LogicWorkers[cmd.session()
                                 .hashCode() & _WorkerMask];

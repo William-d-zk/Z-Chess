@@ -337,7 +337,7 @@ public class RaftPeer
         trigger(_SelfMachine.createFollower());
     }
 
-    private IControl follow(long term, long leader, long commit, long preIndex, long preIndexTerm)
+    private IControl<?> follow(long term, long leader, long commit, long preIndex, long preIndexTerm)
     {
         tickCancel();
         _SelfMachine.follow(term, leader, _RaftMapper);
@@ -414,7 +414,7 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(candidate);
         peerMachine.setState(CANDIDATE);
-        IControl response = lowTerm(term, candidate);
+        IControl<?> response = lowTerm(term, candidate);
         if(response != null) {
             response.with(session);
             return new Triple<>(response, null, SINGLE);
@@ -468,7 +468,7 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(_SelfMachine.getPeerId());
         peerMachine.setState(ELECTOR);
-        IControl response = lowTerm(term, elector);
+        IControl<?> response = lowTerm(term, elector);
         if(response != null) {
             response.with(session);
             return new Triple<>(response, null, SINGLE);
@@ -495,7 +495,7 @@ public class RaftPeer
         peerMachine.setCommit(commit);
         peerMachine.setCandidate(_SelfMachine.getPeerId());
         peerMachine.setState(LEADER);
-        IControl response = lowTerm(term, leader);
+        IControl<?> response = lowTerm(term, leader);
         if(response != null) {
             response.with(session);
             return new Triple<>(response, null, SINGLE);

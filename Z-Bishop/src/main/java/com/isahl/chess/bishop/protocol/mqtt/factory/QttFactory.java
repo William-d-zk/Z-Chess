@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
@@ -45,20 +46,17 @@ public class QttFactory
     @Override
     public QttControl create(ByteBuf input)
     {
-        return build(QttFrame.seekSubSerial(input));
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public QttControl create(QttFrame frame, QttContext context)
     {
-        return create(frame.payload());
+        return build(QttType.serialOf(QttType.valueOf(frame.header()))).wrap(context);
     }
 
     private QttControl build(int serial)
     {
-        if(serial < 0x111 || serial > 0x11F) {
-            return null;
-        }
         return switch(serial) {
             case 0x111 -> new X111_QttConnect();
             case 0x112 -> new X112_QttConnack();

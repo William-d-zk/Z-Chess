@@ -173,4 +173,10 @@ public class X72_RaftAppend
                              mCommit,
                              mPayload == null ? 0 : mPayload.length);
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

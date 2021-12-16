@@ -56,8 +56,6 @@ public abstract class ProtocolContext<F>
         advanceState(_DecodeState, DECODE_NULL, CAPACITY);
     }
 
-
-
     public F getCarrier()
     {
         return mCarrier;
@@ -71,8 +69,6 @@ public abstract class ProtocolContext<F>
     @Override
     public void reset()
     {
-        getRvBuffer().discard();
-        getWrBuffer().discard();
         mCarrier = null;
     }
 

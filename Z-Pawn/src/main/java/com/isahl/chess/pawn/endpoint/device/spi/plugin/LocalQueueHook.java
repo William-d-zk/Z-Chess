@@ -53,9 +53,9 @@ public class LocalQueueHook
                    ICancelable
 {
 
-    private final TimeWheel        _TimeWheel;
-    private final Queue<IControl>  _MainQueue;
-    private final List<ISubscribe> _Subscribes;
+    private final TimeWheel          _TimeWheel;
+    private final Queue<IControl<?>> _MainQueue;
+    private final List<ISubscribe>   _Subscribes;
 
     @Autowired
     public LocalQueueHook(TimeWheel timeWheel, List<ISubscribe> subscribes)
@@ -72,7 +72,7 @@ public class LocalQueueHook
     }
 
     @Override
-    public void handle(IControl content, List<? extends IControl> pushList)
+    public void handle(IControl<?> content, List<? extends IControl<?>> pushList)
     {
         if(content.serial() == 0x113) {
             X113_QttPublish x113 = (X113_QttPublish) content;
@@ -83,7 +83,7 @@ public class LocalQueueHook
     private void batchPush(LocalQueueHook self)
     {
         int cachedSize = _MainQueue.size();
-        List<IControl> cached = new ArrayList<>(cachedSize);
+        List<IControl<?>> cached = new ArrayList<>(cachedSize);
         for(int i = 0; i < cachedSize; i++) {
             cached.add(_MainQueue.poll());
         }
@@ -102,7 +102,7 @@ public class LocalQueueHook
     }
 
     public interface ISubscribe
-            extends Function<IControl, MessageEntity>
+            extends Function<IControl<?>, MessageEntity>
     {
         void onBatch(List<MessageEntity> contents);
     }

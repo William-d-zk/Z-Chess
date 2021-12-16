@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.protocol.mqtt.filter;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -60,7 +59,7 @@ public class QttFrameFilter
     public QttFrame decode(QttContext context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
-        frame.decode(context.getRvBuffer());
+        frame.decode(input.getBuffer());
         context.reset();
         return frame;
     }
@@ -86,14 +85,11 @@ public class QttFrameFilter
     private ResultType peek(IPContext context, IProtocol input)
     {
         if(context.isInFrame() && context instanceof QttContext qtt_ctx && input instanceof IPacket in_packet) {
-            ByteBuf netBuf = in_packet.getBuffer();
-            ByteBuf ctxBuf = qtt_ctx.getRvBuffer();
             QttFrame carrier = qtt_ctx.getCarrier();
             if(carrier == null) {
                 qtt_ctx.setCarrier(carrier = new QttFrame());
             }
-            ctxBuf.putExactly(netBuf);
-            return carrier.lack(ctxBuf) > 0 ? NEED_DATA : NEXT_STEP;
+            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
         }
         return ResultType.IGNORE;
     }

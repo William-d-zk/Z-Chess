@@ -61,7 +61,7 @@ public interface ILogicHandler
                 event.ignore();
             }
             case LOGIC -> {
-                IControl content = event.getContent()
+                IControl<?> content = event.getContent()
                                         .getFirst();
                 ISession session = event.getContent()
                                         .getSecond();
@@ -87,7 +87,7 @@ public interface ILogicHandler
         }
     }
 
-    List<ITriple> logicHandle(IManager manager, ISession session, IControl content) throws Exception;
+    List<ITriple> logicHandle(IManager manager, ISession session, IControl<?> content) throws Exception;
 
     default void serviceHandle(IProtocol request) throws Exception
     {

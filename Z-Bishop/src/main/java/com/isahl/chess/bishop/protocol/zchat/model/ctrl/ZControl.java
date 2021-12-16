@@ -52,9 +52,10 @@ public abstract class ZControl
     }
 
     @Override
-    public void wrap(ZContext context)
+    public ZControl wrap(ZContext context)
     {
         mContext = context;
+        return this;
     }
 
     protected void withId(boolean flag)
@@ -154,6 +155,7 @@ public abstract class ZControl
     public ZControl with(ISession session)
     {
         mSession = session;
+        wrap(session.getContext(ZContext.class));
         return this;
     }
 

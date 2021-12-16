@@ -134,4 +134,9 @@ public class X77_RaftNotify
         this.mClient = client;
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

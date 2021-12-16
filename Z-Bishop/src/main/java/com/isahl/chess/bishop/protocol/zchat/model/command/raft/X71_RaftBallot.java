@@ -172,4 +172,10 @@ public class X71_RaftBallot
                              mCandidateId,
                              mCommit);
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

@@ -28,35 +28,35 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 
-import java.nio.ByteBuffer;
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author William.d.zk
  */
 @ISerialGenerator(parent = ISerial.IO_QUEEN_PACKET_SERIAL)
 public class AioPacket
-        extends ByteBuf
         implements IPacket
 {
 
-    private Status mStatus = Status.No_Send;
-    private int    mRightIdempotentBit;
-    private int    mLeftIdempotentBit;
+    private Status  mStatus = Status.No_Send;
+    private int     mRightIdempotentBit;
+    private int     mLeftIdempotentBit;
+    private ByteBuf mBuffer;
 
-    public AioPacket(int size, boolean direct)
+    public AioPacket(int size)
     {
-        super(size, direct);
+        mBuffer = ByteBuf.allocate(size);
     }
 
     public AioPacket(ByteBuf exist)
     {
-        super(exist);
+        mBuffer = exist;
     }
 
     @Override
     public ByteBuf getBuffer()
     {
-        return this;
+        return mBuffer;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class AioPacket
     @Override
     public int length()
     {
-        return 1 + capacity;
+        return 1 + mBuffer.capacity();
     }
 
     @Override
@@ -150,8 +150,7 @@ public class AioPacket
         if(remain > 0) {
             byte[] array = new byte[remain];
             input.get(array);
-            buffer = ByteBuffer.wrap(array);
-            capacity = remain;
+            mBuffer = ByteBuf.wrap(array);
         }
     }
 
@@ -165,14 +164,8 @@ public class AioPacket
     public ByteBuf suffix(ByteBuf output)
     {
         return output.vPutLength(length())
-                     .put(serial());
-    }
-
-    @Override
-    public ByteBuf encode()
-    {
-        return IPacket.super.encode()
-                            .put(buffer.array());
+                     .put(serial())
+                     .put(mBuffer.array());
     }
 
 }

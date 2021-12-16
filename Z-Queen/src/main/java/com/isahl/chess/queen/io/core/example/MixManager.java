@@ -89,7 +89,7 @@ public class MixManager
     }
 
     @Override
-    public final boolean send(ISession session, IOperator.Type type, IControl... commands)
+    public final boolean send(ISession session, IOperator.Type type, IControl<?>... commands)
     {
         return _ServerCore.send(session, type, commands);
     }
