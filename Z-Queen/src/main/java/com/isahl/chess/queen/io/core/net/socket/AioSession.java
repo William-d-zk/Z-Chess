@@ -84,7 +84,6 @@ public class AioSession<C extends IPContext>
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
     private long[]                               mSessionPrefix;
-    private int                                  mWroteExpect;
     /* reader */
     private CompletionHandler<Integer, ISession> mReader;
 
@@ -337,20 +336,15 @@ public class AioSession<C extends IPContext>
             // mSending 未托管给系统
             if(isEmpty()) {
                 switch(writePacket(ps)) {
-                    case IGNORE:
+                    case IGNORE -> {
                         return WRITE_STATUS.IGNORE;
-                    case UNFINISHED:
-                        // mSending 空间不足
-                        offer(ps);
-                    case IN_SENDING:
-                        ps.send();
+                    }
+                    case UNFINISHED -> offer(ps.send());// mSending 空间不足
+                    case IN_SENDING -> ps.sent();
                 }
             }
-            else {
-                offer(ps);
-                writeBuffed2Sending();
-            }
-            advanceState(_State, SESSION_SENDING, CAPACITY);
+            else {offer(ps);}
+            writeBuffed2Sending();
             flush(handler);
         }
         else {
@@ -365,8 +359,9 @@ public class AioSession<C extends IPContext>
                                   CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException
     {
         if(isClosed()) {return WRITE_STATUS.CLOSED;}
-        mWroteExpect -= wroteCnt;
-        if(mWroteExpect == 0) {
+        ByteBuf sending = _Context.getWrBuffer()
+                                  .skip(wroteCnt);
+        if(!sending.isReadable()) {
             if(isEmpty()) {
                 recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
@@ -374,7 +369,6 @@ public class AioSession<C extends IPContext>
             recedeState(_State, SESSION_PENDING, CAPACITY);
         }
         writeBuffed2Sending();
-        advanceState(_State, SESSION_SENDING, CAPACITY);
         flush(handler);
         return WRITE_STATUS.FLUSHED;
     }
@@ -393,21 +387,21 @@ public class AioSession<C extends IPContext>
             fps = peek();
             if(Objects.nonNull(fps)) {
                 switch(writePacket(fps)) {
-                    case IGNORE:
-                        continue;
-                    case UNFINISHED:
+                    case UNFINISHED -> {
                         fps.send();
-                        break Loop;//mSending fill full
-                    case IN_SENDING:
-                        fps.sent();
-                    default:
-                        break;
+                        break Loop;
+                    }//mSending fill full
+                    case IN_SENDING -> fps.sent();
+                    default -> {}
                 }
             }
         }
         while(Objects.nonNull(fps));
         //mSending 被填满，或者缓冲队列中没有待发数据
         _Logger.debug("session remain buffed %d", size());
+        if(_Context.getWrBuffer()
+                   .isReadable())
+        {advanceState(_State, SESSION_SENDING, CAPACITY);}
     }
 
     private WRITE_STATUS writePacket(IPacket ps)
@@ -416,9 +410,10 @@ public class AioSession<C extends IPContext>
         ByteBuf buf = ps.getBuffer();
         if(buf != null && buf.isReadable()) {
             _Context.getWrBuffer()
-                    .discard()
                     .putExactly(buf);
             if(buf.isReadable()) {
+                _Context.getWrBuffer()
+                        .discard();
                 return WRITE_STATUS.UNFINISHED;
             }
             else {
@@ -437,9 +432,10 @@ public class AioSession<C extends IPContext>
         if(stateLessThan(_State.get(), SESSION_FLUSHED) && _Context.getWrBuffer()
                                                                    .isReadable())
         {
-            mWroteExpect = _Context.getWrBuffer()
-                                   .readableBytes();
-            _Logger.debug("flush expect[%d] | %s", mWroteExpect, this);
+            _Logger.debug("flush expect[%d] | %s",
+                          _Context.getWrBuffer()
+                                  .readableBytes(),
+                          this);
             _Channel.write(_Context.getWrBuffer()
                                    .toReadBuffer(), _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
             advanceState(_State, SESSION_FLUSHED, CAPACITY);

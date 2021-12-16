@@ -32,7 +32,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  * @date 2020/5/7
  */
-public interface IControlCustom
+public interface IMappingCustom
 {
     /**
      * @param manager session manager
