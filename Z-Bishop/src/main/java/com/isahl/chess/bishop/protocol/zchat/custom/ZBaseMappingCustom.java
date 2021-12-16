@@ -26,7 +26,7 @@ package com.isahl.chess.bishop.protocol.zchat.custom;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.events.routes.IControlCustom;
+import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -37,14 +37,14 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
  * @author william.d.zk
  * @date 2020/5/7
  */
-abstract class ZBaseControlCustom<E extends IControlCustom>
-        implements IControlCustom
+abstract class ZBaseMappingCustom<E extends IMappingCustom>
+        implements IMappingCustom
 {
 
     private final   Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
     protected final E      _Then;
 
-    protected ZBaseControlCustom(E then)
+    protected ZBaseMappingCustom(E then)
     {
         _Then = then;
     }

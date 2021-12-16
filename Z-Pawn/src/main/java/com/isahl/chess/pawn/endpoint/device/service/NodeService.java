@@ -24,8 +24,8 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.sort.ZSortHolder;
-import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterControlCustom;
-import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkControlCustom;
+import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterCustom;
+import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -114,7 +114,7 @@ public class NodeService
     @PostConstruct
     private void start()
     {
-        _DeviceNode.start(_LogicFactory, new ZLinkControlCustom(_LinkCustom), new ZClusterControlCustom<>(_RaftCustom));
+        _DeviceNode.start(_LogicFactory, new ZLinkCustom(_LinkCustom), new ZClusterCustom<>(_RaftCustom));
         _RaftPeer.start(_DeviceNode);
         _Logger.info(" device service start ");
     }

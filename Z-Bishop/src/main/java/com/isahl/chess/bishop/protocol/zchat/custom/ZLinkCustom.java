@@ -39,12 +39,12 @@ import java.util.List;
  * @author william.d.zk
  * @date 2020/4/20
  */
-public class ZLinkControlCustom
-        extends ZBaseControlCustom<ILinkCustom>
+public class ZLinkCustom
+        extends ZBaseMappingCustom<ILinkCustom>
         implements ILinkCustom
 {
 
-    public ZLinkControlCustom(ILinkCustom then)
+    public ZLinkCustom(ILinkCustom then)
     {
         super(then);
     }

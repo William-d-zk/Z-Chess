@@ -38,11 +38,11 @@ import java.util.List;
  * @author william.d.zk
  * @date 2020/4/20
  */
-public class ZClusterControlCustom<T extends IStorage>
-        extends ZBaseControlCustom<IClusterCustom<T>>
+public class ZClusterCustom<T extends IStorage>
+        extends ZBaseMappingCustom<IClusterCustom<T>>
         implements IClusterCustom<T>
 {
-    public ZClusterControlCustom(IClusterCustom<T> then)
+    public ZClusterCustom(IClusterCustom<T> then)
     {
         super(then);
     }

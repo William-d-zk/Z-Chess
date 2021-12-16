@@ -35,7 +35,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.events.routes.IControlCustom;
+import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
@@ -331,7 +331,7 @@ public class MixMappingHandler<T extends IStorage>
         return _Logger;
     }
 
-    private ITriple doCustom(IControlCustom custom, IManager manager, ISession session, IControl<?> received)
+    private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IControl<?> received)
     {
         ITriple result = custom.handle(manager, session, received);
         _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);
