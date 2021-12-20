@@ -32,7 +32,7 @@ public interface IConnectActivity
         extends IAddress,
                 IConnectMode,
                 ICreated,
-                IRespConnected,
+                IAfterConnected,
                 ILifeCycle
 {
     String getProtocol();

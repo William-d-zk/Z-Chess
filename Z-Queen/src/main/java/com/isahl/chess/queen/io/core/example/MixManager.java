@@ -32,6 +32,7 @@ import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
@@ -89,7 +90,7 @@ public class MixManager
     }
 
     @Override
-    public final boolean send(ISession session, IOperator.Type type, IControl<?>... commands)
+    public final boolean send(ISession session, IOperator.Type type, IProtocol... commands)
     {
         return _ServerCore.send(session, type, commands);
     }

@@ -23,6 +23,7 @@
 package com.isahl.chess.queen.io.core.features.model.content;
 
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author William.d.zk
@@ -38,5 +39,15 @@ public interface IProtocol
     default boolean outIdempotent(int bitIdempotent)
     {
         return true;
+    }
+
+    default IProtocol with(ISession session)
+    {
+        return this;
+    }
+
+    default ISession session()
+    {
+        return null;
     }
 }

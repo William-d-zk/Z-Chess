@@ -111,10 +111,11 @@ public abstract class ModbusRtuProtocol
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public ModbusRtuProtocol withSub(IoSerial sub)
     {
-
+        mPayload = sub.encode()
+                      .array();
+        return this;
     }
-
 
 }

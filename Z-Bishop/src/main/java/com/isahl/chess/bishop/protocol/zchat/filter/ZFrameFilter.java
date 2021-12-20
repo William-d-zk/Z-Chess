@@ -52,6 +52,7 @@ public class ZFrameFilter
     @Override
     public IPacket encode(ZContext context, ZFrame frame)
     {
+        context.demotionOut();
         return new AioPacket(Objects.requireNonNull(frame.encode()));
     }
 
@@ -61,6 +62,7 @@ public class ZFrameFilter
         ZFrame frame = context.getCarrier();
         frame.decode(input.getBuffer());
         context.reset();
+        context.promotionIn();
         return frame;
     }
 

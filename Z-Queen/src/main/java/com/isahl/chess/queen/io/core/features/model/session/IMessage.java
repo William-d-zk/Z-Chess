@@ -30,10 +30,5 @@ import com.isahl.chess.king.base.features.IDuplicate;
 public interface IMessage
         extends IDuplicate
 {
-    ISession session();
-
-    IMessage with(ISession session);
-
-   default boolean isMapping(){return false;}
-
+    default boolean isMapping() {return false;}
 }

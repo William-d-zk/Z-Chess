@@ -25,11 +25,13 @@ package com.isahl.chess.audience.client.api;
 
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0D_PlainText;
 import com.isahl.chess.bishop.sort.ZSortHolder;
-import com.isahl.chess.bishop.protocol.ws.ctrl.X102_Close;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls.X01_EncryptRequest;
+import com.isahl.chess.king.base.content.ZResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -40,127 +42,29 @@ import java.io.IOException;
 public class ConsumerController
 {
     private final ClientPool _ClientPool;
+    private final Client     _Client;
 
     @Autowired
-    ConsumerController(ClientPool client)
+    ConsumerController(ClientPool pool, Client client)
     {
-        _ClientPool = client;
+        _ClientPool = pool;
+        _Client = client;
     }
 
-    @PostMapping("ws/start")
-    public String wsStart(
-            @RequestBody
-                    Client client) throws IOException
+    @GetMapping("/zchat")
+    public ZResponse<?> zchat_connect() throws IOException
     {
-        _ClientPool.connect(ZSortHolder.WS_ZCHAT_CONSUMER, client);
-        return "async commit ws_start consumer request";
+        _ClientPool.connect(ZSortHolder.Z_CLUSTER_SYMMETRY, _Client);
+        return ZResponse.success("connect");
     }
 
-    @PostMapping("qtt/start")
-    public String qttStart(
-            @RequestBody
-                    Client client) throws IOException
+    @GetMapping("/zchat/send")
+    public ZResponse<?> zchat_send(
+            @RequestParam(name = "output")
+                    String output)
     {
-        _ClientPool.connect(ZSortHolder.QTT_SYMMETRY, client);
-        return "async commit qtt_start consumer request";
-    }
-
-    @GetMapping("ws/end")
-    public String wsEnd(
-            @RequestParam(name = "client_id")
-                    long clientId)
-    {
-        _ClientPool.close(clientId);
-        return "consumer wsEnd";
-    }
-
-    @GetMapping("ws/close")
-    public String wsClose(
-            @RequestParam(name = "client_id")
-                    long clientId)
-    {
-        _ClientPool.sendLocal(clientId, new X102_Close("client ws_close".getBytes()));
-        return "consumer ws_close";
-    }
-
-    @GetMapping("ws/heartbeat")
-    public String wsHeartbeat(
-            @RequestParam(name = "msg",
-                          defaultValue = "client ws_heartbeat",
-                          required = false)
-                    String msg,
-            @RequestParam(name = "client_id")
-                    long clientId)
-    {
-        _ClientPool.wsHeartbeat(clientId, msg);
-        return "ws_heartbeat";
-    }
-
-    @GetMapping("ws/x50")
-    public String wsX50(
-            @RequestParam(name = "msg",
-                          defaultValue = "test",
-                          required = false)
-                    String msg,
-            @RequestParam(name = "client_id")
-                    long clientId)
-    {
-        //        X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
-        //        x50.put(msg.getBytes());
-        //        _ClientPool.sendLocal(clientId, x50);
-        return "ws_x50";
-    }
-
-    @GetMapping("ws/sign-up")
-    public String wsX20(
-            @RequestParam(name = "password",
-                          defaultValue = "password",
-                          required = false)
-                    String password,
-            @RequestParam(name = "sn")
-                    String sn,
-            @RequestParam(name = "session_id")
-                    long sessionId)
-    {
-
-        //        X20_SignUp x20 = new X20_SignUp();
-        //        x20.setSn(sn);
-        //        x20.setPassword(password);
-        //        _ClientPool.sendLocal(sessionId, x20);
-        return String.format("send ws_x20 to sign up, sn{ %s }password{ %s }", sn, password);
-    }
-
-    @GetMapping("ws/sign-in")
-    public String wsX22(
-            @RequestParam(name = "password",
-                          defaultValue = "password",
-                          required = false)
-                    String password,
-            @RequestParam(name = "token")
-                    String token,
-            @RequestParam(name = "session_id")
-                    long sessionId)
-    {
-        // X22_SignIn x22 = new X22_SignIn();
-        // if (Objects.nonNull(_DeviceClient.getToken())
-        // && !IoUtil.bin2Hex(_DeviceClient.getToken())
-        // .equals(token)) throw new IllegalStateException(String.format("client already login with %s ",
-        // IoUtil.bin2Hex(_DeviceClient.getToken())));
-        // _DeviceClient.setToken(token);
-        // x22.setToken(_DeviceClient.getToken());
-        // x22.setPassword(password);
-        // _DeviceClient.sendLocal(sessionId, x22);
-        return String.format("login %s : %s", "", password);
-    }
-
-    @GetMapping("ws/ztls")
-    public String wsZtls(
-            @RequestParam(name = "client_id")
-                    long clientId)
-    {
-        X01_EncryptRequest x01 = new X01_EncryptRequest();
-        _ClientPool.sendLocal(clientId, x01);
-        return "ws_ztls ws_start";
+        _ClientPool.sendLocal(_Client.getSession(), new X0D_PlainText().setText(output));
+        return ZResponse.success("send");
     }
 
 }

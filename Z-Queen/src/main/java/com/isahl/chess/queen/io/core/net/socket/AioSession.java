@@ -87,6 +87,8 @@ public class AioSession<C extends IPContext>
     /* reader */
     private CompletionHandler<Integer, ISession> mReader;
 
+    private IPipeTransfer mTransfer;
+
     @Override
     public String toString()
     {
@@ -481,7 +483,7 @@ public class AioSession<C extends IPContext>
     @Override
     public IPipeTransfer getTransfer()
     {
-        return _Sort.getTransfer();
+        return mTransfer;
     }
 
     @Override

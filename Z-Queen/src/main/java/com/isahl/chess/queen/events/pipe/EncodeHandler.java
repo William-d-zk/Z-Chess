@@ -78,9 +78,9 @@ public class EncodeHandler
             switch(event.getEventType()) {
                 case WRITE -> {
                     IPair pairWriteContent = event.getContent();
-                    IControl cmd = pairWriteContent.getFirst();
+                    IControl<?> cmd = pairWriteContent.getFirst();
                     ISession session = pairWriteContent.getSecond();
-                    IOperator<IControl, ISession, ITriple> writeOperator = event.getEventOp();
+                    IOperator<IControl<?>, ISession, ITriple> writeOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", IOperator.Type.WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                 }

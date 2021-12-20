@@ -96,7 +96,7 @@ public class WriteDispatcher
                 case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
                     IPair writeContent = event.getContent();
                     _Logger.debug("content:%s,%s", writeContent, event.getEventType());
-                    IControl cmd = writeContent.getFirst();
+                    IControl<?> cmd = writeContent.getFirst();
                     ISession session = writeContent.getSecond();
                     if(session != null) {
                         try {
@@ -131,7 +131,7 @@ public class WriteDispatcher
                 case LOGIC, DISPATCH -> {
                     List<ITriple> writeContents = event.getContentList();
                     for(ITriple content : writeContents) {
-                        IControl cmd = content.getFirst();
+                        IControl<?> cmd = content.getFirst();
                         ISession session = content.getSecond();
                         if(session != null) {
                             try {

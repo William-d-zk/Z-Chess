@@ -46,7 +46,6 @@ public abstract class QttControl
                    IDuplicate
 {
     protected QttContext mContext;
-    protected byte[]     mPayload;
     private   ISession   mSession;
 
     protected void generateCtrl(boolean dup, boolean retain, IQoS.Level qosLevel, QttType qttType)
@@ -113,7 +112,7 @@ public abstract class QttControl
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public QttControl withSub(IoSerial sub)
     {
         throw new UnsupportedOperationException();
     }
@@ -195,9 +194,4 @@ public abstract class QttControl
         return input == null ? 0 : input.readableBytes();
     }
 
-    @Override
-    public int length()
-    {
-        return mPayload == null ? 0 : mPayload.length;
-    }
 }

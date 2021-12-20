@@ -24,8 +24,6 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -41,7 +39,7 @@ public class PipeDecoder
     @Override
     public ITriple handle(IPacket input, ISession session)
     {
-        IControl<?>[] received = filterRead(input, session);
+        ITriple decoded = filterRead(input, session);
         /*
             一旦read出现异常将抛出到event-handler进行处理，
             无异常时才继续session.readNext()操作;
@@ -50,7 +48,7 @@ public class PipeDecoder
             当然这对大数据量高带宽传输支持不良，对session-context-read-buffer容量存在压力。
         */
         session.readNext();
-        return received != null ? new Triple<>(received, session, session.getTransfer()) : null;
+        return decoded;
     }
 
     @Override

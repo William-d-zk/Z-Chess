@@ -23,9 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterCustom;
 import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -88,11 +88,10 @@ public class NodeService
                                                   case "mqtt" -> ZSortHolder.QTT_SERVER;
                                                   case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
                                                   case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-                                                  case "ws-zchat" -> ZSortHolder.WS_ZCHAT_SERVER;
-                                                  case "wss-zchat" -> ZSortHolder.WS_ZCHAT_SERVER_SSL;
                                                   case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
                                                   case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
                                                   case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
+                                                  case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
                                                   default -> throw new UnsupportedOperationException(listener.getScheme());
                                               };
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);

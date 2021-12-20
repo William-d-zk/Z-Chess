@@ -62,7 +62,7 @@ public class X04_EncryptConfirm
     public ByteBuf suffix(ByteBuf output, ZContext ctx)
     {
         Objects.requireNonNull(ctx)
-               .updateOut();
+               .promotionOut();
         return output;
     }
 
@@ -70,7 +70,7 @@ public class X04_EncryptConfirm
     public void fold(ZContext ctx)
     {
         Objects.requireNonNull(ctx)
-               .updateIn();
+               .promotionIn();
     }
 
     @Override

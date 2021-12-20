@@ -269,11 +269,11 @@ public class ByteBuf
         if(isReadable()) {
             int offset = 0;
             int remain = readableBytes();
-            while(buffer.get(readerIdx + offset) != '\n' && offset < remain) {
-                offset++;
-            }
-            if(buffer.get(readerIdx + offset) == '\n') {
-                return readUTF(buffer.get(readerIdx + offset - 1) == '\r' ? offset - 2 : offset - 1);
+            while(offset < remain) {
+                if(buffer.get(readerIdx + offset++) == '\n') {
+                    return readUTF(offset).replace("\r", "")
+                                          .replace("\n", "");
+                }
             }
         }
         return null;

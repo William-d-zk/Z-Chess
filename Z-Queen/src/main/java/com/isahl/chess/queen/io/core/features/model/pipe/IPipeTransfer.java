@@ -24,42 +24,23 @@
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.exception.MissingParameterException;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author william.d.zk
  * @date 2019-05-12
+ * <p>
+ * <p>
+ * IOperator.IProtocol → decoded input 「IProtocol」 content
+ * IOperator.ISession
+ * IOperator.List of ITriple fst:protocol snd:session thr:encoder
  */
 public interface IPipeTransfer
-        extends IOperator<IControl[], ISession, List<ITriple>>
+        extends IOperator<IProtocol, ISession, List<ITriple>>
 {
-    @Override
-    default List<ITriple> handle(IControl[] commands, ISession session)
-    {
-        if(commands == null || commands.length == 0) {
-            throw new MissingParameterException(getName(), "commands");
-        }
-        else if(session == null) {throw new MissingParameterException(getName(), "session");}
-        return Stream.of(commands)
-                     .filter(Objects::nonNull)
-                     .map(command->{
-                         ISession targetSession = command.session();
-                         if(targetSession == null) {
-                             command.with(session);
-                             targetSession = session;
-                         }
-                         return new Triple<>(command, targetSession, targetSession.getEncoder());
-                     })
-                     .collect(Collectors.toList());
-    }
 
 }

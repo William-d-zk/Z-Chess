@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device;
 
-import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0B_Ping;
 import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
@@ -52,7 +52,6 @@ import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 import com.isahl.chess.queen.io.core.tasks.ServerCore;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,7 +72,7 @@ public class DeviceNode
     private final IAioClient       _PeerClient;
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
-    private final X103_Ping        _PeerPing, _GatePing;
+    private final X0B_Ping         _PeerPing, _GatePing;
 
     @Override
     public void onDismiss(ISession session)
@@ -97,9 +96,11 @@ public class DeviceNode
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
             final int _PeerBindPort = peerBind.getPort();
-            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _PeerBindHost, _PeerBindPort)
-                                            .getBytes(StandardCharsets.UTF_8));
+            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            _PeerPing = new X0B_Ping(String.format("%#x,%s:%d",
+                                                   _ClusterPeer.getPeerId(),
+                                                   _PeerBindHost,
+                                                   _PeerBindPort));
         }
         else {
             _PeerPing = null;
@@ -108,9 +109,11 @@ public class DeviceNode
             RaftNode gateBind = raftConfig.getPeerBind();
             final String _GateBindHost = gateBind.getGateHost();
             final int _GateBindPort = gateBind.getGatePort();
-            hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _GateBindHost, _GateBindPort)
-                                            .getBytes(StandardCharsets.UTF_8));
+            hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            _GatePing = new X0B_Ping(String.format("%#x,%s:%d",
+                                                   _ClusterPeer.getPeerId(),
+                                                   _GateBindHost,
+                                                   _GateBindPort));
         }
         else {
             _GatePing = null;
@@ -193,7 +196,7 @@ public class DeviceNode
     @Override
     public void setupPeer(String host, int port) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
+        final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
         _PeerClient.connect(buildConnector(host,
                                            port,
@@ -207,7 +210,7 @@ public class DeviceNode
     @Override
     public void setupGate(String host, int port) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
+        final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
         _GateClient.connect(buildConnector(host,
                                            port,

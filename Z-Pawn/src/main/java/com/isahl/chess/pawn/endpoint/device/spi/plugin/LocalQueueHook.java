@@ -27,9 +27,11 @@ import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
+import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.pawn.endpoint.device.api.db.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,11 +74,11 @@ public class LocalQueueHook
     }
 
     @Override
-    public void handle(IControl<?> content, List<? extends IControl<?>> pushList)
+    public void handle(IProtocol content, List<ITriple> results)
     {
         if(content.serial() == 0x113) {
             X113_QttPublish x113 = (X113_QttPublish) content;
-            if(!x113.isDuplicate()) {_MainQueue.offer(content);}
+            if(!x113.isDuplicate()) {_MainQueue.offer(x113);}
         }
     }
 

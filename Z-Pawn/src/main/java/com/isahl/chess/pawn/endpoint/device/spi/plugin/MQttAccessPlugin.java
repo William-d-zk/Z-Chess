@@ -95,15 +95,15 @@ public class MQttAccessPlugin
     }
 
     @Override
-    public boolean isSupported(IProtocol protocol)
+    public boolean isSupported(IoSerial input)
     {
-        return protocol.serial() >= 0x111 && protocol.serial() <= 0x11F;
+        return input.serial() >= 0x111 && input.serial() <= 0x11F;
     }
 
     @Override
-    public List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content)
+    public List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content)
     {
-        List<IControl<?>> pushList = null;
+        List<ITriple> results = null;
         switch(content.serial()) {
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
@@ -111,21 +111,21 @@ public class MQttAccessPlugin
                 if(x113.isRetain()) {
                     retain(x113.getTopic(), x113);
                 }
-                pushList = new LinkedList<>();
+                results = new LinkedList<>();
                 switch(x113.getLevel()) {
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.setMsgId(x113.getMsgId());
                         x114.with(session);
-                        pushList.add(x114);
+                        results.add(Triple.of(x114, session, session.getEncoder()));
                     case ALMOST_ONCE:
-                        brokerTopic(manager, x113, broker(x113.getTopic()), pushList);
+                        brokerTopic(manager, x113, broker(x113.getTopic()), results);
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.setMsgId(x113.getMsgId());
                         x115.with(session);
-                        pushList.add(x115);
+                        results.add(Triple.of(x115, session, session.getEncoder()));
                         register(x115, session.getIndex());
                         _QttStorage.receivedStorage((int) x113.getMsgId(),
                                                     x113.getTopic(),
@@ -148,8 +148,8 @@ public class MQttAccessPlugin
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
-                pushList = new LinkedList<>();
-                pushList.add(x116);
+                results = new LinkedList<>();
+                results.add(Triple.of(x116.with(session), session, session.getEncoder()));
                 register(x116, session.getIndex());
                 _QttStorage.deleteMessage((int) x115.getMsgId(), session.getIndex());
                 break;
@@ -158,12 +158,12 @@ public class MQttAccessPlugin
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
-                pushList = new LinkedList<>();
-                pushList.add(x117);
+                results = new LinkedList<>();
+                results.add(Triple.of(x117.with(session), session, session.getEncoder()));
                 if(ack(x116, session.getIndex())) {
                     if(_QttStorage.hasReceived((int) x116.getMsgId(), session.getIndex())) {
                         if((x113 = _QttStorage.takeStorage((int) x116.getMsgId(), session.getIndex())) != null) {
-                            brokerTopic(manager, x113, broker(x113.getTopic()), pushList);
+                            brokerTopic(manager, x113, broker(x113.getTopic()), results);
                         }
                     }
                 }
@@ -173,13 +173,15 @@ public class MQttAccessPlugin
                 ack(x117, session.getIndex());
                 break;
             case 0x11C:
-                return Collections.singletonList(new X11D_QttPingresp());
+                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session),
+                                                           session,
+                                                           session.getEncoder()));
         }
-        return pushList;
+        return results;
     }
 
     @Override
-    public ITriple onLink(IManager manager, ISession session, IControl<?> input)
+    public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         switch(input.serial()) {
             case 0x102 -> session.innerClose();
@@ -187,7 +189,6 @@ public class MQttAccessPlugin
                 X111_QttConnect x111 = (X111_QttConnect) input;
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.with(session);
-                x112.wrap(x111.context());
                 x112.responseOk();
                 if(QttContext.isNoSupportVersion(x111.getVersion())) {
                     x112.rejectUnsupportedVersion();
@@ -519,7 +520,7 @@ public class MQttAccessPlugin
     private void brokerTopic(IManager manager,
                              X113_QttPublish x113,
                              Map<Long, IQoS.Level> routes,
-                             List<IControl<?>> pushList)
+                             List<ITriple> results)
     {
         routes.forEach((kIdx, lv)->{
             ISession session = manager.findSessionByIndex(kIdx);
@@ -531,7 +532,7 @@ public class MQttAccessPlugin
                     n113.setMsgId(_QttStorage.generateMsgId(kIdx));
                     register(n113, kIdx);
                 }
-                pushList.add(n113);
+                results.add(Triple.of(n113, session, session.getEncoder()));
                 _QttStorage.brokerStorage((int) n113.getMsgId(),
                                           n113.getTopic(),
                                           n113.payload()

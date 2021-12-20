@@ -46,7 +46,6 @@ public class WsProxyFilter<A extends IPContext>
     public WsProxyFilter()
     {
         super("ws_proxy");
-
     }
 
     @Override
@@ -55,12 +54,14 @@ public class WsProxyFilter<A extends IPContext>
         WsFrame frame = new WsFrame();
         frame.withSub(output);
         frame.encode();
+        context.demotionOut();
         return frame;
     }
 
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
+        context.demotionIn();
         return new AioPacket(input.payload());
     }
 

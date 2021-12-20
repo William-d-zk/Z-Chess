@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.io;
 import com.isahl.chess.queen.events.functions.*;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
 import com.isahl.chess.queen.io.core.features.model.session.IFailed;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -39,7 +38,6 @@ public abstract class BaseSort<C extends IPContext>
     private final ICloser       _CloseOperator = new Closer();
     private final IFailed       _ErrorOperator = new Failed();
     private final IPipeEncoder  _Encoder       = new PipeEncoder(_AioWriter);
-    private final IPipeTransfer _Transfer      = new PipeTransfer();
     private final IPipeDecoder  _Decoder       = new PipeDecoder();
     private final SessionIgnore _Ignore        = new SessionIgnore();
     private final Mode          _Mode;
@@ -75,12 +73,6 @@ public abstract class BaseSort<C extends IPContext>
     public IPipeDecoder getDecoder()
     {
         return _Decoder;
-    }
-
-    @Override
-    public IPipeTransfer getTransfer()
-    {
-        return _Transfer;
     }
 
     @Override

@@ -68,10 +68,10 @@ public class X09_Redirect
     @Override
     public X09_Redirect copy()
     {
-        X09_Redirect x107 = new X09_Redirect();
-        x107.setHost(getHost());
-        x107.setPort(getPort());
-        return x107;
+        X09_Redirect x09 = new X09_Redirect();
+        x09.setHost(getHost());
+        x09.setPort(getPort());
+        return x09;
     }
 
     @Override

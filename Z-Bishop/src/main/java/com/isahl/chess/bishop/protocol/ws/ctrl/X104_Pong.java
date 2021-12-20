@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.bishop.protocol.ws.ctrl;
 
+import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -34,8 +35,8 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x104)
-public class X104_Pong
-        extends WsControl
+public class X104_Pong<T extends WsContext>
+        extends WsControl<T>
 {
     public X104_Pong()
     {
@@ -49,9 +50,9 @@ public class X104_Pong
     }
 
     @Override
-    public X104_Pong copy()
+    public X104_Pong<T> copy()
     {
-        return new X104_Pong(mPayload);
+        return new X104_Pong<>(mPayload);
     }
 
     @Override

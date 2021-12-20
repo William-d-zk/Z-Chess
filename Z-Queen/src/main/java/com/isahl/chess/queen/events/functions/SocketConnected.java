@@ -51,7 +51,7 @@ public class SocketConnected
             connection.onCreated(session);
             session.ready();
             session.readNext(_AioReader);
-            return new Triple<>(true, session, connection.response(session));
+            return new Triple<>(true, session, connection.afterConnected(session));
         }
         catch(IOException e) {
             try {

@@ -73,14 +73,14 @@ public class X05_EncryptStart
     public void fold(ZContext ctx)
     {
         Objects.requireNonNull(ctx)
-               .updateIn();
+               .promotionIn();
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output, ZContext ctx)
     {
         Objects.requireNonNull(ctx)
-               .updateOut();
+               .promotionOut();
         return output;
     }
 

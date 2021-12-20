@@ -86,11 +86,18 @@ public class ListSerial
     @Override
     public int length()
     {
-        int length = 6;
+        int length = 2 + //serial
+                     4;//list.size
         for(IoSerial t : this) {
             length += t.sizeOf();
         }
         return length;
+    }
+
+    @Override
+    public int sizeOf()
+    {
+        return ByteBuf.vSizeOf(length());
     }
 
     @Override
@@ -100,9 +107,10 @@ public class ListSerial
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public ListSerial withSub(IoSerial sub)
     {
         add(sub);
+        return this;
     }
 
     @Override

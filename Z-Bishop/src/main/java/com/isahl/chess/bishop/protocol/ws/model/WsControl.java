@@ -30,18 +30,19 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public abstract class WsControl
-        implements IControl<WsContext>
+public abstract class WsControl<T extends WsContext>
+        implements IControl<T>
 {
 
-    protected byte      mFrameHeader;
-    protected byte[]    mPayload;
-    private   ISession  mSession;
-    private   WsContext mContext;
+    protected byte     mFrameHeader;
+    protected byte[]   mPayload;
+    private   ISession mSession;
+    private   T        mContext;
 
     public WsControl(byte opCode)
     {
@@ -67,10 +68,11 @@ public abstract class WsControl
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public WsControl<T> withSub(IoSerial sub)
     {
         mPayload = sub.encode()
                       .array();
+        return this;
     }
 
     @Override
@@ -85,7 +87,7 @@ public abstract class WsControl
     @Override
     public int prefix(ByteBuf input)
     {
-        return input.readableBytes();
+        return input != null ? input.readableBytes() : 0;
     }
 
     @Override
@@ -110,9 +112,11 @@ public abstract class WsControl
     }
 
     @Override
-    public WsControl with(ISession session)
+    @SuppressWarnings("unchecked")
+    public WsControl<T> with(ISession session)
     {
         mSession = session;
+        wrap((T) session.getContext(WsContext.class));
         return this;
     }
 
@@ -120,6 +124,12 @@ public abstract class WsControl
     public int length()
     {
         return mPayload == null ? 0 : mPayload.length;
+    }
+
+    @Override
+    public int sizeOf()
+    {
+        return length();
     }
 
     @Override
@@ -131,14 +141,14 @@ public abstract class WsControl
     }
 
     @Override
-    public WsControl wrap(WsContext context)
+    public WsControl<T> wrap(T context)
     {
         mContext = context;
         return this;
     }
 
     @Override
-    public WsContext context()
+    public T context()
     {
         return mContext;
     }
@@ -154,4 +164,6 @@ public abstract class WsControl
     {
         throw new UnsupportedOperationException();
     }
+
+
 }

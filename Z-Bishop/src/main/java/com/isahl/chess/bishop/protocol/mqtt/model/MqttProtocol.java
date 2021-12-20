@@ -55,4 +55,15 @@ public abstract class MqttProtocol
         mFrameHeader |= type.getValue();
     }
 
+    @Override
+    public int length()
+    {
+        return mPayload == null ? 0 : mPayload.length;
+    }
+
+    @Override
+    public int sizeOf()
+    {
+        return length();
+    }
 }

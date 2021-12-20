@@ -25,6 +25,7 @@ package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -38,48 +39,46 @@ import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultTy
 /**
  * @author William.d.zk
  */
-public class WsHandShakeFilter
-        extends AioFilterChain<WsContext, X101_HandShake, IPacket>
+public class WsHandShakeFilter<T extends WsContext>
+        extends AioFilterChain<T, X101_HandShake<T>, IPacket>
 {
-    private final static String CRLF      = "\r\n";
-    private final static String CRLF_CRLF = CRLF + CRLF;
-
     public WsHandShakeFilter()
     {
         super("ws_header");
     }
 
     @Override
-    public IPacket encode(WsContext context, X101_HandShake output)
+    public IPacket encode(T context, X101_HandShake<T> output)
     {
         if(output.isClientOk() || output.isServerAccept()) {
-            context.updateOut();
+            context.promotionOut();
         }
         return new AioPacket(output.encode());
     }
 
+    @SuppressWarnings("unchecked")
     private ResultType peek(IPContext context, IProtocol input)
     {
-        if(context.isInInit() && context instanceof WsContext ws_ctx && input instanceof IPacket in_packet) {
-            X101_HandShake handshake = ws_ctx.getHandshake();
+        if(context.isInInit() && context instanceof IWsContext && input instanceof IPacket in_packet) {
+            T ws_ctx = (T) context;
+            X101_HandShake<T> handshake = ws_ctx.getHandshake();
             if(handshake == null) {
-                ws_ctx.setHandshake(handshake = new X101_HandShake());
+                ws_ctx.handshake(handshake = new X101_HandShake<>());
                 handshake.wrap(ws_ctx);
             }
-            return handshake.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
+            return handshake.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : HANDLED;
         }
         return IGNORE;
 
     }
 
     @Override
-    public X101_HandShake decode(WsContext context, IPacket input)
+    public X101_HandShake<T> decode(T context, IPacket input)
     {
-        X101_HandShake handshake = context.getHandshake();
+        X101_HandShake<T> handshake = context.getHandshake();
         handshake.decode(context.getRvBuffer(), context);
-        context.reset();
         if(handshake.isClientOk() || handshake.isServerAccept()) {
-            context.updateIn();
+            context.promotionIn();
         }
         return handshake;
     }
@@ -88,13 +87,15 @@ public class WsHandShakeFilter
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
-            if(context.isOutInit() && context instanceof WsContext) {
+            if(context.isOutInit() && context instanceof IWsContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting.isOutInit() && acting instanceof WsContext) {return new Pair<>(ResultType.NEXT_STEP, acting);}
+                if(acting.isOutInit() && acting instanceof IWsContext) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
             }
         }
         return new Pair<>(IGNORE, context);
@@ -127,13 +128,13 @@ public class WsHandShakeFilter
          * WS->MQTT
          * 代理结构时，需要区分 context 是否为IWsContext
          */
-        return (I) encode((WsContext) context, (X101_HandShake) output);
+        return (I) encode((T) context, (X101_HandShake<T>) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((WsContext) context, (IPacket) input);
+        return (O) decode((T) context, (IPacket) input);
     }
 }

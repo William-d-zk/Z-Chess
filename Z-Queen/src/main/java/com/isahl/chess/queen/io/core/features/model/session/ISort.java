@@ -27,7 +27,6 @@ import com.isahl.chess.queen.events.functions.SessionIgnore;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 
 /**
  * @author william.d.zk
@@ -63,8 +62,6 @@ public interface ISort
     IPipeEncoder getEncoder();
 
     IPipeDecoder getDecoder();
-
-    IPipeTransfer getTransfer();
 
     ICloser getCloser();
 

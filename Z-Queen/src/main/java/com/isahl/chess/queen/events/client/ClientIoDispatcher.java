@@ -49,20 +49,15 @@ public class ClientIoDispatcher
         implements IPipeHandler<QEvent>
 {
     private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
-    private final RingBuffer<QEvent> _Link;
-    private final RingBuffer<QEvent> _Decoder;
+    private final RingBuffer<QEvent> _Reader;
     private final RingBuffer<QEvent> _Wrote;
     private final RingBuffer<QEvent> _Error;
     private final IHealth            _Health = new Health(-1);
 
-    public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
-                              RingBuffer<QEvent> decoderPipe,
-                              RingBuffer<QEvent> wrotePipe,
-                              RingBuffer<QEvent> errorPipe)
+    public ClientIoDispatcher(RingBuffer<QEvent> readerPipe, RingBuffer<QEvent> wrotePipe, RingBuffer<QEvent> errorPipe)
     {
 
-        _Link = linkIoPipe;
-        _Decoder = decoderPipe;
+        _Reader = readerPipe;
         _Wrote = wrotePipe;
         _Error = errorPipe;
     }
@@ -83,7 +78,7 @@ public class ClientIoDispatcher
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity connectActive = connectFailedContent.getSecond();
                 IOperator<Throwable, IConnectActivity, ITriple> connectFailedOperator = event.getEventOp();
-                error(_Link, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
+                error(_Reader, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
             }
             case NO_ERROR -> {
                 switch(event.getEventType()) {
@@ -92,11 +87,11 @@ public class ClientIoDispatcher
                         IConnectActivity connectActivity = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
-                        publish(_Link, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
+                        publish(_Reader, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
                     }
                     case READ -> {
                         IPair readContent = event.getContent();
-                        publish(_Decoder, IOperator.Type.DECODE, readContent, event.getEventOp());
+                        publish(_Reader, IOperator.Type.DECODE, readContent, event.getEventOp());
                     }
                     case WROTE -> {
                         IPair wroteContent = event.getContent();
@@ -107,7 +102,7 @@ public class ClientIoDispatcher
                         IPair closeContent = event.getContent();
                         ISession session = closeContent.getSecond();
                         if(!session.isClosed()) {
-                            error(_Link, INITIATIVE_CLOSE, closeContent, closeOperator);
+                            error(_Reader, INITIATIVE_CLOSE, closeContent, closeOperator);
                         }
                     }
                     default -> _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher",
@@ -121,7 +116,10 @@ public class ClientIoDispatcher
                 Throwable throwable = errorContent.getFirst();
                 if(!session.isClosed()) {
                     IPair transferResult = errorOperator.handle(throwable, session);
-                    error(_Link, PASSIVE_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), transferResult.getSecond());
+                    error(_Reader,
+                          PASSIVE_CLOSE,
+                          new Pair<>(QueenCode.ERROR_CLOSE, session),
+                          transferResult.getSecond());
                 }
             }
         }

@@ -74,7 +74,7 @@ public class X08_Identity
     @Override
     public String toString()
     {
-        return String.format("X106 %#x @ %#x", mPeer, mSession);
+        return String.format("%s [ %#x @ %#x ]", getClass().getSimpleName(), mPeer, mSession);
     }
 
     @Override

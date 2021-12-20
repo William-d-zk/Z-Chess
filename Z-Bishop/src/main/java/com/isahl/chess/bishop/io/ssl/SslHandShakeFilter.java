@@ -96,7 +96,7 @@ public class SslHandShakeFilter<A extends IPContext>
                 switch(handshakeStatus) {
                     case NOT_HANDSHAKING, FINISHED -> {
                         loop = false;
-                        context.updateOut();
+                        context.promotionOut();
                         _Logger.info("SSL ready to write");
                     }
                     case NEED_TASK -> {
@@ -130,7 +130,7 @@ public class SslHandShakeFilter<A extends IPContext>
             while(loop) {
                 switch(handshakeStatus) {
                     case NOT_HANDSHAKING, FINISHED -> {
-                        context.updateIn();
+                        context.promotionIn();
                         _Logger.info("SSL ready to read");
                         return new Pair<>(ResultType.IGNORE, ssl_ctx);
                     }

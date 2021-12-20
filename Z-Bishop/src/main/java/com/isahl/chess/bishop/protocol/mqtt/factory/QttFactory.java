@@ -52,7 +52,9 @@ public class QttFactory
     @Override
     public QttControl create(QttFrame frame, QttContext context)
     {
-        return build(QttType.serialOf(QttType.valueOf(frame.header()))).wrap(context);
+        QttControl control = build(QttType.serialOf(QttType.valueOf(frame.header()))).wrap(context);
+        control.decode(frame.payload());
+        return control;
     }
 
     private QttControl build(int serial)

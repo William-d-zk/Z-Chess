@@ -23,17 +23,15 @@
 
 package com.isahl.chess.queen.events.client;
 
-import com.isahl.chess.king.base.disruptor.components.Health;
-import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
-import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.events.pipe.DecodeHandler;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -44,17 +42,13 @@ import static com.isahl.chess.king.base.features.IError.Type.CONNECT_FAILED;
 /**
  * @author william.d.zk
  */
-public class ClientLinkHandler
-        implements IBatchHandler<QEvent>
+public class ClientReaderHandler
+        extends DecodeHandler
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
-    private final IHealth _Health = new Health(-1);
-
-    @Override
-    public IHealth getHealth()
+    public ClientReaderHandler(IEncryptor encryptHandler, int slot)
     {
-        return _Health;
+        super(encryptHandler, slot);
     }
 
     @Override
@@ -92,17 +86,16 @@ public class ClientLinkHandler
                         if(result != null) {
                             IOperator.Type type = result.getThird();
                             switch(type) {
-                                case SINGLE -> {
-                                    event.produce(WRITE, new Pair<>(result.getFirst(), session), session.getEncoder());
-                                }
+                                case SINGLE -> event.produce(WRITE,
+                                                             new Pair<>(result.getFirst(), session),
+                                                             session.getEncoder());
                                 case BATCH -> event.produce(IOperator.Type.DISPATCH, result.getFirst());
                             }
                         }
                     }
                     else {
                         Throwable throwable = handled.getThird();
-                        if(handled.getSecond() instanceof ISession) {
-                            ISession session = handled.getSecond();
+                        if(handled.getSecond() instanceof ISession session) {
                             session.innerClose();
                         }
                         connection.error();
@@ -115,9 +108,9 @@ public class ClientLinkHandler
                 }
             }
             else {
-                _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s",
-                                              event.getEventType()));
+                super.onEvent(event, sequence);
             }
         }
+
     }
 }

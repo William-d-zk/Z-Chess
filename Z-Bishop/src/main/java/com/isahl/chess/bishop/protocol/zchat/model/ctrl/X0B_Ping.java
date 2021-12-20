@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,41 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.model.command;
+package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author william.d.zk
- * @date 2021/2/14
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x0C)
-public class X0C_PlainText
-        extends ZCommand
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
+                  serial = 0x0B)
+public class X0B_Ping
+        extends ZControl
 {
-    public X0C_PlainText()
+
+    public X0B_Ping()
     {
         super();
-        withId(true);
     }
 
-    public X0C_PlainText(long msgId)
+    public X0B_Ping(String msg)
     {
-        super();
-        setMsgId(msgId);
-    }
-
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
+        this();
+        mPayload = msg.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
     public Level getLevel()
     {
-        return Level.ALMOST_ONCE;
+        return Level.AT_LEAST_ONCE;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format(" %s ", getClass().getSimpleName());
     }
 }

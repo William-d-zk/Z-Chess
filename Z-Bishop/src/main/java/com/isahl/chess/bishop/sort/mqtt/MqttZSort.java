@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.sort.mqtt;
 
+import com.isahl.chess.bishop.io.BaseSort;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttCommandFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttControlFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttFrameFilter;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
-import com.isahl.chess.bishop.io.BaseSort;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -57,4 +57,5 @@ public class MqttZSort
     {
         return new QttContext(option, getMode(), getType());
     }
+
 }

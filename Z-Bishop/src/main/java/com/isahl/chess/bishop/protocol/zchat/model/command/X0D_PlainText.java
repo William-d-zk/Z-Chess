@@ -26,31 +26,44 @@ package com.isahl.chess.bishop.protocol.zchat.model.command;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author william.d.zk
- * @date 2020/4/6
+ * @date 2021/2/14
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x0B)
-public class X0B_Consensus
+                  serial = 0x0D)
+public class X0D_PlainText
         extends ZCommand
 {
-    public X0B_Consensus()
+    public X0D_PlainText()
     {
         super();
         withId(true);
     }
 
-    public X0B_Consensus(long msgId)
+    public X0D_PlainText(long msgId)
     {
         super();
         setMsgId(msgId);
     }
 
+    public X0D_PlainText setText(String text)
+    {
+        if(text != null) {mPayload = text.getBytes(StandardCharsets.UTF_8);}
+        return this;
+    }
+
+    public String getText()
+    {
+        return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "No Content!";
+    }
+
     @Override
     public int priority()
     {
-        return QOS_PRIORITY_07_ROUTE_MESSAGE;
+        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
 
     @Override

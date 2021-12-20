@@ -27,9 +27,6 @@ import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
-import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
-
 /**
  * @author William.d.zk
  * @date 2017-02-10
@@ -45,7 +42,7 @@ public class ZContext
     @Override
     public void ready()
     {
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceOutState(ENCODE_PAYLOAD);
+        advanceInState(DECODE_FRAME);
     }
 }
