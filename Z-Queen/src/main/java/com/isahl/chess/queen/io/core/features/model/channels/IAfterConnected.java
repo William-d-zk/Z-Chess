@@ -21,30 +21,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.test.start;
+package com.isahl.chess.queen.io.core.features.model.channels;
 
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import java.net.InetSocketAddress;
-import java.util.List;
-
-public class LocalDnsTest
+/**
+ * 完成连接时 构建需要首次发送的数据包，
+ *
+ * @author william.d.zk
+ */
+public interface IAfterConnected
 {
-
-    @Test
-    public void testLocalBind()
+    default ITriple afterConnected(ISession session)
     {
-        InetSocketAddress isAddr = new InetSocketAddress("raft10.isahl.com", 5300);
-        System.out.println(isAddr);
-    }
-
-    @Test
-    public void listTest()
-    {
-        List<Integer> a = Lists.list(1, 2, 3, 4, 5, 6, 7, 8);
-        a.subList(3, a.size() - 1)
-         .clear();
-        System.out.println(a);
+        return null;
     }
 }

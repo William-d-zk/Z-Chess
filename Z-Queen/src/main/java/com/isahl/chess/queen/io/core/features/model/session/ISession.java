@@ -173,4 +173,9 @@ public interface ISession
     IFilterChain getFilterChain();
 
     void ready();
+
+    default ISession with(IPipeTransfer transfer)
+    {
+        return this;
+    }
 }

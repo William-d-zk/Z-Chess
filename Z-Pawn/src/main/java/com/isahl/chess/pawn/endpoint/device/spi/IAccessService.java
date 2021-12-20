@@ -25,7 +25,6 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -37,17 +36,23 @@ import java.util.List;
  */
 public interface IAccessService
 {
-    boolean isSupported(IProtocol protocol);
+    boolean isSupported(IoSerial input);
 
-    List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content);
+    /**
+     * @param manager session manager
+     * @param session by session
+     * @param content input IControl
+     * @return fst 「IControl」snd「ISession」trd「ISession.IEncoder」
+     */
+    List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content);
 
-    ITriple onLink(IManager manager, ISession session, IControl<?> input);
+    ITriple onLink(IManager manager, ISession session, IProtocol input);
 
     void onOffline(ISession session);
 
     List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody);
 
-    default void consume(IProtocol request)
+    default void consume(IoSerial request)
     {
 
     }

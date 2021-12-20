@@ -25,22 +25,20 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk
@@ -70,34 +68,34 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     }
 
     @Override
-    public IManager getISessionManager()
+    public IManager getManager()
     {
         return _ClusterNode;
     }
 
     @Override
-    public List<ITriple> logicHandle(IManager manager, ISession session, IControl<?> content) throws ZException
+    public IPipeTransfer defaultTransfer()
     {
-        List<? extends IControl<?>> pushList = null;
+        return this::logicHandle;
+    }
+
+    public List<ITriple> logicHandle(IProtocol content, ISession session)
+    {
+        List<ITriple> results = null;
         for(IAccessService service : _AccessService) {
             if(service.isSupported(content)) {
-                pushList = service.handle(manager, session, content);
+                if(results == null) {results = service.logicHandle(getManager(), session, content);}
+                else {results.addAll(service.logicHandle(getManager(), session, content));}
             }
         }
         for(IHandleHook hook : _HandleHooks) {
-            hook.handle(content, pushList);
+            hook.handle(content, results);
         }
-        return (pushList == null || pushList.isEmpty()) ? null : pushList.stream()
-                                                                         .filter(cmd->cmd.session() != null)
-                                                                         .map(cmd->new Triple<>(cmd,
-                                                                                                cmd.session(),
-                                                                                                cmd.session()
-                                                                                                   .getEncoder()))
-                                                                         .collect(Collectors.toList());
+        return results;
     }
 
     @Override
-    public void serviceHandle(IProtocol request) throws Exception
+    public void serviceHandle(IoSerial request)
     {
         for(IAccessService service : _AccessService) {
             if(service.isSupported(request)) {

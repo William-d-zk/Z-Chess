@@ -24,11 +24,11 @@
 package com.isahl.chess.bishop.protocol.mqtt.filter;
 
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -50,49 +50,31 @@ public class QttControlFilter
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
-        if(output.serial() == 0x112) {
-            X112_QttConnack x112 = (X112_QttConnack) output;
-            if(x112.isOk()) {
-                context.updateOut();
-            }
-        }
-        /*======================================================*/
         QttFrame frame = new QttFrame();
         frame.header(output.header());
         frame.withSub(output);
+        context.promotionOut();
         return frame;
     }
 
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        QttControl control = QttFactory._Instance.create(input, context);
-        control.decode(input.payload());
-         /*
-                Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
-                层完成这一操作 [Client]
-             */
-        if(input._sub() == 0x112) {
-            X112_QttConnack x112 = (X112_QttConnack) control;
-            if(x112.isOk()) {
-                context.updateIn();
-            }
-        }
-        /*======================================================*/
-        return control;
+        context.demotionIn();
+        return QttFactory._Instance.create(input, context);
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof QttControl) {
-            if(context.isOutFrame() && context instanceof QttContext) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
+            if(context.isOutConvert() && context instanceof QttContext && output instanceof IControl c && c.isCtrl()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof QttContext && acting.isOutFrame()) {
+                if(acting.isOutConvert() && acting instanceof QttContext) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
             }
@@ -104,11 +86,11 @@ public class QttControlFilter
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && f.isCtrl()) {
-            if(context.isInFrame() && context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
+            if(context.isInConvert() && context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting.isInFrame() && acting instanceof QttContext) {
+                if(acting.isInConvert() && acting instanceof QttContext) {
                     return new Pair<>(ResultType.HANDLED, acting);
                 }
             }

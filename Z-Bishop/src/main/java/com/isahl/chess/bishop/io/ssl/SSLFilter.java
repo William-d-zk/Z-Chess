@@ -73,7 +73,7 @@ public class SSLFilter<A extends IPContext>
                 if(ssl_ctx.isOutFrame() &&
                    (ssl_ctx.getHandShakeStatus() == NOT_HANDSHAKING || ssl_ctx.getHandShakeStatus() == FINISHED))
                 {
-                    ssl_ctx.updateOut();
+                    ssl_ctx.promotionOut();
                     _Logger.info("SSL ready to write");
                 }
                 else if(context.isOutConvert()) {

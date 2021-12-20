@@ -29,16 +29,19 @@ import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IMessage;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
-import java.util.Objects;
+import java.util.List;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CLUSTER;
 
 /**
  * @author william.d.zk
@@ -80,22 +83,37 @@ public class DecodedDispatcher
         }
         else {
             switch(event.getEventType()) {
-                case DISPATCH -> {
-                    IPair dispatchContent = event.getContent();
-                    ISession session = dispatchContent.getSecond();
-                    IControl<?>[] commands = dispatchContent.getFirst();
-                    if(Objects.nonNull(commands)) {
-                        for(IControl<?> cmd : commands) {
-                            // dispatch 到对应的 处理器里
-                            dispatch(cmd, session, event.getEventOp());
-                        }
+                case SINGLE -> {
+                    IPair content = event.getContent();
+                    if(content != null) {
+                        IProtocol decoded = content.getFirst();
+                        publish(dispatchWorker(decoded.session()
+                                                      .hashCode()), IOperator.Type.LOGIC, content, event.getEventOp());
+                    }
+                }
+                case BATCH -> {
+                    //triple.fst 「IProtocol」snd「ISession」trd「IPipeTransfer」
+                    List<ITriple> contents = event.getContentList();
+                    if(contents != null) {
+                        contents.forEach(triple->{
+                            IProtocol decoded = triple.getFirst();
+                            ISession session = triple.getSecond();
+                            ISort.Mode mode = session.getMode();
+                            IPair nextPipe = getNextPipe(mode, decoded);
+                            publish(nextPipe.getFirst(),
+                                    nextPipe.getSecond(),
+                                    Pair.of(decoded, session),
+                                    triple.getThird());
+                        });
                     }
                 }
                 case SERVICE -> {
-                    IProtocol content = event.getContent()
-                                             .getFirst();
-                    RingBuffer<QEvent> publisher = _LogicWorkers[content.hashCode() & _WorkerMask];
-                    publish(publisher, IOperator.Type.SERVICE, new Pair<>(content, null), null);
+                    IoSerial content = event.getContent()
+                                            .getFirst();
+                    publish(dispatchWorker(content.hashCode()),
+                            IOperator.Type.SERVICE,
+                            new Pair<>(content, null),
+                            null);
                 }
                 default -> _Logger.warning("decoded dispatcher event type error: %s",
                                            event.getEventType()
@@ -105,23 +123,23 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private void dispatch(IControl<?> cmd, ISession session, IOperator<IControl<?>, ISession, ITriple> op)
+    protected IPair getNextPipe(ISort.Mode mode, IoSerial input)
     {
-        cmd.with(session);
-        IPair nextPipe = getNextPipe(session.getMode(), cmd);
-        publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
+        if(input instanceof IMessage msg) {
+            if(mode == ISort.Mode.CLUSTER && msg.isMapping()) {
+                return Pair.of(_Cluster, CLUSTER);
+            }
+            else if(msg instanceof IProtocol content) {
+                return Pair.of(dispatchWorker(content.session()
+                                                     .hashCode()), IOperator.Type.LOGIC);
+            }
+        }
+        return Pair.of(dispatchWorker(input.hashCode()), IOperator.Type.SERVICE);
     }
 
-    protected IPair getNextPipe(ISort.Mode mode, IControl<?> cmd)
+    protected RingBuffer<QEvent> dispatchWorker(int hashCode)
     {
-        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, IOperator.Type.CLUSTER)
-                                                             : new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
-    }
-
-    protected RingBuffer<QEvent> dispatchWorker(IControl<?> cmd)
-    {
-        return _LogicWorkers[cmd.session()
-                                .hashCode() & _WorkerMask];
+        return _LogicWorkers[hashCode & _WorkerMask];
     }
 
     @Override

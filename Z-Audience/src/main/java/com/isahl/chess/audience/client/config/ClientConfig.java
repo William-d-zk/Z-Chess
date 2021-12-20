@@ -27,7 +27,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-@Configuration
+@Configuration("audience_client_config")
 @ConfigurationProperties(prefix = "z.chess.audience")
 @PropertySource("classpath:audience.properties")
 public class ClientConfig
@@ -72,6 +72,7 @@ public class ClientConfig
 
     private Target qtt;
     private Target ws;
+    private Target chat;
     private int    ioCount;
 
     public Target getQtt()
@@ -92,6 +93,16 @@ public class ClientConfig
     public void setWs(Target ws)
     {
         this.ws = ws;
+    }
+
+    public Target getChat()
+    {
+        return chat;
+    }
+
+    public void setChat(Target chat)
+    {
+        this.chat = chat;
     }
 
     public int getIoCount()

@@ -68,7 +68,7 @@ public interface IPacket
     }
 
     @Override
-    default void withSub(IoSerial sub)
+    default IProtocol withSub(IoSerial sub)
     {
         throw new UnsupportedOperationException();
     }

@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.bishop.protocol.ws.ctrl;
 
+import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -34,8 +35,8 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x102)
-public class X102_Close
-        extends WsControl
+public class X102_Close<T extends WsContext>
+        extends WsControl<T>
 {
     public X102_Close()
     {
@@ -49,9 +50,9 @@ public class X102_Close
     }
 
     @Override
-    public X102_Close copy()
+    public X102_Close<T> copy()
     {
-        return new X102_Close(mPayload);
+        return new X102_Close<>(mPayload);
     }
 
     @Override

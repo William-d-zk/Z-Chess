@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.sort.ssl.SslZSort;
 import com.isahl.chess.bishop.sort.ws.WsTextZSort;
 import com.isahl.chess.bishop.sort.ws.proxy.WsProxyZSort;
-import com.isahl.chess.bishop.sort.zchat.WsZSort;
+import com.isahl.chess.bishop.sort.zchat.ZSort;
 import com.isahl.chess.bishop.sort.zchat.ZlsZSort;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -42,16 +42,10 @@ import static com.isahl.chess.king.env.ZUID.*;
  */
 public enum ZSortHolder
 {
-    WS_ZCHAT_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
-    WS_ZCHAT_SERVER(new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    WS_ZCHAT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                         ISort.Type.CLIENT,
-                                         new WsZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
-    WS_ZCHAT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                       ISort.Type.SERVER,
-                                       new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
-    WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
+    WS_PLAIN_TEXT_CONSUMER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
+    WS_PLAIN_TEXT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                              ISort.Type.CLIENT,
+                                              new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
     WS_PLAIN_TEXT_SERVER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
     WS_PLAIN_TEXT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
                                             ISort.Type.SERVER,
@@ -83,7 +77,9 @@ public enum ZSortHolder
                                      ISort.Type.SERVER,
                                      new WsProxyZSort<>(ISort.Mode.LINK,
                                                         ISort.Type.SERVER,
-                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))));
+                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
+    Z_CLUSTER_SYMMETRY(new ZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
+    Z_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY));
 
     private final IAioSort<?> _Sort;
 

@@ -33,8 +33,6 @@ import java.util.stream.IntStream;
 
 import static com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol.VERSION_V3_1_1;
 import static com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol.VERSION_V5_0;
-import static com.isahl.chess.king.base.cron.features.ITask.*;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
 
 /**
  * @author william.d.zk
@@ -79,27 +77,10 @@ public class QttContext
         return mVersion;
     }
 
-    /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame
-     * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
-     * */
-    @Override
-    public boolean isInFrame()
-    {
-        int state = _DecodeState.get();
-        return stateAtLeast(state, DECODE_FRAME) && stateLessThan(state, DECODE_ERROR);
-    }
-
-    @Override
-    public boolean isOutFrame()
-    {
-        int state = _EncodeState.get();
-        return stateAtLeast(state, ENCODE_FRAME) && stateLessThan(state, ENCODE_ERROR);
-    }
-
     @Override
     public void ready()
     {
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceOutState(ENCODE_PAYLOAD);
+        advanceInState(DECODE_FRAME);
     }
 }

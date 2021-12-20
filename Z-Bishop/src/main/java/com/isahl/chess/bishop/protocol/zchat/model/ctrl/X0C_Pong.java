@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021. Z-Chess
+ * Copyright (c) 2021~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,24 +21,29 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.ws.model;
+package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
+
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 /**
  * @author william.d.zk
  */
-public class WsText
-        extends WsControl
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
+                  serial = 0x0C)
+public class X0C_Pong
+        extends ZControl
 {
-
-    public WsText()
+    @Override
+    public IQoS.Level getLevel()
     {
-        super(WsFrame.frame_op_code_ctrl_text);
+        return IQoS.Level.ALMOST_ONCE;
     }
 
     @Override
-    public Level getLevel()
+    public String toString()
     {
-        return Level.ALMOST_ONCE;
+        return String.format(" %s ", getClass().getSimpleName());
     }
-
 }

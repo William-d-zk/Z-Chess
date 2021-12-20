@@ -44,8 +44,8 @@ import static java.lang.String.format;
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
                   serial = 0x101)
-public class X101_HandShake
-        extends WsControl
+public class X101_HandShake<T extends WsContext>
+        extends WsControl<T>
 {
 
     private static Logger _Logger = Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
@@ -58,7 +58,8 @@ public class X101_HandShake
     @Override
     public String toString()
     {
-        return format("%s", new String(mPayload, StandardCharsets.UTF_8));
+        return format("web socket handshake %s",
+                      mPayload == null ? " no payload" : new String(mPayload, StandardCharsets.UTF_8));
     }
 
     private int      mCode;
@@ -83,7 +84,7 @@ public class X101_HandShake
     public X101_HandShake(String host, String secKey, int version)
     {
         this();
-        mPayload = format(REQUEST_TEMPLATE, host, secKey, host, version).getBytes(StandardCharsets.UTF_8);
+        mPayload = format(REQUEST_TEMPLATE, host, "chat", secKey, host, version).getBytes(StandardCharsets.UTF_8);
         mCode = IWsContext.HS_State_CONNECTION;
     }
 
@@ -95,7 +96,7 @@ public class X101_HandShake
     }
 
     private final static String REQUEST_TEMPLATE = """
-            GET /ws_service HTTP/1.1\r
+            GET /%s HTTP/1.1\r
             Host: %s\r
             Upgrade: websocket\r
             Connection: Upgrade\r
@@ -127,7 +128,7 @@ public class X101_HandShake
                 end = (end << 8) | input.get(offset + 2);
                 end = (end << 8) | input.get(offset + 3);
                 if(end == CRLF_CRLF) {
-                    input.markReader();
+                    mPayload = new byte[offset + 4];
                     return 0;
                 }
             }
@@ -139,7 +140,11 @@ public class X101_HandShake
     public int prefix(ByteBuf input)
     {
         StringBuilder response = new StringBuilder();
-        for(int mark = input.readerMark(); input.readerIdx() <= mark; ) {
+        input.markReader();
+        input.get(mPayload);
+        input.resetReader();
+        int target = input.readerIdx() + mPayload.length;
+        while(input.readerIdx() < target) {
             String row = input.readLine();
             String[] split = row.split("\\s+", 2);
             String httpKey = split[0].toUpperCase();
@@ -212,9 +217,7 @@ public class X101_HandShake
                             context().updateHandshakeState(WsContext.HS_State_SEC_KEY);
                             response.append(format("Sec-WebSocket-Accept: %s\r\n", context().getSecAccept(split[1])));
                         }
-                        default -> {
-                            _Logger.debug("server ignore default: %s", row);
-                        }
+                        default -> _Logger.debug("server ignore default: %s", row);
                     }
                 }
                 case CLIENT -> {
@@ -243,9 +246,7 @@ public class X101_HandShake
                                 context().updateHandshakeState(WsContext.HS_State_ERROR);
                             }
                         }
-                        default -> {
-                            _Logger.debug("client ignore default: %s", row);
-                        }
+                        default -> _Logger.debug("client ignore default: %s", row);
                     }
                 }
             }
@@ -254,15 +255,17 @@ public class X101_HandShake
             String toClient =
                     context().checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols" + CRLF
                                                                        : "HTTP/1.1 400 Bad Request" + CRLF;
-            context().setHandshake(new X101_HandShake(toClient + response.append(CRLF),
-                                                      context().checkState(WsContext.HS_State_CLIENT_OK)
-                                                      ? WsContext.HS_State_CLIENT_OK : WsContext.HS_State_ERROR));
+            context().handshake(new X101_HandShake<>(toClient + response.append(CRLF),
+                                                     context().checkState(WsContext.HS_State_CLIENT_OK)
+                                                     ? WsContext.HS_State_CLIENT_OK : WsContext.HS_State_ERROR));
+            mCode = context().checkState(WsContext.HS_State_CLIENT_OK) ? WsContext.HS_State_CLIENT_OK
+                                                                       : WsContext.HS_State_ERROR;
         }
         else if(ISort.Type.CLIENT == context().getType()) {
             if(context().checkState(WsContext.HS_State_ACCEPT_OK)) {
-                context().setHandshake(new X101_HandShake(response.toString(), WsContext.HS_State_ACCEPT_OK));
+                context().handshake(new X101_HandShake<>(response.toString(), WsContext.HS_State_ACCEPT_OK));
+                mCode = WsContext.HS_State_ACCEPT_OK;
             }
-
         }
         int remain = input.readableBytes();
         if(remain > 0) {

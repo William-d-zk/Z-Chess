@@ -77,9 +77,19 @@ public interface ITask
         return c < s;
     }
 
+    static boolean stateAtAlmost(int c, int s)
+    {
+        return c <= s;
+    }
+
     static boolean stateAtLeast(int c, int s)
     {
         return c >= s;
+    }
+
+    static boolean stateGreaterThan(int c, int s)
+    {
+        return c > s;
     }
 
     static boolean isRunning(int c)

@@ -39,14 +39,14 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 public class WsTextZSort
         extends BaseSort<WsContext>
 {
-    private final WsHandShakeFilter _Head = new WsHandShakeFilter();
+    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
     public WsTextZSort(Mode mode, Type type)
     {
         super(mode, type, "ws-text");
-        _Head.linkFront(new WsFrameFilter())
-             .linkFront(new WsControlFilter())
-             .linkFront(new WsTextFilter());
+        _Head.linkFront(new WsFrameFilter<>())
+             .linkFront(new WsControlFilter<>())
+             .linkFront(new WsTextFilter<>());
     }
 
     @Override

@@ -2,8 +2,8 @@ package com.isahl.chess.bishop.protocol.zchat.factory;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0B_Consensus;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0C_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0D_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0E_Consensus;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.*;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls.*;
 import com.isahl.chess.king.base.content.ByteBuf;
@@ -17,7 +17,10 @@ public class ZChatFactory
     @Override
     public ZControl create(ZFrame frame, ZContext context)
     {
-        return create(frame.payload()).wrap(context);
+        ByteBuf framePayload = frame.payload();
+        ZControl control = create(framePayload).wrap(context);
+        control.decode(framePayload);
+        return control;
     }
 
     @Override
@@ -39,8 +42,8 @@ public class ZChatFactory
             case 0x08 -> new X08_Identity();
             case 0x09 -> new X09_Redirect();
             case 0x0A -> new X0A_Shutdown();
-            case 0x0B -> new X0B_Consensus();
-            case 0x0C -> new X0C_PlainText();
+            case 0x0B -> new X0E_Consensus();
+            case 0x0C -> new X0D_PlainText();
             default -> null;
         };
     }

@@ -35,16 +35,28 @@ public interface IPContext
 
     void advanceInState(int state);
 
+    void recedeOutState(int state);
+
+    void recedeInState(int state);
+
     default boolean isProxy()
     {
         return false;
     }
 
-    default void updateOut()
+    default void promotionOut()
     {
     }
 
-    default void updateIn()
+    default void promotionIn()
+    {
+    }
+
+    default void demotionOut()
+    {
+    }
+
+    default void demotionIn()
     {
     }
 
@@ -53,10 +65,10 @@ public interface IPContext
     int DECODE_PAYLOAD = 01 << COUNT_BITS;
     int DECODE_ERROR   = 03 << COUNT_BITS;
 
-    int ENCODE_NULL    = -2 << COUNT_BITS;
+    int ENCODE_ERROR   = -2 << COUNT_BITS;
     int ENCODE_FRAME   = -1 << COUNT_BITS;
     int ENCODE_PAYLOAD = 01 << COUNT_BITS;
-    int ENCODE_ERROR   = 03 << COUNT_BITS;
+    int ENCODE_NULL    = 03 << COUNT_BITS;
 
     boolean isInConvert();
 

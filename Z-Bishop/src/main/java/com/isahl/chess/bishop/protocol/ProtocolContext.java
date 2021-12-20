@@ -52,7 +52,7 @@ public abstract class ProtocolContext<F>
         super(option);
         _Mode = mode;
         _Type = type;
-        advanceState(_EncodeState, ENCODE_NULL, CAPACITY);
+        recedeState(_EncodeState, ENCODE_NULL, CAPACITY);
         advanceState(_DecodeState, DECODE_NULL, CAPACITY);
     }
 
@@ -81,6 +81,12 @@ public abstract class ProtocolContext<F>
     @Override
     public void advanceOutState(int state)
     {
+        recedeState(_EncodeState, state, CAPACITY);
+    }
+
+    @Override
+    public void recedeOutState(int state)
+    {
         advanceState(_EncodeState, state, CAPACITY);
     }
 
@@ -94,6 +100,12 @@ public abstract class ProtocolContext<F>
     public void advanceInState(int state)
     {
         advanceState(_DecodeState, state, CAPACITY);
+    }
+
+    @Override
+    public void recedeInState(int state)
+    {
+        recedeState(_DecodeState, state, CAPACITY);
     }
 
     @Override
@@ -111,27 +123,25 @@ public abstract class ProtocolContext<F>
     @Override
     public boolean isInConvert()
     {
-        int state = _DecodeState.get();
-        return stateAtLeast(state, DECODE_PAYLOAD) && stateLessThan(state, DECODE_ERROR);
+        return _DecodeState.get() == DECODE_PAYLOAD;
     }
 
     @Override
     public boolean isOutConvert()
     {
-        int state = _EncodeState.get();
-        return stateAtLeast(state, ENCODE_PAYLOAD) && stateLessThan(state, ENCODE_ERROR);
+        return _EncodeState.get() == ENCODE_PAYLOAD;
     }
 
     @Override
     public boolean isInErrorState()
     {
-        return stateAtLeast(_DecodeState.get(), DECODE_ERROR);
+        return _DecodeState.get() == DECODE_ERROR;
     }
 
     @Override
     public boolean isOutErrorState()
     {
-        return stateAtLeast(_EncodeState.get(), DECODE_ERROR);
+        return _EncodeState.get() == DECODE_ERROR;
     }
 
     @Override
@@ -147,15 +157,31 @@ public abstract class ProtocolContext<F>
     }
 
     @Override
-    public void updateOut()
+    public void promotionOut()
     {
-        advanceOutState(_EncodeState.get() == ENCODE_NULL ? ENCODE_FRAME : ENCODE_PAYLOAD);
+        advanceOutState(_EncodeState.get() == ENCODE_NULL ? ENCODE_PAYLOAD
+                                                          : _EncodeState.get() == ENCODE_PAYLOAD ? ENCODE_FRAME
+                                                                                                 : ENCODE_ERROR);
     }
 
     @Override
-    public void updateIn()
+    public void promotionIn()
     {
-        advanceInState(_DecodeState.get() == DECODE_NULL ? DECODE_FRAME : DECODE_PAYLOAD);
+        advanceInState(_DecodeState.get() == DECODE_NULL ? DECODE_FRAME
+                                                         : _DecodeState.get() == DECODE_FRAME ? DECODE_PAYLOAD
+                                                                                              : DECODE_ERROR);
+    }
+
+    @Override
+    public void demotionOut()
+    {
+        recedeOutState(_EncodeState.get() == ENCODE_FRAME ? ENCODE_PAYLOAD : ENCODE_NULL);
+    }
+
+    @Override
+    public void demotionIn()
+    {
+        recedeInState(_DecodeState.get() == DECODE_PAYLOAD ? DECODE_FRAME : DECODE_NULL);
     }
 
     public ISort.Type getType()

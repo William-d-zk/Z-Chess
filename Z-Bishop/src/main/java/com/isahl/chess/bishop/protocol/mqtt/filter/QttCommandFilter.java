@@ -27,8 +27,8 @@ import com.isahl.chess.bishop.protocol.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -53,33 +53,28 @@ public class QttCommandFilter
         QttFrame frame = new QttFrame();
         frame.header(output.header());
         frame.withSub(output);
+        context.promotionOut();
         return frame;
     }
 
     @Override
     public QttCommand decode(QttContext context, QttFrame input)
     {
-        QttCommand command = (QttCommand) QttFactory._Instance.create(input, context);
-        command.decode(input.payload());
-        return command;
+        context.demotionIn();
+        return (QttCommand) QttFactory._Instance.create(input, context);
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)) {
-            if(context instanceof QttContext) {
-                if(context.isOutConvert()) {
-                    return new Pair<>(ResultType.NEXT_STEP, context);
-                }
-                else {
-                    throw new ZException("connect state isn't ok, drop command %#x", output.serial());
-                }
+            if(context.isOutConvert() && context instanceof QttContext && output instanceof ICommand c && !c.isCtrl()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting instanceof QttContext && acting.isInConvert()) {
+                if(acting.isOutConvert() && acting instanceof QttContext) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
             }
@@ -91,11 +86,13 @@ public class QttCommandFilter
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
-            if(context.isInFrame() && context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
+            if(context.isInConvert() && context instanceof QttContext) {return new Pair<>(ResultType.HANDLED, context);}
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) context).getActingContext();
-                if(context.isInFrame() && acting instanceof QttContext) {return new Pair<>(ResultType.HANDLED, acting);}
+                if(context.isInConvert() && acting instanceof QttContext) {
+                    return new Pair<>(ResultType.HANDLED, acting);
+                }
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

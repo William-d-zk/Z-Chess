@@ -120,10 +120,11 @@ public class QttFrame
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public QttFrame withSub(IoSerial sub)
     {
         mPayload = sub.encode()
                       .array();
+        return this;
     }
 
     @Override

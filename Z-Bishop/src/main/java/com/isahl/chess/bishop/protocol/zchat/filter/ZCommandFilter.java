@@ -55,17 +55,16 @@ public class ZCommandFilter
     {
         ZFrame frame = new ZFrame();
         frame.header(output.header());
-        frame.put(output.encode(context)
-                        .array());
+        frame.withSub(output);
+        context.promotionOut();
         return frame;
     }
 
     @Override
-    public ZCommand decode(ZContext context, ZFrame frame)
+    public ZCommand decode(ZContext context, ZFrame input)
     {
-        ZCommand command = (ZCommand) _ZChatFactory.create(frame, context);
-        command.decode(frame.payload(), context);
-        return command;
+        context.demotionIn();
+        return (ZCommand) _ZChatFactory.create(input, context);
     }
 
     @Override

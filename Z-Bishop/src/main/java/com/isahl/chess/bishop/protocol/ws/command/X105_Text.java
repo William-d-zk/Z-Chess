@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,35 +21,46 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.events.client;
+package com.isahl.chess.bishop.protocol.ws.command;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.events.pipe.DecodeHandler;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
+import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.bishop.protocol.ws.model.WsControl;
+import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+
+import java.nio.charset.StandardCharsets;
+
+import static com.isahl.chess.board.base.ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL;
 
 /**
  * @author william.d.zk
  */
-public class ClientDecodeHandler
-        extends DecodeHandler
+@ISerialGenerator(parent = PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x105)
+public class X105_Text<T extends WsContext>
+        extends WsControl<T>
 {
 
-    public ClientDecodeHandler(IEncryptor encryptHandler, int slot)
+    public X105_Text()
     {
-        super(encryptHandler, slot);
+        super(WsFrame.frame_op_code_ctrl_text);
+    }
+
+    public X105_Text(String resp)
+    {
+        this();
+        mPayload = resp.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            IControl<?>[] commands,
-                            ISession session,
-                            IOperator<IControl<?>[], ISession, ITriple> operator)
+    public Level getLevel()
     {
-        event.produce(IOperator.Type.LOGIC, new Pair<>(commands, session), operator);
+        return Level.ALMOST_ONCE;
     }
+
+    public String getText()
+    {
+        return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : null;
+    }
+
 }

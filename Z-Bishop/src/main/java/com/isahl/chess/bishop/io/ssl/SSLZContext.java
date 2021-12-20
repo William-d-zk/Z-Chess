@@ -37,9 +37,6 @@ import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
-
 /**
  * @author william.d.zk
  */
@@ -108,8 +105,8 @@ public class SSLZContext<A extends IPContext>
     @Override
     public void ready()
     {
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceOutState(ENCODE_PAYLOAD);
+        advanceInState(DECODE_FRAME);
         _ActingContext.ready();
         try {
             _SslEngine.beginHandshake();

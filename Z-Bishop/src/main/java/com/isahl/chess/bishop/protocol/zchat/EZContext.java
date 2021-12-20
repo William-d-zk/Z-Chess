@@ -111,7 +111,7 @@ public class EZContext
     }
 
     @Override
-    public void updateIn()
+    public void promotionIn()
     {
         updateKeyIn();
     }
@@ -131,7 +131,7 @@ public class EZContext
      * 真正的操作在encode 中使用 cryptOut最终执行
      */
     @Override
-    public void updateOut()
+    public void promotionOut()
     {
         updateKeyOut();
     }
@@ -192,13 +192,13 @@ public class EZContext
     @Override
     public void cryptIn()
     {
-        advanceInState(DECODE_PAYLOAD);
+        super.promotionIn();
     }
 
     @Override
     public void cryptOut()
     {
-        advanceOutState(ENCODE_PAYLOAD);
+       super.promotionOut();
     }
 
     @Override

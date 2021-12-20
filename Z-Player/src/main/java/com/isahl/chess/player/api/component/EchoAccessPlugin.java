@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.player.api.model.EchoDo;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -43,19 +42,19 @@ public class EchoAccessPlugin
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     @Override
-    public boolean isSupported(IProtocol protocol)
+    public boolean isSupported(IoSerial input)
     {
-        return protocol.serial() == 0x0C;
+        return input.serial() == 0x0C;
     }
 
     @Override
-    public List<IControl<?>> handle(IManager manager, ISession session, IControl<?> content)
+    public List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ITriple onLink(IManager manager, ISession session, IControl<?> input)
+    public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         throw new UnsupportedOperationException();
     }
@@ -72,7 +71,7 @@ public class EchoAccessPlugin
     }
 
     @Override
-    public void consume(IProtocol request)
+    public void consume(IoSerial request)
     {
         EchoDo echo = (EchoDo) request;
     }

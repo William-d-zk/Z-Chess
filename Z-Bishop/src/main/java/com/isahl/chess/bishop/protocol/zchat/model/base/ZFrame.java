@@ -41,10 +41,7 @@ public class ZFrame
     public final static int frame_payload_length_21_transaction_position    = 11;
     public final static int frame_payload_length_28_transaction_position    = 12;
 
-    private byte     mFrameHeader;
-    private long     mTransaction;
-    private byte[]   mPayload;
-    private IoSerial mSubContent;
+    private long mTransaction;
 
     @Override
     public int length()
@@ -240,9 +237,12 @@ public class ZFrame
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public ZFrame withSub(IoSerial sub)
     {
         mSubContent = sub;
+        mPayload = sub.encode()
+                      .array();
+        return this;
     }
 
     @Override

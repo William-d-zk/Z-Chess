@@ -55,7 +55,7 @@ public interface IPipeEncoder
                 IPipeFilter pipeFilter = previous.getPipeFilter();
                 Pair<IFilter.ResultType, IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
                 resultType = seekResult.getFirst();
-                context = seekResult.getSecond();
+                 context = seekResult.getSecond();
                 switch(resultType) {
                     case ERROR:
                         throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());

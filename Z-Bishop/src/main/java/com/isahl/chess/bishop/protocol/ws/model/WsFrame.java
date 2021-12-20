@@ -82,15 +82,31 @@ public class WsFrame
 
     public void setMask(byte[] mask)
     {
-        mMask = Objects.requireNonNull(mask);
+        mMask = mask;
     }
 
     @Override
     public int length()
     {
-        return 1 + (mMask == null ? 0 : 4) +
-               (mPayload == null ? 1 : (mPayload.length > 0xFFFF ? 9 : mPayload.length > 0x7D ? 3 : 1));
+        int length = 1 + // header
+                     (mMask == null ? 0 : 4) + //mask
+                     1; // attr
+        if(mPayload != null) {
+            if(mPayload.length > 0xFFFF) {
+                length += 8;
+            }
+            else if(mPayload.length > 0x7D) {
+                length += 2;
+            }
+            length += mPayload.length;
+        }
+        return length;
+    }
 
+    @Override
+    public int sizeOf()
+    {
+        return length();
     }
 
     public boolean checkRSV(byte value)
@@ -191,7 +207,7 @@ public class WsFrame
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.put(mFrameHeader);
+        output.put(mFrameHeader |= frame_fin_no_more);
         int attr = 0;
         output.markWriter();
         if(mPayload != null) {
@@ -204,7 +220,7 @@ public class WsFrame
                 output.putShort((short) mPayload.length);
             }
             else {
-                output.put(mPayload.length);
+                attr |= mPayload.length;
             }
         }
         if(mMask != null) {
@@ -226,12 +242,13 @@ public class WsFrame
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public WsFrame withSub(IoSerial sub)
     {
         //IoSerial payload ≤ 256MB不会超过payload, 对多fragment场景支持欠缺
         mPayload = sub.encode()
                       .array();
         mSubContent = sub;
+        return this;
     }
 
     @Override

@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.bishop.protocol.zchat.model.base;
 
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import static java.lang.String.format;
@@ -34,10 +35,14 @@ public abstract class ZProtocol
 {
     public final static int VERSION = 1;
 
+    protected byte[]   mPayload;
+    protected byte     mFrameHeader;
+    protected IoSerial mSubContent;
+
     @Override
-    public String toString()
+    public int length()
     {
-        return format("[%s] size:%d \n", getClass().getSimpleName(), length());
+        return mPayload == null ? 0 : mPayload.length;
     }
 
     @Override
@@ -46,4 +51,9 @@ public abstract class ZProtocol
         return length();
     }
 
+    @Override
+    public String toString()
+    {
+        return format("[%s] size:%d \n", getClass().getSimpleName(), length());
+    }
 }

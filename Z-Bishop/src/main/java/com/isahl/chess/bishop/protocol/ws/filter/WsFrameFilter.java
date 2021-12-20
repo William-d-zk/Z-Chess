@@ -23,6 +23,7 @@
 package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
@@ -37,8 +38,8 @@ import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultTy
 /**
  * @author William.d.zk
  */
-public class WsFrameFilter
-        extends AioFilterChain<WsContext, WsFrame, IPacket>
+public class WsFrameFilter<T extends WsContext>
+        extends AioFilterChain<T, WsFrame, IPacket>
 {
     public final static String NAME = "ws_frame";
 
@@ -48,15 +49,18 @@ public class WsFrameFilter
     }
 
     @Override
-    public IPacket encode(WsContext context, WsFrame frame)
+    public IPacket encode(T context, WsFrame frame)
     {
         frame.setMask(context.getMask());
-        return new AioPacket(frame.encode());
+        IPacket packet = new AioPacket(frame.encode());
+        context.demotionOut();
+        return packet;
     }
 
     public ResultType peek(IPContext context, IProtocol input)
     {
-        if(context.isInFrame() && context instanceof WsContext ws_ctx && input instanceof IPacket in_packet) {
+        if(context instanceof IWsContext && input instanceof IPacket in_packet) {
+            WsContext ws_ctx = (WsContext) context;
             WsFrame carrier = ws_ctx.getCarrier();
             if(carrier == null) {
                 ws_ctx.setCarrier(carrier = new WsFrame());
@@ -67,19 +71,20 @@ public class WsFrameFilter
     }
 
     @Override
-    public WsFrame decode(WsContext context, IPacket input)
+    public WsFrame decode(T context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
         frame.decode(input.getBuffer());
         context.reset();
+        context.promotionIn();
         return frame;
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
-            if(context.isOutFrame() && context instanceof WsContext) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && context.isOutFrame()) {
+            if(context.isOutFrame() && context instanceof IWsContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
@@ -96,7 +101,7 @@ public class WsFrameFilter
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isInFrame()) {
             ResultType check = peek(context, input);
             if(check != IGNORE) {return new Pair<>(check, context);}
             IPContext acting = context;
@@ -115,13 +120,13 @@ public class WsFrameFilter
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return (I) encode((WsContext) context, (WsFrame) output);
+        return (I) encode((T) context, (WsFrame) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((WsContext) context, (IPacket) input);
+        return (O) decode((T) context, (IPacket) input);
     }
 }

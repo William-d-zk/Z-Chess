@@ -39,6 +39,11 @@ import java.util.Objects;
 public class BinarySerial
         implements IoSerial
 {
+    @Override
+    public int sizeOf()
+    {
+        return ByteBuf.vSizeOf(length());
+    }
 
     protected byte[]   mPayload;
     protected IoSerial mSubContent;
@@ -106,11 +111,12 @@ public class BinarySerial
     }
 
     @Override
-    public void withSub(IoSerial sub)
+    public BinarySerial withSub(IoSerial sub)
     {
         mSubContent = sub;
         mPayload = mSubContent.encode()
                               .array();
+        return this;
     }
 
     @Override

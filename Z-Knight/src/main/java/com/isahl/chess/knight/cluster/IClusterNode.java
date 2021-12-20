@@ -92,7 +92,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ITriple response(ISession session)
+            public ITriple afterConnected(ISession session)
             {
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
@@ -154,7 +154,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ITriple response(ISession session)
+            public ITriple afterConnected(ISession session)
             {
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)

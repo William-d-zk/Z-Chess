@@ -26,13 +26,18 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.BATCH;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
 /**
  * @author William.d.zk
@@ -40,16 +45,15 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 public interface IPipeDecoder
         extends IOperator<IPacket, ISession, ITriple>
 {
-    default IControl<?>[] filterRead(IPacket input, ISession session)
+    default ITriple filterRead(IPacket input, ISession session)
     {
         IPContext context = session.getContext();
         if(context == null || input == null) {return null;}
         final IFilterChain _Header = session.getFilterChain()
                                             .getChainHead();
-        IControl<?>[] commands = null;
         IProtocol protocol = input;
         IPacket proxy = null;
-
+        ITriple result = null;
         for(IFilterChain next = _Header; ; next = _Header, protocol = input, context = session.getContext()) {
             Chain:
             {
@@ -63,12 +67,12 @@ public interface IPipeDecoder
                         case ERROR:
                             throw new ZException("error input: %s ; filter: %s ", protocol, next.getName());
                         case NEED_DATA:
-                            if(commands != null) {
+                            if(result != null) {
                                 /*
                                   协议层已经完成处理，返回所有已处理完毕的
                                   IControl 对象。
                                  */
-                                return commands;
+                                return result;
                             }
                             else if(proxy != null) {
                                 /*
@@ -88,16 +92,20 @@ public interface IPipeDecoder
                             protocol = proxy = pipeFilter.pipeDecode(context, protocol);
                             break;
                         case HANDLED:
-                            IControl<?> cmd = pipeFilter.pipeDecode(context, protocol);
+                            IProtocol cmd = pipeFilter.pipeDecode(context, protocol);
                             if(cmd != null) {
                                 cmd.with(session);
-                                if(commands == null) {
-                                    commands = new IControl[]{ cmd };
+                                if(result == null) {
+                                    result = Triple.of(cmd, session, SINGLE);
+                                }
+                                else if(result.getThird() == SINGLE) {
+                                    IProtocol previous = result.getFirst();
+                                    List<IProtocol> pushList = new LinkedList<>(List.of(previous, cmd));
+                                    result = Triple.of(pushList, session, BATCH);
                                 }
                                 else {
-                                    IControl<?>[] nCmd = new IControl[commands.length + 1];
-                                    IoUtil.addArray(commands, nCmd, cmd);
-                                    commands = nCmd;
+                                    List<IProtocol> pushList = result.getFirst();
+                                    pushList.add(cmd);
                                 }
                             }
                             break Chain;

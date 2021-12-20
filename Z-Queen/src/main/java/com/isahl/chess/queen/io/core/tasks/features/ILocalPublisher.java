@@ -24,11 +24,10 @@
 package com.isahl.chess.queen.io.core.tasks.features;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
@@ -48,9 +47,9 @@ public interface ILocalPublisher
     ReentrantLock getLock(IOperator.Type type);
 
     @Override
-    default boolean send(ISession session, IOperator.Type type, IControl<?>... toSends)
+    default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
     {
-        if(session == null || toSends == null || toSends.length == 0) {return false;}
+        if(session == null || outputs == null || outputs.length == 0) {return false;}
         final RingBuffer<QEvent> _LocalSendEvent = getPublisher(type);
         final ReentrantLock _LocalLock = getLock(type);
         if(_LocalLock.tryLock()) {
@@ -60,12 +59,11 @@ public interface ILocalPublisher
                  * 虽然可以利用dispatcher 擦除 type 信息，直接转头 write过程，
                  * 但是这样写太过晦涩，还是直接在这一层完成分拆比较好
                  */
-                for(ITriple triple : session.getTransfer()
-                                            .handle(toSends, session)) {
+                for(IProtocol output : outputs) {
                     long sequence = _LocalSendEvent.next();
                     try {
                         QEvent event = _LocalSendEvent.get(sequence);
-                        event.produce(type, new Pair<>(triple.getFirst(), triple.getSecond()), triple.getThird());
+                        event.produce(type, new Pair<>(output, session), session.getEncoder());
                     }
                     finally {
                         _LocalSendEvent.publish(sequence);

@@ -24,10 +24,11 @@
 package com.isahl.chess.bishop.protocol.ws.filter;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.bishop.protocol.ws.command.X105_Text;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
-import com.isahl.chess.bishop.protocol.ws.model.WsText;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
@@ -37,8 +38,8 @@ import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class WsTextFilter
-        extends AioFilterChain<WsContext, WsText, WsFrame>
+public class WsTextFilter<T extends WsContext>
+        extends AioFilterChain<T, X105_Text<T>, WsFrame>
 {
     public WsTextFilter()
     {
@@ -46,41 +47,39 @@ public class WsTextFilter
     }
 
     @Override
-    public WsFrame encode(WsContext context, WsText output)
+    public WsFrame encode(T context, X105_Text<T> output)
     {
         WsFrame frame = new WsFrame();
+        frame.header(output.header());
         frame.withSub(output);
-        frame.encode();
+        context.promotionOut();
         return frame;
     }
 
     @Override
-    public WsText decode(WsContext context, WsFrame input)
+    public X105_Text<T> decode(T context, WsFrame input)
     {
-        WsText text = new WsText();
-        text.decode(input.payload());
+        X105_Text<T> text = new X105_Text<>();
+        text.wrap(context)
+            .decode(input.payload());
+        context.demotionIn();
         return text;
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof WsText) {
-            if(context instanceof IWsContext && context.isOutConvert()) {
-                //作为最尾端的filter出现，需要处理context的代理链
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)) {
+            if(context.isOutConvert() && context instanceof IWsContext) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while(acting.isProxy() || acting instanceof IWsContext) {
-                if(acting instanceof IWsContext && acting.isOutConvert()) {
+            while(acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if(acting.isOutConvert() && acting instanceof IWsContext) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {break;}
             }
-            return new Pair<>(ResultType.NEXT_STEP, context);
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
@@ -88,11 +87,15 @@ public class WsTextFilter
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && context.isInConvert() &&
-           context instanceof IWsContext)
-        {
-            //filter 一定连在WsFrameFilter之后,从而不再判断额外的信息。
-            return new Pair<>(ResultType.HANDLED, context);
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
+            if(context instanceof IWsContext && context.isInConvert()) {return new Pair<>(ResultType.HANDLED, context);}
+            IPContext acting = context;
+            while(acting.isProxy()) {
+                if(acting instanceof IWsContext && acting.isInConvert()) {
+                    return new Pair<>(ResultType.HANDLED, acting);
+                }
+                acting = ((IProxyContext<?>) acting).getActingContext();
+            }
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
@@ -101,15 +104,14 @@ public class WsTextFilter
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-
-        return (I) encode((WsContext) context, (WsText) output);
+        return (I) encode((T) context, (X105_Text<T>) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((WsContext) context, (WsFrame) input);
+        return (O) decode((T) context, (WsFrame) input);
     }
 
 }

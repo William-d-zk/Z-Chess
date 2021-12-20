@@ -45,8 +45,8 @@ public class WsContext
     private final int    _MaxPayloadSize;
     private final byte[] _Mask;
 
-    private int            mHandshakeState;
-    private X101_HandShake mWsHandshake;
+    private int                                 mHandshakeState;
+    private X101_HandShake<? extends WsContext> mWsHandshake;
 
     public WsContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
@@ -104,29 +104,18 @@ public class WsContext
         return _SecAcceptExpect;
     }
 
-    @Override
-    public void updateOut()
+    public <T extends WsContext> X101_HandShake<T> response(String host)
     {
-        advanceOutState(ENCODE_PAYLOAD);
+        return new X101_HandShake<>(host, getSeKey(), getWsVersion());
     }
 
-    @Override
-    public void updateIn()
+    @SuppressWarnings("unchecked")
+    public <T extends WsContext> X101_HandShake<T> getHandshake()
     {
-        advanceInState(DECODE_PAYLOAD);
+        return (X101_HandShake<T>) mWsHandshake;
     }
 
-    public X101_HandShake responseHandShake(String host)
-    {
-        return new X101_HandShake(host, getSeKey(), getWsVersion());
-    }
-
-    public X101_HandShake getHandshake()
-    {
-        return mWsHandshake;
-    }
-
-    public void setHandshake(X101_HandShake handShake)
+    public <T extends WsContext> void handshake(X101_HandShake<T> handShake)
     {
         mWsHandshake = handShake;
     }

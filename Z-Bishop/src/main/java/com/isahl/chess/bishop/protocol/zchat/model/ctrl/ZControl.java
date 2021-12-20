@@ -30,9 +30,7 @@ public abstract class ZControl
     private final static int g_msg_uid_size      = 8;
     private final static int min_msg_uid_size    = min_no_msg_uid_size + g_msg_uid_size;
 
-    protected byte[] mPayload;
-    protected byte   mFrameHeader, mAttr;
-    protected IoSerial mSubContent;
+    protected byte mAttr;
 
     private ISession mSession;
     private long     mSequence;
@@ -73,13 +71,15 @@ public abstract class ZControl
         mAttr |= (ZProtocol.VERSION << attribute_version_bits_left) & attribute_version_mask;
     }
 
-    public void withSub(IoSerial subContent)
+    @Override
+    public ZControl withSub(IoSerial subContent)
     {
         Objects.requireNonNull(subContent);
         mAttr |= attribute_sub_content;
         mSubContent = subContent;
         mPayload = mSubContent.encode()
                               .array();
+        return this;
     }
 
     public boolean isWithSub()
@@ -104,7 +104,9 @@ public abstract class ZControl
     @Override
     public int length()
     {
-        return 2 + (mPayload == null ? 0 : mPayload.length) + 4;
+        return 2 + // attr,cmd-id
+               super.length() + // payload-length
+               4; //crc
     }
 
     @Override

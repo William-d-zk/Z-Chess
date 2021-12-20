@@ -52,6 +52,7 @@ public class QttFrameFilter
     @Override
     public IPacket encode(QttContext context, QttFrame output)
     {
+        context.demotionOut();
         return new AioPacket(output.encode());
     }
 
@@ -61,6 +62,7 @@ public class QttFrameFilter
         QttFrame frame = context.getCarrier();
         frame.decode(input.getBuffer());
         context.reset();
+        context.promotionIn();
         return frame;
     }
 
