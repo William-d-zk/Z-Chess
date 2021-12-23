@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.component.ClusterFactory;
+import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
@@ -107,7 +107,7 @@ public class RaftCustom
             case 0x72 -> {
                 X72_RaftAppend x72 = (X72_RaftAppend) received;
                 if(x72.payload() != null) {
-                    _RaftPeer.receiveLogs(ClusterFactory.listOf(x72._sub(), x72.payload()));
+                    _RaftPeer.receiveLogs(RaftFactory.listOf(x72._sub(), x72.payload()));
                 }
                 return _RaftPeer.onResponse(x72.getTerm(),
                                             x72.getPreIndex(),

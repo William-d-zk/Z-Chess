@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
-import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
@@ -41,13 +40,11 @@ public class X72_RaftAppend
     public X72_RaftAppend(long msgId)
     {
         super(msgId);
-        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     public X72_RaftAppend()
     {
         super();
-        mFrameHeader |= ZFrame.frame_op_code_ctrl;
     }
 
     // leaderId

@@ -26,7 +26,7 @@ package com.isahl.chess.knight.raft.model.replicate;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.knight.raft.component.ClusterFactory;
+import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.queen.message.InnerProtocol;
 import org.apache.commons.io.FileUtils;
 
@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,7 +173,7 @@ public class Segment
         if(mFileSize == 0) {return;}
         while(offset < mFileSize) {
             long start = mRandomAccessFile.getFilePointer();
-            LogEntry entry = InnerProtocol.load(ClusterFactory._Instance, mRandomAccessFile);
+            LogEntry entry = InnerProtocol.load(RaftFactory._Instance, mRandomAccessFile);
             if(entry.getIndex() > 0) {
                 endIndex = entry.getIndex();
                 if(startIndex < 0) {
