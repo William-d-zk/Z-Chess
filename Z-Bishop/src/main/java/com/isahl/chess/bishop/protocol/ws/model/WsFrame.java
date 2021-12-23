@@ -245,8 +245,8 @@ public class WsFrame
     public WsFrame withSub(IoSerial sub)
     {
         //IoSerial payload ≤ 256MB不会超过payload, 对多fragment场景支持欠缺
-        mPayload = sub.encode()
-                      .array();
+        ByteBuf encoded = sub.encode();
+        if(encoded != null && encoded.capacity() > 0) {mPayload = encoded.array();}
         mSubContent = sub;
         return this;
     }

@@ -34,36 +34,32 @@ import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
 public class ZlsZSort
-        extends BaseSort<EZContext>
-{
+        extends BaseSort<EZContext> {
     private final ZEFilter<EZContext> _Head = new ZEFilter<>();
 
-    public ZlsZSort(Mode mode, Type type)
-    {
+    public ZlsZSort(Mode mode, Type type) {
         super(mode, type, "zchat-ls");
-        ZChatFactory factory = switch(mode) {
+        ZChatFactory factory = switch (mode) {
             case CLUSTER -> ZClusterFactory._Instance;
-            case LINK -> switch(type) {
+            case LINK -> switch (type) {
                 case SERVER -> ZServerFactory._Instance;
                 case SYMMETRY -> ZSymmetryFactory._Instance;
                 case CLIENT -> ZConsumerFactory._Instance;
-                case INNER -> throw new IllegalArgumentException("ws-zchat no support INNER type");
+                case INNER -> ZInnerFactory._Instance;
             };
         };
         _Head.linkFront(new ZFrameFilter())
-             .linkFront(new ZControlFilter())
-             .linkFront(new ZCommandFilter(factory));
+                .linkFront(new ZControlFilter(factory))
+                .linkFront(new ZCommandFilter(factory));
     }
 
     @Override
-    public IFilterChain getFilterChain()
-    {
+    public IFilterChain getFilterChain() {
         return _Head;
     }
 
     @Override
-    public EZContext newContext(INetworkOption option)
-    {
+    public EZContext newContext(INetworkOption option) {
         return new EZContext(option, getMode(), getType());
     }
 }

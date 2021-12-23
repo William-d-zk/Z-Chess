@@ -239,9 +239,9 @@ public class ZFrame
     @Override
     public ZFrame withSub(IoSerial sub)
     {
+        ByteBuf encoded = sub.encode();
+        if(encoded != null && encoded.capacity() > 0) {mPayload = encoded.array();}
         mSubContent = sub;
-        mPayload = sub.encode()
-                      .array();
         return this;
     }
 
