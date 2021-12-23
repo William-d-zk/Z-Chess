@@ -34,21 +34,16 @@ import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.components.Health;
-import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
@@ -103,41 +98,7 @@ public class ClientPool
         _ClientCore = new ClientCore(ioCount);
         _TimeWheel = _ClientCore.getTimeWheel();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
-        _ClientCore.build(slot->new ILogicHandler()
-        {
-            private final IHealth _Health = new Health(slot);
-
-            @Override
-            public Logger getLogger()
-            {
-                return _Logger;
-            }
-
-            @Override
-            public IManager getManager()
-            {
-                return ClientPool.this;
-            }
-
-            @Override
-            public void serviceHandle(IoSerial request)
-            {
-                _Logger.info("service recv:[%s]", request);
-            }
-
-            @Override
-            public IPipeTransfer defaultTransfer()
-            {
-                return null;
-            }
-
-            @Override
-            public IHealth getHealth()
-            {
-                return _Health;
-            }
-
-        }, Encryptor::new);
+        _ClientCore.build(slot->new ClientHandler(new Health(slot), ClientPool.this), Encryptor::new);
         _Logger.debug("device consumer created");
     }
 
@@ -262,7 +223,7 @@ public class ClientPool
     @Override
     public void onDismiss(ISession session)
     {
-        mHeartbeatTask.cancel();
+        if(mHeartbeatTask != null) {mHeartbeatTask.cancel();}
         rmSession(session);
         _Logger.warning("device consumer dismiss session %s", session);
     }

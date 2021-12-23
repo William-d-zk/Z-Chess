@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,18 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.service;
+package com.isahl.chess.audience.client.component;
 
-import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
-import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -40,25 +34,17 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
 
-/**
- * @author william.d.zk
- */
-public class LogicHandler<T extends IActivity & IManager & IClusterNode>
+public class ClientHandler
         implements ILogicHandler
 {
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final Logger   _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
+    private final IHealth  _Health;
+    private final IManager _Manager;
 
-    private final T                    _ClusterNode;
-    private final IHealth              _Health;
-    private final List<IAccessService> _AccessService;
-    private final List<IHandleHook>    _HandleHooks;
-
-    public LogicHandler(T cluster, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks)
+    public ClientHandler(IHealth health, IManager manager)
     {
-        _ClusterNode = cluster;
-        _Health = new Health(slot);
-        _AccessService = accessAdapters;
-        _HandleHooks = hooks;
+        _Health = health;
+        _Manager = manager;
     }
 
     @Override
@@ -68,9 +54,15 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     }
 
     @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
+
+    @Override
     public IManager getManager()
     {
-        return _ClusterNode;
+        return _Manager;
     }
 
     @Override
@@ -82,31 +74,10 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     private List<ITriple> logicHandle(IProtocol content, ISession session)
     {
         List<ITriple> results = null;
-        for(IAccessService service : _AccessService) {
-            if(service.isSupported(content)) {
-                if(results == null) {results = service.logicHandle(getManager(), session, content);}
-                else {results.addAll(service.logicHandle(getManager(), session, content));}
-            }
-        }
-        for(IHandleHook hook : _HandleHooks) {
-            hook.handle(content, results);
-        }
+
+        _Logger.info("logic recv: %s", content);
+
         return results;
     }
 
-    @Override
-    public void serviceHandle(IoSerial request)
-    {
-        for(IAccessService service : _AccessService) {
-            if(service.isSupported(request)) {
-                service.consume(request);
-            }
-        }
-    }
-
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
-    }
 }

@@ -48,7 +48,7 @@ public class X101_HandShake<T extends WsContext>
         extends WsControl<T>
 {
 
-    private static Logger _Logger = Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
+    private static final Logger _Logger = Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
 
     public X101_HandShake()
     {

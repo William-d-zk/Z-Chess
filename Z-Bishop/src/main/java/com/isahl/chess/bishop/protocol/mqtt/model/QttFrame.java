@@ -122,8 +122,8 @@ public class QttFrame
     @Override
     public QttFrame withSub(IoSerial sub)
     {
-        mPayload = sub.encode()
-                      .array();
+        ByteBuf encoded = sub.encode();
+        if(encoded != null && encoded.capacity() > 0) {mPayload = encoded.array();}
         return this;
     }
 

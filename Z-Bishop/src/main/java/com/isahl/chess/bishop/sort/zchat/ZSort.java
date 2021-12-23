@@ -24,7 +24,7 @@ public class ZSort
                 case INNER -> ZInnerFactory._Instance;
             };
         };
-        _Head.linkFront(new ZControlFilter())
+        _Head.linkFront(new ZControlFilter(factory))
              .linkFront(new ZCommandFilter(factory));
     }
 

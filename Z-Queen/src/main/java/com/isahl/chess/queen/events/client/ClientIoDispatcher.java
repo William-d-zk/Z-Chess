@@ -109,7 +109,7 @@ public class ClientIoDispatcher
                                                              event.getEventType()));
                 }
             }
-            default -> {
+            case READ_EOF -> {
                 IPair errorContent = event.getContent();
                 IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
                 ISession session = errorContent.getSecond();
@@ -121,6 +121,15 @@ public class ClientIoDispatcher
                           new Pair<>(QueenCode.ERROR_CLOSE, session),
                           transferResult.getSecond());
                 }
+            }
+            case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
+                IPair errorContent = event.getContent();
+                String msg = errorContent.getFirst();
+                ISession session = errorContent.getSecond();
+                _Logger.warning("closed: [%s] -> %s", session.isClosed(), session);
+            }
+            default -> {
+                _Logger.warning(" default no handle %s", event);
             }
         }
         event.reset();

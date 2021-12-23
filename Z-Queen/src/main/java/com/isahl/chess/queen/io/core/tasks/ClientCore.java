@@ -28,6 +28,7 @@ import com.isahl.chess.king.base.disruptor.components.Z1Processor;
 import com.isahl.chess.king.base.disruptor.components.Z2Processor;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.events.client.ClientDecodedHandler;
 import com.isahl.chess.queen.events.client.ClientIoDispatcher;
 import com.isahl.chess.queen.events.client.ClientReaderHandler;
 import com.isahl.chess.queen.events.client.ClientWriteDispatcher;
@@ -95,14 +96,14 @@ public class ClientCore
      * ║ barrier, ━> publish event, ━━ pipeline, | handle event
 
      *
-     *  ━━→ _AioProducerEvents ║               ┏→ _LocalSend   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
-     *      _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent   ━━━━━{_DecodeProcessor}|→{_LogicProcessor}|→━║_WriteDispatcher┏→_EncodedEvent━━{_EncodedProcessor}|━┳━║[Event Done]
-     * ┏━━→ _ErrorEvent[2]     ║               ┃  _WroteEvent  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                ┗→_ErrorEvent━┓                       ┗━→_ErrorEvent━┓
-     * ┃┏━→ _ErrorEvent[1]     ║               ┗→ _ErrorEvent━┓                                                                            ┃                                      ┃
-     * ┃┃┏→ _ErrorEvent[0]     ║                              ┃                                                                            ┃                                      ┃
-     * ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                            ┃                                      ┃
-     * ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                      ┃
-     * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     *  ━━→ _AioProducerEvents ║               ┏→ _LocalSend   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
+     *      _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent   ━━━━━{_DecodeProcessor} → {DecodedDispatcher} ━║ _LogicProcessor →━║_WriteDispatcher┏→_EncodedEvent━━{_EncodedProcessor}|━┳━║[Event Done]
+     * ┏━━→ _ErrorEvent[2]     ║               ┃  _WroteEvent  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                ┗→_ErrorEvent━┓                       ┗━→_ErrorEvent━┓
+     * ┃┏━→ _ErrorEvent[1]     ║               ┗→ _ErrorEvent━┓                                                                                                  ┃                                      ┃
+     * ┃┃┏→ _ErrorEvent[0]     ║                              ┃                                                                                                  ┃                                      ┃
+     * ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                                                  ┃                                      ┃
+     * ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                      ┃
+     * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
      * @formatter:on
      */
@@ -112,7 +113,8 @@ public class ClientCore
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(1 << 7);
         final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
         final RingBuffer<QEvent>[] _IoDispatchEvents = new RingBuffer[4 + _IoCount];
-        final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(1 << 9);
+        final RingBuffer<QEvent> _ReadAndDecodeEvent = createPipelineLite(1 << 9);
+        final RingBuffer<QEvent> _LogicEvent = createPipelineLite(1 << 9);
         final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(1 << 7);
         final SequenceBarrier[] _IoDispatchBarriers = new SequenceBarrier[_IoDispatchEvents.length];
         final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
@@ -126,32 +128,36 @@ public class ClientCore
         IoUtil.addArray(_ErrorBarriers, _IoDispatchBarriers, _IoCount + 1);
         final Z2Processor<QEvent> _IoDispatcher = new Z2Processor<>(_IoDispatchEvents,
                                                                     _IoDispatchBarriers,
-                                                                    new ClientIoDispatcher(_ReadAndLogicEvent,
+                                                                    new ClientIoDispatcher(_ReadAndDecodeEvent,
                                                                                            _WroteEvent,
                                                                                            _ErrorEvents[0]));
         _IoDispatcher.setThreadName("IoDispatcher");
         for(int i = 0, size = _IoDispatchEvents.length; i < size; i++) {
             _IoDispatchEvents[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         }
-        final Z1Processor<QEvent> _ReaderProcessor = new Z1Processor<>(_ReadAndLogicEvent,
-                                                                       _ReadAndLogicEvent.newBarrier(),
+        final Z1Processor<QEvent> _ReaderProcessor = new Z1Processor<>(_ReadAndDecodeEvent,
+                                                                       _ReadAndDecodeEvent.newBarrier(),
                                                                        new ClientReaderHandler(encryptSupplier.get(),
                                                                                                0));
+        final Z1Processor<QEvent> _DecodedDispatcher = new Z1Processor<>(_ReadAndDecodeEvent,
+                                                                         _ReadAndDecodeEvent.newBarrier(_ReaderProcessor.getSequence()),
+                                                                         new ClientDecodedHandler(_LogicEvent));
+
         /*
          * 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
          * 最终被
          */
-        final Z1Processor<QEvent> _LogicProcessor = new Z1Processor<>(_ReadAndLogicEvent,
-                                                                      _ReadAndLogicEvent.newBarrier(_ReaderProcessor.getSequence()),
+        final Z1Processor<QEvent> _LogicProcessor = new Z1Processor<>(_LogicEvent,
+                                                                      _LogicEvent.newBarrier(),
                                                                       factory.create(0));
         final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{
                 _BizLocalSendEvent,
-                _ReadAndLogicEvent,
+                _ReadAndDecodeEvent,
                 _WroteEvent
         };
         final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{
                 _BizLocalSendEvent.newBarrier(),
-                _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                _ReadAndDecodeEvent.newBarrier(_LogicProcessor.getSequence()),
                 _WroteEvent.newBarrier()
         };
         final Z2Processor<QEvent> _WriteDispatcher = new Z2Processor<>(_SendEvents,
@@ -174,6 +180,7 @@ public class ClientCore
 
         submit(_IoDispatcher);
         submit(_ReaderProcessor);
+        submit(_DecodedDispatcher);
         submit(_LogicProcessor);
         submit(_WriteDispatcher);
         submit(_EncodeProcessor);
@@ -184,6 +191,7 @@ public class ClientCore
     {
         return 1// aioDispatch
                + 1// connect-read-decode
+               + 1// decoded-dispatcher
                + 1// logic-
                + 1// write-dispatcher
                + 1// write-encode

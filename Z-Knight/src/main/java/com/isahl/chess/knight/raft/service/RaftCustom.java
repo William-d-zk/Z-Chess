@@ -161,10 +161,10 @@ public class RaftCustom
                 return _RaftPeer.onNotify(x77.getIndex());
             }
             // peer *, behind in config → previous in config
-            case 0x106 -> {
-                X08_Identity x106 = (X08_Identity) received;
-                long peerId = x106.getIdentity();
-                long newIdx = x106.getSessionIdx();
+            case 0x08-> {
+                X08_Identity x08 = (X08_Identity) received;
+                long peerId = x08.getIdentity();
+                long newIdx = x08.getSessionIdx();
                 _Logger.debug("===> map peerId:%#x @ %#x", peerId, newIdx);
                 manager.mapSession(newIdx, session, peerId);
             }

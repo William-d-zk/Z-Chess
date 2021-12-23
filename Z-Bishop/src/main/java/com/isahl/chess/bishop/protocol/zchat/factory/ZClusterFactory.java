@@ -23,21 +23,19 @@
 
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
 public class ZClusterFactory
-        extends ZChatFactory
-{
+        extends ZChatFactory {
     public static final ZClusterFactory _Instance = new ZClusterFactory();
 
-    protected ZCommand build(int serial)
-    {
-        return switch(serial) {
+    protected ZControl build(int serial) {
+        return switch (serial) {
             case 0x70 -> new X70_RaftVote();
             case 0x71 -> new X71_RaftBallot();
             case 0x72 -> new X72_RaftAppend();
@@ -48,7 +46,7 @@ public class ZClusterFactory
             case 0x77 -> new X77_RaftNotify();
             case 0x78 -> new X78_RaftChange();
             case 0x79 -> new X79_RaftAdjudge();
-            default -> null;
+            default -> super.build(serial);
         };
     }
 }

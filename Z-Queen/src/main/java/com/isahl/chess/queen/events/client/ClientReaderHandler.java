@@ -23,9 +23,11 @@
 
 package com.isahl.chess.queen.events.client;
 
+import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.pipe.DecodeHandler;
@@ -36,6 +38,7 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.DISPATCH;
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 import static com.isahl.chess.king.base.features.IError.Type.CONNECT_FAILED;
 
@@ -44,6 +47,7 @@ import static com.isahl.chess.king.base.features.IError.Type.CONNECT_FAILED;
  */
 public class ClientReaderHandler
         extends DecodeHandler
+        implements IPipeHandler<QEvent>
 {
 
     public ClientReaderHandler(IEncryptor encryptHandler, int slot)
@@ -89,8 +93,9 @@ public class ClientReaderHandler
                                 case SINGLE -> event.produce(WRITE,
                                                              new Pair<>(result.getFirst(), session),
                                                              session.getEncoder());
-                                case BATCH -> event.produce(IOperator.Type.DISPATCH, result.getFirst());
+                                case BATCH -> event.produce(DISPATCH, result.getFirst());
                             }
+                            return;
                         }
                     }
                     else {
@@ -101,16 +106,21 @@ public class ClientReaderHandler
                         connection.error();
                         _Logger.warning("session create failed %s", throwable, connection);
                     }
-
                 }
                 catch(Exception e) {
                     _Logger.fetal("client session create failed", e);
                 }
+                event.ignore();
             }
             else {
                 super.onEvent(event, sequence);
             }
         }
+    }
 
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

@@ -32,12 +32,13 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.List;
-import java.util.Objects;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
 
 /**
  * @author william.d.zk
@@ -72,32 +73,34 @@ public class ClientWriteDispatcher
         }
         else {
             switch(event.getEventType()) {
-                case BIZ_LOCAL:// from biz local
-                case WRITE:// from LinkIo
-                case LOGIC:// from read->logic
-                    IPair writeContent = event.getContent();
-                    IControl[] commands = writeContent.getFirst();
-                    ISession session = writeContent.getSecond();
-                    if(session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
-                        List<ITriple> triples = transferOperator.handle(commands, session);
-                        for(ITriple triple : triples) {
-                            publish(_Encoder,
-                                    IOperator.Type.WRITE,
-                                    new Pair<>(triple.getFirst(), session),
-                                    triple.getThird());
+                case BIZ_LOCAL, WRITE, LOGIC -> {
+                    IPair content = event.getContent();
+                    IProtocol output = content.getFirst();
+                    ISession session = content.getSecond();
+                    if(session.isValid() && output != null) {
+                        publish(_Encoder, WRITE, content, session.getEncoder());
+                    }
+                }
+                case DISPATCH -> {
+                    List<ITriple> contents = event.getContentList();
+                    if(contents != null) {
+                        for(ITriple triple : contents) {
+                            IProtocol output = triple.getFirst();
+                            ISession session = triple.getSecond();
+                            if(output != null && session.isValid()) {
+                                publish(_Encoder, WRITE, Pair.of(output, session), triple.getThird());
+                            }
                         }
                     }
-                    break;
-                case WROTE:// from io-wrote
-                    IPair wroteContent = event.getContent();
-                    session = wroteContent.getSecond();
+                }
+                case WROTE -> {
+                    IPair wrote = event.getContent();
+                    ISession session = wrote.getSecond();
                     if(session.isValid()) {
-                        publish(_Encoder, IOperator.Type.WROTE, wroteContent, event.getEventOp());
+                        publish(_Encoder, IOperator.Type.WROTE, wrote, event.getEventOp());
                     }
-                    break;
-                default:
-                    break;
+                }
+                default -> {}
             }
         }
         event.reset();

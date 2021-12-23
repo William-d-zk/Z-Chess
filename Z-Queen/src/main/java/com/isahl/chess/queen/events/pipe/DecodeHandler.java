@@ -43,7 +43,8 @@ import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.BATCH;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
 /**
  * @author William.d.zk
@@ -51,7 +52,7 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
 public class DecodeHandler
         implements IBatchHandler<QEvent>
 {
-    protected final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
+    protected final Logger _Logger = Logger.getLogger("io.queen.decode." + getClass().getSimpleName());
 
     private final IEncryptor _EncryptHandler;
     private final IHealth    _Health;
@@ -106,7 +107,7 @@ public class DecodeHandler
                     }
                 }
                 else {
-                    event.reset();
+                    event.ignore();
                 }
             }
             catch(Exception e) {

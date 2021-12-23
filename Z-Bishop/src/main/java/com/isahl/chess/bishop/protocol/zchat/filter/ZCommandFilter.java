@@ -42,12 +42,12 @@ public class ZCommandFilter
         extends AioFilterChain<ZContext, ZCommand, ZFrame>
 {
 
-    private final ZChatFactory _ZChatFactory;
+    private final ZChatFactory _ZFactory;
 
     public ZCommandFilter(ZChatFactory factory)
     {
         super("z_command");
-        _ZChatFactory = Objects.requireNonNull(factory);
+        _ZFactory = Objects.requireNonNull(factory);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ZCommandFilter
     public ZCommand decode(ZContext context, ZFrame input)
     {
         context.demotionIn();
-        return (ZCommand) _ZChatFactory.create(input, context);
+        return (ZCommand) _ZFactory.create(input, context);
     }
 
     @Override

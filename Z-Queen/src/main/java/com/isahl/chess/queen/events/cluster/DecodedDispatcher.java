@@ -87,8 +87,10 @@ public class DecodedDispatcher
                     IPair content = event.getContent();
                     if(content != null) {
                         IProtocol decoded = content.getFirst();
-                        publish(dispatchWorker(decoded.session()
-                                                      .hashCode()), IOperator.Type.LOGIC, content, event.getEventOp());
+                        ISession session = content.getSecond();
+                        ISort.Mode mode = session.getMode();
+                        IPair nextPipe = getNextPipe(mode, decoded);
+                        publish(nextPipe.getFirst(), nextPipe.getSecond(), content, event.getEventOp());
                     }
                 }
                 case BATCH -> {
