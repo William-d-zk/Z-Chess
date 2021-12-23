@@ -10,11 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 @ISerialFactory(parent = ISerial.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class ClusterFactory
+public class RaftFactory
         implements IFactory
 {
 
-    public static final ClusterFactory _Instance = new ClusterFactory();
+    public static final RaftFactory _Instance = new RaftFactory();
 
     public static <T extends InnerProtocol> List<T> listOf(int serial, ByteBuf input)
     {

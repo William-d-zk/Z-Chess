@@ -96,7 +96,6 @@ public class MixMappingHandler<T extends IStorage>
     public void onEvent(QEvent event, long sequence)
     {
         if(event.hasError()) {
-            _Logger.warning("mapping error → %s ", event);
             switch(event.getErrorType()) {
                 case ACCEPT_FAILED, CONNECT_FAILED -> {
                     IOperator<Throwable, IAioConnection, Void> failedOperator = event.getEventOp();
@@ -121,7 +120,6 @@ public class MixMappingHandler<T extends IStorage>
             }
         }
         else {
-            _Logger.trace("mapping:%s", event);
             switch(event.getEventType()) {
                 case CONNECTED, ACCEPTED -> {
                     IPair connected = event.getContent();
@@ -251,7 +249,9 @@ public class MixMappingHandler<T extends IStorage>
                     try {
                         List<ITriple> contents = _ClusterCustom.consistent(_SessionManager, request, origin);
                         _Logger.debug("consistency request: %s ; cluster-broadcast: %s ", request, contents);
-                        if(contents != null) {publish(_Writer, contents);}
+                        if(contents != null) {
+                            publish(_Writer, contents);
+                        }
                         else {
                             IOperator<IProtocol, Long, ITriple> reject = event.getEventOp();
                             ITriple resp = reject.handle(request, origin);

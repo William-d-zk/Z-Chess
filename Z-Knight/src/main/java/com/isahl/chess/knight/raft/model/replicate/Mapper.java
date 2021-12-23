@@ -26,7 +26,7 @@ package com.isahl.chess.knight.raft.model.replicate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.component.ClusterFactory;
+import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
@@ -121,7 +121,7 @@ public class Mapper
         String logMetaName = _LogMetaDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
-            mLogMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
+            mLogMeta = InnerProtocol.load(RaftFactory._Instance, metaFile);
             if(mLogMeta == null) {
                 mLogMeta = new LogMeta();
             }
@@ -137,7 +137,7 @@ public class Mapper
         String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
-            mSnapshotMeta = InnerProtocol.load(ClusterFactory._Instance, metaFile);
+            mSnapshotMeta = InnerProtocol.load(RaftFactory._Instance, metaFile);
             if(mSnapshotMeta == null) {
                 mSnapshotMeta = new SnapshotMeta();
             }

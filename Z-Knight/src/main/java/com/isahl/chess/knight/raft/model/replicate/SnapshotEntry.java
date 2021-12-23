@@ -32,7 +32,7 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.model.BinarySerial;
-import com.isahl.chess.knight.raft.component.ClusterFactory;
+import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -172,7 +172,7 @@ public class SnapshotEntry<T extends IoSerial>
     public void fold(ByteBuf input, int remain)
     {
         if(remain > 0) {
-            mContent = (T) ClusterFactory._Instance.build(BinarySerial.seekSerial(input));
+            mContent = (T) RaftFactory._Instance.build(BinarySerial.seekSerial(input));
             Objects.requireNonNull(mContent)
                    .decode(input);
         }
