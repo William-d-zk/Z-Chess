@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -153,8 +152,8 @@ public class MixMappingHandler<T extends IStorage>
                     }
                 }
                 case LINK -> {
-                    IControl<?> received = event.getContent()
-                                                .getFirst();
+                    IProtocol received = event.getContent()
+                                              .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
                     if(received != null && session != null) {
@@ -167,7 +166,7 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                IControl<?> response = result.getSecond();
+                                IProtocol response = result.getSecond();
                                 if(response != null) {
                                     publish(_Writer, _LinkCustom.notify(_SessionManager, response, session.getIndex()));
                                 }
@@ -183,11 +182,11 @@ public class MixMappingHandler<T extends IStorage>
                     }
                 }
                 /*
-                    core.ClusterProcessor → core._LinkEvent(_Transfer) → core.LinkProcessor → _LinkCustom
+                 *  core.ClusterProcessor → core._LinkEvent(_Transfer) → core.LinkProcessor → _LinkCustom
                  */
                 case CLUSTER -> {
-                    IControl<?> received = event.getContent()
-                                                .getFirst();
+                    IProtocol received = event.getContent()
+                                              .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
                     if(received != null && session != null) {
@@ -195,13 +194,11 @@ public class MixMappingHandler<T extends IStorage>
                             ITriple result = doCustom(_ClusterCustom, _SessionManager, session, received);
                             if(result != null) {
                                 IConsistent adjudge = result.getSecond();
-                                if(adjudge != null) {
-                                    if(!_ClusterCustom.onConsistentCall(adjudge)) {
-                                        publish(_Transfer,
-                                                IOperator.Type.LINK_CONSISTENT_RESULT,
-                                                new Pair<>(adjudge, session),
-                                                _LinkCustom.getOperator());
-                                    }
+                                if(adjudge != null && _ClusterCustom.onConsistentCall(adjudge)) {
+                                    publish(_Transfer,
+                                            IOperator.Type.LINK_CONSISTENT_RESULT,
+                                            Pair.of(adjudge, session),
+                                            _LinkCustom.getOperator());
                                 }
                                 else {
                                     _Logger.debug("nothing for transfer to link");
@@ -218,36 +215,32 @@ public class MixMappingHandler<T extends IStorage>
                     }
                 }
                 /*
-                    CONSISTENCY:{
-                        cluster processor
-                        core.LinkProcessor → core._ClusterEvent(_Transfer) → core.ClusterProcessor → _ClusterCustom
-                    }
-                    CONSISTENCY_SERVICE:{
-                        consistency open service
-                        api → open service → core.ClusterProcessor → _ClusterCustom
-                    }
+                 *  CONSISTENCY:{
+                 *      cluster processor
+                 *      core.LinkProcessor → core._ClusterEvent(_Transfer) → core.ClusterProcessor → _ClusterCustom
+                 *  }
+                 *  CONSISTENCY_SERVICE:{
+                 *      consistency open service
+                 *      api → open service → core.ClusterProcessor → _ClusterCustom
+                 *  }
                  */
                 case CONSISTENCY, CONSISTENCY_SERVICE -> {
                     IProtocol request = event.getContent()
                                              .getFirst();
                     /*
-                        origin state
-                        CONSISTENCY:{
-                            link-session.index
-                        }
-                        CONSISTENCY_SERVICE:{
-                            consistent-service.node-id
-                        }
+                     *  origin state
+                     *  CONSISTENCY:{
+                     *      link-session.index
+                     *  }
+                     *  CONSISTENCY_SERVICE:{
+                     *      consistent-service.node-id
+                     *  }
                      */
                     long origin = event.getContent()
                                        .getSecond();
                     try {
-                        List<ITriple> contents = _ClusterCustom.consistent(_SessionManager, request, origin);
-                        _Logger.debug("consistency request: %s ; cluster-broadcast: %s ", request, contents);
-                        if(contents != null) {
-                            publish(_Writer, contents);
-                        }
-
+                        _Logger.debug("consistency request: %s", request);
+                        publish(_Writer, _ClusterCustom.consistent(_SessionManager, request, origin));
                     }
                     catch(Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
@@ -255,7 +248,7 @@ public class MixMappingHandler<T extends IStorage>
                 }
                 case CLUSTER_TOPOLOGY -> {
                     /*
-                        core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
+                     *  core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
                      */
                     try {
                         publish(_Writer,
@@ -267,20 +260,19 @@ public class MixMappingHandler<T extends IStorage>
                         _Logger.warning("cluster inner service api ");
                     }
                 }
-
                 /*
-                    LINKER(linker) →  CONSISTENCY(cluster) → CLUSTER(cluster) → CONSISTENT_RESULT(linker)
-                    cluster（cluster-client） → Linker ｜ Linker notify → device.session
+                 *  LINKER(linker) →  CONSISTENCY(cluster) → CLUSTER(cluster) → CONSISTENT_RESULT(linker)
+                 *  cluster（cluster-client） → Linker ｜ Linker notify → device.session
                  */
                 case LINK_CONSISTENT_RESULT -> {
                     IConsistent consistency = event.getContent()
                                                    .getFirst();
                     /*
-                    cluster-session
+                     *  cluster-session
                      */
                     ISession session = event.getContent()
                                             .getSecond();
-                    IOperator<IConsistent, ISession, IControl<?>> adjudgeOperator = event.getEventOp();
+                    IOperator<IConsistent, ISession, IProtocol> adjudgeOperator = event.getEventOp();
                     if(consistency != null) {
                         try {
                             publish(_Writer,
@@ -295,7 +287,7 @@ public class MixMappingHandler<T extends IStorage>
 
                 }
                 /*
-                    ClusterConsumer Timeout->start_vote,heartbeat-cycle,step down->follower
+                 *  ClusterConsumer Timeout->start_vote,heartbeat-cycle,step down->follower
                  */
                 case CLUSTER_TIMER -> {
                     T content = event.getContent()
@@ -316,7 +308,7 @@ public class MixMappingHandler<T extends IStorage>
         return _Logger;
     }
 
-    private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IControl<?> received)
+    private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IProtocol received)
     {
         ITriple result = custom.handle(manager, session, received);
         _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);
@@ -324,20 +316,18 @@ public class MixMappingHandler<T extends IStorage>
             IOperator.Type type = result.getThird();
             switch(type) {
                 case SINGLE -> {
-                    IControl<?> response = result.getFirst();
+                    IProtocol response = result.getFirst();
                     if(response != null) {
                         publish(_Writer,
                                 WRITE,
-                                new Pair<>(response, response.session()),
+                                Pair.of(response, response.session()),
                                 response.session()
                                         .getEncoder());
                     }
                 }
                 case BATCH -> {
                     List<ITriple> responses = result.getFirst();
-                    if(responses != null && responses.size() > 0) {
-                        publish(_Writer, responses);
-                    }
+                    publish(_Writer, responses);
                 }
             }
         }

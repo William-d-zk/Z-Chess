@@ -31,7 +31,6 @@ import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -62,7 +61,7 @@ public class RaftCustom
      * third : operator-type [SINGLE|BATCH]
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl<?> received)
+    public ITriple handle(IManager manager, ISession session, IProtocol received)
     {
         /*
          * leader -> follow, self::follow
@@ -137,7 +136,6 @@ public class RaftCustom
         _Logger.debug("cluster consistent %s", request);
         return _RaftPeer.onSubmit(request.encode()
                                          .array(), manager, origin);
-
     }
 
     @Override

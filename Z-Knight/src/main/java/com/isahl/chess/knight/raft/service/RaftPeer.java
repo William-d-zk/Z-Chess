@@ -788,10 +788,13 @@ public class RaftPeer
     {
         CHECK:
         {
+            //@formatter:off
             if(_SelfMachine.getState()
-                           .getCode() > FOLLOWER.getCode() && _SelfMachine.getState()
-                                                                          .getCode() < LEADER.getCode() &&
+                           .getCode() > FOLLOWER.getCode() &&
+               _SelfMachine.getState()
+                           .getCode() < LEADER.getCode() &&
                update.getTerm() >= _SelfMachine.getTerm())
+            //@formatter:on
             {
                 _Logger.debug("elect time out → turn to follower");
                 stepDown(update.getTerm());
@@ -804,9 +807,14 @@ public class RaftPeer
 
     public List<ITriple> checkVoteState(RaftMachine update, IManager manager)
     {
-        if(update.getTerm() > _SelfMachine.getTerm() && update.getIndex() == _SelfMachine.getIndex() &&
-           update.getIndexTerm() == _SelfMachine.getIndexTerm() && update.getCandidate() == _SelfMachine.getPeerId() &&
-           update.getCommit() == _SelfMachine.getCommit() && _SelfMachine.getState() == FOLLOWER)
+        //@formatter:off
+        if(update.getTerm() > _SelfMachine.getTerm() &&
+           update.getIndex() == _SelfMachine.getIndex() &&
+           update.getIndexTerm() == _SelfMachine.getIndexTerm() &&
+           update.getCandidate() == _SelfMachine.getPeerId() &&
+           update.getCommit() == _SelfMachine.getCommit() &&
+           _SelfMachine.getState() == FOLLOWER)
+        //@formatter:on
         {
             vote4me();
             return createVotes(manager);
@@ -817,9 +825,14 @@ public class RaftPeer
 
     public List<ITriple> checkLogAppend(RaftMachine update, IManager manager)
     {
-        if(_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId() &&
-           _SelfMachine.getTerm() >= update.getTerm() && _SelfMachine.getIndex() >= update.getIndex() &&
-           _SelfMachine.getIndexTerm() >= update.getIndexTerm() && _SelfMachine.getCommit() >= update.getCommit())
+        //@formatter:off
+        if(_SelfMachine.getState() == LEADER &&
+           _SelfMachine.getPeerId() == update.getPeerId() &&
+           _SelfMachine.getTerm() >= update.getTerm() &&
+           _SelfMachine.getIndex() >= update.getIndex() &&
+           _SelfMachine.getIndexTerm() >= update.getIndexTerm() &&
+           _SelfMachine.getCommit() >= update.getCommit())
+        //@formatter:on
         {
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
             return createAppends(manager);

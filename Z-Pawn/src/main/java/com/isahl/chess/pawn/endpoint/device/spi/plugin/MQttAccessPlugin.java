@@ -46,7 +46,6 @@ import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
@@ -76,16 +75,16 @@ public class MQttAccessPlugin
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
 
-    private final IDeviceService                       _DeviceService;
-    private final IQttStorage                          _QttStorage;
+    private final IDeviceService                     _DeviceService;
+    private final IQttStorage                        _QttStorage;
     /*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
     /**
      * 在 link-consumer 中处理 subscribe 和 unsubscribe
      * 单线程执行，使用TreeMap 操作
      */
-    private final Map<Pattern, Subscribe>              _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
-    private final Map<Long, Map<Integer, ICommand<?>>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
-    private final Queue<Pair<Long, Instant>>           _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
+    private final Map<Pattern, Subscribe>            _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+    private final Map<Long, Map<Integer, IProtocol>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
+    private final Queue<Pair<Long, Instant>>         _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
     @Autowired
     public MQttAccessPlugin(IDeviceService deviceService, IQttStorage qttStorage)
@@ -339,7 +338,7 @@ public class MQttAccessPlugin
     {
         int msgId = (int) stateMessage.getMsgId();
         if(_QttIdentifierMap.computeIfPresent(session, (key, _MsgIdMessageMap)->{
-            IControl<?> old = _MsgIdMessageMap.put(msgId, stateMessage);
+            IProtocol old = _MsgIdMessageMap.put(msgId, stateMessage);
             if(old == null) {
                 _Logger.debug("retry receive: %s", stateMessage);
             }
@@ -347,7 +346,7 @@ public class MQttAccessPlugin
         }) == null)
         {
             //previous == null
-            final Map<Integer, ICommand<?>> _LocalIdMessageMap = new HashMap<>(16);
+            final Map<Integer, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttIdentifierMap.put(session, _LocalIdMessageMap);
             _Logger.debug("first receive: %s", stateMessage);

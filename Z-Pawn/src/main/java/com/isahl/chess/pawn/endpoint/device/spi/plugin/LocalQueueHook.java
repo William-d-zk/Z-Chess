@@ -30,7 +30,6 @@ import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.pawn.endpoint.device.api.db.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,9 +54,9 @@ public class LocalQueueHook
                    ICancelable
 {
 
-    private final TimeWheel          _TimeWheel;
-    private final Queue<IControl<?>> _MainQueue;
-    private final List<ISubscribe>   _Subscribes;
+    private final TimeWheel        _TimeWheel;
+    private final Queue<IProtocol> _MainQueue;
+    private final List<ISubscribe> _Subscribes;
 
     @Autowired
     public LocalQueueHook(TimeWheel timeWheel, List<ISubscribe> subscribes)
@@ -85,7 +84,7 @@ public class LocalQueueHook
     private void batchPush(LocalQueueHook self)
     {
         int cachedSize = _MainQueue.size();
-        List<IControl<?>> cached = new ArrayList<>(cachedSize);
+        List<IProtocol> cached = new ArrayList<>(cachedSize);
         for(int i = 0; i < cachedSize; i++) {
             cached.add(_MainQueue.poll());
         }
@@ -104,7 +103,7 @@ public class LocalQueueHook
     }
 
     public interface ISubscribe
-            extends Function<IControl<?>, MessageEntity>
+            extends Function<IProtocol, MessageEntity>
     {
         void onBatch(List<MessageEntity> contents);
     }

@@ -34,6 +34,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
@@ -96,7 +97,7 @@ public class WriteDispatcher
                 case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
                     IPair writeContent = event.getContent();
                     _Logger.debug("content:%s,%s", writeContent, event.getEventType());
-                    IControl<?> cmd = writeContent.getFirst();
+                    IProtocol cmd = writeContent.getFirst();
                     ISession session = writeContent.getSecond();
                     if(session != null) {
                         try {
@@ -131,7 +132,7 @@ public class WriteDispatcher
                 case LOGIC, DISPATCH -> {
                     List<ITriple> writeContents = event.getContentList();
                     for(ITriple content : writeContents) {
-                        IControl<?> cmd = content.getFirst();
+                        IProtocol cmd = content.getFirst();
                         ISession session = content.getSecond();
                         if(session != null) {
                             try {

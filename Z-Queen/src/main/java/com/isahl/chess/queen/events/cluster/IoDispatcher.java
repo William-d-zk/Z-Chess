@@ -35,7 +35,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.config.QueenCode;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
@@ -93,7 +93,7 @@ public class IoDispatcher
                 break;
             case CONSISTENCY_REJECT:
                 IPair consistencyRejected = event.getContent();
-                IControl<?> reject = consistencyRejected.getFirst();
+                IProtocol reject = consistencyRejected.getFirst();
                 _Logger.debug("consistency reject: %s", consistencyRejected);
                 ISession session = consistencyRejected.getSecond();
                 IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();

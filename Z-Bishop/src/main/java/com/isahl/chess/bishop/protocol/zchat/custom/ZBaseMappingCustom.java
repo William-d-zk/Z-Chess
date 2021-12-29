@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -50,7 +50,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     }
 
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl<?> content)
+    public ITriple handle(IManager manager, ISession session, IProtocol content)
     {
         _Logger.debug("mapping receive %s", content);
         switch(content.serial()) {

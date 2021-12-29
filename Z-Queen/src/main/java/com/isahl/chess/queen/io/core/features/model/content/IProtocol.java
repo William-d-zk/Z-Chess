@@ -50,4 +50,6 @@ public interface IProtocol
     {
         return null;
     }
+
+    default void transfer() {}
 }

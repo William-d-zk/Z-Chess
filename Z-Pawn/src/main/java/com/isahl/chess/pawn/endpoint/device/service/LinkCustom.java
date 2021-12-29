@@ -31,6 +31,7 @@ import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IControl<?> input)
+    public ITriple handle(IManager manager, ISession session, IProtocol input)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isSupported(input)) {
@@ -70,7 +71,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IControl<?> request, long origin)
+    public List<ITriple> notify(IManager manager, IProtocol request, long origin)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isSupported(request)) {

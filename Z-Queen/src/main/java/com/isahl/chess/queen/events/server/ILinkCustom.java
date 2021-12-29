@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.server;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.events.cluster.IConsistencyJudge;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -49,7 +49,7 @@ public interface ILinkCustom
      * @param origin  提交这个请求的cluster-peer-id
      * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(IManager manager, IControl<?> request, long origin);
+    List<ITriple> notify(IManager manager, IProtocol request, long origin);
 
     /**
      * 当出现了关闭 session 的需要时
