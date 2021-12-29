@@ -42,7 +42,7 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
@@ -228,7 +228,7 @@ public class ClientPool
         _Logger.warning("device consumer dismiss session %s", session);
     }
 
-    public final void sendLocal(long sessionIndex, IControl<?>... toSends)
+    public final void sendLocal(long sessionIndex, IProtocol... toSends)
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(session != null) {
@@ -239,7 +239,7 @@ public class ClientPool
         }
     }
 
-    public final void sendLocal(ISession session, IControl<?>... request)
+    public final void sendLocal(ISession session, IProtocol... request)
     {
         if(session != null) {
             _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, request);

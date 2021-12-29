@@ -43,8 +43,6 @@ public interface IControl<C extends IPContext>
 
     IControl<C> wrap(C context);
 
-    default void transfer() {}
-
     default void failed(ICode code) {}
 
     default int lack(ByteBuf input)
