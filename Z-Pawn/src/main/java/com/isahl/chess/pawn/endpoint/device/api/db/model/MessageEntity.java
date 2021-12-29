@@ -43,18 +43,16 @@ import java.io.Serial;
  */
 @Entity(name = "message")
 @Table(schema = "z_chess_pawn",
-       indexes = {
-               @Index(name = "origin_idx",
-                      columnList = "origin"),
-               @Index(name = "topic_idx",
-                      columnList = "topic")
+       indexes = { @Index(name = "origin_idx",
+                          columnList = "origin"),
+                   @Index(name = "topic_idx",
+                          columnList = "topic")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class MessageEntity
         extends AuditModel
-        implements IStorage,
-                   ITraceable
+        implements ITraceable
 {
     @Serial
     private static final long serialVersionUID = -6502547239976531057L;

@@ -25,6 +25,7 @@ package com.isahl.chess.queen.message;
 
 import com.isahl.chess.board.base.IFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.db.model.IStorage;
@@ -39,7 +40,6 @@ public abstract class InnerProtocol
         extends BinarySerial
         implements IStorage
 {
-
     protected final Operation   _Operation;
     protected final Strategy    _Strategy;
     protected final CreatorType _Type;
@@ -153,6 +153,7 @@ public abstract class InnerProtocol
     @SuppressWarnings("unchecked")
     public static <T extends InnerProtocol> T load(IFactory factory, DataInput input) throws IOException
     {
+        final Logger _Logger = Logger.getLogger("io.queen." + InnerProtocol.class.getSimpleName());
         //TODO 升级成zero-copy 模式【mapping-buffer】
         int length = IoUtil.readVariableIntLength(input);
         if(length > 0) {
@@ -166,6 +167,7 @@ public abstract class InnerProtocol
                 buffer.seek(buffer.writableBytes());
                 t.decode(buffer);
             }
+            _Logger.info("inner-protool load:[%s]", t.toString());
             return t;
         }
         return null;

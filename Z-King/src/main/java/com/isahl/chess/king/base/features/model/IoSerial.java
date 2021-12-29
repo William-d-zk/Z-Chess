@@ -24,6 +24,7 @@
 package com.isahl.chess.king.base.features.model;
 
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.io.IDecode;
 import com.isahl.chess.king.base.features.io.IEncode;
 
@@ -34,6 +35,14 @@ public interface IoSerial
 {
     IoSerial subContent();
 
+    default ByteBuf subEncoded()
+    {
+        byte[] payload = payload();
+        return payload != null && payload.length > 0 ? ByteBuf.wrap(payload) : null;
+    }
+
+    byte[] payload();
+
     @Override
     default int _sub()
     {
@@ -42,6 +51,8 @@ public interface IoSerial
     }
 
     IoSerial withSub(IoSerial sub);
+
+    IoSerial withSub(byte[] sub);
 
     void deserializeSub(IoFactory factory);
 

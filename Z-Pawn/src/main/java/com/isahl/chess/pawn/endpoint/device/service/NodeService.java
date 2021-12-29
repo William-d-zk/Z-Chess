@@ -30,7 +30,6 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.component.ConsistencyReject;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.service.RaftCustom;
@@ -105,7 +104,7 @@ public class NodeService
                                      mixConfig,
                                      timeWheel,
                                      _RaftPeer);
-        _RaftCustom = new RaftCustom(_RaftPeer, new ConsistencyReject(_RaftPeer, _DeviceNode));
+        _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
         _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters, hooks);
     }

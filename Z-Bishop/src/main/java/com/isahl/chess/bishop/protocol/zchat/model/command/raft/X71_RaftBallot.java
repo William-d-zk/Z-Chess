@@ -161,7 +161,7 @@ public class X71_RaftBallot
     @Override
     public String toString()
     {
-        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x,commit:%d}",
+        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x,commit:%d }",
                              mElectorId,
                              mTerm,
                              mIndex,

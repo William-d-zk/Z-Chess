@@ -37,49 +37,57 @@ import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 
 public abstract class ZCommand
         extends ZControl
-        implements ICommand<ZContext> {
+        implements ICommand<ZContext>
+{
     private long mMsgId;
 
-    public ZCommand() {
+    public ZCommand()
+    {
         super();
         withId(true);
         mFrameHeader ^= ZFrame.frame_op_code_ctrl;
     }
 
-    public ZCommand(long msgId) {
+    public ZCommand(long msgId)
+    {
         super();
         setMsgId(msgId);
         mFrameHeader ^= ZFrame.frame_op_code_ctrl;
     }
 
     @Override
-    public void setMsgId(long msgId) {
+    public void setMsgId(long msgId)
+    {
         withId(true);
         mMsgId = msgId;
     }
 
     @Override
-    public long getMsgId() {
+    public long getMsgId()
+    {
         return mMsgId;
     }
 
     @Override
-    public int length() {
-        return super.length() + 8;
-    }
-
-    @Override
-    public int prefix(ByteBuf input) {
+    public int prefix(ByteBuf input)
+    {
         input.markReader();
         mAttr = input.get();
         int cmd = input.getUnsigned();
-        if (cmd != serial()) {
+        if(cmd != serial()) {
             throw new ZException("input.cmd[%d]≠self.serial[%d]", cmd, serial());
         }
-        if (!isWithId()) {
+        if(!isWithId()) {
             throw new ZException("z-chat-command without msg-id?!");
         }
         setMsgId(input.getLong());
         return input.readableBytes();
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(getMsgId());
     }
 }

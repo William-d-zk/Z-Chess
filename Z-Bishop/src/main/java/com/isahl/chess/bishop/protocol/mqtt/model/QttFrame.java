@@ -77,9 +77,9 @@ public class QttFrame
     }
 
     @Override
-    public ByteBuf payload()
+    public byte[] payload()
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     @Override
@@ -96,7 +96,7 @@ public class QttFrame
             return 1;
         }
         else {
-            header(input.get(0));
+            header(input.peek(0));
             try {
                 int vLength = input.vLength(1);
                 return 1 + ByteBuf.vSizeOf(vLength) - remain;
@@ -122,8 +122,16 @@ public class QttFrame
     @Override
     public QttFrame withSub(IoSerial sub)
     {
-        ByteBuf encoded = sub.encode();
-        if(encoded != null && encoded.capacity() > 0) {mPayload = encoded.array();}
+        ByteBuf encoded = Objects.requireNonNull(sub)
+                                 .encode();
+        if(encoded.capacity() > 0) {mPayload = encoded.array();}
+        return this;
+    }
+
+    @Override
+    public QttFrame withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
         return this;
     }
 
@@ -161,12 +169,9 @@ public class QttFrame
         return output;
     }
 
-    public static int seekSubSerial(ByteBuf buffer)
+    public static int peekSubSerial(ByteBuf buffer)
     {
-        Objects.requireNonNull(buffer);
-        buffer.markReader();
-        QttType qttType = QttType.valueOf(buffer.get());
-        buffer.resetReader();
-        return QttType.serialOf(qttType);
+        return QttType.serialOf(QttType.valueOf(Objects.requireNonNull(buffer)
+                                                       .peek(0)));
     }
 }

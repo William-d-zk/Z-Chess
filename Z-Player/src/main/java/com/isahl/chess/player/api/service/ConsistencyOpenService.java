@@ -48,7 +48,6 @@ public class ConsistencyOpenService
 
     private final DeviceNode _DeviceNode;
     private final RaftPeer   _RaftPeer;
-    private final RaftCustom _RaftCustom;
 
     @Autowired
     public ConsistencyOpenService(DeviceNode deviceNode,
@@ -58,7 +57,6 @@ public class ConsistencyOpenService
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
-        _RaftCustom = raftCustom;
         handlers.forEach(raftCustom::register);
     }
 
@@ -67,7 +65,7 @@ public class ConsistencyOpenService
     {
         if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
         ConsistentProtocol consistency = new ConsistentProtocol(content, _RaftPeer.generateId());
-        ICode result = submit(consistency, _DeviceNode, _RaftCustom.getReject());
+        ICode result = submit(consistency, _DeviceNode);
 
         if(result.getCode() == KingCode.SUCCESS) {
             _Logger.debug("consistency submit ok:[ %s ]", content);

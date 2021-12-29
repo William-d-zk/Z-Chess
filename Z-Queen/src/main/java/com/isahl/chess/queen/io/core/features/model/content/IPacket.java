@@ -73,6 +73,11 @@ public interface IPacket
         throw new UnsupportedOperationException();
     }
 
+    default IProtocol withSub(byte[] sub)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     default void deserializeSub(IoFactory factory)
     {

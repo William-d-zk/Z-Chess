@@ -99,7 +99,7 @@ public class RaftNode
     {
         int length = 2 + // port
                      2 + // gate port
-                     1; // state
+                     1;  // state
         length += IoUtil.isBlank(getHost()) ? 1 : ByteBuf.vSizeOf(getHost().length());
         length += IoUtil.isBlank(getGateHost()) ? 1 : ByteBuf.vSizeOf(getGateHost().length());
         return length + super.length();

@@ -27,25 +27,17 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
-import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
-import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 
 public class RaftCustom
         implements IClusterCustom<RaftMachine>
@@ -54,12 +46,10 @@ public class RaftCustom
 
     private final RaftPeer                  _RaftPeer;
     private final List<IConsistencyHandler> _HandlerList = new LinkedList<>();
-    private final IConsistencyReject        _Reject;
 
-    public RaftCustom(RaftPeer raftPeer, IConsistencyReject reject)
+    public RaftCustom(RaftPeer raftPeer)
     {
         _RaftPeer = raftPeer;
-        _Reject = reject;
     }
 
     /**
@@ -83,85 +73,38 @@ public class RaftCustom
         switch(received.serial()) {
             // follower → elector
             case 0x70 -> {
-                X70_RaftVote x70 = (X70_RaftVote) received;
-                return _RaftPeer.elect(x70.getTerm(),
-                                       x70.getIndex(),
-                                       x70.getIndexTerm(),
-                                       x70.getCandidateId(),
-                                       x70.getCommit(),
-                                       manager,
-                                       session);
+                return _RaftPeer.elect((X70_RaftVote) received, manager, session);
             }
             // elector → candidate
             case 0x71 -> {
-                X71_RaftBallot x71 = (X71_RaftBallot) received;
-                return _RaftPeer.ballot(x71.getTerm(),
-                                        x71.getElectorId(),
-                                        x71.getIndex(),
-                                        x71.getCandidateId(),
-                                        x71.getCommit(),
-                                        manager,
-                                        session);
+                return _RaftPeer.onBallot((X71_RaftBallot) received, manager, session);
             }
             // leader → follower
             case 0x72 -> {
-                X72_RaftAppend x72 = (X72_RaftAppend) received;
-                if(x72.payload() != null) {
-                    _RaftPeer.receiveLogs(RaftFactory.listOf(x72._sub(), x72.payload()));
-                }
-                return _RaftPeer.onResponse(x72.getTerm(),
-                                            x72.getPreIndex(),
-                                            x72.getPreIndexTerm(),
-                                            x72.getLeaderId(),
-                                            x72.getCommit(),
-                                            session);
+                return _RaftPeer.onAppend((X72_RaftAppend) received, session);
             }
             // follower → leader
             case 0x73 -> {
-                X73_RaftAccept x73 = (X73_RaftAccept) received;
-                return _RaftPeer.onAccept(x73.getTerm(),
-                                          x73.getCatchUp(),
-                                          x73.getCatchUpTerm(),
-                                          x73.getFollowerId(),
-                                          manager);
+                return _RaftPeer.onAccept((X73_RaftAccept) received, manager);
             }
             // * → candidate
             case 0x74 -> {
-                X74_RaftReject x74 = (X74_RaftReject) received;
-                return _RaftPeer.onReject(x74.getTerm(),
-                                          x74.getIndex(),
-                                          x74.getIndexTerm(),
-                                          x74.getPeerId(),
-                                          x74.getCode(),
-                                          x74.getState(),
-                                          session);
+                return _RaftPeer.onReject((X74_RaftReject) received, session);
             }
             // client → leader
             case 0x75 -> {
-                if(_RaftPeer.getMachine()
-                            .getState() == LEADER)
-                {
-                    X75_RaftReq x75 = (X75_RaftReq) received;
-                    return _RaftPeer.onRequest(x75.subContent(), x75.getClientId(), x75.getOrigin(), manager, session);
-                }
-                else {
-                    _Logger.warning("state error,expect:'LEADER',real:%s",
-                                    _RaftPeer.getMachine()
-                                             .getState());
-                }
+                return _RaftPeer.onRequest((X75_RaftReq) received, manager, session);
             }
             // client.received:x76
             case 0x76 -> {
-                _Logger.debug(received.toString());
-                return new Triple<>(null, received, WRITE);
+                return _RaftPeer.onResponse((X76_RaftResp) received);
             }
             // leader → client
             case 0x77 -> {
-                X77_RaftNotify x77 = (X77_RaftNotify) received;
-                return _RaftPeer.onNotify(x77.getIndex());
+                return _RaftPeer.onNotify((X77_RaftNotify) received, manager);
             }
             // peer *, behind in config → previous in config
-            case 0x08-> {
+            case 0x08 -> {
                 X08_Identity x08 = (X08_Identity) received;
                 long peerId = x08.getIdentity();
                 long newIdx = x08.getSessionIdx();
@@ -191,54 +134,19 @@ public class RaftCustom
     @Override
     public <E extends IProtocol> List<ITriple> consistent(IManager manager, E request, long origin)
     {
-        _Logger.debug("cluster consensus %s", request);
-        if(_RaftPeer.getMachine()
-                    .getState() == LEADER)
-        {
-            return _RaftPeer.onImmediate(request, manager, origin);
-        }
-        else if(_RaftPeer.getMachine()
-                         .getLeader() != ZUID.INVALID_PEER_ID)
-        {
-            ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
-                                                                          .getLeader());
-            if(leaderSession != null) {
-                _Logger.info("client → leader x75");
-                X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
-                x75.withSub(request);
-                x75.setOrigin(origin);
-                x75.setClientId(_RaftPeer.getMachine()
-                                         .getPeerId());
-                return Collections.singletonList(new Triple<>(x75, leaderSession, leaderSession.getEncoder()));
-            }
-            else {
-                _Logger.fetal("Leader connection miss,wait for reconnecting");
-            }
-        }
-        _Logger.fetal("cluster is electing");
-        return null;
+        _Logger.debug("cluster consistent %s", request);
+        return _RaftPeer.onSubmit(request.encode()
+                                         .array(), manager, origin);
+
     }
 
     @Override
     public <E extends IConsistent> List<ITriple> changeTopology(IManager manager, E topology)
     {
         _Logger.debug("cluster new topology %s", topology);
-        if(_RaftPeer.getMachine()
-                    .getState() == LEADER)
-        {
-            //Accept Machine State
-            return _RaftPeer.onImmediate(topology, manager, _RaftPeer.getPeerId());
-        }
-        else if(_RaftPeer.getMachine()
-                         .getLeader() != ZUID.INVALID_PEER_ID)
-        {
-            ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
-                                                                          .getLeader());
-            if(leaderSession != null) {
-                return Collections.singletonList(new Triple<>(topology, leaderSession, leaderSession.getEncoder()));
-            }
-        }
-        return null;
+        //Accept Machine State
+        return _RaftPeer.onSubmit(topology.encode()
+                                          .array(), manager, _RaftPeer.getPeerId());
     }
 
     @Override
@@ -252,12 +160,6 @@ public class RaftCustom
     {
         return !_HandlerList.isEmpty() && _HandlerList.stream()
                                                       .anyMatch(handler->handler.onConsistencyCall(result));
-    }
-
-    @Override
-    public IConsistencyReject getReject()
-    {
-        return _Reject;
     }
 
     @Override

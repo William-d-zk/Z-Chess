@@ -132,7 +132,6 @@ public class ClientIoDispatcher
                 _Logger.warning(" default no handle %s", event);
             }
         }
-        event.reset();
     }
 
     @Override

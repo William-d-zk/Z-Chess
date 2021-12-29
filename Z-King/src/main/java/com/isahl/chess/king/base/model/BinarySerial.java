@@ -30,10 +30,18 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
-import java.util.Objects;
-
 /**
  * @author william.d.zk
+ * @date 2021-12-22
+ * 0                   1                   2                   3
+ * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ * +-+-+-+-+-------+---------------+-------------------------------+
+ * |         serial-id(16)         |  variable length [7bit](8~32) |
+ * +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+ * |                               |  payload data                 |
+ * +-------------------------------- - - - - - - - - - - - - - - - +
+ * :                     payload data continued ...                :
+ * + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
 public class BinarySerial
@@ -42,7 +50,7 @@ public class BinarySerial
     @Override
     public int sizeOf()
     {
-        return ByteBuf.vSizeOf(length());
+        return ByteBuf.vSizeOf(length()) + 2;
     }
 
     protected byte[]   mPayload;
@@ -51,19 +59,19 @@ public class BinarySerial
     @Override
     public int prefix(ByteBuf input)
     {
-        int length = input.vLength();
         int serial = input.getUnsignedShort();
+        int length = input.vLength();
         if(serial != serial()) {
             throw new ZException("serial[%d vs %d] no expected", serial, serial());
         }
-        return length - 2;
+        return length;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        return output.vPutLength(length())
-                     .putShort((short) serial());
+        return output.putShort((short) serial())
+                     .vPutLength(length());
     }
 
     @Override
@@ -78,44 +86,49 @@ public class BinarySerial
     @Override
     public void deserializeSub(IoFactory factory)
     {
-        ByteBuf payload = payload();
-        mSubContent = Objects.requireNonNull(factory)
-                             .create(payload);
-        mSubContent.decode(payload);
+        ByteBuf subBuffer = subEncoded();
+        if(subBuffer != null && factory != null) {
+            mSubContent = factory.create(subBuffer);
+            mSubContent.decode(subBuffer);
+        }
     }
 
     @Override
     public ByteBuf encode()
     {
-        ByteBuf output = IoSerial.super.encode();
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
-        return output;
+        return IoSerial.super.encode()
+                             .put(mPayload);//ByteBuf.put 忽略null 输入
     }
 
     @Override
     public int length()
     {
-        return 2 + (mPayload == null ? 0 : mPayload.length);
+        return mPayload == null ? 0 : mPayload.length;
     }
 
-    public void put(byte[] payload)
+    @Override
+    public byte[] payload()
     {
-        mPayload = payload;
-    }
-
-    public ByteBuf payload()
-    {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     @Override
     public BinarySerial withSub(IoSerial sub)
     {
         mSubContent = sub;
-        mPayload = mSubContent.encode()
-                              .array();
+        if(mSubContent != null) {
+            ByteBuf encoded = mSubContent.encode();
+            if(encoded.capacity() > 0) {
+                mPayload = encoded.array();
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public IoSerial withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
         return this;
     }
 
@@ -125,12 +138,14 @@ public class BinarySerial
         return mSubContent;
     }
 
+    @Override
+    public ByteBuf subEncoded()
+    {
+        return mPayload != null && mPayload.length > 0 ? ByteBuf.wrap(mPayload) : null;
+    }
+
     public static int seekSerial(ByteBuf buffer)
     {
-        buffer.markReader();
-        int length = buffer.vLength();
-        int serial = buffer.getUnsignedShort();
-        buffer.resetReader();
-        return serial;
+        return buffer.peekUnsignedShort(0);
     }
 }

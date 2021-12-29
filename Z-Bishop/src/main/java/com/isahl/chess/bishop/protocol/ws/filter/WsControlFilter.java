@@ -67,7 +67,7 @@ public class WsControlFilter<T extends WsContext>
             case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong<>();
             default -> throw new ZException("ws control nonsupport %d", input.header() & 0x0F);
         };
-        control.decode(input.payload());
+        control.decode(input.subEncoded());
         context.demotionIn();
         return control;
     }
@@ -94,16 +94,16 @@ public class WsControlFilter<T extends WsContext>
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && f.isCtrl()) {
-            if(context.isInConvert() && context instanceof IWsContext) {return new Pair<>(ResultType.HANDLED, context);}
+            if(context.isInConvert() && context instanceof IWsContext) {return Pair.of(ResultType.HANDLED, context);}
             IPContext acting = context;
             while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
                 if(acting.isInConvert() && acting instanceof IWsContext) {
-                    return new Pair<>(ResultType.HANDLED, acting);
+                    return Pair.of(ResultType.HANDLED, acting);
                 }
             }
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override

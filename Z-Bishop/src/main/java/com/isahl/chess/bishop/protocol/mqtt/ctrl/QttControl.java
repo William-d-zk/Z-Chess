@@ -118,6 +118,13 @@ public abstract class QttControl
     }
 
     @Override
+    public QttControl withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
+        return this;
+    }
+
+    @Override
     public void deserializeSub(IoFactory factory)
     {
         throw new UnsupportedOperationException();
@@ -168,9 +175,9 @@ public abstract class QttControl
     }
 
     @Override
-    public ByteBuf payload()
+    public byte[] payload()
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     @Override

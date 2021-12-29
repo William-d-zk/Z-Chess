@@ -171,26 +171,26 @@ public class ByteBuf
         return writerIdx < capacity;
     }
 
-    public byte get(int offset)
+    public byte peek(int offset)
     {
         checkOffset(offset + 1);
         return buffer.get(readerIdx + offset);
     }
 
-    public int getUnsigned(int offset)
+    public int peekUnsigned(int offset)
     {
-        return get(offset) & 0xFF;
+        return peek(offset) & 0xFF;
     }
 
-    public int getShort(int offset)
+    public int peekShort(int offset)
     {
         checkOffset(offset + 2);
         return buffer.getShort(readerIdx + offset);
     }
 
-    public int getUnsignedShort(int offset)
+    public int peekUnsignedShort(int offset)
     {
-        return getShort(offset) & 0xFFFF;
+        return peekShort(offset) & 0xFFFF;
     }
 
     public byte get()
@@ -233,7 +233,7 @@ public class ByteBuf
         return v;
     }
 
-    public long getLong(int offset)
+    public long peekLong(int offset)
     {
         checkOffset(offset + 8);
         return buffer.getLong(readerIdx + offset);
@@ -321,7 +321,7 @@ public class ByteBuf
         int length = 0;
         int cur, pos = 0;
         do {
-            cur = get(offset + pos);
+            cur = peek(offset + pos);
             length += (cur & 0x7F) << (pos * 7);
             pos++;
         }
@@ -442,7 +442,7 @@ public class ByteBuf
 
     public ByteBuf put(byte[] v)
     {
-        if(v == null) {return this;}
+        if(v == null || v.length == 0) {return this;}
         checkCapacity(v.length);
         buffer.put(writerIdx, v);
         writerIdx += v.length;

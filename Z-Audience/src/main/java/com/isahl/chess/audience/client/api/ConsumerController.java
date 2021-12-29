@@ -26,6 +26,7 @@ package com.isahl.chess.audience.client.api;
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
 import com.isahl.chess.bishop.protocol.zchat.model.command.X0D_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X70_RaftVote;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ZResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,15 @@ public class ConsumerController
     {
         _ClientPool.sendLocal(_Client.getSession(), new X0D_PlainText().setText(output));
         return ZResponse.success("send");
+    }
+
+    @GetMapping("/zchat/raft/x70")
+    public ZResponse<?> zchat_x70()
+    {
+        X70_RaftVote x70 = new X70_RaftVote(System.currentTimeMillis());
+        x70.setCandidateId(0x9231234234ADL);
+        _ClientPool.sendLocal(_Client.getSession(), x70);
+        return ZResponse.success("x70");
     }
 
 }

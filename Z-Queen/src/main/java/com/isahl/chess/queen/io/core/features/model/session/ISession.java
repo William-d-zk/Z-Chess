@@ -51,7 +51,6 @@ import java.util.Queue;
  */
 public interface ISession
         extends Queue<IPacket>,
-                IReset,
                 Closeable,
                 IAddress,
                 IValid,

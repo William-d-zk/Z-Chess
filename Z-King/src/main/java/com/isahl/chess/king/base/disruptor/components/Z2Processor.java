@@ -49,7 +49,8 @@ public class Z2Processor<T extends IEvent>
     private final SequenceBarrier[] _Barriers;
     private final IBatchHandler<T>  _Handler;
     private final Sequence[]        _Sequences;
-    private       String            threadName;
+    private       String            mThreadName;
+    private       boolean           mIsGating;
 
     public Z2Processor(DataProvider<T>[] providers, SequenceBarrier[] barriers, IBatchHandler<T> handler)
     {
@@ -69,16 +70,22 @@ public class Z2Processor<T extends IEvent>
 
     public void setThreadName(String name)
     {
-        threadName = name;
+        mThreadName = name;
+    }
+
+    public Z2Processor<T> setGating()
+    {
+        mIsGating = true;
+        return this;
     }
 
     @Override
     public void run()
     {
         if(_Running.compareAndSet(IDLE, RUNNING)) {
-            if(threadName != null) {
+            if(mThreadName != null) {
                 Thread.currentThread()
-                      .setName(threadName);
+                      .setName(mThreadName);
             }
             for(SequenceBarrier barrier : _Barriers) {
                 barrier.clearAlert();
@@ -142,8 +149,12 @@ public class Z2Processor<T extends IEvent>
             available = barrier.waitFor(-1);
             _Handler.onBatchStart(nextSequence - 1);
             while(nextSequence <= available) {
-                _Handler.onEvent(provider.get(nextSequence), nextSequence);
+                T event = provider.get(nextSequence);
+                _Handler.onEvent(event, nextSequence);
                 nextSequence++;
+                if(mIsGating) {
+                    event.reset();
+                }
             }
             sequence.set(available);
         }

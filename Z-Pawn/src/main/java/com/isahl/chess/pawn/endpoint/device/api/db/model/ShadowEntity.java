@@ -30,7 +30,6 @@ import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.SubscribeEntry;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.Type;
@@ -51,7 +50,6 @@ import java.io.Serial;
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class ShadowEntity
         extends AuditModel
-        implements IStorage
 {
 
     @Serial

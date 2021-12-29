@@ -30,7 +30,6 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -50,9 +49,9 @@ public abstract class WsControl<T extends WsContext>
     }
 
     @Override
-    public ByteBuf payload()
+    public byte[] payload()
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     @Override
@@ -70,8 +69,19 @@ public abstract class WsControl<T extends WsContext>
     @Override
     public WsControl<T> withSub(IoSerial sub)
     {
-        mPayload = sub.encode()
-                      .array();
+        if(sub != null) {
+            ByteBuf buf = sub.encode();
+            if(buf.capacity() > 0) {
+                mPayload = buf.array();
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public WsControl<T> withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
         return this;
     }
 
@@ -164,6 +174,5 @@ public abstract class WsControl<T extends WsContext>
     {
         throw new UnsupportedOperationException();
     }
-
 
 }

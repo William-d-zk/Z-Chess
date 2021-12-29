@@ -96,6 +96,11 @@ public class Mapper
     @PostConstruct
     private void init()
     {
+        _Logger.debug("mapper-initialize conf:[%s] meta:[%s] data:[%s] snap:[%s] ",
+                      _RaftConfigDir,
+                      _LogMetaDir,
+                      _LogDataDir,
+                      _SnapshotDir);
         File file = new File(_RaftConfigDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _RaftConfigDir));

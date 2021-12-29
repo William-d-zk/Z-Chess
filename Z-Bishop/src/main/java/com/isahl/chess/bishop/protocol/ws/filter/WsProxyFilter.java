@@ -62,7 +62,7 @@ public class WsProxyFilter<A extends IPContext>
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
         context.demotionIn();
-        return new AioPacket(input.payload());
+        return new AioPacket(input.subEncoded());
     }
 
     @Override

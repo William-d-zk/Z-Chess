@@ -168,4 +168,9 @@ public class AioPacket
                      .put(mBuffer.array());
     }
 
+    @Override
+    public byte[] payload()
+    {
+        return mBuffer.array();
+    }
 }

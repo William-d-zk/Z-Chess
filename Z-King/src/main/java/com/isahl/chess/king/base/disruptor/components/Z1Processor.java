@@ -45,6 +45,7 @@ public class Z1Processor<T extends IEvent>
     private final IBatchHandler<T> _BatchEventHandler;
     private final Sequence         _Sequence = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
 
+    private boolean             mIsGating;
     private ExceptionHandler<T> exceptionHandler;
 
     /**
@@ -66,6 +67,12 @@ public class Z1Processor<T extends IEvent>
                                                  getClass().getSimpleName(),
                                                  eventHandler.getClass()
                                                              .getSimpleName()));
+    }
+
+    public Z1Processor<T> setGating()
+    {
+        mIsGating = true;
+        return this;
     }
 
     @Override
@@ -146,6 +153,9 @@ public class Z1Processor<T extends IEvent>
                     event = _DataProvider.get(nextSequence);
                     _BatchEventHandler.onEvent(event, nextSequence);
                     nextSequence++;
+                    if(mIsGating) {
+                        event.reset();
+                    }
                 }
                 _Sequence.set(availableSequence);
             }

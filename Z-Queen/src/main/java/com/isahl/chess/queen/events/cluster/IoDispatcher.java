@@ -165,7 +165,6 @@ public class IoDispatcher
                 }
                 break;
         }
-        event.reset();
     }
 
     private RingBuffer<QEvent> dispatchWorker(int code)

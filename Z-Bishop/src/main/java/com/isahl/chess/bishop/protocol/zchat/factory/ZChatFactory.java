@@ -11,24 +11,31 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 
 public class ZChatFactory
-        implements IProtocolFactory<ZFrame, ZContext> {
+        implements IProtocolFactory<ZFrame, ZContext>
+{
     public final static ZChatFactory _Instance = new ZChatFactory();
 
     @Override
-    public ZControl create(ZFrame frame, ZContext context) {
-        ByteBuf framePayload = frame.payload();
-        ZControl control = create(framePayload).wrap(context);
-        control.decode(framePayload);
-        return control;
+    public ZControl create(ZFrame frame, ZContext context)
+    {
+        ByteBuf input = frame.subEncoded();
+        ZControl instance = build(ZFrame.peekSubSerial(input)).wrap(context);
+        instance.decode(input);
+        return instance;
     }
 
     @Override
-    public ZControl create(ByteBuf input) {
-        return build(ZFrame.seekSubSerial(input));
+    @SuppressWarnings("unchecked")
+    public ZControl create(ByteBuf input)
+    {
+        ZControl instance = build(ZFrame.peekSubSerial(input));
+        instance.decode(input);
+        return instance;
     }
 
-    protected ZControl build(int serial) {
-        return switch (serial) {
+    protected ZControl build(int serial)
+    {
+        return switch(serial) {
             case 0x01 -> new X01_EncryptRequest();
             case 0x02 -> new X02_AsymmetricPub();
             case 0x03 -> new X03_Cipher();
