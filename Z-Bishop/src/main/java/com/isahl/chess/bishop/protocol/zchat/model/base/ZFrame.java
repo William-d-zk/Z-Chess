@@ -69,7 +69,7 @@ public class ZFrame
             return 1;
         }
         else {
-            header(input.get(0));
+            header(input.peek(0));
             if(isTransactional()) {
                 if(remain < 9) {
                     return 9 - remain;
@@ -246,25 +246,28 @@ public class ZFrame
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public ZFrame withSub(byte[] sub)
     {
-        mSubContent = Objects.requireNonNull(factory)
-                             .create(payload());
+        mPayload = sub == null || sub.length > 0 ? sub : null;
+        return this;
     }
 
     @Override
-    public ByteBuf payload()
+    public void deserializeSub(IoFactory factory)
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        mSubContent = Objects.requireNonNull(factory)
+                             .create(subEncoded());
     }
 
-    public static int seekSubSerial(ByteBuf buffer)
+    @Override
+    public byte[] payload()
     {
-        Objects.requireNonNull(buffer);
-        buffer.markReader();
-        byte attr = buffer.get();
-        int serial = buffer.getUnsigned();
-        buffer.resetReader();
-        return serial;
+        return mPayload;
+    }
+
+    public static int peekSubSerial(ByteBuf buffer)
+    {
+        return Objects.requireNonNull(buffer)
+                      .peekUnsigned(1);
     }
 }

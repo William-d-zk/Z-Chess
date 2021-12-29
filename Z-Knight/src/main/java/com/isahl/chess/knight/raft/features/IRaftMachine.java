@@ -113,6 +113,8 @@ public interface IRaftMachine
 
     void follow(long term, long leader, IRaftMapper mapper);
 
+    boolean isEqualState(RaftState state);
+
     <T extends IRaftMachine & IStorage> T createCandidate();
 
     <T extends IRaftMachine & IStorage> T createLeader();

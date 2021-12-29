@@ -64,7 +64,6 @@ public class EncodedHandler
                 error(_Error, event.getErrorType(), errorContent, event.getEventOp());
             }
         }
-        event.reset();
     }
 
     @Override

@@ -163,12 +163,7 @@ public class MixMappingHandler<T extends IStorage>
                             if(result != null && _ClusterCustom.waitForCommit()) {
                                 IProtocol request = result.getSecond();
                                 if(request != null) {
-                                    publish(_Transfer,
-                                            CONSISTENCY,
-                                            new Pair<>(request, session.getIndex()),
-                                            _ClusterCustom.getReject()
-                                                          .getOperator());
-
+                                    publish(_Transfer, CONSISTENCY, Pair.of(request, session.getIndex()), null);
                                 }
                             }
                             else if(result != null) {
@@ -252,16 +247,7 @@ public class MixMappingHandler<T extends IStorage>
                         if(contents != null) {
                             publish(_Writer, contents);
                         }
-                        else {
-                            IOperator<IProtocol, Long, ITriple> reject = event.getEventOp();
-                            ITriple resp = reject.handle(request, origin);
-                            if(resp != null) {
-                                error(_Error,
-                                      IError.Type.CONSISTENCY_REJECT,
-                                      new Pair<>(resp.getFirst(), resp.getSecond()),
-                                      resp.getThird());
-                            }
-                        }
+
                     }
                     catch(Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
@@ -322,7 +308,6 @@ public class MixMappingHandler<T extends IStorage>
                                                 .name());
             }
         }
-        event.reset();
     }
 
     @Override

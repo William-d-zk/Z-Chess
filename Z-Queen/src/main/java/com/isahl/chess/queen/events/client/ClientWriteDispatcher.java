@@ -103,7 +103,6 @@ public class ClientWriteDispatcher
                 default -> {}
             }
         }
-        event.reset();
     }
 
     @Override

@@ -34,7 +34,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
-import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.GenericGenerator;
@@ -54,23 +53,21 @@ import java.time.LocalDateTime;
 @TypeDef(name = "jsonb",
          typeClass = JsonBinaryType.class)
 @Table(schema = "z_chess_pawn",
-       indexes = {
-               @Index(name = "device_idx_token_pwd_id",
-                      columnList = "token,password,password_id"),
-               @Index(name = "device_idx_token_pwd",
-                      columnList = "token,password"),
-               @Index(name = "device_idx_sn",
-                      columnList = "sn"),
-               @Index(name = "device_idx_token",
-                      columnList = "token"),
-               @Index(name = "device_idx_username",
-                      columnList = "username")
+       indexes = { @Index(name = "device_idx_token_pwd_id",
+                          columnList = "token,password,password_id"),
+                   @Index(name = "device_idx_token_pwd",
+                          columnList = "token,password"),
+                   @Index(name = "device_idx_sn",
+                          columnList = "sn"),
+                   @Index(name = "device_idx_token",
+                          columnList = "token"),
+                   @Index(name = "device_idx_username",
+                          columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class DeviceEntity
         extends AuditModel
-        implements IStorage
 {
     @Serial
     private static final long serialVersionUID = -6645586986057373344L;

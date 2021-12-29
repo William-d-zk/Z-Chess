@@ -68,7 +68,7 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x,origin:%#x,payload-serial:%#x }", mClientId, mOrigin, _sub());
+        return String.format("X76_RaftResp { client:%#x, origin:%#x }", mClientId, mOrigin);
     }
 
     public void setOrigin(long origin)
@@ -100,9 +100,6 @@ public class X76_RaftResp
                       .putLong(mClientId)
                       .putLong(mOrigin)
                       .putInt(mCode);
-        if(mSubContent != null) {
-            output.put(mSubContent.encode());
-        }
         return output;
     }
 

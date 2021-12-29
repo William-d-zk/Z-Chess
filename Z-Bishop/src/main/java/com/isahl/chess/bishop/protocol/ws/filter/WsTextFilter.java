@@ -61,7 +61,7 @@ public class WsTextFilter<T extends WsContext>
     {
         X105_Text<T> text = new X105_Text<>();
         text.wrap(context)
-            .decode(input.payload());
+            .decode(input.subEncoded());
         context.demotionIn();
         return text;
     }

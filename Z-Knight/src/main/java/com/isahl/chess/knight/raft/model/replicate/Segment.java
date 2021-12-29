@@ -46,7 +46,7 @@ public class Segment
 
     public static class Record
     {
-        private final long        _Offset;
+        private final long     _Offset;
         private final LogEntry _Entry;
 
         public Record(long offset, LogEntry entry)
@@ -84,7 +84,7 @@ public class Segment
         if(index < _StartIndex || index > mEndIndex) {return null;}
         int indexInList = (int) (index - _StartIndex);
         LogEntry logEntry = _Records.get(indexInList)
-                                       .getEntry();
+                                    .getEntry();
         if(logEntry.getIndex() != index) {
             _Logger.warning("segment get log-entry %d [%s]", index, logEntry);
         }

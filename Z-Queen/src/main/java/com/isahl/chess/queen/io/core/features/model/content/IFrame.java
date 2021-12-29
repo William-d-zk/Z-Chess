@@ -36,7 +36,7 @@ public interface IFrame
     /**
      * 虽然入参是 int ，但是仅写入单个字节，需要特别注意
      *
-     * @param header
+     * @param header frame-header
      */
     void header(int header);
 
@@ -50,8 +50,6 @@ public interface IFrame
      * @return yes/no
      */
     boolean isCtrl();
-
-    ByteBuf payload();
 
     @Override
     default int priority()

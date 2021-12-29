@@ -165,19 +165,12 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public void reset()
-    {
-        mIndex = INVALID_INDEX;
-    }
-
-    @Override
     public final void close() throws IOException
     {
+        clear();
         if(isClosed()) {return;}
         advanceState(_State, SESSION_CLOSE, CAPACITY);
-        if(_Channel != null) {
-            _Channel.close();
-        }
+        if(_Channel != null) {_Channel.close();}
     }
 
     @Override

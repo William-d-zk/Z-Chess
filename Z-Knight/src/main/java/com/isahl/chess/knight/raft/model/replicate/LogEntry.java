@@ -23,9 +23,12 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -37,6 +40,7 @@ import java.io.Serializable;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends InnerProtocol
         implements ITraceable,
@@ -58,14 +62,25 @@ public class LogEntry
      */
     private long mOrigin;
 
-    public LogEntry(long term, long index, long client, long origin, IoSerial content)
+    @JsonCreator
+    public LogEntry(
+            @JsonProperty("term")
+                    long term,
+            @JsonProperty("index")
+                    long index,
+            @JsonProperty("client")
+                    long client,
+            @JsonProperty("origin")
+                    long origin,
+            @JsonProperty("payload")
+                    byte[] payload)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mTerm = term;
         pKey = mIndex = index;
         mClient = client;
         mOrigin = origin;
-        mSubContent = content;
+        mPayload = payload;
     }
 
     public LogEntry()
@@ -98,7 +113,8 @@ public class LogEntry
         return super.suffix(output)
                     .putLong(getTerm())
                     .putLong(getClient())
-                    .putLong(getOrigin());
+                    .putLong(getOrigin())
+                    .put(payload());
     }
 
     @Override

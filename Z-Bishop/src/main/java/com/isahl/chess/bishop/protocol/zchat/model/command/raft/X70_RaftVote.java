@@ -156,7 +156,7 @@ public class X70_RaftVote
     @Override
     public String toString()
     {
-        return String.format("X70_RaftVote{candidate=%#x  term: %d,last: %d@%d, commit=%d, elector=%#x}",
+        return String.format("X70_RaftVote{ candidate=%#x  term: %d,last: %d@%d, commit=%d, elector=%#x }",
                              mCandidateId,
                              mTerm,
                              mIndex,

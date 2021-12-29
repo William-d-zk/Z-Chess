@@ -100,4 +100,10 @@ public class X78_RaftChange
     {
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("X78_RaftChange { origin:%#x }", mOrigin);
+    }
 }

@@ -149,7 +149,6 @@ public class WriteDispatcher
                 default -> {}
             }
         }
-        event.reset();
     }
 
     @Override

@@ -24,6 +24,7 @@
 package com.isahl.chess.knight.raft.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -126,7 +127,7 @@ public class RaftMachine
         mCandidate = input.getLong();
         mLeader = input.getLong();
         mState = input.get();
-        remain -= 67;
+        remain -= 67;// 8x8 +1 +1 +1;
         int pLength = buildSet(input, mPeerSet = new TreeSet<>());
         int gLength = buildSet(input, mGateSet = new TreeSet<>());
         if(pLength == 0) {
@@ -518,6 +519,23 @@ public class RaftMachine
                              set2String(mGateSet));
     }
 
+    public String toSimple()
+    {
+        return String.format("""
+                                     { my peer:[%#x] term:%d last:%d@%d commit:%d
+                                     \t\tleader:%#x
+                                     \t\tcondidate:%#x
+                                     }
+                                     """,
+                             getPeerId(),
+                             getTerm(),
+                             getIndex(),
+                             getIndexTerm(),
+                             getCommit(),
+                             getLeader(),
+                             getCandidate());
+    }
+
     private <T> String set2String(Collection<T> set)
     {
         if(set != null) {
@@ -533,4 +551,10 @@ public class RaftMachine
         return null;
     }
 
+    @JsonIgnore
+    @Override
+    public boolean isEqualState(RaftState state)
+    {
+        return mState == state.getCode();
+    }
 }

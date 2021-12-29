@@ -123,10 +123,10 @@ public class X101_HandShake<T extends WsContext>
         }
         else {
             for(int offset = 0, end; input.isOffsetReadable(offset + 3); offset++) {
-                end = input.get(offset);
-                end = (end << 8) | input.get(offset + 1);
-                end = (end << 8) | input.get(offset + 2);
-                end = (end << 8) | input.get(offset + 3);
+                end = input.peek(offset);
+                end = (end << 8) | input.peek(offset + 1);
+                end = (end << 8) | input.peek(offset + 2);
+                end = (end << 8) | input.peek(offset + 3);
                 if(end == CRLF_CRLF) {
                     mPayload = new byte[offset + 4];
                     return 0;

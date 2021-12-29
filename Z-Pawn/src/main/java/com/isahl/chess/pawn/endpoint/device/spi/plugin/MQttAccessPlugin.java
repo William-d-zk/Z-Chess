@@ -129,8 +129,7 @@ public class MQttAccessPlugin
                         register(x115, session.getIndex());
                         _QttStorage.receivedStorage((int) x113.getMsgId(),
                                                     x113.getTopic(),
-                                                    x113.payload()
-                                                        .array(),
+                                                    x113.payload(),
                                                     session.getIndex());
                         break;
                     default:
@@ -361,9 +360,7 @@ public class MQttAccessPlugin
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         int msgId = (int) stateMessage.getMsgId();
-        boolean[] ack = {
-                true,
-                true
+        boolean[] ack = { true, true
         };
         if(ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
@@ -402,9 +399,7 @@ public class MQttAccessPlugin
     public void retain(String topic, QttControl msg)
     {
         Pattern pattern = topicToRegex(topic);
-        if(msg.payload() == null || msg.payload()
-                                       .capacity() == 0)
-        {
+        if(msg.payload() == null) {
             _Topic2SessionsMap.computeIfPresent(pattern, (k, v)->{
                 v.mRetained = null;
                 return v;
@@ -533,11 +528,7 @@ public class MQttAccessPlugin
                     register(n113, kIdx);
                 }
                 results.add(Triple.of(n113, session, session.getEncoder()));
-                _QttStorage.brokerStorage((int) n113.getMsgId(),
-                                          n113.getTopic(),
-                                          n113.payload()
-                                              .array(),
-                                          kIdx);
+                _QttStorage.brokerStorage((int) n113.getMsgId(), n113.getTopic(), n113.payload(), kIdx);
             }
         });
 

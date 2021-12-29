@@ -106,7 +106,6 @@ public class EncodeHandler
         }
         try {
             operator.handle(a, session);
-            event.reset();
         }
         catch(Exception e) {
             _Logger.warning(String.format("write encode error: %s", session.toString()), e);

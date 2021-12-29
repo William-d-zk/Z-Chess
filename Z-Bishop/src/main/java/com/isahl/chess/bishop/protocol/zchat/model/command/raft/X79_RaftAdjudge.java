@@ -68,7 +68,7 @@ public class X79_RaftAdjudge
     @Override
     public String toString()
     {
-        return String.format("X79_RaftResp { log-entry-idx:%d, client:%#x,origin:%#x}", mIndex, mClient, mOrigin);
+        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x }", mIndex, mClient, mOrigin);
     }
 
     public void setOrigin(long origin)

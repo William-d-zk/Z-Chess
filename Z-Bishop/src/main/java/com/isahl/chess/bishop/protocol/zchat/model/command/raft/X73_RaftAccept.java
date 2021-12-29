@@ -146,7 +146,7 @@ public class X73_RaftAccept
     @Override
     public String toString()
     {
-        return String.format("X71_RaftAccept{follower:%#x@%d, catch_up:%d@%d}",
+        return String.format("X73_RaftAccept{ follower:%#x@%d, catch_up:%d@%d }",
                              mFollowerId,
                              mTerm,
                              mCatchUp,

@@ -75,9 +75,9 @@ public class WsFrame
     }
 
     @Override
-    public ByteBuf payload()
+    public byte[] payload()
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     public void setMask(byte[] mask)
@@ -140,8 +140,8 @@ public class WsFrame
             return 1;
         }
         else {
-            header(input.get(0));
-            int code = input.get(1);
+            header(input.peek(0));
+            int code = input.peek(1);
             int lack = code & 0x7F;
             boolean withMask = (code & 0x80) > 0;
             switch(lack) {
@@ -151,7 +151,7 @@ public class WsFrame
                         return target - remain;
                     }
                     else {
-                        return (int) (input.getLong(2) + target - remain);
+                        return (int) (input.peekLong(2) + target - remain);
                     }
                 }
                 case 0x7E -> {
@@ -160,7 +160,7 @@ public class WsFrame
                         return target - remain;
                     }
                     else {
-                        return input.getUnsignedShort(2) + target - remain;
+                        return input.peekUnsignedShort(2) + target - remain;
                     }
                 }
                 default -> {
@@ -252,11 +252,17 @@ public class WsFrame
     }
 
     @Override
+    public WsFrame withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
+        return this;
+    }
+
+    @Override
     public void deserializeSub(IoFactory factory)
     {
-        ByteBuf payload = payload();
-        mSubContent = factory.create(payload);
-        mSubContent.decode(payload);
+        Objects.requireNonNull(factory)
+               .create(subEncoded());
     }
 
     @Override
@@ -265,13 +271,10 @@ public class WsFrame
         return Level.ALMOST_ONCE;
     }
 
-    public static int seekSubSerial(ByteBuf buffer)
+    public static int peekSubSerial(ByteBuf buffer)
     {
-        Objects.requireNonNull(buffer);
-        buffer.markReader();
-        int serial = buffer.get() & 0x0F;
-        buffer.resetReader();
-        return serial;
+        return Objects.requireNonNull(buffer)
+                      .peek(0) & 0x0F;
     }
 
 }

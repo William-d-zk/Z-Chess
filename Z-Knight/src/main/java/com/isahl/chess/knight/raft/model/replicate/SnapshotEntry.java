@@ -24,22 +24,18 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.model.BinarySerial;
-import com.isahl.chess.knight.raft.component.RaftFactory;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -47,7 +43,7 @@ import java.util.Objects;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class SnapshotEntry<T extends IoSerial>
+public class SnapshotEntry
         extends InnerProtocol
         implements ITraceable,
                    Serializable
@@ -60,7 +56,6 @@ public class SnapshotEntry<T extends IoSerial>
     private long mTerm;
     private long mCommit;
     private long mApplied;
-    private T    mContent;
 
     @Override
     public int length()
@@ -86,8 +81,8 @@ public class SnapshotEntry<T extends IoSerial>
                     long commit,
             @JsonProperty("applied")
                     long applied,
-            @JsonProperty("content")
-                    T content)
+            @JsonProperty("payload")
+                    byte[] payload)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mOrigin = origin;
@@ -95,7 +90,7 @@ public class SnapshotEntry<T extends IoSerial>
         mTerm = term;
         mCommit = commit;
         mApplied = applied;
-        mContent = content;
+        mPayload = payload;
     }
 
     public SnapshotEntry()
@@ -129,17 +124,15 @@ public class SnapshotEntry<T extends IoSerial>
         return mApplied;
     }
 
-    @Override
-    @JsonInclude
-    @JsonProperty("sub")
-    public int _sub()
+    public byte[] getPayload()
     {
-        return mContent == null ? -1 : mContent.serial();
+        return payload();
     }
 
-    public T getContent()
+    @Override
+    public int _sub()
     {
-        return mContent;
+        return mPayload == null || mPayload.length < 2 ? -1 : IoUtil.readUnsignedShort(mPayload, 0);
     }
 
     @Override
@@ -151,7 +144,6 @@ public class SnapshotEntry<T extends IoSerial>
                       .putLong(getCommit())
                       .putLong(getApplied())
                       .putLong(getOrigin());
-        if(mContent != null) {output.put(mContent.encode());}
         return output;
     }
 
@@ -165,17 +157,6 @@ public class SnapshotEntry<T extends IoSerial>
         mApplied = input.getLong();
         mOrigin = input.getLong();
         return remain - 40;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void fold(ByteBuf input, int remain)
-    {
-        if(remain > 0) {
-            mContent = (T) RaftFactory._Instance.build(BinarySerial.seekSerial(input));
-            Objects.requireNonNull(mContent)
-                   .decode(input);
-        }
     }
 
     @Override

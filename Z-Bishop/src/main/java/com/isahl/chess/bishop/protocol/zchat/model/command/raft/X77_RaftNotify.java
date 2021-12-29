@@ -136,4 +136,10 @@ public class X77_RaftNotify
     {
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("X77_RaftNotify { index:%#x,client:%#x,origin:%#x }", mIndex, mClient, mOrigin);
+    }
 }

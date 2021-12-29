@@ -122,7 +122,6 @@ public class DecodedDispatcher
                                                 .name());
             }
         }
-        event.reset();
     }
 
     protected IPair getNextPipe(ISort.Mode mode, IoSerial input)

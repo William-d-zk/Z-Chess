@@ -285,15 +285,11 @@ public class ServerCore
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
         final RingBuffer<QEvent> _LinkDecoded = createPipelineLite(_LinkQueueSize);
-        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{
-                _LinkIoEvent,
-                _LinkDecoded,
-                _NotifyEvent
+        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{ _LinkIoEvent, _LinkDecoded, _NotifyEvent
         };
-        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{
-                _LinkIoEvent.newBarrier(),
-                _LinkDecoded.newBarrier(),
-                _NotifyEvent.newBarrier()
+        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{ _LinkIoEvent.newBarrier(),
+                                                                       _LinkDecoded.newBarrier(),
+                                                                       _NotifyEvent.newBarrier()
         };
         final Z2Processor<QEvent> _LinkProcessor = new Z2Processor<>(_LinkEvents,
                                                                      _LinkBarriers,
@@ -306,24 +302,23 @@ public class ServerCore
                                                                                              clusterCustom));
         _LinkProcessor.setThreadName("LinkProcessor");
         for(int i = 0, size = _LinkEvents.length; i < size; i++) {
-            _LinkEvents[i].addGatingSequences(_LinkProcessor.getSequences()[i]);
+            _LinkEvents[i].addGatingSequences(_LinkProcessor.setGating()
+                                                            .getSequences()[i]);
         }
         /* 集群处理 */
         /* 所有已解码完毕的集群通讯都进入这个 Pipeline -> _ClusterDecoded */
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize);
-        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{
-                _ClusterIoEvent,
-                _ClusterDecoded,
-                _ConsensusEvent,
-                _ConsensusApiEvent,
-                _ClusterEvent
+        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{ _ClusterIoEvent,
+                                                                      _ClusterDecoded,
+                                                                      _ConsensusEvent,
+                                                                      _ConsensusApiEvent,
+                                                                      _ClusterEvent
         };
-        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{
-                _ClusterIoEvent.newBarrier(),
-                _ClusterDecoded.newBarrier(),
-                _ConsensusEvent.newBarrier(),
-                _ConsensusApiEvent.newBarrier(),
-                _ClusterEvent.newBarrier()
+        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{ _ClusterIoEvent.newBarrier(),
+                                                                          _ClusterDecoded.newBarrier(),
+                                                                          _ConsensusEvent.newBarrier(),
+                                                                          _ConsensusApiEvent.newBarrier(),
+                                                                          _ClusterEvent.newBarrier()
         };
         final Z2Processor<QEvent> _ClusterProcessor = new Z2Processor<>(_ClusterEvents,
                                                                         _ClusterBarriers,
@@ -336,7 +331,8 @@ public class ServerCore
                                                                                                 clusterCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for(int i = 0, size = _ClusterEvents.length; i < size; i++) {
-            _ClusterEvents[i].addGatingSequences(_ClusterProcessor.getSequences()[i]);
+            _ClusterEvents[i].addGatingSequences(_ClusterProcessor.setGating()
+                                                                  .getSequences()[i]);
         }
         final Z2Processor<QEvent> _IoDispatcher = new Z2Processor<>(_DispatchIo,
                                                                     _DispatchIoBarriers,
@@ -346,7 +342,8 @@ public class ServerCore
                                                                                         _ReadEvents));
         _IoDispatcher.setThreadName("IoDispatcher");
         for(int i = 0, size = _DispatchIo.length; i < size; i++) {
-            _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
+            _DispatchIo[i].addGatingSequences(_IoDispatcher.setGating()
+                                                           .getSequences()[i]);
         }
         /* Decoded dispatch */
         final SequenceBarrier[] _DecodedBarriers = new SequenceBarrier[_DecoderCount];
@@ -370,7 +367,8 @@ public class ServerCore
                                                                                                   _LogicEvents));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
         for(int i = 0; i < _DecoderCount; i++) {
-            _ReadEvents[i].addGatingSequences(_DecodedDispatcher.getSequences()[i]);
+            _ReadEvents[i].addGatingSequences(_DecodedDispatcher.setGating()
+                                                                .getSequences()[i]);
         }
         /* wait to send */
         final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[_LogicCount + 5];
@@ -401,7 +399,8 @@ public class ServerCore
                                                                                            _WriteEvents));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for(int i = 0, size = _SendEvents.length; i < size; i++) {
-            _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
+            _SendEvents[i].addGatingSequences(_WriteDispatcher.setGating()
+                                                              .getSequences()[i]);
         }
         /* encode processor */
         final Z1Processor<QEvent>[] _EncodeProcessors = new Z1Processor[_EncoderCount];
@@ -418,7 +417,8 @@ public class ServerCore
                                                                         new EncodedHandler(_ErrorEvents[4]));
         _EncodedProcessor.setThreadName("EncodedProcessor");
         for(int i = 0; i < _EncoderCount; i++) {
-            _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
+            _EncodedEvents[i].addGatingSequences(_EncodedProcessor.setGating()
+                                                                  .getSequences()[i]);
         }
         /*-------------------------------------------------------------------------------------------------------------------------------------*/
         /* 所有Io事件 都通过这个 Dispatcher 向其他的领域处理器进行分发 */

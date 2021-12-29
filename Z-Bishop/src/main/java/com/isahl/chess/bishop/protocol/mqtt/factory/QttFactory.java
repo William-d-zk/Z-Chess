@@ -30,9 +30,8 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
-
-import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -44,6 +43,7 @@ public class QttFactory
     public static final QttFactory _Instance = new QttFactory();
 
     @Override
+    @SuppressWarnings("unchecked")
     public QttControl create(ByteBuf input)
     {
         throw new UnsupportedOperationException();
@@ -53,7 +53,7 @@ public class QttFactory
     public QttControl create(QttFrame frame, QttContext context)
     {
         QttControl control = build(QttType.serialOf(QttType.valueOf(frame.header()))).wrap(context);
-        control.decode(frame.payload());
+        control.decode(frame.subEncoded());
         return control;
     }
 
@@ -75,7 +75,7 @@ public class QttFactory
             case 0x11D -> new X11D_QttPingresp();
             case 0x11E -> new X11E_QttDisconnect();
             case 0x11F -> new X11F_QttAuth();
-            default -> throw new IllegalArgumentException(format("mqtt type error: %#x", serial));
+            default -> throw new ZException("mqtt type error:[ %#x ], not handle by QttFactory", serial);
         };
     }
 

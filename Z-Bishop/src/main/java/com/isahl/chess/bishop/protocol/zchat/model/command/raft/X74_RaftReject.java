@@ -174,7 +174,7 @@ public class X74_RaftReject
     @Override
     public String toString()
     {
-        return String.format("X74_RaftReject{peerId:%#x,term:%d,current:%d@%d,reject:%#x,code:%d,state:%d}",
+        return String.format("X74_RaftReject{ peerId:%#x,term:%d,current:%d@%d,reject:%#x,code:%d,state:%d }",
                              mPeerId,
                              mTerm,
                              mIndex,

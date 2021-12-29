@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
-import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -75,12 +74,6 @@ public class ZClusterCustom<T extends IStorage>
     public boolean onConsistentCall(IConsistent result)
     {
         return _Then != null && _Then.onConsistentCall(result);
-    }
-
-    @Override
-    public IConsistencyReject getReject()
-    {
-        return _Then == null ? null : _Then.getReject();
     }
 
     @Override

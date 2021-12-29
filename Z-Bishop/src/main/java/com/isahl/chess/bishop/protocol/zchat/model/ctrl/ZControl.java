@@ -26,15 +26,11 @@ public abstract class ZControl
     protected final static int attribute_version_bits_left = 5;
     protected final static int attribute_version_mask      = 3 << attribute_version_bits_left;
 
-    private final static int min_no_msg_uid_size = 1 + 1 + 4;
-    private final static int g_msg_uid_size      = 8;
-    private final static int min_msg_uid_size    = min_no_msg_uid_size + g_msg_uid_size;
-
     protected byte mAttr;
 
     private ISession mSession;
-    private long     mSequence;
     private ZContext mContext;
+    private long     mSequence;
 
     public ZControl()
     {
@@ -77,8 +73,15 @@ public abstract class ZControl
         Objects.requireNonNull(subContent);
         mAttr |= attribute_sub_content;
         mSubContent = subContent;
-        mPayload = mSubContent.encode()
-                              .array();
+        ByteBuf subEncoded = mSubContent.encode();
+        if(subEncoded.capacity() > 0) {mPayload = subEncoded.array();}
+        return this;
+    }
+
+    @Override
+    public ZControl withSub(byte[] sub)
+    {
+        mPayload = sub == null || sub.length > 0 ? sub : null;
         return this;
     }
 
@@ -97,7 +100,7 @@ public abstract class ZControl
         if(CryptoUtil.crc32(input.array(), input.readerMark(), input.readerIdx() - input.readerMark()) !=
            input.getInt())
         {
-            throw new ZException("crc check failed! = %#x", seekSerial(input, input.readerMark()));
+            throw new ZException("crc check failed! = %#x", serial());
         }
     }
 
@@ -105,6 +108,7 @@ public abstract class ZControl
     public int length()
     {
         return 2 + // attr,cmd-id
+               (isWithId() ? 8 : 0) + //msgId
                super.length() + // payload-length
                4; //crc
     }
@@ -215,9 +219,9 @@ public abstract class ZControl
     }
 
     @Override
-    public ByteBuf payload()
+    public byte[] payload()
     {
-        return mPayload == null ? null : ByteBuf.wrap(mPayload);
+        return mPayload;
     }
 
     @Override
@@ -229,14 +233,6 @@ public abstract class ZControl
     @Override
     public void deserializeSub(IoFactory factory)
     {
-        ByteBuf payload = payload();
-        mSubContent = factory.create(payload);
-        mSubContent.decode(payload);
-    }
-
-    public static int seekSerial(ByteBuf buffer, int position)
-    {
-        int attr = buffer.get(position++);
-        return buffer.getUnsigned(position);
+        mSubContent = factory.create(subEncoded());
     }
 }

@@ -36,8 +36,8 @@ import java.util.LinkedList;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class ListSerial
-        extends LinkedList<IoSerial>
+public class ListSerial<T extends IoSerial>
+        extends LinkedList<T>
         implements IoSerial
 {
 
@@ -60,13 +60,13 @@ public class ListSerial
     @Override
     public int prefix(ByteBuf input)
     {
-        int length = input.vLength();
         int serial = input.getUnsignedShort();
+        int length = input.vLength();
         int size = input.getInt();
         for(int i = 0; i < size; i++) {
-            IoSerial t = _Factory.create(input);
-            add(t);
-            length -= t.sizeOf();
+            T content = _Factory.create(input);
+            add(content);
+            length -= content.sizeOf();
         }
         return length - 4;
     }
@@ -74,8 +74,8 @@ public class ListSerial
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output = output.vPutLength(length())
-                       .putShort((short) serial())
+        output = output.putShort((short) serial())
+                       .vPutLength(length())
                        .putInt(size());
         for(IoSerial t : this) {
             output.put(t.encode());
@@ -86,8 +86,7 @@ public class ListSerial
     @Override
     public int length()
     {
-        int length = 2 + //serial
-                     4;//list.size
+        int length = 4;  //list.size
         for(IoSerial t : this) {
             length += t.sizeOf();
         }
@@ -97,20 +96,31 @@ public class ListSerial
     @Override
     public int sizeOf()
     {
-        return ByteBuf.vSizeOf(length());
+        return ByteBuf.vSizeOf(length()) + 2;
     }
 
     @Override
     public IoSerial subContent()
     {
-        return getFirst();
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public ListSerial withSub(IoSerial sub)
+    public ListSerial<T> withSub(IoSerial sub)
     {
-        add(sub);
-        return this;
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public IoSerial withSub(byte[] payload)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override

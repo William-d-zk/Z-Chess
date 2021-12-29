@@ -83,7 +83,5 @@ public interface IClusterCustom<T extends IStorage>
      */
     boolean onConsistentCall(IConsistent result);
 
-    IConsistencyReject getReject();
-
     void register(IConsistencyHandler handler);
 }

@@ -65,6 +65,8 @@ public class X75_RaftReq
     private long mClientId;
     private long mOrigin;
 
+    public transient boolean tCheck;
+
     public void setOrigin(long origin)
     {
         mOrigin = origin;
@@ -112,11 +114,7 @@ public class X75_RaftReq
     @Override
     public String toString()
     {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x,sub-serial:%#x,payload[%d] }",
-                             mClientId,
-                             mOrigin,
-                             mSubContent != null ? _sub() : -1,
-                             mPayload == null ? 0 : mPayload.length);
+        return String.format("X75_RaftReq { client:%#x, origin:%#x }", mClientId, mOrigin);
     }
 
     @Override

@@ -30,5 +30,5 @@ import com.isahl.chess.king.base.content.ByteBuf;
  */
 public interface IoFactory
 {
-    IoSerial create(ByteBuf input);
+    <T extends IoSerial> T create(ByteBuf input);
 }
