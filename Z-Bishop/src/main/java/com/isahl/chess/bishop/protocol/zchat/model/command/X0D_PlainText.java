@@ -71,4 +71,10 @@ public class X0D_PlainText
     {
         return Level.ALMOST_ONCE;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
 }

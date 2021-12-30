@@ -189,6 +189,12 @@ public abstract class ZControl
         return (mFrameHeader & ZFrame.frame_op_code_ctrl) > 0;
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
     public ZControl duplicate()
     {
         mFrameHeader |= ZFrame.frame_op_code_duplicate;

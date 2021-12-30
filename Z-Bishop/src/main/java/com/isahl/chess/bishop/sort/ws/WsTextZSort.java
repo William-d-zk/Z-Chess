@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsTextFilter;
+import com.isahl.chess.bishop.protocol.zchat.factory.ZChatFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -43,7 +44,7 @@ public class WsTextZSort
 
     public WsTextZSort(Mode mode, Type type)
     {
-        super(mode, type, "ws-text");
+        super(mode, type, "ws-text", ZChatFactory._Instance);
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new WsTextFilter<>());

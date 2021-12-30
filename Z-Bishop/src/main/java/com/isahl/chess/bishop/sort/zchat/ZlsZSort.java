@@ -30,36 +30,47 @@ import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZControlFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZEFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZFrameFilter;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
 public class ZlsZSort
-        extends BaseSort<EZContext> {
-    private final ZEFilter<EZContext> _Head = new ZEFilter<>();
+        extends BaseSort<EZContext>
+{
+    private final ZEFilter<EZContext> _Head;
 
-    public ZlsZSort(Mode mode, Type type) {
-        super(mode, type, "zchat-ls");
-        ZChatFactory factory = switch (mode) {
+    public ZlsZSort(Mode mode, Type type)
+    {
+        super(mode, type, "zchat-ls", null);
+        _Head = new ZEFilter<>();
+        _Head.linkFront(new ZFrameFilter())
+             .linkFront(new ZControlFilter((ZChatFactory) getFactory()))
+             .linkFront(new ZCommandFilter((ZChatFactory) getFactory()));
+    }
+
+    @Override
+    public IFilterChain getFilterChain()
+    {
+        return _Head;
+    }
+
+    @Override
+    public EZContext newContext(INetworkOption option)
+    {
+        return new EZContext(option, getMode(), getType());
+    }
+
+    @Override
+    protected IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return switch(mode) {
             case CLUSTER -> ZClusterFactory._Instance;
-            case LINK -> switch (type) {
+            case LINK -> switch(type) {
                 case SERVER -> ZServerFactory._Instance;
                 case SYMMETRY -> ZSymmetryFactory._Instance;
                 case CLIENT -> ZConsumerFactory._Instance;
                 case INNER -> ZInnerFactory._Instance;
             };
         };
-        _Head.linkFront(new ZFrameFilter())
-                .linkFront(new ZControlFilter(factory))
-                .linkFront(new ZCommandFilter(factory));
-    }
-
-    @Override
-    public IFilterChain getFilterChain() {
-        return _Head;
-    }
-
-    @Override
-    public EZContext newContext(INetworkOption option) {
-        return new EZContext(option, getMode(), getType());
     }
 }

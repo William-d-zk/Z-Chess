@@ -184,9 +184,4 @@ public class X74_RaftReject
                              mState);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

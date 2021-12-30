@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsProxyFilter;
 import com.isahl.chess.bishop.protocol.ws.proxy.WsProxyContext;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -38,15 +39,15 @@ public class WsProxyZSort<A extends IPContext>
         extends BaseSort<WsProxyContext<A>>
 {
 
-    private final IAioSort<A>       _ActingSort;
-    private final WsHandShakeFilter _Head = new WsHandShakeFilter();
+    private final IAioSort<A>                          _ActingSort;
+    private final WsHandShakeFilter<WsProxyContext<A>> _Head = new WsHandShakeFilter<>();
 
     public WsProxyZSort(Mode mode, Type type, IAioSort<A> actingSort)
     {
-        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()));
+        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()), null);
         _ActingSort = actingSort;
-        _Head.linkFront(new WsFrameFilter())
-             .linkFront(new WsControlFilter())
+        _Head.linkFront(new WsFrameFilter<>())
+             .linkFront(new WsControlFilter<>())
              .linkFront(new WsProxyFilter<>())
              .linkFront(actingSort.getFilterChain());
     }
@@ -61,5 +62,11 @@ public class WsProxyZSort<A extends IPContext>
     public WsProxyContext<A> newContext(INetworkOption option)
     {
         return new WsProxyContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
+    }
+
+    @Override
+    protected IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return null;
     }
 }

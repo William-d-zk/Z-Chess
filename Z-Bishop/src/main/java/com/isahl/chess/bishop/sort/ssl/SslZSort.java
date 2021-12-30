@@ -29,8 +29,8 @@ import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
-import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
@@ -45,7 +45,7 @@ public class SslZSort<T extends IPContext>
 
     public SslZSort(ISort.Mode mode, ISort.Type type, IAioSort<T> actingSort)
     {
-        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
+        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()), null);
         _ActingSort = actingSort;
         _Head.linkFront(new SSLFilter<>())
              .linkFront(actingSort.getFilterChain());

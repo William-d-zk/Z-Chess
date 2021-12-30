@@ -117,9 +117,4 @@ public class X75_RaftReq
         return String.format("X75_RaftReq { client:%#x, origin:%#x }", mClientId, mOrigin);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

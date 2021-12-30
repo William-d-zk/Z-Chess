@@ -21,58 +21,84 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.player.api.component;
+package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
+import com.isahl.chess.bishop.protocol.ws.command.X105_Text;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X104_Pong;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author william.d.zk
+ */
 @Component
-public class EchoAccessPlugin
+public class WebSocketPlugin
         implements IAccessService
 {
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
+    private final Logger _Logger = Logger.getLogger("pawn.endpoint." + getClass().getSimpleName());
 
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return input.serial() == 0x0C;
+        return input.serial() >= 0x101 && input.serial() <= 0x105;
     }
 
     @Override
     public List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content)
     {
-        throw new UnsupportedOperationException();
+        _Logger.info("web socket recv:[ %s ]", content);
+
+        switch(content.serial()) {
+            case 0x101 -> {
+                X101_HandShake<?> request = (X101_HandShake<?>) content;
+                return Collections.singletonList(Triple.of(request.context()
+                                                                  .getHandshake()
+                                                                  .with(session), session, session.getEncoder()));
+            }
+            case 0x102 -> {
+                return Collections.singletonList(Triple.of(content, session, session.getEncoder()));
+            }
+            case 0x103 -> {
+                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session),
+                                                           session,
+                                                           session.getEncoder()));
+            }
+            case 0x105 -> {
+                return Collections.singletonList(Triple.of(new X105_Text<>(
+                        ((X105_Text<?>) content).getText() + "OK\n").with(session), session, session.getEncoder()));
+            }
+        }
+        return null;
     }
 
     @Override
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public void onOffline(ISession session)
     {
+
     }
 
     @Override
     public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
-    @Override
-    public void consume(IoSerial request)
-    {
-        EchoDo echo = (EchoDo) request;
-    }
 }

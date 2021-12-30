@@ -56,8 +56,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
-
 /**
  * @author william.d.zk
  * @date 2019-05-12
@@ -140,8 +138,7 @@ public class DeviceNode
             {
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::gateHeartbeat, PRIORITY_NORMAL));
+                _TimeWheel.acquire(session, new ScheduleHandler<>(gap, true, DeviceNode.this::gateHeartbeat));
             }
 
             @Override
@@ -159,8 +156,7 @@ public class DeviceNode
             {
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::peerHeartbeat, PRIORITY_NORMAL));
+                _TimeWheel.acquire(session, new ScheduleHandler<>(gap, true, DeviceNode.this::peerHeartbeat));
             }
 
             @Override

@@ -68,7 +68,7 @@ import static com.isahl.chess.king.config.KingCode.SUCCESS;
  * @author william.d.zk
  */
 @Component
-public class MQttAccessPlugin
+public class MQttPlugin
         implements IAccessService,
                    IQttRouter,
                    IValid
@@ -87,7 +87,7 @@ public class MQttAccessPlugin
     private final Queue<Pair<Long, Instant>>         _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
     @Autowired
-    public MQttAccessPlugin(IDeviceService deviceService, IQttStorage qttStorage)
+    public MQttPlugin(IDeviceService deviceService, IQttStorage qttStorage)
     {
         _DeviceService = deviceService;
         _QttStorage = qttStorage;
@@ -276,7 +276,7 @@ public class MQttAccessPlugin
                     else {
                         x112.rejectServerUnavailable();
                     }
-                    return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
+                    return Collections.singletonList(Triple.of(x112, session, session.getEncoder()));
                 }
             }
             case 0x118 -> {

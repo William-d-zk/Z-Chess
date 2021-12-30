@@ -46,4 +46,10 @@ public class X0C_Pong
     {
         return String.format(" %s ", getClass().getSimpleName());
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
 }

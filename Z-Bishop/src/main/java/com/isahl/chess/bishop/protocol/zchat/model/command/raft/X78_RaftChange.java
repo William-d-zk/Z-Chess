@@ -95,11 +95,6 @@ public class X78_RaftChange
         return remain - 8;
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 
     @Override
     public String toString()

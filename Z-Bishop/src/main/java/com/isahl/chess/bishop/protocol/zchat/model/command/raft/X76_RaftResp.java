@@ -129,9 +129,4 @@ public class X76_RaftResp
         mClientId = clientId;
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }
