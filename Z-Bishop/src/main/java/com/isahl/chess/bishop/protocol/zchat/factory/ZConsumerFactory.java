@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 
 /**
  * @author william.d.zk
@@ -35,7 +35,7 @@ public class ZConsumerFactory
     public static final ZConsumerFactory _Instance = new ZConsumerFactory();
 
     @Override
-    protected ZCommand build(int serial)
+    protected ZControl build(int serial)
     {
         return switch(serial) {
             case 0x20 -> null;
@@ -45,7 +45,7 @@ public class ZConsumerFactory
             case 0x24 -> null;
             case 0x25 -> null;
             case 0x6F -> null;
-            default -> null;
+            default -> super.build(serial);
         };
     }
 }

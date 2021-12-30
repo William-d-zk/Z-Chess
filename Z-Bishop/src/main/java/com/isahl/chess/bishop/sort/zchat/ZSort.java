@@ -6,6 +6,7 @@ import com.isahl.chess.bishop.protocol.zchat.factory.*;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZControlFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZFrameFilter;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -14,21 +15,13 @@ public class ZSort
 {
     public ZSort(Mode mode, Type type)
     {
-        super(mode, type, "z-chat");
-        ZChatFactory factory = switch(mode) {
-            case CLUSTER -> new ZClusterFactory();
-            case LINK -> switch(type) {
-                case SERVER -> ZServerFactory._Instance;
-                case SYMMETRY -> ZSymmetryFactory._Instance;
-                case CLIENT -> ZConsumerFactory._Instance;
-                case INNER -> ZInnerFactory._Instance;
-            };
-        };
-        _Head.linkFront(new ZControlFilter(factory))
-             .linkFront(new ZCommandFilter(factory));
+        super(mode, type, "z-chat", null);
+        _Head = new ZFrameFilter();
+        _Head.linkFront(new ZControlFilter((ZChatFactory) getFactory()))
+             .linkFront(new ZCommandFilter((ZChatFactory) getFactory()));
     }
 
-    private final ZFrameFilter _Head = new ZFrameFilter();
+    private final IFilterChain _Head;
 
     @Override
     public IFilterChain getFilterChain()
@@ -40,5 +33,19 @@ public class ZSort
     public ZContext newContext(INetworkOption option)
     {
         return new ZContext(option, getMode(), getType());
+    }
+
+    @Override
+    protected IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return switch(mode) {
+            case CLUSTER -> ZClusterFactory._Instance;
+            case LINK -> switch(type) {
+                case SERVER -> ZServerFactory._Instance;
+                case SYMMETRY -> ZSymmetryFactory._Instance;
+                case CLIENT -> ZConsumerFactory._Instance;
+                case INNER -> ZInnerFactory._Instance;
+            };
+        };
     }
 }

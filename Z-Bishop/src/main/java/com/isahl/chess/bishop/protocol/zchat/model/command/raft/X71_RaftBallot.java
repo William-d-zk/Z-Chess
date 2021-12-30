@@ -170,9 +170,4 @@ public class X71_RaftBallot
                              mCommit);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

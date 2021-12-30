@@ -171,9 +171,4 @@ public class X72_RaftAppend
                              mPayload == null ? 0 : mPayload.length);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

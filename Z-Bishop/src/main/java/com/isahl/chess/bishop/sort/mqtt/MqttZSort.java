@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.sort.mqtt;
 
 import com.isahl.chess.bishop.io.BaseSort;
+import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttCommandFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttControlFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttFrameFilter;
@@ -43,7 +44,7 @@ public class MqttZSort
 
     public MqttZSort(Mode mode, Type type)
     {
-        super(mode, type, "mqtt");
+        super(mode, type, "mqtt", QttFactory._Instance);
     }
 
     @Override

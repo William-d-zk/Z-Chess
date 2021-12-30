@@ -59,4 +59,10 @@ public class X0B_Ping
     {
         return String.format(" %s ", getClass().getSimpleName());
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
 }

@@ -58,4 +58,10 @@ public class X0E_Consensus
     {
         return Level.ALMOST_ONCE;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
 }

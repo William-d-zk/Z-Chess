@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io;
 
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.events.functions.*;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
@@ -43,12 +44,14 @@ public abstract class BaseSort<C extends IPContext>
     private final Mode          _Mode;
     private final Type          _Type;
     private final String        _Protocol;
+    private final IoFactory     _Factory;
 
-    protected BaseSort(Mode mode, Type type, String protocol)
+    protected BaseSort(Mode mode, Type type, String protocol, IoFactory factory)
     {
         _Mode = mode;
         _Type = type;
         _Protocol = protocol;
+        _Factory = factory == null ? _SelectFactory(_Mode, _Type) : factory;
     }
 
     @Override
@@ -99,4 +102,14 @@ public abstract class BaseSort<C extends IPContext>
         return _Protocol;
     }
 
+    @Override
+    public IoFactory getFactory()
+    {
+        return _Factory;
+    }
+
+    protected IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return null;
+    }
 }

@@ -153,9 +153,4 @@ public class X73_RaftAccept
                              mCatchUpTerm);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

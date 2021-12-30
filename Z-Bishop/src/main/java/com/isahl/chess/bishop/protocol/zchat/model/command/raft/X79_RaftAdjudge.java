@@ -127,9 +127,4 @@ public class X79_RaftAdjudge
         this.mIndex = index;
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }
