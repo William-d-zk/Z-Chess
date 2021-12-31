@@ -41,11 +41,20 @@ public interface IAccessService
     /**
      * @param manager session manager
      * @param session by session
-     * @param content input IControl
+     * @param content input IProtocol
      * @return fst 「IControl」snd「ISession」trd「ISession.IEncoder」
      */
     List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content);
 
+    /**
+     * @param manager session manager
+     * @param session input session
+     * @param input   input IProtocol
+     * @return ITriple
+     * fst: 直接在session上需要进行返回的内容「IProtocol/List of IProtocol」
+     * snd: 需要向Cluster进行一致性处理的内容「IProtocol」
+     * trd: 处理模式 fst 对应的内容需要以什么方式处理「 SINGLE/BATCH 」
+     */
     ITriple onLink(IManager manager, ISession session, IProtocol input);
 
     void onOffline(ISession session);

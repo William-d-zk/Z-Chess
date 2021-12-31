@@ -24,11 +24,11 @@
 package com.isahl.chess.bishop.protocol.zchat.custom;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public <E extends IProtocol> List<ITriple> consistent(IManager manager, E request, long origin)
+    public List<ITriple> consistent(IManager manager, IoSerial request, long origin)
     {
         return _Then != null ? _Then.consistent(manager, request, origin) : null;
     }

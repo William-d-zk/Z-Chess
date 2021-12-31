@@ -26,6 +26,7 @@ package com.isahl.chess.knight.raft.service;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
@@ -72,7 +73,7 @@ public class RaftCustom
         switch(received.serial()) {
             // follower → elector
             case 0x70 -> {
-                return _RaftPeer.elect((X70_RaftVote) received, manager, session);
+                return _RaftPeer.onVote((X70_RaftVote) received, manager, session);
             }
             // elector → candidate
             case 0x71 -> {
@@ -102,6 +103,12 @@ public class RaftCustom
             case 0x77 -> {
                 return _RaftPeer.onNotify((X77_RaftNotify) received, manager);
             }
+            case 0x78 -> {
+                //TODO
+            }
+            case 0x79 -> {
+                //TODO
+            }
             // peer *, behind in config → previous in config
             case 0x08 -> {
                 X08_Identity x08 = (X08_Identity) received;
@@ -118,8 +125,7 @@ public class RaftCustom
     @Override
     public List<ITriple> onTimer(IManager manager, RaftMachine machine)
     {
-        if(machine == null) {return null;}
-        return switch(machine.operation()) {
+        return machine == null ? null : switch(machine.operation()) {
             // step down → follower
             case OP_MODIFY -> _RaftPeer.turnToFollower(machine);
             // vote
@@ -131,7 +137,7 @@ public class RaftCustom
     }
 
     @Override
-    public <E extends IProtocol> List<ITriple> consistent(IManager manager, E request, long origin)
+    public List<ITriple> consistent(IManager manager, IoSerial request, long origin)
     {
         _Logger.debug("cluster consistent %s", request);
         return _RaftPeer.onSubmit(request.encode()

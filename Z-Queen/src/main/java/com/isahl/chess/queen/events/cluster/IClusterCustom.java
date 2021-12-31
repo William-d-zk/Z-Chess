@@ -24,10 +24,10 @@
 package com.isahl.chess.queen.events.cluster;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
@@ -56,10 +56,12 @@ public interface IClusterCustom<T extends IStorage>
      * @param manager session 管理器
      * @param request 需要进行强一致的指令
      * @param origin  指令的发起者编号；一致性完成时需要回溯
-     * @return triples first:request,second:session[cluster|single::linker],third:operator
-     * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
+     * @return triples
+     * fst:request
+     * snd:session[cluster|single::linker]
+     * trd:operator[session.encoder]
      */
-    <E extends IProtocol> List<ITriple> consistent(IManager manager, E request, long origin);
+    List<ITriple> consistent(IManager manager, IoSerial request, long origin);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)

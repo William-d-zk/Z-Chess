@@ -61,6 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.NULL;
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
@@ -219,29 +220,30 @@ public class MQttPlugin
                 if(x112.isOk()) {
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
-                        X0A_Shutdown x108 = new X0A_Shutdown();
-                        x108.with(old);
                         _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
-                        return new Triple<>(x108, x111, SINGLE);
+                        return Triple.of(new X0A_Shutdown().with(old), x111, SINGLE);
                     }
                     else {
                         _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
-                        return new Triple<>(null, x111, SINGLE);
+                        return Triple.of(null, x111, NULL);
                     }
                 }
                 else {
                     _Logger.info("reject %s",
                                  x112.getCode()
                                      .name());
-                    return new Triple<>(x112, null, SINGLE);
+                    return Triple.of(x112, null, SINGLE);
                 }
             }
             case 0x118, 0x11A, 0x11E -> {
                 _Logger.info("link control [%s] ", input);
-                return new Triple<>(null, input, SINGLE);
+                return Triple.of(null, input, NULL);
             }
             case 0x11F -> {
 
+            }
+            default -> {
+                return null;
             }
         }
         return null;
@@ -295,7 +297,7 @@ public class MQttPlugin
                         x119.with(session);
                         x119.setMsgId(x118.getMsgId());
                         _Logger.info("subscribe topic:%s", x118.getSubscribes());
-                        return Collections.singletonList(new Triple<>(x119, session, session.getEncoder()));
+                        return Collections.singletonList(Triple.of(x119, session, session.getEncoder()));
                     }
                 }
             }
@@ -312,7 +314,7 @@ public class MQttPlugin
                         x11B.with(session);
                         x11B.setMsgId(x11A.getMsgId());
                         _Logger.info("unsubscribe topic:%s", x11A.getTopics());
-                        return Collections.singletonList(new Triple<>(x11B, session, session.getEncoder()));
+                        return Collections.singletonList(Triple.of(x11B, session, session.getEncoder()));
                     }
                 }
             }
