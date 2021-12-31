@@ -63,14 +63,14 @@ public class ZLinkCustom
     }
 
     @Override
-    public IOperator<IConsistent, ISession, IProtocol> getOperator()
+    public IOperator<IConsistent, ISession, IProtocol> getUnboxer()
     {
-        return this::adjudge;
+        return this::unbox;
     }
 
     @Override
-    public <OUTPUT extends IoSerial> OUTPUT adjudge(IConsistent consistency, ISession session)
+    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistent input, ISession session)
     {
-        return _Then != null ? _Then.adjudge(consistency, session) : null;
+        return _Then != null ? _Then.unbox(input, session) : null;
     }
 }

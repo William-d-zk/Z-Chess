@@ -59,7 +59,7 @@ public interface IAccessService
 
     void onOffline(ISession session);
 
-    List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody);
+    List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody);
 
     default void consume(IoSerial request)
     {

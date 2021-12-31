@@ -44,11 +44,11 @@ public interface IClusterCustom<T extends IStorage>
      * Cluster.Follower check leader available,timeout -> start vote
      * Cluster.Candidate check elector response,timeout -> restart vote
      *
-     * @param manager
-     * @param content
-     * @return
+     * @param manager session-manager
+     * @param machine cluster-state-machine
+     * @return cluster result list of {fst:content,snd:session,trd:encoder}
      */
-    List<ITriple> onTimer(IManager manager, T content);
+    List<ITriple> onTimer(IManager manager, T machine);
 
     /**
      * Link → Cluster.consistent(Link.consensus_data,consensus_data.origin)
@@ -66,7 +66,7 @@ public interface IClusterCustom<T extends IStorage>
     /**
      * consensus-api-publisher → cluster.change(new-topology)
      *
-     * @param manager
+     * @param manager  session-manager
      * @param topology
      * @return
      */
@@ -79,11 +79,4 @@ public interface IClusterCustom<T extends IStorage>
      */
     boolean waitForCommit();
 
-    /**
-     * @param result consistent protocol
-     * @return flag: need transfer → link-custom
-     */
-    boolean onConsistentCall(IConsistent result);
-
-    void register(IConsistencyHandler handler);
 }

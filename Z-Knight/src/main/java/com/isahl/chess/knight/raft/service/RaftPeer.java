@@ -513,7 +513,6 @@ public class RaftPeer
         peerMachine.setCommit(x72.getCommit());
         peerMachine.setCandidate(_SelfMachine.getPeerId());
         peerMachine.setState(LEADER);
-
         if(lowTerm(x72.getTerm())) {
             _Logger.debug("append {low term from:[%#x]}", x72.getTerm());
             return Triple.of(reject(LOWER_TERM, x72.getLeaderId(), x72.getMsgId()).with(session), null, SINGLE);

@@ -65,7 +65,7 @@ public class EchoPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody)
     {
         throw new UnsupportedOperationException();
     }

@@ -256,7 +256,7 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody)
     {
         ISession session = manager.findSessionByIndex(origin);
         switch(consensusBody.serial()) {
