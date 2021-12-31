@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  */
 public interface IConsistencyJudge
 {
-    default <T extends IProtocol> IOperator<IConsistent, ISession, T> getOperator()
+    default IOperator<IConsistent, ISession, IProtocol> getOperator()
     {
         return this::adjudge;
     }
@@ -44,5 +44,5 @@ public interface IConsistencyJudge
      * @param session     cluster 通讯用的
      * @return 一致性结果
      */
-    <T extends IoSerial> T adjudge(IConsistent consistency, ISession session);
+    <OUTPUT extends IoSerial> OUTPUT adjudge(IConsistent consistency, ISession session);
 }

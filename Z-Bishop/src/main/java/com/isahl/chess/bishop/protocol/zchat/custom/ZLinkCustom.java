@@ -63,13 +63,13 @@ public class ZLinkCustom
     }
 
     @Override
-    public <T extends IProtocol> IOperator<IConsistent, ISession, T> getOperator()
+    public IOperator<IConsistent, ISession, IProtocol> getOperator()
     {
         return this::adjudge;
     }
 
     @Override
-    public <T extends IoSerial> T adjudge(IConsistent consistency, ISession session)
+    public <OUTPUT extends IoSerial> OUTPUT adjudge(IConsistent consistency, ISession session)
     {
         return _Then != null ? _Then.adjudge(consistency, session) : null;
     }

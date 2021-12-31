@@ -413,7 +413,7 @@ public class RaftPeer
         return term < _SelfMachine.getTerm();
     }
 
-    public ITriple elect(X70_RaftVote x70, IManager manager, ISession session)
+    public ITriple onVote(X70_RaftVote x70, IManager manager, ISession session)
     {
         RaftMachine peerMachine = getMachine(x70.getCandidateId(), x70.getTerm());
         if(peerMachine == null) {return null;}

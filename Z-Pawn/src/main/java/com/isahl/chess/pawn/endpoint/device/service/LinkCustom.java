@@ -30,7 +30,6 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -73,9 +72,11 @@ public class LinkCustom
     @Override
     public List<ITriple> notify(IManager manager, IProtocol request, long origin)
     {
-        for(IAccessService service : _AccessServices) {
-            if(service.isSupported(request)) {
-                return service.onConsistencyResult(manager, origin, request);
+        if(request != null) {
+            for(IAccessService service : _AccessServices) {
+                if(service.isSupported(request)) {
+                    return service.onConsistencyResult(manager, origin, request);
+                }
             }
         }
         return null;
@@ -99,12 +100,12 @@ public class LinkCustom
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends IoSerial> T adjudge(IConsistent consistency, ISession session)
+    public <OUTPUT extends IoSerial> OUTPUT adjudge(IConsistent consistency, ISession session)
     {
         _Logger.debug("link custom by leader %s", consistency);
         switch(consistency.serial()) {
-            case 0x76, 0x79 -> {
-                return (T) consistency.subContent();
+            case 0x76, 0x77, 0x79 -> {
+                return (OUTPUT) consistency.subContent();
             }
             default -> {
                 return null;

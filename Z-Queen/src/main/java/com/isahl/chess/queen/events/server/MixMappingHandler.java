@@ -38,7 +38,6 @@ import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -166,10 +165,8 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                IProtocol response = result.getSecond();
-                                if(response != null) {
-                                    publish(_Writer, _LinkCustom.notify(_SessionManager, response, session.getIndex()));
-                                }
+                                publish(_Writer,
+                                        _LinkCustom.notify(_SessionManager, result.getSecond(), session.getIndex()));
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);
@@ -317,17 +314,18 @@ public class MixMappingHandler<T extends IStorage>
             switch(type) {
                 case SINGLE -> {
                     IProtocol response = result.getFirst();
-                    if(response != null) {
-                        publish(_Writer,
-                                WRITE,
-                                Pair.of(response, response.session()),
-                                response.session()
-                                        .getEncoder());
-                    }
+                    publish(_Writer,
+                            WRITE,
+                            Pair.of(response, response.session()),
+                            response.session()
+                                    .getEncoder());
                 }
                 case BATCH -> {
                     List<ITriple> responses = result.getFirst();
                     publish(_Writer, responses);
+                }
+                case NULL -> {
+                    //result.fst == null ignore
                 }
             }
         }
