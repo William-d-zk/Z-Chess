@@ -190,12 +190,12 @@ public class MixMappingHandler<T extends IStorage>
                         try {
                             ITriple result = doCustom(_ClusterCustom, _SessionManager, session, received);
                             if(result != null) {
-                                IConsistent adjudge = result.getSecond();
-                                if(adjudge != null && _ClusterCustom.onConsistentCall(adjudge)) {
+                                IConsistent backload = result.getSecond();
+                                if(backload != null) {
                                     publish(_Transfer,
                                             IOperator.Type.LINK_CONSISTENT_RESULT,
-                                            Pair.of(adjudge, session),
-                                            _LinkCustom.getOperator());
+                                            Pair.of(backload, _SessionManager.findSessionByIndex(backload.getOrigin())),
+                                            _LinkCustom.getUnboxer());
                                 }
                                 else {
                                     _Logger.debug("nothing for transfer to link");
@@ -269,12 +269,12 @@ public class MixMappingHandler<T extends IStorage>
                      */
                     ISession session = event.getContent()
                                             .getSecond();
-                    IOperator<IConsistent, ISession, IProtocol> adjudgeOperator = event.getEventOp();
+                    IOperator<IConsistent, ISession, IProtocol> unboxer = event.getEventOp();
                     if(consistency != null) {
                         try {
                             publish(_Writer,
                                     _LinkCustom.notify(_SessionManager,
-                                                       adjudgeOperator.handle(consistency, session),
+                                                       unboxer.handle(consistency, session),
                                                        consistency.getOrigin()));
                         }
                         catch(Exception e) {

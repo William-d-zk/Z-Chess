@@ -55,7 +55,7 @@ public class HookOpenService
                 long sequence = _Publisher.next();
                 try {
                     QEvent event = _Publisher.get(sequence);
-                    event.produce(IOperator.Type.SERVICE, new Pair<>(request, null), null);
+                    event.produce(IOperator.Type.SERVICE, Pair.of(request, null), null);
                     return CodeKing.SUCCESS;
                 }
                 finally {

@@ -96,7 +96,7 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> onConsistencyResult(IManager manager, long origin, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody)
     {
         return null;
     }

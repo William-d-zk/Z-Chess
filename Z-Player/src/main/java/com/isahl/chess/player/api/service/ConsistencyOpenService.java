@@ -33,11 +33,8 @@ import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
-import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ConsistencyOpenService
@@ -50,14 +47,10 @@ public class ConsistencyOpenService
     private final RaftPeer   _RaftPeer;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode,
-                                  RaftPeer raftPeer,
-                                  RaftCustom raftCustom,
-                                  List<IConsistencyHandler> handlers)
+    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer, RaftCustom raftCustom)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
-        handlers.forEach(raftCustom::register);
     }
 
     @Override

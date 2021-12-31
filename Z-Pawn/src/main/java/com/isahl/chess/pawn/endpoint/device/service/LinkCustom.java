@@ -75,7 +75,7 @@ public class LinkCustom
         if(request != null) {
             for(IAccessService service : _AccessServices) {
                 if(service.isSupported(request)) {
-                    return service.onConsistencyResult(manager, origin, request);
+                    return service.onConsistency(manager, origin, request);
                 }
             }
         }
@@ -100,12 +100,12 @@ public class LinkCustom
 
     @Override
     @SuppressWarnings("unchecked")
-    public <OUTPUT extends IoSerial> OUTPUT adjudge(IConsistent consistency, ISession session)
+    public <O extends IoSerial> O unbox(IConsistent input, ISession session)
     {
-        _Logger.debug("link custom by leader %s", consistency);
-        switch(consistency.serial()) {
+        _Logger.debug("link custom by leader %s", input);
+        switch(input.serial()) {
             case 0x76, 0x77, 0x79 -> {
-                return (OUTPUT) consistency.subContent();
+                return (O) input.subContent();
             }
             default -> {
                 return null;

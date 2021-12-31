@@ -24,7 +24,7 @@
 package com.isahl.chess.queen.events.server;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.queen.events.cluster.IConsistencyJudge;
+import com.isahl.chess.queen.events.cluster.IConsistencyBackload;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 public interface ILinkCustom
         extends IMappingCustom,
-                IConsistencyJudge
+                IConsistencyBackload
 {
 
     /**

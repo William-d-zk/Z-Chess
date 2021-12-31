@@ -30,13 +30,11 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class RaftCustom
@@ -44,8 +42,7 @@ public class RaftCustom
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final RaftPeer                  _RaftPeer;
-    private final List<IConsistencyHandler> _HandlerList = new LinkedList<>();
+    private final RaftPeer _RaftPeer;
 
     public RaftCustom(RaftPeer raftPeer)
     {
@@ -159,16 +156,4 @@ public class RaftCustom
         return _RaftPeer.isInCongress();
     }
 
-    @Override
-    public boolean onConsistentCall(IConsistent result)
-    {
-        return !_HandlerList.isEmpty() && _HandlerList.stream()
-                                                      .anyMatch(handler->handler.onConsistencyCall(result));
-    }
-
-    @Override
-    public void register(IConsistencyHandler handler)
-    {
-        _HandlerList.add(handler);
-    }
 }

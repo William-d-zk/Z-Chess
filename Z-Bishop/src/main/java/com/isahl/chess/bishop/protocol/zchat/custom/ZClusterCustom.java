@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
@@ -47,9 +46,9 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> onTimer(IManager manager, T content)
+    public List<ITriple> onTimer(IManager manager, T machine)
     {
-        return _Then != null ? _Then.onTimer(manager, content) : null;
+        return _Then != null ? _Then.onTimer(manager, machine) : null;
     }
 
     @Override
@@ -68,20 +67,6 @@ public class ZClusterCustom<T extends IStorage>
     public boolean waitForCommit()
     {
         return _Then != null && _Then.waitForCommit();
-    }
-
-    @Override
-    public boolean onConsistentCall(IConsistent result)
-    {
-        return _Then != null && _Then.onConsistentCall(result);
-    }
-
-    @Override
-    public void register(IConsistencyHandler handler)
-    {
-        if(_Then != null) {
-            _Then.register(handler);
-        }
     }
 
 }
