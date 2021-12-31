@@ -23,8 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
@@ -70,7 +70,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, long origin)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent origin)
     {
         if(request != null) {
             for(IAccessService service : _AccessServices) {
@@ -100,16 +100,28 @@ public class LinkCustom
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IoSerial> O unbox(IConsistent input, ISession session)
+    public IProtocol unbox(IConsistent input, IManager manager)
     {
-        _Logger.debug("link custom by leader %s", input);
-        switch(input.serial()) {
-            case 0x76, 0x77, 0x79 -> {
-                return (O) input.subContent();
+        _Logger.debug("link unbox %s", input);
+        ISession session = manager.findSessionByPrefix(input.getOrigin());
+        if(session != null) {
+            switch(input.serial()) {
+                case 0x76, 0x77, 0x79 -> {
+                    //factory 不存在null 情况，此处不再判断
+                    IProtocol request = session.getFactory()
+                                               .create(ByteBuf.wrap(input.payload()));
+                    request.with(session);
+                    return request;
+                }
+                default -> {
+                    _Logger.warning("link custom %s no handle", input);
+                    return null;
+                }
             }
-            default -> {
-                return null;
-            }
+        }
+        else {
+            _Logger.warning("origin: %#x no session exist ", input.getOrigin());
+            return null;
         }
     }
 }

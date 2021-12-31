@@ -49,9 +49,9 @@ public class ZLinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, long origin)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
     {
-        return _Then != null ? _Then.notify(manager, request, origin) : null;
+        return _Then != null ? _Then.notify(manager, request, backload) : null;
     }
 
     @Override
@@ -63,14 +63,14 @@ public class ZLinkCustom
     }
 
     @Override
-    public IOperator<IConsistent, ISession, IProtocol> getUnboxer()
+    public IOperator<IConsistent, IManager, IProtocol> getUnboxer()
     {
         return this::unbox;
     }
 
     @Override
-    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistent input, ISession session)
+    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistent input, IManager manager)
     {
-        return _Then != null ? _Then.unbox(input, session) : null;
+        return _Then != null ? _Then.unbox(input, manager) : null;
     }
 }

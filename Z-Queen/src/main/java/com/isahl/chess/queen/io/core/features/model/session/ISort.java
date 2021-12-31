@@ -75,4 +75,6 @@ public interface ISort
     String getProtocol();
 
     IoFactory getFactory();
+
+    IoFactory _SelectFactory(Mode mode, Type type);
 }

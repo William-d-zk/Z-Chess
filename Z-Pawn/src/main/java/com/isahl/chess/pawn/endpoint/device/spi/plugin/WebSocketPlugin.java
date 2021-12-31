@@ -31,6 +31,7 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -56,7 +57,7 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content)
+    public List<ITriple> onLogic(IManager manager, ISession session, IProtocol content)
     {
         _Logger.info("web socket recv:[ %s ]", content);
 
@@ -96,7 +97,7 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
         return null;
     }

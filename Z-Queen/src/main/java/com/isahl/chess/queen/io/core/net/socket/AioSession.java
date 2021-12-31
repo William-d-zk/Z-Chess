@@ -24,6 +24,7 @@ package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
@@ -508,5 +509,11 @@ public class AioSession<C extends IPContext>
     public int hashCode()
     {
         return _HashCode;
+    }
+
+    @Override
+    public IoFactory getFactory()
+    {
+        return _Sort.getFactory();
     }
 }

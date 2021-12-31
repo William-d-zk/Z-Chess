@@ -56,14 +56,4 @@ public interface IoSerial
 
     void deserializeSub(IoFactory factory);
 
-    /**
-     * 当 serial 对象执行异步处理时
-     * 获取其执行结果
-     *
-     * @return result
-     */
-    default int rxCode()
-    {
-        return 0;
-    }
 }

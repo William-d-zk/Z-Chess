@@ -46,12 +46,20 @@ public abstract class BaseSort<C extends IPContext>
     private final String        _Protocol;
     private final IoFactory     _Factory;
 
+    protected BaseSort(Mode mode, Type type, String protocol)
+    {
+        _Mode = mode;
+        _Type = type;
+        _Protocol = protocol;
+        _Factory = _SelectFactory(_Mode, _Type);
+    }
+
     protected BaseSort(Mode mode, Type type, String protocol, IoFactory factory)
     {
         _Mode = mode;
         _Type = type;
         _Protocol = protocol;
-        _Factory = factory == null ? _SelectFactory(_Mode, _Type) : factory;
+        _Factory = factory;
     }
 
     @Override
@@ -108,8 +116,4 @@ public abstract class BaseSort<C extends IPContext>
         return _Factory;
     }
 
-    protected IoFactory _SelectFactory(Mode mode, Type type)
-    {
-        return null;
-    }
 }

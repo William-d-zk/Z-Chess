@@ -15,7 +15,7 @@ public class ZSort
 {
     public ZSort(Mode mode, Type type)
     {
-        super(mode, type, "z-chat", null);
+        super(mode, type, "z-chat");
         _Head = new ZFrameFilter();
         _Head.linkFront(new ZControlFilter((ZChatFactory) getFactory()))
              .linkFront(new ZCommandFilter((ZChatFactory) getFactory()));
@@ -36,7 +36,7 @@ public class ZSort
     }
 
     @Override
-    protected IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory _SelectFactory(Mode mode, Type type)
     {
         return switch(mode) {
             case CLUSTER -> ZClusterFactory._Instance;

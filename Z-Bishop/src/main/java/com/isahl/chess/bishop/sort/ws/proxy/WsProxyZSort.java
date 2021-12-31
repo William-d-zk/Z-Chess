@@ -44,7 +44,7 @@ public class WsProxyZSort<A extends IPContext>
 
     public WsProxyZSort(Mode mode, Type type, IAioSort<A> actingSort)
     {
-        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()), null);
+        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()), actingSort.getFactory());
         _ActingSort = actingSort;
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
@@ -65,8 +65,8 @@ public class WsProxyZSort<A extends IPContext>
     }
 
     @Override
-    protected IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory _SelectFactory(Mode mode, Type type)
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }
