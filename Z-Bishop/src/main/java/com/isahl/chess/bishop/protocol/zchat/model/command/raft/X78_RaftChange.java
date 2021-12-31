@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
 /**
  * @author william.d.zk
@@ -36,7 +36,7 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
                   serial = 0x78)
 public class X78_RaftChange
         extends ZCommand
-        implements IConsistent
+        implements ITraceable
 {
 
     public X78_RaftChange()
@@ -94,7 +94,6 @@ public class X78_RaftChange
         mOrigin = input.getLong();
         return remain - 8;
     }
-
 
     @Override
     public String toString()

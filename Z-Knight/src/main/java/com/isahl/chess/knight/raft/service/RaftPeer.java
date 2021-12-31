@@ -124,8 +124,8 @@ public class RaftPeer
         for(Iterator<Map.Entry<Long, X75_RaftReq>> it = _Cached.entrySet()
                                                                .iterator(); it.hasNext(); ) {
             Map.Entry<Long, X75_RaftReq> entry = it.next();
-            if(entry.getValue().tCheck) {it.remove();}
-            else {entry.getValue().tCheck = true;}
+            if(entry.getValue().tCached) {it.remove();}
+            else {entry.getValue().tCached = true;}
         }
     }
 

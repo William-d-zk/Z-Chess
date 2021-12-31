@@ -52,6 +52,7 @@ public class X79_RaftAdjudge
     private long mIndex;
     private long mClient;
     private long mOrigin;
+    private int  mCode;
 
     @Override
     public int priority()
@@ -68,7 +69,11 @@ public class X79_RaftAdjudge
     @Override
     public String toString()
     {
-        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x }", mIndex, mClient, mOrigin);
+        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x, code:%d}",
+                             mIndex,
+                             mClient,
+                             mOrigin,
+                             mCode);
     }
 
     public void setOrigin(long origin)
@@ -83,12 +88,24 @@ public class X79_RaftAdjudge
     }
 
     @Override
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(int code)
+    {
+        mCode = code;
+    }
+
+    @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
                     .putLong(mIndex)
                     .putLong(mClient)
-                    .putLong(mOrigin);
+                    .putLong(mOrigin)
+                    .putInt(mCode);
     }
 
     @Override
@@ -98,13 +115,14 @@ public class X79_RaftAdjudge
         mIndex = input.getLong();
         mClient = input.getLong();
         mOrigin = input.getLong();
-        return remain - 24;
+        mCode = input.getInt();
+        return remain - 28;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 24;
+        return super.length() + 28;
     }
 
     public long getClient()

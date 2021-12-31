@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.protocol.mqtt.filter.QttCommandFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttControlFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttFrameFilter;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -44,7 +45,7 @@ public class MqttZSort
 
     public MqttZSort(Mode mode, Type type)
     {
-        super(mode, type, "mqtt", QttFactory._Instance);
+        super(mode, type, "mqtt");
     }
 
     @Override
@@ -59,4 +60,9 @@ public class MqttZSort
         return new QttContext(option, getMode(), getType());
     }
 
+    @Override
+    public IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return QttFactory._Instance;
+    }
 }

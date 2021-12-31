@@ -29,6 +29,8 @@ import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
+
 /**
  * @author william.d.zk
  * @date 2020/4/11
@@ -131,6 +133,11 @@ public class X77_RaftNotify
         this.mClient = client;
     }
 
+    @Override
+    public int getCode()
+    {
+        return SUCCESS;
+    }
 
     @Override
     public String toString()

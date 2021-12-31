@@ -30,6 +30,8 @@ import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsTextFilter;
 import com.isahl.chess.bishop.protocol.zchat.factory.ZChatFactory;
+import com.isahl.chess.bishop.protocol.zchat.factory.ZServerFactory;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 
@@ -44,7 +46,7 @@ public class WsTextZSort
 
     public WsTextZSort(Mode mode, Type type)
     {
-        super(mode, type, "ws-text", ZChatFactory._Instance);
+        super(mode, type, "ws-text");
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new WsTextFilter<>());
@@ -54,6 +56,12 @@ public class WsTextZSort
     public IFilterChain getFilterChain()
     {
         return _Head;
+    }
+
+    @Override
+    public IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        return ZServerFactory._Instance;
     }
 
     @Override

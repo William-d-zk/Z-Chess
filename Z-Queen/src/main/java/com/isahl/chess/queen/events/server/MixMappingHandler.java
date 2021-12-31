@@ -165,8 +165,7 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                publish(_Writer,
-                                        _LinkCustom.notify(_SessionManager, result.getSecond(), session.getIndex()));
+                                publish(_Writer, _LinkCustom.notify(_SessionManager, result.getSecond(), null));
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);
@@ -194,7 +193,7 @@ public class MixMappingHandler<T extends IStorage>
                                 if(backload != null) {
                                     publish(_Transfer,
                                             IOperator.Type.LINK_CONSISTENT_RESULT,
-                                            Pair.of(backload, _SessionManager.findSessionByIndex(backload.getOrigin())),
+                                            Pair.of(backload, _SessionManager),
                                             _LinkCustom.getUnboxer());
                                 }
                                 else {
@@ -264,18 +263,15 @@ public class MixMappingHandler<T extends IStorage>
                 case LINK_CONSISTENT_RESULT -> {
                     IConsistent consistency = event.getContent()
                                                    .getFirst();
-                    /*
-                     *  cluster-session
-                     */
-                    ISession session = event.getContent()
+                    IManager manager = event.getContent()
                                             .getSecond();
-                    IOperator<IConsistent, ISession, IProtocol> unboxer = event.getEventOp();
+                    IOperator<IConsistent, IManager, IProtocol> unboxer = event.getEventOp();
                     if(consistency != null) {
                         try {
                             publish(_Writer,
                                     _LinkCustom.notify(_SessionManager,
-                                                       unboxer.handle(consistency, session),
-                                                       consistency.getOrigin()));
+                                                       unboxer.handle(consistency, manager),
+                                                       consistency));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);

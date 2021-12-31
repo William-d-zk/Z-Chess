@@ -32,4 +32,6 @@ import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 public interface IConsistent
         extends ITraceable,
                 IoSerial
-{}
+{
+    int getCode();
+}

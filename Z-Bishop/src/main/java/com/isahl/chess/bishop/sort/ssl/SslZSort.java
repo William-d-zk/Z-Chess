@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.io.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -45,7 +46,7 @@ public class SslZSort<T extends IPContext>
 
     public SslZSort(ISort.Mode mode, ISort.Type type, IAioSort<T> actingSort)
     {
-        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()), null);
+        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()), actingSort.getFactory());
         _ActingSort = actingSort;
         _Head.linkFront(new SSLFilter<>())
              .linkFront(actingSort.getFilterChain());
@@ -67,5 +68,11 @@ public class SslZSort<T extends IPContext>
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public IoFactory _SelectFactory(Mode mode, Type type)
+    {
+        throw new UnsupportedOperationException();
     }
 }

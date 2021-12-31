@@ -23,8 +23,8 @@
 
 package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.IAddress;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectMode;
 import com.isahl.chess.queen.io.core.features.model.channels.IReadable;
@@ -170,6 +170,8 @@ public interface ISession
     IPipeTransfer getTransfer();
 
     IFilterChain getFilterChain();
+
+    IoFactory getFactory();
 
     void ready();
 

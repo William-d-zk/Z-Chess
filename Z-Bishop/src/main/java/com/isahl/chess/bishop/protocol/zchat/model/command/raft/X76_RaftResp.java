@@ -76,15 +76,15 @@ public class X76_RaftResp
         mOrigin = origin;
     }
 
-    @Override
-    public int rxCode()
-    {
-        return mCode;
-    }
-
     public void setCode(int code)
     {
         mCode = code;
+    }
+
+    @Override
+    public int getCode()
+    {
+        return mCode;
     }
 
     @Override

@@ -27,22 +27,22 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 /**
  * @author william.d.zk
  */
 public interface IConsistencyBackload
 {
-    default IOperator<IConsistent, ISession, IProtocol> getUnboxer()
+    default IOperator<IConsistent, IManager, IProtocol> getUnboxer()
     {
         return this::unbox;
     }
 
     /**
-     * @param input 需要进行一致处理的内容
-     * @param session     cluster 通讯用的
+     * @param input   需要进行一致处理的内容
+     * @param manager session-manager 获取 origin-session
      * @return 一致性结果
      */
-    <O extends IoSerial> O unbox(IConsistent input, ISession session);
+    <O extends IoSerial> O unbox(IConsistent input, IManager manager);
 }

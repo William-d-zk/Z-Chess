@@ -24,10 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
@@ -45,6 +42,7 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -101,7 +99,7 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> logicHandle(IManager manager, ISession session, IProtocol content)
+    public List<ITriple> onLogic(IManager manager, ISession session, IProtocol content)
     {
         List<ITriple> results = null;
         switch(content.serial()) {
@@ -256,35 +254,36 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, long origin, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
-        ISession session = manager.findSessionByIndex(origin);
+        long origin = backload.getOrigin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
-                if(x111.rxCode() == SUCCESS) {
+                if(backload.getCode() == SUCCESS) {
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if(x111.isClean()) {
                         clean(origin);
                     }
                     _QttStorage.sessionOnLogin(origin, this, x111);
                 }
-                if(session != null) {
-                    X112_QttConnack x112 = new X112_QttConnack();
-                    x112.with(session);
-                    if(x111.rxCode() == SUCCESS) {
-                        x112.responseOk();
-                    }
-                    else {
-                        x112.rejectServerUnavailable();
-                    }
-                    return Collections.singletonList(Triple.of(x112, session, session.getEncoder()));
+                X112_QttConnack x112 = new X112_QttConnack();
+                x112.with(x111.session());
+                if(backload.getCode() == SUCCESS) {
+                    x112.responseOk();
                 }
+                else {
+                    x112.rejectServerUnavailable();
+                }
+                return Collections.singletonList(Triple.of(x112,
+                                                           x112.session(),
+                                                           x112.session()
+                                                               .getEncoder()));
             }
             case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                if(subscribes != null && x118.rxCode() == SUCCESS) {
+                if(subscribes != null && backload.getCode() == SUCCESS) {
                     subscribes.forEach((topic, level)->{
                         Subscribe subscribe = subscribe(topic, level, origin);
                         if(subscribe != null) {
@@ -292,41 +291,41 @@ public class MQttPlugin
                             _QttStorage.sessionOnSubscribe(origin, topic, level);
                         }
                     });
-                    if(session != null) {
-                        X119_QttSuback x119 = new X119_QttSuback();
-                        x119.with(session);
-                        x119.setMsgId(x118.getMsgId());
-                        _Logger.info("subscribe topic:%s", x118.getSubscribes());
-                        return Collections.singletonList(Triple.of(x119, session, session.getEncoder()));
-                    }
+                    X119_QttSuback x119 = new X119_QttSuback();
+                    x119.with(x118.session());
+                    x119.setMsgId(x118.getMsgId());
+                    _Logger.info("subscribe topic:%s", x118.getSubscribes());
+                    return Collections.singletonList(Triple.of(x119,
+                                                               x119.session(),
+                                                               x119.session()
+                                                                   .getEncoder()));
                 }
             }
             case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                if(topics != null && x11A.rxCode() == SUCCESS) {
+                if(topics != null && backload.getCode() == SUCCESS) {
                     topics.forEach(topic->{
                         unsubscribe(topic, origin);
                         _QttStorage.sessionOnUnsubscribe(origin, topic);
                     });
-                    if(session != null) {
-                        X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                        x11B.with(session);
-                        x11B.setMsgId(x11A.getMsgId());
-                        _Logger.info("unsubscribe topic:%s", x11A.getTopics());
-                        return Collections.singletonList(Triple.of(x11B, session, session.getEncoder()));
-                    }
+                    X11B_QttUnsuback x11B = new X11B_QttUnsuback();
+                    x11B.with(x11A.session());
+                    x11B.setMsgId(x11A.getMsgId());
+                    _Logger.info("unsubscribe topic:%s", x11A.getTopics());
+                    return Collections.singletonList(Triple.of(x11B,
+                                                               x11B.session(),
+                                                               x11B.session()
+                                                                   .getEncoder()));
                 }
             }
             case 0x11E -> {
-                if(session != null) {
-                    clean(session.getIndex());
-                    session.innerClose();
-                    _Logger.debug("device %#x → offline", origin);
-                }
-                else {
-                    _Logger.info("disconnect :%#x,session → null", origin);
-                }
+                X11E_QttDisconnect x11E = (X11E_QttDisconnect) consensusBody;
+                clean(origin);
+                x11E.session()
+                    .innerClose();
+                _Logger.debug("device %#x → offline", origin);
+
             }
             case 0x11F -> {
 
@@ -361,14 +360,13 @@ public class MQttPlugin
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         int msgId = (int) stateMessage.getMsgId();
-        boolean[] ack = { true, true
-        };
-        if(ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
+        boolean[] ack = { true, true };
+        ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
             ack[1] = old.remove(msgId) != null;
             return old.isEmpty() ? old : null;
-        }) != null)
-        {
+        }) != null;
+        if(ack[0]) {
             _Logger.debug("idle session: %#x", session);
             _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }

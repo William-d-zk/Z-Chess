@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
 /**
  * @author william.d.zk
@@ -37,7 +37,7 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
                   serial = 0x75)
 public class X75_RaftReq
         extends ZCommand
-        implements IConsistent
+        implements ITraceable
 {
 
     public X75_RaftReq()
@@ -65,7 +65,7 @@ public class X75_RaftReq
     private long mClientId;
     private long mOrigin;
 
-    public transient boolean tCheck;
+    public transient boolean tCached;
 
     public void setOrigin(long origin)
     {

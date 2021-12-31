@@ -41,7 +41,7 @@ public class ZlsZSort
 
     public ZlsZSort(Mode mode, Type type)
     {
-        super(mode, type, "zchat-ls", null);
+        super(mode, type, "zchat-ls");
         _Head = new ZEFilter<>();
         _Head.linkFront(new ZFrameFilter())
              .linkFront(new ZControlFilter((ZChatFactory) getFactory()))
@@ -61,7 +61,7 @@ public class ZlsZSort
     }
 
     @Override
-    protected IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory _SelectFactory(Mode mode, Type type)
     {
         return switch(mode) {
             case CLUSTER -> ZClusterFactory._Instance;
