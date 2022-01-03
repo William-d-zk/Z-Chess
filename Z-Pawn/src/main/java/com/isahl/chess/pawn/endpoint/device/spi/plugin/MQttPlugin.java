@@ -284,16 +284,21 @@ public class MQttPlugin
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
                 if(subscribes != null && backload.getCode() == SUCCESS) {
+                    X119_QttSuback x119 = new X119_QttSuback();
+                    x119.with(x118.session());
+                    x119.setMsgId(x118.getMsgId());
                     subscribes.forEach((topic, level)->{
                         Subscribe subscribe = subscribe(topic, level, origin);
                         if(subscribe != null) {
                             //TODO 统计单指令多个Subscribe的情况
                             _QttStorage.sessionOnSubscribe(origin, topic, level);
+                            x119.addResult(subscribe._SessionMap.get(origin));
+                        }
+                        else {
+                            x119.addResult(level);
                         }
                     });
-                    X119_QttSuback x119 = new X119_QttSuback();
-                    x119.with(x118.session());
-                    x119.setMsgId(x118.getMsgId());
+
                     _Logger.info("subscribe topic:%s", x118.getSubscribes());
                     return Collections.singletonList(Triple.of(x119,
                                                                x119.session(),

@@ -50,7 +50,6 @@ import java.time.LocalDateTime;
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class OauthApprovals
         extends AuditModel
-        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = 4281980171453236833L;

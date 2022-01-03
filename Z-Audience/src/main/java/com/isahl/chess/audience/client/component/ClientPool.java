@@ -287,5 +287,5 @@ public class ClientPool
                                }
                            }));
     }
-
 }
+

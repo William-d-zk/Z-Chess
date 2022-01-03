@@ -52,7 +52,8 @@ public class QttControlFilter
     {
         QttFrame frame = new QttFrame();
         frame.header(output.header());
-        frame.withSub(output);
+        frame.withSub(output.encode(context)
+                            .array());
         context.promotionOut();
         return frame;
     }

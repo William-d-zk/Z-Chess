@@ -25,7 +25,6 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterCustom;
 import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
-import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -36,6 +35,7 @@ import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
+import com.isahl.chess.pawn.endpoint.device.model.Protocol2Sort;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.config.IAioConfig;
@@ -69,32 +69,22 @@ public class NodeService
     private final ILogicHandler.factory _LogicFactory;
 
     @Autowired
-    NodeService(MixConfig deviceConfig,
-                @Qualifier("pawn_io_config")
-                        IAioConfig ioConfig,
-                TimeWheel timeWheel,
-                IMixConfig mixConfig,
-                IRaftConfig raftConfig,
-                IRaftMapper raftMapper,
-                ILinkCustom linkCustom,
-                List<IAccessService> accessAdapters,
-                List<IHandleHook> hooks) throws IOException
+    public NodeService(MixConfig deviceConfig,
+                       @Qualifier("pawn_io_config")
+                               IAioConfig ioConfig,
+                       TimeWheel timeWheel,
+                       IMixConfig mixConfig,
+                       IRaftConfig raftConfig,
+                       IRaftMapper raftMapper,
+                       ILinkCustom linkCustom,
+                       List<IAccessService> accessAdapters,
+                       List<IHandleHook> hooks) throws IOException
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
-                                          .map(listener->{
-                                              ZSortHolder sort = switch(listener.getScheme()) {
-                                                  case "mqtt" -> ZSortHolder.QTT_SERVER;
-                                                  case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
-                                                  case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-                                                  case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-                                                  case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
-                                                  case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
-                                                  case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
-                                                  default -> throw new UnsupportedOperationException(listener.getScheme());
-                                              };
-                                              return new Triple<>(listener.getHost(), listener.getPort(), sort);
-                                          })
+                                          .map(listener->Triple.of(listener.getHost(),
+                                                                   listener.getPort(),
+                                                                   Protocol2Sort._Mapping(listener.getScheme())))
                                           .collect(Collectors.toList());
         _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
         _DeviceNode = new DeviceNode(hosts,

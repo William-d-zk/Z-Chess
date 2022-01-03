@@ -120,7 +120,7 @@ public class ByteBuf
 
     public byte[] array()
     {
-        return buffer.array();
+        return capacity > 0 ? buffer.array() : null;
     }
 
     public int writableBytes()
@@ -466,6 +466,17 @@ public class ByteBuf
         buffer.put(writerIdx, v.array(), v.readerIdx(), len);
         v.readerIdx += len;
         writerIdx += len;
+        return this;
+    }
+
+    public ByteBuf putUTF(String v)
+    {
+        if(v == null) {return this;}
+        byte[] s = v.getBytes(StandardCharsets.UTF_8);
+        vPutLength(s.length);
+        checkCapacity(s.length);
+        buffer.put(writerIdx, s, 0, s.length);
+        writerIdx += s.length;
         return this;
     }
 

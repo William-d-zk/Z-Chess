@@ -66,6 +66,7 @@ public abstract class QttControl
     @Override
     public QttControl with(ISession session)
     {
+        if(session == null) {return this;}
         mSession = session;
         wrap(session.getContext(QttContext.class));
         return this;
@@ -187,6 +188,20 @@ public abstract class QttControl
             mPayload = new byte[remain];
             input.get(mPayload);
         }
+    }
+
+    @Override
+    public ByteBuf encode(QttContext ctx)
+    {
+        return suffix(ByteBuf.allocate(sizeOf()), ctx);
+    }
+
+    @Override
+    public ByteBuf encode()
+    {
+        ByteBuf output = ByteBuf.allocate(sizeOf() + 1);
+        output.put(header());
+        return suffix(output);
     }
 
     @Override

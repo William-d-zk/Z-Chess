@@ -46,13 +46,18 @@ public class QttFactory
     @SuppressWarnings("unchecked")
     public QttControl create(ByteBuf input)
     {
-        throw new UnsupportedOperationException();
+        QttControl instance = build(QttFrame.peekSubSerial(input));
+        instance.header(input.get());
+        instance.decode(input);
+        return instance;
+
     }
 
     @Override
     public QttControl create(QttFrame frame, QttContext context)
     {
         QttControl control = build(QttType.serialOf(QttType.valueOf(frame.header()))).wrap(context);
+        control.header(frame.header());
         control.decode(frame.subEncoded());
         return control;
     }

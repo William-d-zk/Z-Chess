@@ -32,6 +32,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -44,6 +45,8 @@ public class RaftNode
         extends InnerProtocol
         implements Comparable<RaftNode>
 {
+    @Serial
+    private static final long serialVersionUID = 7634053506664147831L;
 
     private String    mHost;
     private int       mPort;
@@ -73,9 +76,9 @@ public class RaftNode
                       .put(getState().getCode());
         byte[] hostBytes = hostBytes();
         byte[] gateHostBytes = gateHostBytes();
-        output.vPutLength(hostBytes == null ? 1 : ByteBuf.vSizeOf(hostBytes.length))
+        output.vPutLength(hostBytes == null ? 0 : hostBytes.length)
               .put(hostBytes())
-              .vPutLength(gateHostBytes == null ? 1 : ByteBuf.vSizeOf(gateHostBytes.length))
+              .vPutLength(gateHostBytes == null ? 0 : gateHostBytes.length)
               .put(gateHostBytes());
         return output;
     }
@@ -100,8 +103,8 @@ public class RaftNode
         int length = 2 + // port
                      2 + // gate port
                      1;  // state
-        length += IoUtil.isBlank(getHost()) ? 1 : ByteBuf.vSizeOf(getHost().length());
-        length += IoUtil.isBlank(getGateHost()) ? 1 : ByteBuf.vSizeOf(getGateHost().length());
+        length += ByteBuf.vSizeOf(IoUtil.isBlank(getHost()) ? 0 : getHost().length());
+        length += ByteBuf.vSizeOf(IoUtil.isBlank(getGateHost()) ? 0 : getGateHost().length());
         return length + super.length();
     }
 

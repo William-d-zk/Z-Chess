@@ -33,6 +33,7 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
@@ -46,6 +47,9 @@ import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 public class LogMeta
         extends BaseMeta
 {
+    @Serial
+    private static final long serialVersionUID = 401154084882121307L;
+
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
      * <p>
@@ -92,11 +96,11 @@ public class LogMeta
                      8;  // applied
         length++;
         if(mPeerSet != null && !mPeerSet.isEmpty()) {
-            for(RaftNode node : mPeerSet) {length += node.length();}
+            for(RaftNode node : mPeerSet) {length += node.sizeOf();}
         }
         length++;
         if(mGateSet != null && !mGateSet.isEmpty()) {
-            for(RaftNode node : mGateSet) {length += node.length();}
+            for(RaftNode node : mGateSet) {length += node.sizeOf();}
         }
         return length + super.length(); //primary key => System.current-mills
     }

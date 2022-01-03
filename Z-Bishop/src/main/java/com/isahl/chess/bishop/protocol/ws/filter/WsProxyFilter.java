@@ -53,7 +53,6 @@ public class WsProxyFilter<A extends IPContext>
     {
         WsFrame frame = new WsFrame();
         frame.withSub(output);
-        frame.encode();
         context.demotionOut();
         return frame;
     }

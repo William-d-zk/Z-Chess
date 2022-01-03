@@ -53,9 +53,12 @@ public class RaftCustom
      * @param session  来源 session
      * @param received 需要 raft custom 处理的内容
      * @return ITriple
-     * first :  command implements 'IControl', BATCH:List<IControl> ; SINGLE: IControl
-     * second : command implements 'IConsistent', for transfer → LINK
-     * third : operator-type [SINGLE|BATCH]
+     * fst : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
+     * snd : command implements 'IControl/IConsistent', 需要传递给LINK的内容，
+     * 只有两个环节出现：
+     * leader→link.adjudge(x79),用来进行全局状态更新的内容，Leader维持全状态最新
+     * →client→link.notify(x77),用来向link反馈一致性请求的结果
+     * trd : operator-type [SINGLE|BATCH]
      */
     @Override
     public ITriple handle(IManager manager, ISession session, IProtocol received)

@@ -53,7 +53,8 @@ public class WsControlFilter<T extends WsContext>
     {
         WsFrame frame = new WsFrame();
         frame.header(output.header());
-        frame.withSub(output);
+        frame.withSub(output.encode(context)
+                            .array());
         context.promotionOut();
         return frame;
     }

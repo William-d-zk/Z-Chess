@@ -76,7 +76,8 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
+                       .filter(machine->machine.getTerm() == term &&
+                                        machine.getCandidate() == candidate)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -85,7 +86,8 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getApplied() >= index &&
+                       .filter(machine->machine.getTerm() == term &&
+                                        machine.getApplied() >= index &&
                                         machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
@@ -95,7 +97,8 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
+                       .filter(machine->machine.getTerm() >= term &&
+                                        machine.getCandidate() != candidate)
                        .count() > _NodeMap.size() / 2;
     }
 

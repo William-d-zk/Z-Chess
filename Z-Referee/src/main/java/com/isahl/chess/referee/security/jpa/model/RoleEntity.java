@@ -41,9 +41,8 @@ import java.util.List;
  */
 @Entity(name = "role")
 @Table(schema = "z_chess_security",
-       indexes = {
-               @Index(name = "role_name_idx",
-                      columnList = "name")
+       indexes = { @Index(name = "role_name_idx",
+                          columnList = "name")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
@@ -54,24 +53,25 @@ public class RoleEntity
 {
 
     @Serial
-    private static final long                   serialVersionUID = -8748613422660526254L;
+    private static final long serialVersionUID = -8748613422660526254L;
+
     @Id
     @GeneratedValue(generator = "role_seq")
     @SequenceGenerator(name = "role_seq",
                        schema = "z_chess_security",
                        sequenceName = "role_sequence")
-    private              long                   id;
+    private long                   id;
     @Column(nullable = false,
             unique = true)
-    private              String                 name;
+    private String                 name;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "role_permission",
                schema = "z_chess_security",
                joinColumns = @JoinColumn(name = "role_id"),
                inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private              List<PermissionEntity> permissions;
+    private List<PermissionEntity> permissions;
     @ManyToMany(mappedBy = "authorities")
-    private              List<UserEntity>       users;
+    private List<UserEntity>       users;
 
     public void setId(long id)
     {

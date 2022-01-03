@@ -37,7 +37,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,16 +49,14 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
  */
 @Entity(name = "user")
 @Table(schema = "z_chess_security",
-       indexes = {
-               @Index(name = "username_idx",
-                      columnList = "username")
+       indexes = { @Index(name = "username_idx",
+                          columnList = "username")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class UserEntity
         extends AuditModel
-        implements UserDetails,
-                   Serializable
+        implements UserDetails
 {
     @Serial
     private static final long serialVersionUID = -9149289160528408957L;

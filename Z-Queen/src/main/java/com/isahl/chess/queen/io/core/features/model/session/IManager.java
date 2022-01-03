@@ -97,4 +97,5 @@ public interface IManager
     void addSession(ISession session);
 
     void rmSession(ISession session);
+
 }

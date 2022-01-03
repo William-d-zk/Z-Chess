@@ -48,7 +48,6 @@ import java.io.Serializable;
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class ClientDetail
         extends AuditModel
-        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = -3639493262081429501L;

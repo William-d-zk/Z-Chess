@@ -48,8 +48,7 @@ import com.lmax.disruptor.RingBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CONSISTENCY;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
 
 /**
  * @author william.d.zk
@@ -179,6 +178,7 @@ public class MixMappingHandler<T extends IStorage>
                 }
                 /*
                  *  core.ClusterProcessor → core._LinkEvent(_Transfer) → core.LinkProcessor → _LinkCustom
+                 *  所有从 cluster 收的远端数据都进入此处处理
                  */
                 case CLUSTER -> {
                     IProtocol received = event.getContent()
@@ -188,17 +188,14 @@ public class MixMappingHandler<T extends IStorage>
                     if(received != null && session != null) {
                         try {
                             ITriple result = doCustom(_ClusterCustom, _SessionManager, session, received);
-                            if(result != null) {
-                                IConsistent backload = result.getSecond();
-                                if(backload != null) {
-                                    publish(_Transfer,
-                                            IOperator.Type.LINK_CONSISTENT_RESULT,
-                                            Pair.of(backload, _SessionManager),
-                                            _LinkCustom.getUnboxer());
-                                }
-                                else {
-                                    _Logger.debug("nothing for transfer to link");
-                                }
+                            /*
+                             * doCustom 执行结果 snd 是需要反向投递到linker的内容
+                             */
+                            if(result != null && result.getSecond() instanceof IConsistent backload) {
+                                publish(_Transfer,
+                                        LINK_CONSISTENT_RESULT,
+                                        Pair.of(backload, _SessionManager),
+                                        _LinkCustom.getUnboxer());
                             }
                             else {
                                 _Logger.debug("cluster received ignore :%s", received);

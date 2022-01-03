@@ -58,8 +58,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.BATCH;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.INDEX_NAN;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
@@ -78,20 +77,21 @@ public class RaftPeer
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final ZUID                      _ZUid;
-    private final IRaftConfig               _RaftConfig;
-    private final IRaftMapper               _RaftMapper;
-    private final TimeWheel                 _TimeWheel;
-    private final RaftGraph                 _RaftGraph;
-    private final RaftMachine               _SelfMachine;
-    private final Queue<LogEntry>           _LogQueue = new LinkedList<>();
-    private final Random                    _Random   = new Random();
-    private final long                      _SnapshotFragmentMaxSize;
+    private final ZUID            _ZUid;
+    private final IRaftConfig     _RaftConfig;
+    private final IRaftMapper     _RaftMapper;
+    private final TimeWheel       _TimeWheel;
+    private final RaftGraph       _RaftGraph;
+    private final RaftMachine     _SelfMachine;
+    private final Queue<LogEntry> _LogQueue = new LinkedList<>();
+    private final Random          _Random   = new Random();
+    private final long            _SnapshotFragmentMaxSize;
+
     /*
-    key(Long) → msgId
-    value(X75_RaftReq) → request
+     * key(Long) → msgId
+     * value(X75_RaftReq) → request
      */
-    private final Map<Long, X75_RaftReq>    _Cached   = new TreeMap<>();
+    private final Map<Long, X75_RaftReq>    _Cached = new TreeMap<>();
     private final ScheduleHandler<RaftPeer> _ElectSchedule, _HeartbeatSchedule, _TickSchedule, _CleanSchedule;
 
     private ILocalPublisher mClusterPublisher;
@@ -566,9 +566,10 @@ public class RaftPeer
     /**
      * follower → leader
      *
-     * @return result- pair
-     * first : broadcast to peers
-     * second : resp to origin
+     * @return result triple
+     * fst : broadcast to peer
+     * snd : leader handle x79,adjudge
+     * trd : operator type 「 SINGLE/BATCH 」
      */
     public ITriple onAccept(X73_RaftAccept x73, IManager manager)
     {
@@ -592,15 +593,17 @@ public class RaftPeer
             _SelfMachine.commit(nextCommit, _RaftMapper);
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftMapper.getEntry(nextCommit);
-            IProtocol adjudge = createAdjudge(raftLog);
             if(raftLog.getClient() != _SelfMachine.getPeerId()) {
-                // leader -> follower -> client
+                // leader → follower → client
                 ISession client = manager.findSessionByPrefix(raftLog.getClient());
                 if(client != null) {
-                    return Triple.of(createNotify(raftLog).with(client), adjudge, SINGLE);
+                    return Triple.of(createNotify(raftLog).with(client), null, SINGLE);
                 }
             }
-            return Triple.of(null, adjudge, SINGLE);
+            else {
+                // leader → client 
+                return Triple.of(null, createNotify(raftLog), NULL);
+            }
         }
         return null;
     }
@@ -919,21 +922,18 @@ public class RaftPeer
     {
         long msgId = x76.getMsgId();
         X75_RaftReq x75 = _Cached.remove(msgId);
-        if(x75 != null) {
+        if(x75 != null && x76.getCode() != SUCCESS.getCode()) {
+            //x76 在异常返回的时候才需要返回x75的内容
             x76.withSub(x75.payload());
         }
-        return Triple.of(null, x76, SINGLE);
+        return Triple.of(null, x76, NULL);
     }
 
     public ITriple onNotify(X77_RaftNotify x77, IManager manager)
     {
         LogEntry entry = getLogEntry(x77.getIndex());
-        ISession session = manager.findSessionByIndex(x77.getOrigin());
-        if(entry != null && session != null) {
-            return Triple.of(null,
-                             x77.withSub(entry.payload())
-                                .with(session),
-                             SINGLE);
+        if(entry != null) {
+            return Triple.of(null, x77.withSub(entry.payload()), NULL);
         }
         return null;
     }
@@ -1068,6 +1068,7 @@ public class RaftPeer
                     break;
                 }
                 LogEntry nextLog = _RaftMapper.getEntry(next);
+                _Logger.debug("leader → follower:%s", nextLog);
                 entryList.add(nextLog);
                 payloadSize += nextLog.sizeOf();
             }
@@ -1170,7 +1171,7 @@ public class RaftPeer
         x79.setOrigin(raftLog.getOrigin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
-        x79.withSub(raftLog.subContent());
+        x79.withSub(raftLog.payload());
         return x79;
     }
 
@@ -1180,6 +1181,7 @@ public class RaftPeer
         x77.setOrigin(raftLog.getOrigin());
         x77.setIndex(raftLog.getIndex());
         x77.setClient(raftLog.getClient());
+        x77.withSub(raftLog.payload());
         return x77;
     }
 

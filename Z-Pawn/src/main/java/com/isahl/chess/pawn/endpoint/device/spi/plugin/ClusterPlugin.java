@@ -77,7 +77,6 @@ public class ClusterPlugin
     @Override
     public void onOffline(ISession session)
     {
-        throw new UnsupportedOperationException();
     }
 
     @Override

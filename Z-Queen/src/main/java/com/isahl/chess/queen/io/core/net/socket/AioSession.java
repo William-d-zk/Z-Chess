@@ -317,7 +317,11 @@ public class AioSession<C extends IPContext>
                     return (T) context;
                 }
             }
-            throw new ZException("not found context instanceof %s", clazz.getSimpleName());
+            throw new ZException("not found context instanceof %s | %s",
+                                 clazz.getSimpleName(),
+                                 _Context.getClass()
+                                         .getSimpleName());
+
         }
     }
 

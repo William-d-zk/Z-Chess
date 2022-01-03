@@ -30,6 +30,9 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * @author william.d.zk
  * @date 2021-12-22
@@ -45,8 +48,12 @@ import com.isahl.chess.king.base.features.model.IoSerial;
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
 public class BinarySerial
-        implements IoSerial
+        implements IoSerial,
+                   Serializable
 {
+    @Serial
+    private static final long serialVersionUID = 483533699319926685L;
+
     @Override
     public int sizeOf()
     {
