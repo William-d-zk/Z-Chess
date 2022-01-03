@@ -30,7 +30,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -39,18 +39,19 @@ import java.util.List;
  */
 @Entity(name = "permission")
 @Table(schema = "z_chess_security",
-       indexes = {
-               @Index(name = "name_idx",
-                      columnList = "name"),
-               @Index(name = "url_idx",
-                      columnList = "url")
+       indexes = { @Index(name = "name_idx",
+                          columnList = "name"),
+                   @Index(name = "url_idx",
+                          columnList = "url")
        })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class PermissionEntity
         extends AuditModel
-        implements Serializable
 {
+    @Serial
+    private static final long serialVersionUID = -4078887725794775246L;
+
     @Id
     @GeneratedValue(generator = "permission_seq")
     @SequenceGenerator(name = "permission_seq",
@@ -128,4 +129,5 @@ public class PermissionEntity
     {
         this.roles = roles;
     }
+
 }

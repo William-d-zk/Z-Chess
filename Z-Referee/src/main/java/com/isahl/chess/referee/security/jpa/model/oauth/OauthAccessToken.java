@@ -46,7 +46,6 @@ import java.io.Serializable;
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class OauthAccessToken
         extends AuditModel
-        implements Serializable
 
 {
     @Serial

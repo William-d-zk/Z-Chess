@@ -70,12 +70,12 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent origin)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
     {
         if(request != null) {
             for(IAccessService service : _AccessServices) {
                 if(service.isSupported(request)) {
-                    return service.onConsistency(manager, origin, request);
+                    return service.onConsistency(manager, backload, request);
                 }
             }
         }
@@ -103,25 +103,25 @@ public class LinkCustom
     public IProtocol unbox(IConsistent input, IManager manager)
     {
         _Logger.debug("link unbox %s", input);
-        ISession session = manager.findSessionByPrefix(input.getOrigin());
-        if(session != null) {
-            switch(input.serial()) {
-                case 0x76, 0x77, 0x79 -> {
-                    //factory 不存在null 情况，此处不再判断
+        switch(input.serial()) {
+            case 0x76, 0x77 -> {
+                /*
+                 * leader → follower → client: x77_noitfy
+                 * leader → follower: x76_response
+                 */
+                ISession session = manager.findSessionByIndex(input.getOrigin());
+                if(session != null && session.getFactory() != null && input.payload() != null) {
                     IProtocol request = session.getFactory()
                                                .create(ByteBuf.wrap(input.payload()));
                     request.with(session);
                     return request;
                 }
-                default -> {
-                    _Logger.warning("link custom %s no handle", input);
-                    return null;
-                }
+                return null;
             }
-        }
-        else {
-            _Logger.warning("origin: %#x no session exist ", input.getOrigin());
-            return null;
+            default -> {
+                _Logger.warning("link custom %s no handle", input);
+                return null;
+            }
         }
     }
 }

@@ -526,6 +526,12 @@ public class Mapper
     }
 
     @Override
+    public SnapshotEntry getSnapshot()
+    {
+        return null;
+    }
+
+    @Override
     public long getTotalSize()
     {
         return vTotalSize;

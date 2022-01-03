@@ -28,6 +28,7 @@ import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.model.replicate.LogMeta;
+import com.isahl.chess.knight.raft.model.replicate.SnapshotEntry;
 import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 
 /**
@@ -70,6 +71,8 @@ public interface IRaftMapper
     LogMeta getLogMeta();
 
     SnapshotMeta getSnapshotMeta();
+
+    SnapshotEntry getSnapshot();
 
     long getTotalSize();
 

@@ -36,6 +36,7 @@ import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
+import java.io.Serial;
 import java.util.*;
 
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
@@ -52,6 +53,9 @@ public class RaftMachine
         extends InnerProtocol
         implements IRaftMachine
 {
+    @Serial
+    private static final long serialVersionUID = -3632621828854975482L;
+
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
     private long          mTerm;      // 触发选举时 mTerm > mIndexTerm

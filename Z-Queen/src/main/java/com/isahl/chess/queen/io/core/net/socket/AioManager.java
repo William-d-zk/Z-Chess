@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
@@ -42,7 +43,7 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.PREF
  *
  * @author William.d.zk
  */
-public class AioManager
+public abstract class AioManager
         implements IManager
 {
     protected final Logger _Logger = Logger.getLogger("io.queen." + getClass().getSimpleName());
@@ -82,6 +83,7 @@ public class AioManager
     {
         return (int) ((index & ZUID.TYPE_MASK) >>> ZUID.TYPE_SHIFT);
     }
+
 
     @Override
     public void addSession(ISession session)
@@ -140,6 +142,7 @@ public class AioManager
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
         ISession oldSession = _Index2SessionMaps[getSlot(_NewIdx)].put(_NewIdx, session);
+
         if((sessionIdx & INVALID_INDEX) == NULL_INDEX || !session.isMultiBind()) {
             //首次登陆 或 执行唯一登陆逻辑[覆盖]
             session.setIndex(_NewIdx);
@@ -275,4 +278,5 @@ public class AioManager
     {
         return typeSlot > ZUID.MAX_TYPE ? null : _Index2SessionMaps[typeSlot].values();
     }
+
 }

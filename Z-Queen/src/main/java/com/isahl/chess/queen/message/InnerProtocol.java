@@ -72,14 +72,11 @@ public abstract class InnerProtocol
     @Override
     public int length()
     {
-        /*
-         operation (1)
-         strategy (1)
-         primaryKey (8)
-         hasForeignKey ? (9) : (1)
-         payload.length
-         */
-        return 1 + 1 + 8 + (hasForeignKey() ? 9 : 1) + super.length();
+        return 1 + //operation (1)
+               1 + //strategy (1)
+               8 + //primaryKey (8)
+               (hasForeignKey() ? 9 : 1) + //hasForeignKey ? (9) : (1)
+               super.length(); //payload.length
     }
 
     @Override

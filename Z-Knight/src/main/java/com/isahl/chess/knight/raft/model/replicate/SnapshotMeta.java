@@ -31,12 +31,17 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
+import java.io.Serial;
+
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
                   serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SnapshotMeta
         extends BaseMeta
 {
+    @Serial
+    private static final long serialVersionUID = -2598502090597254124L;
+
     private long mCommit;
     private long mTerm;
 
@@ -60,8 +65,9 @@ public class SnapshotMeta
     @Override
     public int length()
     {
-        return super.length() + 8 + // term
-               8;  // commit
+        return 8 + // term
+               8 + // commit
+               super.length();
     }
 
     @Override

@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
@@ -134,6 +133,7 @@ public class WriteDispatcher
                     for(ITriple content : writeContents) {
                         IProtocol cmd = content.getFirst();
                         ISession session = content.getSecond();
+                        _Logger.debug("→ %s", content);
                         if(session != null) {
                             try {
                                 publish(dispatchEncoder(session.hashCode()),

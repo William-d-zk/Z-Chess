@@ -102,6 +102,6 @@ public class X119_QttSuback
     @Override
     public String toString()
     {
-        return String.format("%#x suback msg-id %d, %s", serial(), getMsgId(), getQosLevels());
+        return String.format("%#x { suback msg-id %d, %s }", serial(), getMsgId(), getQosLevels());
     }
 }

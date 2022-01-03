@@ -101,10 +101,10 @@ public class LogEntry
     @Override
     public int length()
     {
-        int length = 8 + //term
-                     8 + //client
-                     8;  //origin
-        return length + super.length(); //pKey == index
+        return 8 + //term
+               8 + //client
+               8 +  //origin
+               super.length(); //pKey == index
     }
 
     @Override
@@ -113,8 +113,7 @@ public class LogEntry
         return super.suffix(output)
                     .putLong(getTerm())
                     .putLong(getClient())
-                    .putLong(getOrigin())
-                    .put(payload());
+                    .putLong(getOrigin());
     }
 
     @Override
@@ -142,12 +141,11 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub-serial:%#x, sub-size:%d }",
+        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub-size:%d }",
                              getIndex(),
                              getTerm(),
                              getClient(),
                              getOrigin(),
-                             _sub(),
                              mPayload == null ? 0 : mPayload.length);
     }
 

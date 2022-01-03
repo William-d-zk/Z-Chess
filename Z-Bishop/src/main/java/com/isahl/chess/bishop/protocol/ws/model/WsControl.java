@@ -23,6 +23,7 @@
 package com.isahl.chess.bishop.protocol.ws.model;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
+import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -125,6 +126,7 @@ public abstract class WsControl<T extends WsContext>
     @SuppressWarnings("unchecked")
     public WsControl<T> with(ISession session)
     {
+        if(session == null) {return this;}
         mSession = session;
         wrap((T) session.getContext(WsContext.class));
         return this;
