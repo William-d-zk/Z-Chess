@@ -24,8 +24,11 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.model.RaftState;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 class LogMetaTest
 {
@@ -33,6 +36,12 @@ class LogMetaTest
     void test()
     {
         LogMeta meta = new LogMeta();
+        RaftNode node = new RaftNode("raft0", 5228, RaftState.FOLLOWER);
+        RaftNode node1 = new RaftNode("raft1", 5228, RaftState.FOLLOWER);
+        RaftNode gate = new RaftNode("gate0", 5666, RaftState.GATE);
+        RaftNode gate1 = new RaftNode("gate1", 5666, RaftState.GATE);
+        meta.setPeerSet(Arrays.asList(node, node1));
+        meta.setGateSet(Arrays.asList(gate, gate1));
         ByteBuf buffer = meta.encode();
 
         LogMeta meta2 = new LogMeta();

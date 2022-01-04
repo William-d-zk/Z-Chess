@@ -148,6 +148,16 @@ public abstract class ZControl
     }
 
     @Override
+    public ByteBuf encode(ZContext ctx)
+    {
+        ByteBuf output = ByteBuf.allocate(this.sizeOf());
+        suffix(output, ctx);
+        if(mPayload != null) {output.put(mPayload);}
+        addCrc(output);
+        return output;
+    }
+
+    @Override
     public ByteBuf encode()
     {
         ByteBuf output = ByteBuf.allocate(this.sizeOf());

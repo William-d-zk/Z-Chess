@@ -153,6 +153,7 @@ public abstract class InnerProtocol
         final Logger _Logger = Logger.getLogger("io.queen." + InnerProtocol.class.getSimpleName());
         //TODO 升级成zero-copy 模式【mapping-buffer】
         int length = IoUtil.readVariableIntLength(input);
+        _Logger.info("length: %d", length);
         if(length > 0) {
             ByteBuf buffer = ByteBuf.allocate(length);
             input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
