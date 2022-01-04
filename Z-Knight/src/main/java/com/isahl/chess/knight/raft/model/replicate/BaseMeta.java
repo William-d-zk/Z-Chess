@@ -25,6 +25,9 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.IOException;
@@ -34,6 +37,7 @@ public abstract class BaseMeta
         extends InnerProtocol
         implements IReset
 {
+    protected final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     public BaseMeta(Operation operation, Strategy strategy)
     {
@@ -52,7 +56,13 @@ public abstract class BaseMeta
     {
         try {
             mFile.seek(0);
-            mFile.write(encode().array());
+            byte[] toWrite = encode().array();
+            _Logger.info("write meta %s,size:%d,{%s}",
+                         getClass().getSimpleName(),
+                         toWrite.length,
+                         JsonUtil.writeValueAsString(this));
+            mFile.write(IoUtil.variableLength(toWrite.length));
+            mFile.write(toWrite);
             mFile.getFD()
                  .sync();
         }

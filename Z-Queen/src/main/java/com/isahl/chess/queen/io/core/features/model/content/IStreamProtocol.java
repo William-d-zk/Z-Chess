@@ -43,7 +43,7 @@ public interface IStreamProtocol<C extends IPContext>
      */
     default ByteBuf suffix(ByteBuf output, C ctx)
     {
-        return output;
+        return suffix(output);
     }
 
     /**
@@ -72,7 +72,7 @@ public interface IStreamProtocol<C extends IPContext>
      */
     default ByteBuf encode(C ctx)
     {
-        return suffix(encode(), ctx);
+        return suffix(ByteBuf.allocate(sizeOf()), ctx);
     }
 
     /**

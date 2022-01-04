@@ -62,6 +62,9 @@
     <logger name="io.queen.dispatcher" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
+    <logger name="io.queen.processor" level="DEBUG">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
     <logger name="protocol.bishop" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
