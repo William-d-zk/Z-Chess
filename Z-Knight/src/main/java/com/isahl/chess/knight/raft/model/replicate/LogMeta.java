@@ -151,12 +151,12 @@ public class LogMeta
         remain -= 50;
         if(mPeerSet != null && !mPeerSet.isEmpty()) {
             for(RaftNode node : mPeerSet) {
-                remain -= ByteBuf.vSizeOf(node.length());
+                remain -= node.sizeOf();
             }
         }
         if(mGateSet != null && !mGateSet.isEmpty()) {
             for(RaftNode node : mGateSet) {
-                remain -= ByteBuf.vSizeOf(node.length());
+                remain -= node.sizeOf();
             }
         }
         return remain;
