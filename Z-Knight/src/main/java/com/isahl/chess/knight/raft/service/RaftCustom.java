@@ -30,11 +30,14 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
+
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 public class RaftCustom
         implements IClusterCustom<RaftMachine>
@@ -158,4 +161,17 @@ public class RaftCustom
         return _RaftPeer.isInCongress();
     }
 
+    @Override
+    public IConsistent skipConsistency(IoSerial request)
+    {
+        X76_RaftResp x76 = new X76_RaftResp();
+
+        x76.setCode(SUCCESS);
+        if(request instanceof IProtocol protocol) {
+            long origin = protocol.session()
+                                  .getIndex();
+            x76.setOrigin(origin);
+        }
+        return x76;
+    }
 }

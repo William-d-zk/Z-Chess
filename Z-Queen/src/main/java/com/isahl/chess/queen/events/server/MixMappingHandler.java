@@ -164,7 +164,10 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                publish(_Writer, _LinkCustom.notify(_SessionManager, result.getSecond(), null));
+                                publish(_Writer,
+                                        _LinkCustom.notify(_SessionManager,
+                                                           result.getSecond(),
+                                                           _ClusterCustom.skipConsistency(result.getSecond())));
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);

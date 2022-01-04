@@ -191,12 +191,6 @@ public abstract class QttControl
     }
 
     @Override
-    public ByteBuf encode(QttContext ctx)
-    {
-        return suffix(ByteBuf.allocate(sizeOf()), ctx);
-    }
-
-    @Override
     public ByteBuf encode()
     {
         ByteBuf output = ByteBuf.allocate(sizeOf() + 1);

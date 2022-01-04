@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
+import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
@@ -66,11 +67,7 @@ public class X111_QttConnect
     private String mWillTopic;
     private byte[] mWillMessage;
 
-    private final int _MQTT = IoUtil.readInt(new byte[]{
-            'M',
-            'Q',
-            'T',
-            'T'
+    private final int _MQTT = IoUtil.readInt(new byte[]{ 'M', 'Q', 'T', 'T'
     }, 0);
 
     @Override
