@@ -56,22 +56,6 @@ public class WsHandShakeFilter<T extends WsContext>
         return new AioPacket(output.encode());
     }
 
-    @SuppressWarnings("unchecked")
-    private ResultType peek(IPContext context, IProtocol input)
-    {
-        if(context.isInInit() && context instanceof IWsContext && input instanceof IPacket in_packet) {
-            T ws_ctx = (T) context;
-            X101_HandShake<T> handshake = ws_ctx.getHandshake();
-            if(handshake == null) {
-                ws_ctx.handshake(handshake = new X101_HandShake<>());
-                handshake.wrap(ws_ctx);
-            }
-            return handshake.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : HANDLED;
-        }
-        return IGNORE;
-
-    }
-
     @Override
     public X101_HandShake<T> decode(T context, IPacket input)
     {
@@ -86,37 +70,50 @@ public class WsHandShakeFilter<T extends WsContext>
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
-            if(context.isOutInit() && context instanceof IWsContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof X101_HandShake) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
+            do {
                 if(acting.isOutInit() && acting instanceof IWsContext) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                    return Pair.of(ResultType.NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(IGNORE, context);
+        return Pair.of(IGNORE, context);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            ResultType check = peek(context, input);
-            if(check != IGNORE) {return new Pair<>(check, context);}
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && input instanceof IPacket in_packet) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                check = peek(acting, input);
-                if(check == NEXT_STEP || check == NEED_DATA) {
-                    return new Pair<>(check, acting);
+            do {
+                if(acting.isInInit() && acting instanceof IWsContext) {
+                    T ws_ctx = (T) acting;
+                    X101_HandShake<T> handshake = ws_ctx.getHandshake();
+                    if(handshake == null) {
+                        ws_ctx.handshake(handshake = new X101_HandShake<>());
+                        handshake.wrap(ws_ctx);
+                    }
+                    return Pair.of(handshake.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : HANDLED, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(IGNORE, context);
+        return Pair.of(IGNORE, context);
     }
 
     @Override

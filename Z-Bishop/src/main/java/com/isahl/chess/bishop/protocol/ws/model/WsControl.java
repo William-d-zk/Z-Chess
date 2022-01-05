@@ -23,14 +23,12 @@
 package com.isahl.chess.bishop.protocol.ws.model;
 
 import com.isahl.chess.bishop.protocol.ws.WsContext;
-import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author William.d.zk
@@ -149,7 +147,7 @@ public abstract class WsControl<T extends WsContext>
     {
         return String.format("cmd: %#x, %s",
                              serial(),
-                             mPayload == null ? "[NULL] payload" : new String(mPayload, StandardCharsets.UTF_8));
+                             mPayload == null ? "[NULL] payload" : IoUtil.bin2Hex(mPayload, ","));
     }
 
     @Override

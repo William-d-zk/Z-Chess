@@ -106,12 +106,10 @@ public class X101_HandShake<T extends WsContext>
             Sec-WebSocket-Version: %s\r
             \r
             """;
-    private final static int    CRLF_CRLF        = IoUtil.readInt(new byte[]{
-            '\r',
-            '\n',
-            '\r',
-            '\n'
-    }, 0);
+    private final static int    CRLF_CRLF        = IoUtil.readInt(new byte[]{ '\r',
+                                                                              '\n',
+                                                                              '\r',
+                                                                              '\n' }, 0);
     private final static String CRLF             = "\r\n";
 
     @Override

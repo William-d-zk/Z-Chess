@@ -84,8 +84,12 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
         List<ITriple> results = null;
         for(IAccessService service : _AccessService) {
             if(service.isSupported(content)) {
-                if(results == null) {results = service.onLogic(getManager(), session, content);}
-                else {results.addAll(service.onLogic(getManager(), session, content));}
+                if(results == null) {
+                    results = service.onLogic(getManager(), session, content);
+                }
+                else {
+                    results.addAll(service.onLogic(getManager(), session, content));
+                }
             }
         }
         for(IHandleHook hook : _HandleHooks) {

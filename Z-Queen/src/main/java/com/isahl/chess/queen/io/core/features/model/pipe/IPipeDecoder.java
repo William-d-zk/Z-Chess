@@ -64,9 +64,8 @@ public interface IPipeDecoder
                     resultType = peekResult.getFirst();
                     context = peekResult.getSecond();
                     switch(resultType) {
-                        case ERROR:
-                            throw new ZException("error input: %s ; filter: %s ", protocol, next.getName());
-                        case NEED_DATA:
+                        case ERROR -> throw new ZException("error input: %s ; filter: %s ", protocol, next.getName());
+                        case NEED_DATA -> {
                             if(result != null) {
                                 /*
                                   协议层已经完成处理，返回所有已处理完毕的
@@ -76,22 +75,17 @@ public interface IPipeDecoder
                             }
                             else if(proxy != null) {
                                 /*
-                                  协议层代理
-                                  例如 WS→QTT
-                                  QttFrame 已将 proxy 持有的数据处理完毕
-                                  重置 proxy 状态，等待新的 WsFrame
+                                  代理层跳出、数据已经在frame所在的context全量缓存
+                                  进入下一个循环进行检查代理持有的context所持有的的状态
                                  */
                                 proxy = null;
                                 break Chain;
                             }
                             return null;
-                        case NEXT_STEP:
-                            protocol = pipeFilter.pipeDecode(context, protocol);
-                            break;
-                        case PROXY:
-                            protocol = proxy = pipeFilter.pipeDecode(context, protocol);
-                            break;
-                        case HANDLED:
+                        }
+                        case NEXT_STEP -> protocol = pipeFilter.pipeDecode(context, protocol);
+                        case PROXY -> protocol = proxy = pipeFilter.pipeDecode(context, protocol);
+                        case HANDLED -> {
                             IProtocol cmd = pipeFilter.pipeDecode(context, protocol);
                             if(cmd != null) {
                                 cmd.with(session);
@@ -109,10 +103,11 @@ public interface IPipeDecoder
                                 }
                             }
                             break Chain;
-                        case CANCEL:
+                        }
+                        case CANCEL -> {
                             return null;
-                        case IGNORE:
-                            break;
+                        }
+                        case IGNORE -> {}
                     }
                     next = next.getNext();
                 }

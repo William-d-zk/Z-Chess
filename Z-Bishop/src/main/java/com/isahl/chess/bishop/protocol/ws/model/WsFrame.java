@@ -210,6 +210,7 @@ public class WsFrame
         output.put(mFrameHeader |= frame_fin_no_more);
         int attr = 0;
         output.markWriter();
+        output.seek(1);
         if(mPayload != null) {
             if(mPayload.length > 0xFFFF) {
                 attr |= 0x7F;

@@ -30,6 +30,7 @@ import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.ICode;
 
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
 /**
@@ -42,8 +43,8 @@ public class X112_QttConnack
         extends QttControl
 {
 
-    private boolean mPresent;
-    private int     mResponseCode;
+    private int mPresent;
+    private int mResponseCode;
 
     public X112_QttConnack()
     {
@@ -58,12 +59,12 @@ public class X112_QttConnack
 
     public boolean isPresent()
     {
-        return mPresent;
+        return mPresent > 0;
     }
 
     public void setPresent()
     {
-        mPresent = true;
+        mPresent = 1;
     }
 
     public CodeMqtt getCode()
@@ -78,69 +79,68 @@ public class X112_QttConnack
 
     public void responseOk()
     {
-        mPresent = true;
         setCode(CodeMqtt.OK);
     }
 
     public void responseClean()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.OK);
     }
 
     public void rejectUnsupportedVersion()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.REJECT_UNSUPPORTED_VERSION_PROTOCOL);
     }
 
     public void rejectIdentifier()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.REJECT_IDENTIFIER);
     }
 
     public void rejectServerUnavailable()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.REJECT_SERVER_UNAVAILABLE);
     }
 
     public void rejectBadUserOrPassword()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.REJECT_BAD_USER_OR_PASSWORD);
     }
 
     public void rejectNotAuthorized()
     {
-        mPresent = false;
+        mPresent = 0;
         setCode(CodeMqtt.REJECT_NOT_AUTHORIZED);
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        return output.put(mPresent ? 1 : 0)
+        return output.put(mPresent)
                      .put(mResponseCode);
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
-        mPresent = input.getUnsigned() > 0;
+        mPresent = input.get() & 0x01;
         mResponseCode = input.getUnsigned();
         return input.readableBytes();
     }
 
-    public boolean isIllegalState()
+    public boolean isReject()
     {
-        return !mPresent || mResponseCode > 0;
+        return mResponseCode > SUCCESS;
     }
 
     public boolean isOk()
     {
-        return mPresent && mResponseCode == 0;
+        return mResponseCode == SUCCESS;
     }
 
     @Override

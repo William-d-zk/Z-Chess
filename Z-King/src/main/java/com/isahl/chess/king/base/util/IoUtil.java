@@ -314,6 +314,7 @@ public interface IoUtil
 
     static String bin2Hex(byte[] b, String... split)
     {
+        if(b == null) {return null;}
         return bin2Hex(b, 0, b.length, split);
     }
 

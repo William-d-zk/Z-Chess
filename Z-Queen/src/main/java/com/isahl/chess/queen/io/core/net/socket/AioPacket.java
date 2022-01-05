@@ -165,12 +165,17 @@ public class AioPacket
     {
         return output.vPutLength(length())
                      .put(serial())
-                     .put(mBuffer.array());
+                     .put(payload());
     }
 
     @Override
     public byte[] payload()
     {
-        return mBuffer.array();
+        if(mBuffer.readerIdx() == 0 && mBuffer.writerIdx() == mBuffer.capacity()) {
+            return mBuffer.array();
+        }
+        else {
+            return mBuffer.peekAll(0);
+        }
     }
 }

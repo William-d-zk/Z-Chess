@@ -269,9 +269,9 @@ public class AioSession<C extends IPContext>
     {
         if(isClosed()) {return;}
         mReader = readHandler;
-        ByteBuf ctx_received = _Context.getRvBuffer();
-        if(ctx_received.writableBytes() < (ctx_received.capacity() << 1)) {ctx_received.discard();}
-        _Channel.read(ctx_received.toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+        _Channel.read(_Context.getRvBuffer()
+                              .discardOnHalf()
+                              .toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
@@ -299,14 +299,18 @@ public class AioSession<C extends IPContext>
     public <T extends IPContext> T getContext(Class<T> clazz)
     {
         if(_Context.getClass() == clazz) {
+            //session.context 就是需要的
             return (T) _Context;
         }
-        else if(!_Context.isProxy() && _Context.getClass()
-                                               .getSuperclass() == clazz)
+        else if(_Context.isProxy() && _Context.getClass()
+                                              .getSuperclass() == clazz)
         {
+            // session.context 携带proxy,需要在这一层进行处理，多见各种proxy-handshake阶段
+            // ws-proxy-context,处理ws-handshake时就需要获取这一层context进行处理
             return (T) _Context;
         }
         else {
+            //获取最内层通讯协议的context,ssl-ws-mqtt 就需要套2层
             IPContext context = _Context;
             while(context.isProxy()) {
                 context = ((IProxyContext<?>) context).getActingContext();

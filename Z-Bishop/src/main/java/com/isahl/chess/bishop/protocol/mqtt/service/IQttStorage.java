@@ -39,7 +39,10 @@ public interface IQttStorage
 
     int generateMsgId(long target);
 
-    void sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111);
+    /**
+     * @return session-present-storaged
+     */
+    boolean sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111);
 
     void sessionOnSubscribe(long session, String topic, IQoS.Level level);
 

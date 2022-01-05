@@ -31,6 +31,7 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 
 /**
@@ -40,6 +41,8 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 public class QttFactory
         implements IProtocolFactory<QttFrame, QttContext>
 {
+    private final Logger logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+
     public static final QttFactory _Instance = new QttFactory();
 
     @Override

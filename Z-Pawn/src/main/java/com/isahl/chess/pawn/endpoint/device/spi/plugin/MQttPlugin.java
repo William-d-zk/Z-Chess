@@ -260,17 +260,17 @@ public class MQttPlugin
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
+                X112_QttConnack x112 = new X112_QttConnack();
+                x112.with(x111.session());
                 if(backload.getCode() == SUCCESS) {
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if(x111.isClean()) {
                         clean(origin);
                     }
-                    _QttStorage.sessionOnLogin(origin, this, x111);
-                }
-                X112_QttConnack x112 = new X112_QttConnack();
-                x112.with(x111.session());
-                if(backload.getCode() == SUCCESS) {
                     x112.responseOk();
+                    if(_QttStorage.sessionOnLogin(origin, this, x111)) {
+                        x112.setPresent();
+                    }
                 }
                 else {
                     x112.rejectServerUnavailable();

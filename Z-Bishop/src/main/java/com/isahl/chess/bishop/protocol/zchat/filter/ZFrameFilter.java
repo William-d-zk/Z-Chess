@@ -34,7 +34,8 @@ import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
 import java.util.Objects;
 
-import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.*;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEED_DATA;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEXT_STEP;
 
 /**
  * @author William.d.zk
@@ -60,7 +61,7 @@ public class ZFrameFilter
     public ZFrame decode(ZContext context, IPacket input)
     {
         ZFrame frame = context.getCarrier();
-        frame.decode(input.getBuffer());
+        frame.decode(context.getRvBuffer());
         context.reset();
         context.promotionIn();
         return frame;
@@ -70,48 +71,49 @@ public class ZFrameFilter
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
-            if(context.isOutFrame() && context instanceof ZContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
+            do {
                 if(acting.isOutFrame() && acting instanceof ZContext) {
-                    return new Pair<>(NEXT_STEP, acting);
+                    return Pair.of(ResultType.NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
-    }
-
-    private ResultType peek(IPContext context, IProtocol input)
-    {
-        if(context.isInFrame() && context instanceof ZContext z_ctx && input instanceof IPacket in_packet) {
-            ZFrame carrier = z_ctx.getCarrier();
-            if(carrier == null) {
-                z_ctx.setCarrier(carrier = new ZFrame());
-            }
-            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
-        }
-        return ResultType.IGNORE;
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            ResultType check = peek(context, input);
-            if(check != IGNORE) {return new Pair<>(check, context);}
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                check = peek(acting, input);
-                if(check == NEXT_STEP || check == NEED_DATA) {
-                    return new Pair<>(check, acting);
+            do {
+                if(acting.isInFrame() && acting instanceof ZContext z_ctx && input instanceof IPacket in_packet) {
+                    ZFrame carrier = z_ctx.getCarrier();
+                    if(carrier == null) {
+                        z_ctx.setCarrier(carrier = new ZFrame());
+                    }
+                    return Pair.of(carrier.lack(acting.getRvBuffer()
+                                                      .put(in_packet.getBuffer())
+                                                      .discardOnHalf()) > 0 ? NEED_DATA : NEXT_STEP, acting);
                 }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
+
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override

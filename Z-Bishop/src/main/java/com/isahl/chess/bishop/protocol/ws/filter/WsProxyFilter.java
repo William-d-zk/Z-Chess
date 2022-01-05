@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.bishop.protocol.ws.proxy.WsProxyContext;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
@@ -52,8 +51,9 @@ public class WsProxyFilter<A extends IPContext>
     public WsFrame encode(WsProxyContext<A> context, IPacket output)
     {
         WsFrame frame = new WsFrame();
-        frame.withSub(output);
-        context.demotionOut();
+        frame.header(WsFrame.frame_op_code_ctrl_binary);
+        frame.withSub(output.payload());
+        context.promotionOut();
         return frame;
     }
 
@@ -69,29 +69,41 @@ public class WsProxyFilter<A extends IPContext>
     {
         if(checkType(output, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
             IPContext acting = context;
-            while(acting.isProxy()) {
+            do {
                 if(acting instanceof IWsContext && acting.isOutConvert()) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                    return Pair.of(ResultType.NEXT_STEP, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof WsFrame f && !f.isCtrl()) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                if(acting instanceof IWsContext && acting.isInConvert()) {
-                    return new Pair<>(ResultType.PROXY, acting);
+            do {
+                if(acting.isInConvert() && acting instanceof IWsContext) {
+                    return Pair.of(ResultType.PROXY, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
