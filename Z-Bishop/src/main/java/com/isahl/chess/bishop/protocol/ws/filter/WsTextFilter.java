@@ -71,34 +71,42 @@ public class WsTextFilter<T extends WsContext>
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)) {
-            if(context.isOutConvert() && context instanceof IWsContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
+            do {
                 if(acting.isOutConvert() && acting instanceof IWsContext) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                    return Pair.of(ResultType.NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && !f.isCtrl()) {
-            if(context instanceof IWsContext && context.isInConvert()) {return new Pair<>(ResultType.HANDLED, context);}
             IPContext acting = context;
-            while(acting.isProxy()) {
-                if(acting instanceof IWsContext && acting.isInConvert()) {
-                    return new Pair<>(ResultType.HANDLED, acting);
+            do {
+                if(acting.isInConvert() && acting instanceof IWsContext) {
+                    return Pair.of(ResultType.HANDLED, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override

@@ -179,7 +179,7 @@ public class QttStorageService
     }
 
     @Override
-    public void sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111)
+    public boolean sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111)
     {
         Optional<SessionEntity> sessionEntityOptional = _SessionRepository.findById(session);
         if(sessionEntityOptional.isPresent()) {
@@ -215,6 +215,7 @@ public class QttStorageService
             sessionEntity.beforeSave();
             _SessionRepository.save(sessionEntity);
         }
+        return false;
     }
 
     @Override

@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.king.base.content;
 
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.ByteBuffer;
@@ -110,6 +111,11 @@ public class ByteBuf
         return this;
     }
 
+    public ByteBuf discardOnHalf()
+    {
+        return writableBytes() < (capacity() << 1) ? discard() : this;
+    }
+
     public ByteBuf clear()
     {
         writerIdx = readerIdx = 0;
@@ -175,6 +181,17 @@ public class ByteBuf
     {
         checkOffset(offset + 1);
         return buffer.get(readerIdx + offset);
+    }
+
+    public byte[] peekAll(int offset)
+    {
+        int remain = readableBytes();
+        if(remain > 0) {
+            byte[] p = new byte[remain];
+            buffer.get(readerIdx + offset, p);
+            return p;
+        }
+        return null;
     }
 
     public int peekUnsigned(int offset)
@@ -287,7 +304,7 @@ public class ByteBuf
     private void checkOffset(int offset)
     {
         if(!isOffsetReadable(offset)) {
-            throw new IndexOutOfBoundsException("read out of bounds");
+            throw new ZException("read out of bounds");
         }
     }
 
@@ -299,7 +316,14 @@ public class ByteBuf
     private void checkCapacity(int capacity)
     {
         if(!isCapacityWritable(capacity)) {
-            throw new IndexOutOfBoundsException("write out of bounds");
+            throw new ZException("write out of bounds");
+        }
+    }
+
+    private void checkPosition(int position)
+    {
+        if(position < 0 || position > capacity) {
+            throw new ZException("position out of bounds");
         }
     }
 
@@ -347,7 +371,7 @@ public class ByteBuf
                                               .put(0x80 | (length & 0x3FC000) >>> 14)
                                               .put(length >>> 21);
         }
-        throw new ArrayIndexOutOfBoundsException("malformed length");
+        throw new ZException("malformed length");
     }
 
     public static int vSizeOf(int length)
@@ -367,7 +391,7 @@ public class ByteBuf
         else if(length < 268435456) {
             return length + 4;
         }
-        throw new ArrayIndexOutOfBoundsException("malformed length");
+        throw new ZException("malformed length");
     }
 
     public static int maxLength()
@@ -404,7 +428,7 @@ public class ByteBuf
 
     public ByteBuf put(int v, int pos)
     {
-        checkCapacity(pos + 1);
+        checkPosition(pos);
         buffer.put(pos, (byte) v);
         return this;
     }
@@ -460,8 +484,8 @@ public class ByteBuf
 
     public ByteBuf put(ByteBuf v)
     {
-        if(v == null) {return this;}
-        int len = v.readableBytes();
+        int len;
+        if(v == null || v == this || (len = v.readableBytes()) == 0) {return this;}
         checkCapacity(len);
         buffer.put(writerIdx, v.array(), v.readerIdx(), len);
         v.readerIdx += len;
@@ -482,7 +506,7 @@ public class ByteBuf
 
     public ByteBuf putExactly(ByteBuf v)
     {
-        if(v == null) {return this;}
+        if(v == null || v == this) {return this;}
         int len = Math.min(v.readableBytes(), writableBytes());
         if(len > 0) {
             buffer.put(writerIdx, v.array(), v.readerIdx, len);

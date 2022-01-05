@@ -76,16 +76,16 @@ public class SSLFilter<A extends IPContext>
                     ssl_ctx.promotionOut();
                     _Logger.info("SSL ready to write");
                 }
-                else if(context.isOutConvert()) {
+                else if(ssl_ctx.isOutConvert()) {
                     _Logger.info("SSL to write");
                 }
                 else {
                     break NEXT_STEP;
                 }
-                return new Pair<>(ResultType.NEXT_STEP, ssl_ctx);
+                return Pair.of(ResultType.NEXT_STEP, ssl_ctx);
             }
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
@@ -117,12 +117,12 @@ public class SSLFilter<A extends IPContext>
                 }
                 if(appInBuffer != null) {
                     ssl_ctx.setCarrier(new AioPacket(appInBuffer));
-                    return new Pair<>(ResultType.NEXT_STEP, ssl_ctx);
+                    return Pair.of(ResultType.NEXT_STEP, ssl_ctx);
                 }
             }
-            return new Pair<>(ResultType.NEED_DATA, ssl_ctx);
+            return Pair.of(ResultType.NEED_DATA, ssl_ctx);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override

@@ -88,18 +88,19 @@ public class ZEFilter<T extends ZContext & IEContext>
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            if(context instanceof IEContext && context.isOutConvert()) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
             IPContext acting = context;
-            while(acting.isProxy()) {
-                if(acting instanceof IEContext && acting.isOutConvert()) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+            do {
+                if(acting.isOutConvert() && acting instanceof IEContext) {
+                    return Pair.of(ResultType.NEXT_STEP, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {acting = null;}
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
 
     }
 
@@ -107,18 +108,22 @@ public class ZEFilter<T extends ZContext & IEContext>
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            if(context instanceof IEContext && context.isInConvert()) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
+
             IPContext acting = context;
-            while(acting.isProxy()) { //EContext 本身就是 ProxyContext
-                if(acting instanceof IEContext && acting.isInConvert()) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+            do {
+                if(acting.isInConvert() && acting instanceof IEContext) {
+                    return Pair.of(ResultType.NEXT_STEP, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override

@@ -117,9 +117,8 @@ public class DecodedDispatcher
                             new Pair<>(content, null),
                             null);
                 }
-                default -> _Logger.warning("decoded dispatcher event type error: %s",
-                                           event.getEventType()
-                                                .name());
+                case IGNORE -> _Logger.warning("decode ignore, need more data");
+                default -> _Logger.warning("decoded dispatcher event type no handle: %s", event.getEventType());
             }
         }
     }

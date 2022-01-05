@@ -33,7 +33,8 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.*;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEED_DATA;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEXT_STEP;
 
 /**
  * @author william.d.zk
@@ -60,7 +61,7 @@ public class QttFrameFilter
     public QttFrame decode(QttContext context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
-        frame.decode(input.getBuffer());
+        frame.decode(context.getRvBuffer());
         context.reset();
         context.promotionIn();
         return frame;
@@ -70,46 +71,47 @@ public class QttFrameFilter
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
         if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
-            if(context.isOutFrame() && context instanceof QttContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                if(context.isOutFrame() && acting instanceof QttContext) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+            do {
+                if(acting.isOutFrame() && acting instanceof QttContext) {
+                    return Pair.of(NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
-    }
-
-    private ResultType peek(IPContext context, IProtocol input)
-    {
-        if(context.isInFrame() && context instanceof QttContext qtt_ctx && input instanceof IPacket in_packet) {
-            QttFrame carrier = qtt_ctx.getCarrier();
-            if(carrier == null) {
-                qtt_ctx.setCarrier(carrier = new QttFrame());
-            }
-            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
-        }
-        return ResultType.IGNORE;
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
         if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            ResultType check = peek(context, input);
-            if(check != IGNORE) {return new Pair<>(check, context);}
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                check = peek(acting, input);
-                if(check == NEXT_STEP || check == NEED_DATA) {
-                    return new Pair<>(check, acting);
+            do {
+                if(acting.isInFrame() && acting instanceof QttContext qtt_ctx && input instanceof IPacket in_packet) {
+                    QttFrame carrier = qtt_ctx.getCarrier();
+                    if(carrier == null) {
+                        qtt_ctx.setCarrier(carrier = new QttFrame());
+                    }
+                    return Pair.of(carrier.lack(acting.getRvBuffer()
+                                                      .put(in_packet.getBuffer())
+                                                      .discardOnHalf()) > 0 ? NEED_DATA : NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
+
         }
         return new Pair<>(ResultType.IGNORE, context);
     }

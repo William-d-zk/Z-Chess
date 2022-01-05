@@ -31,7 +31,6 @@ import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IFrame;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
@@ -76,33 +75,46 @@ public class WsControlFilter<T extends WsContext>
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)) {
-            if(context.isOutConvert() && context instanceof IWsContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof WsControl c) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting.isOutConvert() && acting instanceof IWsContext) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+            do {
+                //@formatter:off
+                if(acting.isOutConvert() &&
+                   acting instanceof IWsContext &&
+                   c.isCtrl())
+                {
+                //@formatter:on
+                    return Pair.of(ResultType.NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof IFrame f && f.isCtrl()) {
-            if(context.isInConvert() && context instanceof IWsContext) {return Pair.of(ResultType.HANDLED, context);}
+        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof WsFrame f && f.isCtrl()) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
+            do {
                 if(acting.isInConvert() && acting instanceof IWsContext) {
                     return Pair.of(ResultType.HANDLED, acting);
                 }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
+                }
             }
+            while(acting != null);
         }
         return Pair.of(ResultType.IGNORE, context);
     }

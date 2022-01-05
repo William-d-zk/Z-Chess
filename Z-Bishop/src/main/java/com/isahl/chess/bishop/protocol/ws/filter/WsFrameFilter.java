@@ -33,7 +33,8 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.*;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEED_DATA;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEXT_STEP;
 
 /**
  * @author William.d.zk
@@ -51,30 +52,17 @@ public class WsFrameFilter<T extends WsContext>
     @Override
     public IPacket encode(T context, WsFrame frame)
     {
-        frame.setMask(context.getMask());
+//        frame.setMask(context.getMask());
         IPacket packet = new AioPacket(frame.encode());
         context.demotionOut();
         return packet;
-    }
-
-    public ResultType peek(IPContext context, IProtocol input)
-    {
-        if(context instanceof IWsContext && input instanceof IPacket in_packet) {
-            WsContext ws_ctx = (WsContext) context;
-            WsFrame carrier = ws_ctx.getCarrier();
-            if(carrier == null) {
-                ws_ctx.setCarrier(carrier = new WsFrame());
-            }
-            return carrier.lack(in_packet.getBuffer()) > 0 ? NEED_DATA : NEXT_STEP;
-        }
-        return ResultType.IGNORE;
     }
 
     @Override
     public WsFrame decode(T context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
-        frame.decode(input.getBuffer());
+        frame.decode(context.getRvBuffer());
         context.reset();
         context.promotionIn();
         return frame;
@@ -83,37 +71,50 @@ public class WsFrameFilter<T extends WsContext>
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && context.isOutFrame()) {
-            if(context.isOutFrame() && context instanceof IWsContext) {
-                return new Pair<>(ResultType.NEXT_STEP, context);
-            }
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                if(acting.isOutFrame() && acting instanceof WsContext) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+            do {
+                if(acting.isOutFrame() && acting instanceof IWsContext) {
+                    return Pair.of(ResultType.NEXT_STEP, context);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isInFrame()) {
-            ResultType check = peek(context, input);
-            if(check != IGNORE) {return new Pair<>(check, context);}
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
             IPContext acting = context;
-            while(acting.isProxy()) {
-                acting = ((IProxyContext<?>) acting).getActingContext();
-                check = peek(acting, input);
-                if(check == NEXT_STEP || check == NEED_DATA) {
-                    return new Pair<>(check, acting);
+            do {
+                if(acting instanceof IWsContext && input instanceof IPacket in_packet) {
+                    WsContext ws_ctx = (WsContext) acting;
+                    WsFrame carrier = ws_ctx.getCarrier();
+                    if(carrier == null) {
+                        ws_ctx.setCarrier(carrier = new WsFrame());
+                    }
+                    return Pair.of(carrier.lack(acting.getRvBuffer()
+                                                      .put(in_packet.getBuffer())
+                                                      .discardOnHalf()) > 0 ? NEED_DATA : NEXT_STEP, acting);
+                }
+                else if(acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else {
+                    acting = null;
                 }
             }
+            while(acting != null);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
