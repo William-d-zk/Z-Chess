@@ -32,7 +32,7 @@
         <file>${Z_CHESS_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
+            <charset>${FILE_LOG_CHARSET}</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${Z_CHESS_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
@@ -44,14 +44,15 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
+            <charset>${FILE_LOG_CHARSET}</charset>
         </encoder>
     </appender>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="Z-CHESS"/>
     </root>
-
+    <!--
     <logger name="base.king" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
@@ -85,4 +86,5 @@
     <logger name="gateway.arena" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
+    -->
 </configuration>

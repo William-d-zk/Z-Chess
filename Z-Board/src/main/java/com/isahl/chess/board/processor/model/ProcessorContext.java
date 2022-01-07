@@ -51,7 +51,8 @@ public class ProcessorContext
     private final Map<Integer, ParentClass> _ParentCountMap = new TreeMap<>();
     private final Map<Integer, List<Child>> _FactoryMap     = new TreeMap<>();
     private final Set<Integer>              _SerialSet      = new TreeSet<>();
-    private final Logger                    _Logger         = LoggerFactory.getLogger(getClass());
+
+    private final Logger _Logger = LoggerFactory.getLogger("base.board." + getClass().getSimpleName());
 
     public void init() throws IOException
     {
@@ -95,6 +96,15 @@ public class ProcessorContext
                                                                      return new Child(className, s.self(), s.parent());
                                                                  })
                                                                  .collect(Collectors.toList())));
+    }
+
+    private void reload() throws IOException
+    {
+        _ClassMap.clear();
+        _ParentCountMap.clear();
+        _FactoryMap.clear();
+        _SerialSet.clear();
+        init();
     }
 
     private void onISerialField(BiConsumer<Integer, String> consumer)
@@ -185,6 +195,7 @@ public class ProcessorContext
             globalFile.write(format("%s[%d]@<%d>\n", className, s.self(), s.parent()).getBytes(StandardCharsets.UTF_8));
         }
         globalFile.close();
+        reload();
     }
 
     private RandomAccessFile globalFile(boolean readonly, boolean delete) throws IOException

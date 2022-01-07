@@ -104,6 +104,7 @@ public class SerialProcessor
                     });
             try {
                 _ProcessorContext.update();
+                _Logger.info("process context updated");
             }
             catch(IOException e) {
                 _Logger.warn("processor context update ", e);

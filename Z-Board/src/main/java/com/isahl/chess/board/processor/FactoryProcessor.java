@@ -34,7 +34,8 @@ public class FactoryProcessor
         if(!roundEnv.processingOver()) {
             final Context _Context = _ZProcessor.mEnvironment.getContext();
             final Trees _Trees = Trees.instance(_ZProcessor.mEnvironment);
-            _Logger.info("factory processor");
+            _Logger.info("factory processor ==============================================================");
+
             roundEnv.getElementsAnnotatedWith(ISerialFactory.class)
                     .forEach(element->{
                         String pkgName = _ZProcessor.mElementUtils.getPackageOf(element)
@@ -45,7 +46,6 @@ public class FactoryProcessor
                         _Logger.info(format("factory class:%s", className));
                         ISerialFactory factory = element.getAnnotation(ISerialFactory.class);
                         int parent = factory.parent();
-
                         TreePath treePath = _Trees.getPath(element);
                         JCTree.JCCompilationUnit unit = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
                         JCTree tree = unit.getTree();

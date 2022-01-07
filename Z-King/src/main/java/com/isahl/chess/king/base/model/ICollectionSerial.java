@@ -39,7 +39,7 @@ public interface ICollectionSerial<T extends IoSerial>
     default void fold(ByteBuf input, int remain)
     {
         if(remain > 0) {
-            throw new ZException("list serial fold error [remain %d]", remain);
+            throw new ZException("collection serial fold error [remain %d]", remain);
         }
     }
 
