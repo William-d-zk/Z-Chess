@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.sun.tools.javac.code.TypeTag.INT;
-import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -51,13 +50,7 @@ public class FactoryTranslator
     {
         _Context = context;
         _ChildList = childList;
-    }
-
-    @Override
-    public void visitImport(JCTree.JCImport tree)
-    {
-        super.visitImport(tree);
-        _Logger.debug(format("import visit:%s", tree.toString()));
+        _Logger.info(childList.toString());
     }
 
     @Override
@@ -73,6 +66,7 @@ public class FactoryTranslator
             String pkgName = canonicalName.substring(0, lp);
             String className = canonicalName.substring(lp + 1);
             int serial = serialClass.serial();
+            //@formatter:off
             JCTree.JCCase _case = _Maker.Case(CaseTree.CaseKind.STATEMENT,
                                               List.of(_Maker.Literal(serial)),
                                               List.of(_Maker.Return(_Maker.NewClass(null,
@@ -82,6 +76,7 @@ public class FactoryTranslator
                                                                                     List.nil(),
                                                                                     null))),
                                               null);
+            //@formatter:on
             jcCases.append(_case);
         }
 

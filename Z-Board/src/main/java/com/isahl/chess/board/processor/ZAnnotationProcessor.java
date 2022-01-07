@@ -29,7 +29,8 @@ public class ZAnnotationProcessor
     protected ProcessorContext           mContext = new ProcessorContext();
 
     private final List<IAnnotationProcessor> _ProcessorQueue = new LinkedList<>();
-    private final Logger                     _Logger         = LoggerFactory.getLogger("base.board." + getClass().getSimpleName());
+    private final Logger                     _Logger         = LoggerFactory.getLogger(
+            "base.board." + getClass().getSimpleName());
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv)
@@ -37,7 +38,7 @@ public class ZAnnotationProcessor
         super.init(processingEnv);
         mEnvironment = (JavacProcessingEnvironment) processingEnv;
         mElementUtils = processingEnv.getElementUtils();
-        _Logger.debug("init processor: ----------------------------------------------------------------" );
+        _Logger.debug("init processor: ----------------------------------------------------------------");
         try {
             mContext.init();
         }
@@ -47,6 +48,7 @@ public class ZAnnotationProcessor
         }
         addProcessor(new SerialProcessor(this));
         addProcessor(new FactoryProcessor(this));
+
     }
 
     @Override

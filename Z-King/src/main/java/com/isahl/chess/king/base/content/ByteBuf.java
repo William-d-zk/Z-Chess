@@ -113,7 +113,7 @@ public class ByteBuf
 
     public ByteBuf discardOnHalf()
     {
-        return writableBytes() < (capacity() << 1) ? discard() : this;
+        return writableBytes() < (capacity() >> 1) ? discard() : this;
     }
 
     public ByteBuf clear()
@@ -141,7 +141,7 @@ public class ByteBuf
 
     public ByteBuf skip(int length)
     {
-        checkOffset(length);
+        checkOffset(length - 1);
         readerIdx += length;
         return this;
     }
@@ -179,13 +179,14 @@ public class ByteBuf
 
     public byte peek(int offset)
     {
-        checkOffset(offset + 1);
+        checkOffset(offset);
         return buffer.get(readerIdx + offset);
     }
 
     public byte[] peekAll(int offset)
     {
-        int remain = readableBytes();
+        checkOffset(offset);
+        int remain = readableBytes() - offset;
         if(remain > 0) {
             byte[] p = new byte[remain];
             buffer.get(readerIdx + offset, p);
@@ -201,7 +202,7 @@ public class ByteBuf
 
     public int peekShort(int offset)
     {
-        checkOffset(offset + 2);
+        checkOffset(offset + 1);
         return buffer.getShort(readerIdx + offset);
     }
 
@@ -212,7 +213,7 @@ public class ByteBuf
 
     public byte get()
     {
-        checkOffset(1);
+        checkOffset(0);
         return buffer.get(readerIdx++);
     }
 
@@ -223,7 +224,7 @@ public class ByteBuf
 
     public short getShort()
     {
-        checkOffset(2);
+        checkOffset(1);
         short v = buffer.getShort(readerIdx);
         readerIdx += 2;
         return v;
@@ -236,7 +237,7 @@ public class ByteBuf
 
     public int getInt()
     {
-        checkOffset(4);
+        checkOffset(3);
         int v = buffer.getInt(readerIdx);
         readerIdx += 4;
         return v;
@@ -244,7 +245,7 @@ public class ByteBuf
 
     public long getLong()
     {
-        checkOffset(8);
+        checkOffset(7);
         long v = buffer.getLong(readerIdx);
         readerIdx += 8;
         return v;
@@ -252,20 +253,20 @@ public class ByteBuf
 
     public long peekLong(int offset)
     {
-        checkOffset(offset + 8);
+        checkOffset(offset + 7);
         return buffer.getLong(readerIdx + offset);
     }
 
     public void get(byte[] dst)
     {
-        checkOffset(dst.length);
+        checkOffset(dst.length - 1);
         buffer.get(readerIdx, dst);
         readerIdx += dst.length;
     }
 
     public void get(byte[] dst, int off, int len)
     {
-        checkOffset(len);
+        checkOffset(len - 1);
         buffer.get(readerIdx, dst, off, len);
         readerIdx += len;
     }
@@ -273,7 +274,7 @@ public class ByteBuf
     public String readUTF(int len)
     {
         if(len > 0) {
-            checkOffset(len);
+            checkOffset(len - 1);
             String str = new String(buffer.array(), readerIdx, len, StandardCharsets.UTF_8);
             readerIdx += len;
             return str;
@@ -298,7 +299,7 @@ public class ByteBuf
 
     public boolean isOffsetReadable(int offset)
     {
-        return readerIdx + offset <= writerIdx;
+        return readerIdx + offset < writerIdx;
     }
 
     private void checkOffset(int offset)
@@ -320,9 +321,9 @@ public class ByteBuf
         }
     }
 
-    private void checkPosition(int position)
+    private void checkPutAt(int position)
     {
-        if(position < 0 || position > capacity) {
+        if(position < 0 || position >= capacity) {
             throw new ZException("position out of bounds");
         }
     }
@@ -428,7 +429,7 @@ public class ByteBuf
 
     public ByteBuf put(int v, int pos)
     {
-        checkPosition(pos);
+        checkPutAt(pos);
         buffer.put(pos, (byte) v);
         return this;
     }
