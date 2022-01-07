@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,44 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io;
+package com.isahl.chess.king.base.model;
+
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
+
+import java.util.Collection;
+import java.util.TreeSet;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2022-01-07
  */
-public enum Direction
+@ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
+public class SetSerial<T extends IoSerial>
+        extends TreeSet<T>
+        implements ICollectionSerial<T>
 {
+    private final IoFactory _Factory;
 
-    SERVER_TO_CLIENT("S->C"),
-    CLIENT_TO_SERVER("C->S"),
-    LEADER_BR_FOLLOWER("L->F"),
-    FOLLOWER_RP_LEADER("F->L"),
-    PROPOSER_BR_ACCEPTOR("P->A"),
-    ELECTOR_RP_CANDIDATE("E->C");
-
-    private final String _Abbreviation;
-
-    Direction(String abbreviation)
+    public SetSerial(IoFactory factory)
     {
-        _Abbreviation = abbreviation;
+        super();
+        _Factory = factory;
     }
 
-    public String getShort()
+    public SetSerial(IoFactory factory, Collection<T> e)
     {
-        return _Abbreviation;
+        super(e);
+        _Factory = factory;
     }
 
-    public static Direction parseShort(String value)
+    @Override
+    public IoFactory factory()
     {
-        return switch(value) {
-            case "S->C" -> SERVER_TO_CLIENT;
-            case "C->S" -> CLIENT_TO_SERVER;
-            case "L->F" -> LEADER_BR_FOLLOWER;
-            case "F->L" -> FOLLOWER_RP_LEADER;
-            case "P->A" -> PROPOSER_BR_ACCEPTOR;
-            case "E->C" -> ELECTOR_RP_CANDIDATE;
-            default -> throw new IllegalArgumentException();
-        };
+        return _Factory;
     }
 }

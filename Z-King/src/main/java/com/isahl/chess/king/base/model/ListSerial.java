@@ -25,8 +25,6 @@ package com.isahl.chess.king.base.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
@@ -38,7 +36,7 @@ import java.util.LinkedList;
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
 public class ListSerial<T extends IoSerial>
         extends LinkedList<T>
-        implements IoSerial
+        implements ICollectionSerial<T>
 {
 
     private final IoFactory _Factory;
@@ -50,82 +48,8 @@ public class ListSerial<T extends IoSerial>
     }
 
     @Override
-    public void fold(ByteBuf input, int remain)
+    public IoFactory factory()
     {
-        if(remain > 0) {
-            throw new ZException("list serial fold error [remain %d]", remain);
-        }
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int serial = input.getUnsignedShort();
-        int length = input.vLength();
-        int size = input.getInt();
-        for(int i = 0; i < size; i++) {
-            T content = _Factory.create(input);
-            add(content);
-            length -= content.sizeOf();
-        }
-        return length - 4;
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output = output.putShort((short) serial())
-                       .vPutLength(length())
-                       .putInt(size());
-        for(IoSerial t : this) {
-            output.put(t.encode());
-        }
-        return output;
-    }
-
-    @Override
-    public int length()
-    {
-        int length = 4;  //list.size
-        for(IoSerial t : this) {
-            length += t.sizeOf();
-        }
-        return length;
-    }
-
-    @Override
-    public int sizeOf()
-    {
-        return ByteBuf.vSizeOf(length()) + 2;
-    }
-
-    @Override
-    public IoSerial subContent()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ListSerial<T> withSub(IoSerial sub)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public IoSerial withSub(byte[] payload)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void deserializeSub(IoFactory factory)
-    {
-        throw new UnsupportedOperationException();
+        return _Factory;
     }
 }

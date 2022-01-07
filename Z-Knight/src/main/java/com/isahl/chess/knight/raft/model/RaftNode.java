@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -206,5 +207,18 @@ public class RaftNode
     {
         mGatePort = port;
     }
+
+    public static final IoFactory _Factory = new IoFactory()
+    {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public RaftNode create(ByteBuf input)
+        {
+            RaftNode node = new RaftNode();
+            node.decode(input);
+            return node;
+        }
+    };
 
 }

@@ -23,10 +23,10 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.bishop.io.Direction;
+import com.isahl.chess.queen.io.core.model.Direction;
 
-import static com.isahl.chess.bishop.io.Direction.CLIENT_TO_SERVER;
-import static com.isahl.chess.bishop.io.Direction.SERVER_TO_CLIENT;
+import static com.isahl.chess.queen.io.core.model.Direction.CLIENT_TO_SERVER;
+import static com.isahl.chess.queen.io.core.model.Direction.SERVER_TO_CLIENT;
 
 public enum QttType
 {

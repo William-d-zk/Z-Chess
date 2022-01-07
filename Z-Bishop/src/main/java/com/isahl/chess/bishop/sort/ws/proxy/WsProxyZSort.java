@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.sort.ws.proxy;
 
-import com.isahl.chess.bishop.io.BaseSort;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;

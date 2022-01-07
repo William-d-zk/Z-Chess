@@ -23,18 +23,16 @@
 
 package com.isahl.chess.board.processor;
 
+import com.isahl.chess.board.processor.model.Child;
 import com.sun.source.tree.CaseTree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Pair;
+import com.sun.tools.javac.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sun.tools.javac.code.TypeTag.INT;
 import static java.lang.String.format;
@@ -45,15 +43,12 @@ import static java.lang.String.format;
 public class FactoryTranslator
         extends TreeTranslator
 {
-    private final Context                               _Context;
-    private final FactoryProcessor                      _Processor;
-    private final java.util.List<Pair<String, Integer>> _ChildList;
+    private final Context               _Context;
+    private final java.util.List<Child> _ChildList;
+    private final Logger                _Logger = LoggerFactory.getLogger("base.board." + getClass().getSimpleName());
 
-    public FactoryTranslator(FactoryProcessor processor,
-                             Context context,
-                             java.util.List<Pair<String, Integer>> childList)
+    public FactoryTranslator(Context context, java.util.List<Child> childList)
     {
-        _Processor = processor;
         _Context = context;
         _ChildList = childList;
     }
@@ -62,7 +57,7 @@ public class FactoryTranslator
     public void visitImport(JCTree.JCImport tree)
     {
         super.visitImport(tree);
-        _Processor.note(format("import visit:%s", tree.toString()));
+        _Logger.debug(format("import visit:%s", tree.toString()));
     }
 
     @Override
@@ -72,20 +67,18 @@ public class FactoryTranslator
         final TreeMaker _Maker = TreeMaker.instance(_Context);
         final Names _Names = Names.instance(_Context);
         ListBuffer<JCTree.JCCase> jcCases = new ListBuffer<>();
-        for(Pair<String, Integer> serialClass : _ChildList) {
-            String canonicalName = serialClass.fst;
+        for(Child serialClass : _ChildList) {
+            String canonicalName = serialClass.name();
             int lp = canonicalName.lastIndexOf(".");
             String pkgName = canonicalName.substring(0, lp);
             String className = canonicalName.substring(lp + 1);
-            int serial = serialClass.snd;
+            int serial = serialClass.serial();
             JCTree.JCCase _case = _Maker.Case(CaseTree.CaseKind.STATEMENT,
                                               List.of(_Maker.Literal(serial)),
                                               List.of(_Maker.Return(_Maker.NewClass(null,
                                                                                     List.nil(),
-                                                                                    _Maker.Select(_Maker.Ident(_Names.fromString(
-                                                                                                          pkgName)),
-                                                                                                  _Names.fromString(
-                                                                                                          className)),
+                                                                                    _Maker.Select(_Maker.Ident(_Names.fromString(pkgName)),
+                                                                                                  _Names.fromString(className)),
                                                                                     List.nil(),
                                                                                     null))),
                                               null);
@@ -112,7 +105,6 @@ public class FactoryTranslator
                                                            _Block,
                                                            null);
         clazz.defs = clazz.defs.append(buildMethod);
-        _Processor.note(clazz.toString());
     }
 
 }

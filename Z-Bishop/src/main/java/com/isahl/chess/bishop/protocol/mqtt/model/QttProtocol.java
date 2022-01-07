@@ -30,7 +30,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
  * @author william.d.zk
  * @date 2019-05-25
  */
-public abstract class MqttProtocol
+public abstract class QttProtocol
         implements IProtocol
 {
     protected final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());

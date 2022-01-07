@@ -39,7 +39,7 @@ import java.util.Objects;
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_FRAME_SERIAL)
 public class QttFrame
-        extends MqttProtocol
+        extends QttProtocol
         implements IFrame
 {
 

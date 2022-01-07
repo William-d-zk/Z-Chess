@@ -21,34 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.board.processor.model;
 
-import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.knight.raft.model.replicate.LogMeta;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-
-class RaftNodeTest
-{
-    @Test
-    public void testSerialization()
-    {
-        RaftNode node = new RaftNode("raft0", 5443, RaftState.LEADER);
-        RaftNode gate = new RaftNode("raft0", -1, RaftState.GATE);
-        gate.setGateHost("gate0");
-        gate.setGatePort(6553);
-
-        LogMeta meta = new LogMeta(1, 1, 1, 1, 1, 1, null, null);
-        LogMeta meta2 = new LogMeta(1, 1, 1, 1, 1, 1, null, null);
-
-        meta2.setPeerSet(Collections.singletonList(node));
-
-        meta2.setGateSet(Collections.singletonList(gate));
-
-        ByteBuf output = meta2.encode();
-
-        meta.decode(output);
-        System.out.println(meta);
-    }
-}
+public record SerialClass(int parent, int self)
+{}

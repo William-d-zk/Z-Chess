@@ -1,6 +1,6 @@
 package com.isahl.chess.bishop.sort.zchat;
 
-import com.isahl.chess.bishop.io.BaseSort;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.factory.*;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
