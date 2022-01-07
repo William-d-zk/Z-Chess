@@ -29,7 +29,7 @@ package com.isahl.chess.board.base;
  */
 public interface ISerial
 {
-    int PROTOCOL_BISHOP_COMMAND_SERIAL   = 0x0FF;// 0x10~0xFE(16~254)
+    int PROTOCOL_BISHOP_COMMAND_SERIAL   = 0x0FF;// 0x001~0x0FE(1~254)
     int PROTOCOL_BISHOP_CONTROL_SERIAL   = 0x100;// 0x101~0x1FE(257~510)
     int PROTOCOL_BISHOP_FRAME_SERIAL     = 0x200;// 0x201~0x2FE(513~766)
     int IO_QUEEN_PACKET_SERIAL           = 0x300;// 0x301~0x3FF(769~1023)
