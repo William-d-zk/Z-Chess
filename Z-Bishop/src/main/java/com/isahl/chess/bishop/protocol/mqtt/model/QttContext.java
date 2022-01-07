@@ -31,8 +31,8 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
 import java.util.stream.IntStream;
 
-import static com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol.VERSION_V3_1_1;
-import static com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol.VERSION_V5_0;
+import static com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol.VERSION_V3_1_1;
+import static com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol.VERSION_V5_0;
 
 /**
  * @author william.d.zk

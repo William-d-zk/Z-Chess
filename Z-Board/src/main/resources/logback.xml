@@ -2,7 +2,7 @@
 <!--
   ~ MIT License
   ~
-  ~ Copyright (c) 2016~2021. Z-Chess
+  ~ Copyright (c) 2022. Z-Chess
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy of
   ~ this software and associated documentation files (the "Software"), to deal in
@@ -23,66 +23,40 @@
   -->
 
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!--设置自定义pattern属性-->
+    <property name="pattern" value="%d{HH:mm:ss.SSS} [%-5level] [%thread] [%logger] %msg%n"/>
     <property name="APP_NAME" value="Z-Chess"/>
-    <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
-    <property name="Z_CHESS_LOG_FILE" value="${LOG_PATH}/z-chess.log"/>
-    <appender name="Z-CHESS"
+    <property name="LOG_PATH" value="${user.home}/${APP_NAME}/processor"/>
+    <property name="Z_CHESS_LOG_FILE" value="${LOG_PATH}/annotations.log"/>
+
+
+    <!--滚动记录日志文件：-->
+    <appender name="Z-Board"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${Z_CHESS_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
+        <!--根据时间来记录日志文件：-->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${Z_CHESS_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>7</maxHistory>
             <maxFileSize>50MB</maxFileSize>
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
-    </appender>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!--生成的日志信息格式-->
         <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
+            <pattern>${pattern}</pattern>
         </encoder>
     </appender>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
+    <logger name="base.board" level="DEBUG">
+        <appender-ref ref="Z-Board"/>
+    </logger>
 
-    <logger name="base.king" level="INFO">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="io.queen" level="INFO">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="io.queen.dispatcher" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="io.queen.processor" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="protocol.bishop" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="cluster.knight" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="storage.rook" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="endpoint.pawn" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="biz.player" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="security.referee" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
-    <logger name="gateway.arena" level="DEBUG">
-        <appender-ref ref="Z-CHESS"/>
-    </logger>
 </configuration>

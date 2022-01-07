@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.protocol.mqtt.filter;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.QttCommand;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
@@ -68,7 +68,7 @@ public class QttCommandFilter
     @Override
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof MqttProtocol) {
+        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof QttProtocol) {
             IPContext acting = context;
             do {
                 //@formatter:off

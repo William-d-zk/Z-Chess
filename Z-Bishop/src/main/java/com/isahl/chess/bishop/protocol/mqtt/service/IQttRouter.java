@@ -23,9 +23,9 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.service;
 
-import com.isahl.chess.bishop.io.IRouter;
+import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.QttControl;
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.util.Map;
@@ -71,8 +71,8 @@ public interface IQttRouter
     class Subscribe
     {
         public final Map<Long, IQoS.Level> _SessionMap = new ConcurrentSkipListMap<>();
-        public final Pattern               _Pattern;
-        public       MqttProtocol          mRetained;
+        public final Pattern     _Pattern;
+        public       QttProtocol mRetained;
 
         public Subscribe(Pattern pattern) {_Pattern = pattern;}
 

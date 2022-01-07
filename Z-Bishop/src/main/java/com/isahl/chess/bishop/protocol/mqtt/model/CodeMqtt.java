@@ -87,8 +87,8 @@ public enum CodeMqtt
     {
         int version = (Integer) condition[0];
         return switch(version) {
-            case MqttProtocol.VERSION_V3_1_1 -> _V3Code;
-            case MqttProtocol.VERSION_V5_0 -> _V5Code;
+            case QttProtocol.VERSION_V3_1_1 -> _V3Code;
+            case QttProtocol.VERSION_V5_0 -> _V5Code;
             default -> throw new UnsupportedOperationException("Unsupported version");
         };
     }
@@ -108,7 +108,7 @@ public enum CodeMqtt
     public static CodeMqtt valueOf(int code, int version)
     {
         return switch(version) {
-            case MqttProtocol.VERSION_V3_1_1 -> switch(code) {
+            case QttProtocol.VERSION_V3_1_1 -> switch(code) {
                 case 0 -> OK;
                 case 1 -> REJECT_UNSUPPORTED_VERSION_PROTOCOL;
                 case 2 -> REJECT_IDENTIFIER;
@@ -117,7 +117,7 @@ public enum CodeMqtt
                 case 5 -> REJECT_NOT_AUTHORIZED;
                 default -> throw new IllegalArgumentException("6-255 Reserved");
             };
-            case MqttProtocol.VERSION_V5_0 -> switch(code) {
+            case QttProtocol.VERSION_V5_0 -> switch(code) {
                 case 0 -> OK;
                 case 1 -> QOS_LEVEL_1;
                 case 2 -> QOS_LEVEL_2;

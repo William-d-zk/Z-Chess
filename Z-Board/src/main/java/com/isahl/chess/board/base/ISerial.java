@@ -29,10 +29,10 @@ package com.isahl.chess.board.base;
  */
 public interface ISerial
 {
-    int IO_QUEEN_PACKET_SERIAL           = 0x007;// 0x08~0x0F(8~15)
     int PROTOCOL_BISHOP_COMMAND_SERIAL   = 0x0FF;// 0x10~0xFE(16~254)
     int PROTOCOL_BISHOP_CONTROL_SERIAL   = 0x100;// 0x101~0x1FE(257~510)
     int PROTOCOL_BISHOP_FRAME_SERIAL     = 0x200;// 0x201~0x2FE(513~766)
+    int IO_QUEEN_PACKET_SERIAL           = 0x300;// 0x301~0x3FF(769~1023)
     int CORE_KING_INTERNAL_SERIAL        = 0x400;// 0x401~0x4FE(1025~1278)
     int CORE_KING_JSON_SERIAL            = 0x800;// 0xA01~0xAFE(2561~2814)
     int STORAGE_ROOK_DB_SERIAL           = 0xA00;// 0x801~0x8FE(2049~2302)

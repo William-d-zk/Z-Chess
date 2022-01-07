@@ -31,15 +31,20 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.model.SetSerial;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
+import static com.isahl.chess.knight.raft.model.RaftNode._Factory;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
 
@@ -58,17 +63,17 @@ public class RaftMachine
 
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
-    private long          mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private long          mIndexTerm; // 本地日志对应的Term
-    private long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private long          mCandidate;
-    private long          mLeader;
-    private long          mCommit;    // 集群中已知的最大CommitIndex
-    private long          mApplied;   // 本地已被应用的Index
-    private int           mState = FOLLOWER.getCode();
-    private Set<RaftNode> mPeerSet;
-    private Set<RaftNode> mGateSet;
+    private long                mTerm;      // 触发选举时 mTerm > mIndexTerm
+    private long                mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
+    private long                mIndexTerm; // 本地日志对应的Term
+    private long                mMatchIndex;// Leader: 记录 follower 已经接收的记录
+    private long                mCandidate;
+    private long                mLeader;
+    private long                mCommit;    // 集群中已知的最大CommitIndex
+    private long                mApplied;   // 本地已被应用的Index
+    private int                 mState = FOLLOWER.getCode();
+    private SetSerial<RaftNode> mPeerSet;
+    private SetSerial<RaftNode> mGateSet;
 
     @Override
     public int length()
@@ -81,19 +86,9 @@ public class RaftMachine
                      8 + // commit
                      8 + // candidate
                      8 + // leader
-                     1 + // state
-                     1 + // peer-set-size
-                     1;  // gate-set-size
-        if(mPeerSet != null && !mPeerSet.isEmpty()) {
-            for(RaftNode node : mPeerSet) {
-                length += node.sizeOf();
-            }
-        }
-        if(mGateSet != null && !mGateSet.isEmpty()) {
-            for(RaftNode gate : mGateSet) {
-                length += gate.sizeOf();
-            }
-        }
+                     1;  // state
+        length += mPeerSet.sizeOf();
+        length += mGateSet.sizeOf();
         return length + super.length();
     }
 
@@ -111,6 +106,8 @@ public class RaftMachine
         pKey = peerId;
         mMatchIndex = INDEX_NAN;
         mIndex = INDEX_NAN;
+        mPeerSet = new SetSerial<>(_Factory);
+        mGateSet = new SetSerial<>(_Factory);
     }
 
     public RaftMachine()
@@ -131,59 +128,29 @@ public class RaftMachine
         mCandidate = input.getLong();
         mLeader = input.getLong();
         mState = input.get();
-        remain -= 67;// 8x8 +1 +1 +1;
-        int pLength = buildSet(input, mPeerSet = new TreeSet<>());
-        int gLength = buildSet(input, mGateSet = new TreeSet<>());
-        if(pLength == 0) {
-            mPeerSet = null;
-        }
-        if(gLength == 0) {
-            mGateSet = null;
-        }
-        return remain - pLength - gLength;
-    }
-
-    private int buildSet(ByteBuf input, Set<RaftNode> set)
-    {
-        int size = input.get() & 0xFF;
-        if(size > 0) {
-            int position = input.readerIdx();
-            for(int i = 0; i < size; i++) {
-                RaftNode node = new RaftNode();
-                node.decode(input);
-                set.add(node);
-            }
-            return input.readerIdx() - position;
-        }
-        return 0;
+        remain -= 65;// 8x8 +1;
+        mPeerSet.decode(input);
+        remain -= mPeerSet.sizeOf();
+        mGateSet.decode(input);
+        remain -= mGateSet.sizeOf();
+        return remain;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output = super.suffix(output)
-                      .putLong(mTerm)
-                      .putLong(mIndex)
-                      .putLong(mIndexTerm)
-                      .putLong(mMatchIndex)
-                      .putLong(mApplied)
-                      .putLong(mCommit)
-                      .putLong(mCandidate)
-                      .putLong(mLeader)
-                      .put(mState);
-        output.put(mPeerSet == null ? 0 : mPeerSet.size());
-        if(mPeerSet != null && mPeerSet.size() > 0) {
-            for(RaftNode node : mPeerSet) {
-                output.put(node.encode());
-            }
-        }
-        output.put(mGateSet == null ? 0 : mGateSet.size());
-        if(mGateSet != null && mGateSet.size() > 0) {
-            for(RaftNode node : mGateSet) {
-                output.put(node.encode());
-            }
-        }
-        return output;
+        return super.suffix(output)
+                    .putLong(mTerm)
+                    .putLong(mIndex)
+                    .putLong(mIndexTerm)
+                    .putLong(mMatchIndex)
+                    .putLong(mApplied)
+                    .putLong(mCommit)
+                    .putLong(mCandidate)
+                    .putLong(mLeader)
+                    .put(mState)
+                    .put(mPeerSet.encode())
+                    .put(mGateSet.encode());
     }
 
     @Override
@@ -305,27 +272,31 @@ public class RaftMachine
 
     public void setPeerSet(Set<RaftNode> peerSet)
     {
-        mPeerSet = peerSet;
+        if(peerSet instanceof SetSerial<RaftNode> set) {
+            mPeerSet = set;
+        }
+        else if(peerSet != null) {
+            mPeerSet.addAll(peerSet);
+        }
     }
 
     public void setGateSet(Set<RaftNode> gateSet)
     {
-        mGateSet = gateSet;
+        if(gateSet instanceof SetSerial<RaftNode> set) {
+            mGateSet = set;
+        }
+        else if(mGateSet != null) {
+            mGateSet.addAll(gateSet);
+        }
     }
 
     public final void appendPeer(RaftNode... peers)
     {
-        if(mPeerSet == null) {
-            mPeerSet = new TreeSet<>();
-        }
         appendGraph(mPeerSet, peers);
     }
 
     public final void appendGate(RaftNode... gates)
     {
-        if(mGateSet == null) {
-            mGateSet = new TreeSet<>();
-        }
         appendGraph(mGateSet, gates);
     }
 

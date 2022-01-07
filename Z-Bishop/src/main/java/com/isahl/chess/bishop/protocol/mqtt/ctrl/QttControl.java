@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
-import com.isahl.chess.bishop.protocol.mqtt.model.MqttProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.king.base.content.ByteBuf;
@@ -41,7 +41,7 @@ import java.util.Objects;
  * @date 2019-05-13
  */
 public abstract class QttControl
-        extends MqttProtocol
+        extends QttProtocol
         implements IControl<QttContext>,
                    IDuplicate
 {

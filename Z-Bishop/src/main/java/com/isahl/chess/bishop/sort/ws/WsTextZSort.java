@@ -23,13 +23,12 @@
 
 package com.isahl.chess.bishop.sort.ws;
 
-import com.isahl.chess.bishop.io.BaseSort;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsTextFilter;
-import com.isahl.chess.bishop.protocol.zchat.factory.ZChatFactory;
 import com.isahl.chess.bishop.protocol.zchat.factory.ZServerFactory;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;

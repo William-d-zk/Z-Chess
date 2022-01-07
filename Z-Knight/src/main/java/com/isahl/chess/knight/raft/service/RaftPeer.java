@@ -44,6 +44,7 @@ import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
+import com.isahl.chess.knight.raft.model.replicate.LogMeta;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
@@ -132,29 +133,23 @@ public class RaftPeer
     private void init()
     {
         /* _RaftDao 启动的时候已经装载了 snapshot */
-        _SelfMachine.setTerm(_RaftMapper.getLogMeta()
-                                        .getTerm());
-        _SelfMachine.setCommit(_RaftMapper.getLogMeta()
-                                          .getCommit());
-        _SelfMachine.setApplied(_RaftMapper.getLogMeta()
-                                           .getApplied());
-        _SelfMachine.setIndex(_RaftMapper.getLogMeta()
-                                         .getIndex());
-        _SelfMachine.setIndexTerm(_RaftMapper.getLogMeta()
-                                             .getIndexTerm());
-        _SelfMachine.setPeerSet(_RaftMapper.getLogMeta()
-                                           .getPeerSet());
-        _SelfMachine.setGateSet(_RaftMapper.getLogMeta()
-                                           .getGateSet());
+        LogMeta meta = _RaftMapper.getLogMeta();
+        _SelfMachine.setTerm(meta.getTerm());
+        _SelfMachine.setCommit(meta.getCommit());
+        _SelfMachine.setApplied(meta.getApplied());
+        _SelfMachine.setIndex(meta.getIndex());
+        _SelfMachine.setIndexTerm(meta.getIndexTerm());
+        _SelfMachine.setPeerSet(meta.getPeerSet());
+        _SelfMachine.setGateSet(meta.getGateSet());
         /* 初始化时，match_index == applied */
         _SelfMachine.setMatchIndex(_SelfMachine.getApplied());
-        if(_SelfMachine.getPeerSet() == null) {
+        if(_SelfMachine.getPeerSet()
+                       .isEmpty())
+        {
             /* 首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer */
             _RaftMapper.loadDefaultGraphSet();
-            _SelfMachine.setPeerSet(_RaftMapper.getLogMeta()
-                                               .getPeerSet());
-            _SelfMachine.setGateSet(_RaftMapper.getLogMeta()
-                                               .getGateSet());
+            _SelfMachine.setPeerSet(meta.getPeerSet());
+            _SelfMachine.setGateSet(meta.getGateSet());
         }
         if(!_RaftConfig.isInCongress()) {
             _Logger.info("single mode , ignore state listen");

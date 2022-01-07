@@ -21,34 +21,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.knight.cluster.features;
 
-import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.knight.raft.model.replicate.LogMeta;
-import org.junit.jupiter.api.Test;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.message.InnerProtocol;
 
-import java.util.Collections;
-
-class RaftNodeTest
+public interface IConsistencyMapping
 {
-    @Test
-    public void testSerialization()
-    {
-        RaftNode node = new RaftNode("raft0", 5443, RaftState.LEADER);
-        RaftNode gate = new RaftNode("raft0", -1, RaftState.GATE);
-        gate.setGateHost("gate0");
-        gate.setGatePort(6553);
+    IoSerial findByCoordinate(long origin, long peer);
 
-        LogMeta meta = new LogMeta(1, 1, 1, 1, 1, 1, null, null);
-        LogMeta meta2 = new LogMeta(1, 1, 1, 1, 1, 1, null, null);
+    void appendState(IoSerial bizData, long peer, long origin);
 
-        meta2.setPeerSet(Collections.singletonList(node));
+    InnerProtocol export();
 
-        meta2.setGateSet(Collections.singletonList(gate));
+    void from(InnerProtocol history);
 
-        ByteBuf output = meta2.encode();
-
-        meta.decode(output);
-        System.out.println(meta);
-    }
 }

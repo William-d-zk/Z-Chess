@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.sort.ssl;
 
-import com.isahl.chess.bishop.io.BaseSort;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
