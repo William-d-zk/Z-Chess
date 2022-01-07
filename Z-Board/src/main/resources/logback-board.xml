@@ -51,10 +51,6 @@
             <pattern>${pattern}</pattern>
         </encoder>
     </appender>
-
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
     <logger name="base.board" level="DEBUG">
         <appender-ref ref="Z-Board"/>
     </logger>
