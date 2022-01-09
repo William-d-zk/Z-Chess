@@ -113,4 +113,18 @@ public enum ZSortHolder
         };
     }
 
+    public static ZSortHolder _Mapping(String protocol)
+    {
+        return switch(protocol) {
+            case "mqtt" -> ZSortHolder.QTT_SERVER;
+            case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
+            case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
+            case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
+            case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
+            case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
+            case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
+            default -> throw new UnsupportedOperationException(protocol);
+        };
+    }
+
 }

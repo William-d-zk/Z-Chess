@@ -58,7 +58,7 @@ public class QttStorageService
         implements IQttStorage,
                    IValid
 {
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final IMessageJpaRepository              _MessageRepository;
     private final ISessionRepository                 _SessionRepository;

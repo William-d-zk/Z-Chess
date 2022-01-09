@@ -27,4 +27,8 @@ package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.service;
  * @author william.d.zk
  */
 public class DeviceStorageService
-{}
+{
+
+
+
+}

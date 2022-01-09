@@ -54,17 +54,17 @@ import java.time.LocalDateTime;
             @TypeDef(name = "int-array",
                      typeClass = IntArrayType.class),
             @TypeDef(name = "list-array",
-                     typeClass = ListArrayType.class)
-})
+                     typeClass = ListArrayType.class) })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = { "created_at", "updated_at"
-},
+@JsonIgnoreProperties(value = { "created_at",
+                                "updated_at" },
                       allowGetters = true)
 public abstract class AuditModel
         extends InnerProtocol
 {
+
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
@@ -107,7 +107,7 @@ public abstract class AuditModel
     @Override
     public String toString()
     {
-        return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+        return String.format("  create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
     }
 
 }

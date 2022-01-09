@@ -21,27 +21,39 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.service;
 
-import com.isahl.chess.bishop.sort.ZSortHolder;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2021-01-01
  */
-public class Protocol2Sort
+@Service
+public class MessageStorageService
+        implements PersistentHook.ISubscribe
 {
-    public static ZSortHolder _Mapping(String protocol)
+    private final IMessageJpaRepository _JpaRepository;
+
+    @Autowired
+    public MessageStorageService(IMessageJpaRepository repository)
     {
-        return switch(protocol) {
-            case "mqtt" -> ZSortHolder.QTT_SERVER;
-            case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
-            case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-            case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-            case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
-            case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
-            case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
-            default -> throw new UnsupportedOperationException(protocol);
-        };
+        _JpaRepository = repository;
+    }
+
+    @Override
+    public void onBatch(List<IoSerial> contents)
+    {
+        for(IoSerial content : contents) {
+            if(content instanceof MessageEntity msg) {
+                _JpaRepository.save(msg);
+            }
+        }
     }
 }

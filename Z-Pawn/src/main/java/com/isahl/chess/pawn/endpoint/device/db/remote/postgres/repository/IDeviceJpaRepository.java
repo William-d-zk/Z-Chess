@@ -31,7 +31,7 @@ import org.springframework.stereotype.Repository;
  * @author william.d.zk
  * @date 2020-1-20
  */
-@Repository
+@Repository("remote-device-jpa-repository")
 public interface IDeviceJpaRepository
         extends BaseLongRepository<DeviceEntity>
 {

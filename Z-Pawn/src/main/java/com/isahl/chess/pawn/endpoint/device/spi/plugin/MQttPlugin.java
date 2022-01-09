@@ -365,7 +365,8 @@ public class MQttPlugin
         int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         int msgId = (int) stateMessage.getMsgId();
-        boolean[] ack = { true, true };
+        boolean[] ack = { true,
+                          true };
         ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
             ack[1] = old.remove(msgId) != null;
@@ -533,6 +534,9 @@ public class MQttPlugin
                 }
                 results.add(Triple.of(n113, session, session.getEncoder()));
                 _QttStorage.brokerStorage((int) n113.getMsgId(), n113.getTopic(), n113.payload(), kIdx);
+            }
+            else {
+                _Logger.warning("no target session id[ %#x ] found ,ignore publish", kIdx);
             }
         });
 

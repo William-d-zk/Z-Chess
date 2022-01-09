@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.db.repository;
+package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository;
 
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Repository;
  * @author william.d.zk
  * @date 2019-07-31
  */
-@Repository("api-message-jpa-repository")
+@Repository("remote-message-jpa-repository")
 public interface IMessageJpaRepository
         extends BaseLongRepository<MessageEntity>
 {
