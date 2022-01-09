@@ -40,6 +40,7 @@ import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
+import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.example.MixManager;
@@ -50,10 +51,12 @@ import com.isahl.chess.queen.io.core.net.socket.BaseAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 import com.isahl.chess.queen.io.core.tasks.ServerCore;
+import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -239,5 +242,23 @@ public class DeviceNode
     public IClusterPeer getPeer()
     {
         return _ClusterPeer;
+    }
+
+    @Override
+    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    {
+        return getLocalPublisher().getPublisher(type);
+    }
+
+    @Override
+    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    {
+        return getLocalPublisher().getCloser(type);
+    }
+
+    @Override
+    public ReentrantLock getLock(IOperator.Type type)
+    {
+        return getLocalPublisher().getLock(type);
     }
 }

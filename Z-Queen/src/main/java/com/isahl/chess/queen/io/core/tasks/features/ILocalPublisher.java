@@ -24,11 +24,8 @@
 package com.isahl.chess.queen.io.core.tasks.features;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * @date 2016/12/22
  */
 public interface ILocalPublisher
-        extends IActivity
 {
     RingBuffer<QEvent> getPublisher(IOperator.Type type);
 
@@ -46,58 +42,61 @@ public interface ILocalPublisher
 
     ReentrantLock getLock(IOperator.Type type);
 
-    @Override
-    default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    default <T, U, R> boolean publish(IOperator.Type type, IOperator<T, U, R> next, IPair... contents)
     {
-        if(session == null || outputs == null || outputs.length == 0) {return false;}
-        final RingBuffer<QEvent> _LocalSendEvent = getPublisher(type);
-        final ReentrantLock _LocalLock = getLock(type);
-        if(_LocalLock.tryLock()) {
+        if(contents == null || contents.length == 0 || type == null) {
+            return false;
+        }
+        RingBuffer<QEvent> producer = getPublisher(type);
+        ReentrantLock lock = getLock(type);
+        if(lock.tryLock()) {
             try {
                 /*
                  * send-event → write-dispatcher
                  * 虽然可以利用dispatcher 擦除 type 信息，直接转头 write过程，
                  * 但是这样写太过晦涩，还是直接在这一层完成分拆比较好
                  */
-                for(IProtocol output : outputs) {
-                    long sequence = _LocalSendEvent.next();
+                for(IPair content : contents) {
+                    long sequence = producer.next();
                     try {
-                        QEvent event = _LocalSendEvent.get(sequence);
-                        event.produce(type, new Pair<>(output, session), session.getEncoder());
+                        QEvent event = producer.get(sequence);
+                        event.produce(type, content, next);
                     }
                     finally {
-                        _LocalSendEvent.publish(sequence);
+                        producer.publish(sequence);
                     }
                 }
                 return true;
             }
             finally {
-                _LocalLock.unlock();
+                lock.unlock();
             }
         }
         return false;
     }
 
-    @Override
-    default void close(ISession session, IOperator.Type type)
+    default <T, U, R> void close(IOperator.Type type, IPair content, IOperator<T, U, R> next)
     {
-        if(session == null) {return;}
-        final RingBuffer<QEvent> _LocalCloseEvent = getCloser(type);
-        final ReentrantLock _LocalLock = getLock(type);
-        _LocalLock.lock();
+        if(content == null || content.isEmpty() || type == null) {
+            return;
+        }
+        RingBuffer<QEvent> producer = getPublisher(type);
+        ReentrantLock lock = getLock(type);
+        lock.lock();
         try {
-            long sequence = _LocalCloseEvent.next();
+            long sequence = producer.next();
             try {
-                QEvent event = _LocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.LOCAL_CLOSE, new Pair<>(null, session), session.getCloser());
+                QEvent event = producer.get(sequence);
+                event.produce(IOperator.Type.LOCAL_CLOSE, content, next);
             }
             finally {
-                _LocalCloseEvent.publish(sequence);
+                producer.publish(sequence);
             }
         }
         finally {
-            _LocalLock.unlock();
+            lock.unlock();
         }
 
     }
+
 }

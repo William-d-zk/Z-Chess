@@ -98,4 +98,10 @@ public class MessageService
                                  .toList();
          */
     }
+
+    @Override
+    public void submit(MessageEntity post)
+    {
+
+    }
 }

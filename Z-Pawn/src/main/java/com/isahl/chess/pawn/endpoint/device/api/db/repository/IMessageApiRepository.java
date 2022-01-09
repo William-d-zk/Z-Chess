@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,39 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.service;
+package com.isahl.chess.pawn.endpoint.device.api.db.repository;
 
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IMessageRepository;
-import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk
+ * @date 2019-07-31
  */
-@Service
-public class MessageStorageService
-        implements PersistentHook.ISubscribe
+@Repository("api-message-jpa-repository")
+public interface IMessageApiRepository
+        extends BaseLongRepository<MessageEntity>
 {
-    private final IMessageRepository _JpaRepository;
+   /*
+    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
 
-    @Autowired
-    public MessageStorageService(IMessageRepository repository)
-    {
-        _JpaRepository = repository;
-    }
+    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
+           nativeQuery = true)
+    List<MessageEntity> listByTopic(
+            @Param("p_topic")
+                    String topic,
+            @Param("p_limit")
+                    int limit);
 
-    @Override
-    public void onBatch(List<IoSerial> contents)
-    {
-        for(IoSerial content : contents) {
-            if(content instanceof MessageEntity msg) {
-                _JpaRepository.save(msg);
-            }
-        }
-    }
+
+    @Transactional
+    @Modifying
+    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
+           nativeQuery = true)
+    void deleteAllByDestination(
+            @Param("p_dest")
+                    long destination,
+            @Param("p_owner")
+                    String owner);
+
+     */
 }

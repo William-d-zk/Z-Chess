@@ -25,7 +25,6 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.util.List;
 
@@ -36,4 +35,6 @@ import java.util.List;
 public interface IHandleHook
 {
     void afterLogic(IoSerial content, List<ITriple> results);
+
+    void afterConsume(IoSerial content);
 }

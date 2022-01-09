@@ -36,6 +36,7 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.pipe.EncodeHandler;
 import com.isahl.chess.queen.events.pipe.EncodedHandler;
 import com.isahl.chess.queen.events.server.ILogicHandler;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
 import com.isahl.chess.queen.io.core.tasks.features.IBizCore;

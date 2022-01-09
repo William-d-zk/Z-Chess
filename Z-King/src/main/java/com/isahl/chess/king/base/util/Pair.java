@@ -82,6 +82,12 @@ public class Pair<FIRST, SECOND>
     }
 
     @Override
+    public boolean isEmpty()
+    {
+        return first == null && second == null;
+    }
+
+    @Override
     public boolean equals(Object obj)
     {
         if(!(obj instanceof Pair)) {return false;}

@@ -35,7 +35,7 @@ import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IDeviceJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IDeviceRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -70,13 +70,13 @@ public class DeviceService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IDeviceJpaRepository _DeviceJpaRepository;
-    private final CacheManager         _CacheManager;
-    private final CryptoUtil           _CryptoUtil       = new CryptoUtil();
-    private final MixConfig            _MixConfig;
-    private final TimeWheel            _TimeWheel;
-    private final ShadowBatch          _BatchHandleLogin = new ShadowBatch();
-    private final ShadowBatch          _BatchHandleIdle  = new ShadowBatch();
+    private final IDeviceRepository _DeviceRepository;
+    private final CacheManager      _CacheManager;
+    private final CryptoUtil        _CryptoUtil       = new CryptoUtil();
+    private final MixConfig         _MixConfig;
+    private final TimeWheel         _TimeWheel;
+    private final ShadowBatch       _BatchHandleLogin = new ShadowBatch();
+    private final ShadowBatch       _BatchHandleIdle  = new ShadowBatch();
 
     private static class ShadowBatch
             extends ConcurrentLinkedQueue<ShadowEntity>
@@ -84,12 +84,12 @@ public class DeviceService
     {}
 
     @Autowired
-    public DeviceService(IDeviceJpaRepository deviceRepository,
+    public DeviceService(IDeviceRepository deviceRepository,
                          CacheManager cacheManager,
                          MixConfig mixConfig,
                          TimeWheel timeWheel)
     {
-        _DeviceJpaRepository = deviceRepository;
+        _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;
         _MixConfig = mixConfig;
         _TimeWheel = timeWheel;
@@ -123,8 +123,8 @@ public class DeviceService
                unless = "#session == 0 || #result == null")
     public DeviceEntity findDeviceById(long session)
     {
-        return _DeviceJpaRepository.findById(session)
-                                   .orElse(null);
+        return _DeviceRepository.findById(session)
+                                .orElse(null);
     }
 
     @Cacheable(value = "device_token_cache",
@@ -132,14 +132,14 @@ public class DeviceService
                unless = "#result == null")
     public DeviceEntity findDeviceByToken(String token)
     {
-        return _DeviceJpaRepository.findByToken(token);
+        return _DeviceRepository.findByToken(token);
     }
 
     @CachePut(value = "device_token_cache",
               key = "#device.token")
     public DeviceEntity saveDevice(DeviceEntity device)
     {
-        return _DeviceJpaRepository.save(device);
+        return _DeviceRepository.save(device);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class DeviceService
                  .getValue() > OP_INSERT.getValue())
         {   // update
             DeviceEntity exist;
-            Optional<DeviceEntity> result = _DeviceJpaRepository.findById(device.primaryKey());
+            Optional<DeviceEntity> result = _DeviceRepository.findById(device.primaryKey());
             exist = result.orElseThrow(()->new ZException("entity_not_found_exception %s → %#x",
                                                           device.operation()
                                                                 .name(),
@@ -167,10 +167,10 @@ public class DeviceService
         else {
             DeviceEntity exist = null;
             if(!isBlank(device.getSn())) {
-                exist = _DeviceJpaRepository.findBySn(device.getSn());
+                exist = _DeviceRepository.findBySn(device.getSn());
             }
             else if(!isBlank(device.getToken())) {
-                exist = _DeviceJpaRepository.findByToken(device.getToken());
+                exist = _DeviceRepository.findByToken(device.getToken());
             }
             DeviceEntity entity = exist == null ? new DeviceEntity() : exist;
             if(exist == null) {
@@ -204,27 +204,27 @@ public class DeviceService
     @Override
     public DeviceEntity findByToken(String token) throws ZException
     {
-        return _DeviceJpaRepository.findByToken(token);
+        return _DeviceRepository.findByToken(token);
     }
 
     @Override
     public DeviceEntity findBySn(String sn) throws ZException
     {
-        return _DeviceJpaRepository.findBySn(sn);
+        return _DeviceRepository.findBySn(sn);
     }
 
     @Override
     public List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException
     {
-        return _DeviceJpaRepository.findAll(condition, pageable)
-                                   .toList();
+        return _DeviceRepository.findAll(condition, pageable)
+                                .toList();
     }
 
     @Override
     public DeviceEntity getOneDevice(long id)
     {
-        return _DeviceJpaRepository.findById(id)
-                                   .orElse(null);
+        return _DeviceRepository.findById(id)
+                                .orElse(null);
     }
 
     @Override
@@ -237,7 +237,7 @@ public class DeviceService
     @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
-        return _DeviceJpaRepository.findAllById(deviceIdList);
+        return _DeviceRepository.findAllById(deviceIdList);
     }
 
     private void batchHandleLogin(ShadowBatch batch)

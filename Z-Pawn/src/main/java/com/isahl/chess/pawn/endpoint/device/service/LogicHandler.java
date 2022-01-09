@@ -130,6 +130,17 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
                                        .getSimpleName());
             }
         }
+        for(IHandleHook hook : _HandleHooks) {
+            try {
+                hook.afterConsume(request);
+            }
+            catch(Exception e) {
+                _Logger.warning("hook:%s",
+                                e,
+                                hook.getClass()
+                                    .getSimpleName());
+            }
+        }
     }
 
     @Override
