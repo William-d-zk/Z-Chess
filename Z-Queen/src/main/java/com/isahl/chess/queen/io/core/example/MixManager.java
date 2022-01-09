@@ -23,27 +23,20 @@
 
 package com.isahl.chess.queen.io.core.example;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
-import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
 import com.isahl.chess.queen.io.core.tasks.ServerCore;
 import com.isahl.chess.queen.io.core.tasks.features.IBizCore;
 import com.isahl.chess.queen.io.core.tasks.features.IClusterCore;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
-import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -51,10 +44,8 @@ import java.util.function.Supplier;
  */
 public abstract class MixManager
         extends AioManager
-        implements IActivity,
-                   IBizCore,
-                   IClusterCore,
-                   ILocalPublisher
+        implements IBizCore,
+                   IClusterCore
 {
     private final ServerCore _ServerCore;
 
@@ -62,36 +53,6 @@ public abstract class MixManager
     {
         super(config);
         _ServerCore = serverCore;
-    }
-
-    @Override
-    public void close(ISession session, IOperator.Type type)
-    {
-        _ServerCore.close(session, type);
-    }
-
-    @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
-    {
-        return _ServerCore.getPublisher(type);
-    }
-
-    @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
-    {
-        return _ServerCore.getCloser(type);
-    }
-
-    @Override
-    public ReentrantLock getLock(IOperator.Type type)
-    {
-        return _ServerCore.getLock(type);
-    }
-
-    @Override
-    public final boolean send(ISession session, IOperator.Type type, IProtocol... commands)
-    {
-        return _ServerCore.send(session, type, commands);
     }
 
     public <T extends IStorage> void build(ILogicHandler.factory logicFactory,
@@ -112,6 +73,11 @@ public abstract class MixManager
     public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
     {
         return _ServerCore.getClusterChannelGroup();
+    }
+
+    public ILocalPublisher getLocalPublisher()
+    {
+        return _ServerCore;
     }
 
 }

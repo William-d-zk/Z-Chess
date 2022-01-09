@@ -37,7 +37,7 @@ import javax.transaction.Transactional;
  * @date 2021/5/13
  */
 @Repository("api-shadow-jpa-repository")
-public interface IShadowJpaRepository
+public interface IShadowApiRepository
         extends BaseLongRepository<ShadowEntity>
 {
     @Transactional

@@ -213,24 +213,24 @@ public class ServerCore
     /* @formatter:off
      * ║ barrier, ━→ publish event, ━━ pipeline, | event handler
     
-     * ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-     * ┃                                                                                                                            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
-     * ┃                                                                                                                            ┃        ║                 ┏━→_ClusterEvent   ---→┛ ┃
-     * ┃                   Local logic --→  ━━━┓                                                                                    ┃    ┏-→ ║_LinkProcessor━━━╋━→_ErrorEvent     ---→━━┛
-     * ┃                                       ┃                                          Api   --→ _ConsensusApiEvent ━━━━━━━━━━━━━┫    ┃   ║                 ┗━→_LinkWriteEvent ---→║                  ┏-→_EncodedEvents[0]{_EncoderProcessors[0]}|║
-     * ┃ --→ _AioProducerEvents ━║             ┃                                          Timer --→ _ConsensusEvent    ━━━━━━━━━━━━━┫    ┣━━←-━━━━←-━━━━━━━━━━━━━━━━━━━━━━━←-━━━←-━┓  ║                  ┃-→_EncodedEvents[1]{_EncoderProcessors[1]}|║
-     * ┃ --→ _ClusterLocalClose ━║             ┃  ┏-→ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━━→_BizLocalSendEvent ━╋-→║━_WriteDispatcher━┫-→_EncodedEvents[.]{_EncoderProcessors[.]}|║_EncodedProcessor┳━-→║[Event Done]
-     * ┃ --→ _BizLocalClose     ━║             ┃  ┃-→ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━→_NotifyEvent ━━━━━┛  ║                  ┃-→_EncodedEvents[M]{_EncoderProcessors[M]}|║                 ┗━-→_ErrorEvent━┓
-     * ┗━--→ _ErrorEvent[0]     ━║_IoDispatcher╋━━┫-→ _ReadEvents[0]{_DecodeProcessors[0]}|━║                   ┏-→_ClusterDecoded━━┻━━→━╋→━║_ClusterProcessor╋━→_ClusterWriteEvent━-→║                  ┗-→_ErrorEvent━┓                                                              ┃
-     * ┏━--→ _ErrorEvent[4]     ━║             ┃  ┃-→ _ReadEvents[1]{_DecodeProcessors[1]}|━║_DecodedDispatcher━┫-→_LinkDecoded   ━━━━━━━┛  ║                 ┗━→_ErrorEvent ━┓       ║                                 ┃                                                              ┃
-     * ┃┏--→ _ErrorEvent[3]     ━║             ┃  ┃-→ _ReadEvents[.]{_DecodeProcessors[.]}|━║                   ┃-→_Logic[.]      ━━━━━━━━━━━━━━━━━━━{_LogicProcessors[.]}|━━━╋━━━━━-→║                                 ┃                                                              ┃
-     * ┃┃┏-→ _ErrorEvent[1]     ━║             ┃  ┃-→ _ReadEvents[N]{_DecodeProcessors[N]}|━║                   ┗-→_ErrorEvent    ━━━━━━━┓      ---→_ClusterLocalSendEvent ━━━╋━━━━━-→║                                 ┃                                                              ┃
-     * ┃┃┃┏→ _ErrorEvent[2]     ━║             ┗━━╋━-→_LocalLogicEvent --------------------→║                                            ┃                                    ┃       ║                                 ┃                                                              ┃
-     * ┃┃┃┃                                       ┗-→ _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━-→║                                 ┃                                                              ┃
-     * ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                    ┃                                         ┃                                                              ┃
-     * ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                         ┃                                                              ┃
-     * ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                              ┃
-     * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     * ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     * ┃                                                                                                                              ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
+     * ┃                                                                                                                              ┃        ║                 ┏━→_ClusterEvent   ---→┛ ┃
+     * ┃                   Local logic --→  ━━━━━┓                                                                                    ┃    ┏-→ ║_LinkProcessor━━━╋━→_ErrorEvent     ---→━━┛
+     * ┃                                         ┃                                          Api   --→ _ConsensusApiEvent ━━━━━━━━━━━━━┫    ┃   ║                 ┗━→_LinkWriteEvent ---→║                  ┏-→_EncodedEvents[0]{_EncoderProcessors[0]}|║
+     * ┃ --→ _AioProducerEvents ━║               ┃                                          Timer --→ _ConsensusEvent    ━━━━━━━━━━━━━┫    ┣━━←-━━━━←-━━━━━━━━━━━━━━━━━━━━━━━←-━━━←-━┓  ║                  ┃-→_EncodedEvents[1]{_EncoderProcessors[1]}|║
+     * ┃ --→ _ClusterLocalClose ━║               ┃  ┏-→ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━━→_BizLocalSendEvent ━╋-→║━_WriteDispatcher━┫-→_EncodedEvents[.]{_EncoderProcessors[.]}|║_EncodedProcessor┳━-→║[Event Done]
+     * ┃ --→ _BizLocalClose     ━║               ┃  ┃-→ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━→_NotifyEvent ━━━━━┛  ║                  ┃-→_EncodedEvents[M]{_EncoderProcessors[M]}|║                 ┗━-→_ErrorEvent━┓
+     * ┗━--→ _ErrorEvent[0]     ━║_IoDispatcher━━╋━━┫-→ _ReadEvents[0]{_DecodeProcessors[0]}|━║                   ┏-→_ClusterDecoded━━┻━━→━╋→━║_ClusterProcessor╋━→_ClusterWriteEvent━-→║                  ┗-→_ErrorEvent━┓                                                              ┃
+     * ┏━--→ _ErrorEvent[4]     ━║               ┃  ┃-→ _ReadEvents[1]{_DecodeProcessors[1]}|━║_DecodedDispatcher━┫-→_LinkDecoded   ━━━━━━━┛  ║                 ┗━→_ErrorEvent ━┓       ║                                 ┃                                                              ┃
+     * ┃┏--→ _ErrorEvent[3]     ━║               ┃  ┃-→ _ReadEvents[.]{_DecodeProcessors[.]}|━║                   ┃-→_Logic[.]      ━━━━━━━━━━━━━━━━━━━{_LogicProcessors[.]}|━━━╋━━━━━-→║                                 ┃                                                              ┃
+     * ┃┃┏-→ _ErrorEvent[1]     ━║               ┃  ┃-→ _ReadEvents[N]{_DecodeProcessors[N]}|━║                   ┗-→_ErrorEvent    ━━━━━━━┓      ---→_ClusterLocalSendEvent ━━━╋━━━━━-→║                                 ┃                                                              ┃
+     * ┃┃┃┏→ _ErrorEvent[2]     ━║               ┗━━╋━-→_LocalLogicEvent --------------------→║                                            ┃                                    ┃       ║                                 ┃                                                              ┃
+     * ┃┃┃┃                                         ┗-→ _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━-→║                                 ┃                                                              ┃
+     * ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                    ┃                                         ┃                                                              ┃
+     * ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                         ┃                                                              ┃
+     * ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                              ┃
+     * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     
      * 每一个 Dispatcher 都需要将之前发生的错误信息转换为 session close 事件传递回 IoBarrier，从而将 session close 事件归并到
      * _LinkIoEvent|_ClusterIoEvent 处理器上进行集中处理。
@@ -285,12 +285,12 @@ public class ServerCore
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
         final RingBuffer<QEvent> _LinkDecoded = createPipelineLite(_LinkQueueSize);
-        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{ _LinkIoEvent, _LinkDecoded, _NotifyEvent
-        };
+        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{ _LinkIoEvent,
+                                                                   _LinkDecoded,
+                                                                   _NotifyEvent };
         final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{ _LinkIoEvent.newBarrier(),
                                                                        _LinkDecoded.newBarrier(),
-                                                                       _NotifyEvent.newBarrier()
-        };
+                                                                       _NotifyEvent.newBarrier() };
         final Z2Processor<QEvent> _LinkProcessor = new Z2Processor<>(_LinkEvents,
                                                                      _LinkBarriers,
                                                                      new MixMappingHandler<>("LINK",
@@ -312,14 +312,12 @@ public class ServerCore
                                                                       _ClusterDecoded,
                                                                       _ConsensusEvent,
                                                                       _ConsensusApiEvent,
-                                                                      _ClusterEvent
-        };
+                                                                      _ClusterEvent };
         final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{ _ClusterIoEvent.newBarrier(),
                                                                           _ClusterDecoded.newBarrier(),
                                                                           _ConsensusEvent.newBarrier(),
                                                                           _ConsensusApiEvent.newBarrier(),
-                                                                          _ClusterEvent.newBarrier()
-        };
+                                                                          _ClusterEvent.newBarrier() };
         final Z2Processor<QEvent> _ClusterProcessor = new Z2Processor<>(_ClusterEvents,
                                                                         _ClusterBarriers,
                                                                         new MixMappingHandler<>("CONSENSUS",

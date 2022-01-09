@@ -36,11 +36,14 @@ import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
@@ -65,6 +68,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
@@ -76,7 +80,8 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
 public class ClientPool
         extends AioManager
         implements IAioClient,
-                   IDismiss
+                   IDismiss,
+                   IActivity
 {
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
@@ -232,7 +237,7 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(session != null) {
-            _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, toSends);
+            send(session, IOperator.Type.BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -242,7 +247,7 @@ public class ClientPool
     public final void sendLocal(ISession session, IProtocol... request)
     {
         if(session != null) {
-            _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, request);
+            send(session, IOperator.Type.BIZ_LOCAL, request);
         }
         else {
             throw new ZException("client offline");
@@ -253,7 +258,7 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(Objects.nonNull(session)) {
-            _ClientCore.close(session, IOperator.Type.BIZ_LOCAL);
+            close(session, IOperator.Type.BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");
@@ -262,12 +267,12 @@ public class ClientPool
 
     public void qttHeartbeat(ISession session)
     {
-        _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, new X11C_QttPingreq());
+        send(session, IOperator.Type.BIZ_LOCAL, new X11C_QttPingreq());
     }
 
     public void wsHeartbeat(ISession session)
     {
-        _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, new X103_Ping<>());
+        send(session, IOperator.Type.BIZ_LOCAL, new X103_Ping<>());
     }
 
     @Override
@@ -286,6 +291,24 @@ public class ClientPool
                                    e.printStackTrace();
                                }
                            }));
+    }
+
+    @Override
+    public boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    {
+        if(session == null || outputs == null || outputs.length == 0) {return false;}
+        return _ClientCore.publish(type,
+                                   session.getEncoder(),
+                                   Stream.of(outputs)
+                                         .map(pro->Pair.of(pro, session))
+                                         .toArray(IPair[]::new));
+    }
+
+    @Override
+    public void close(ISession session, IOperator.Type type)
+    {
+        if(session == null) {return;}
+        _ClientCore.close(type, Pair.of(null, session), session.getCloser());
     }
 }
 

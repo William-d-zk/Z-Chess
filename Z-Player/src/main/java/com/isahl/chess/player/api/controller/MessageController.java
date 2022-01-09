@@ -25,7 +25,11 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
+import com.isahl.chess.king.config.KingCode;
+import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.player.api.service.MessageOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,26 +41,29 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("message")
 public class MessageController
 {
-    private final Logger          _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final IMessageService _MessageService;
+    private final Logger             _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final MessageOpenService _MessageService;
+    private final IDeviceService     _DeviceService;
 
     @Autowired
-    public MessageController(IMessageService messageService)
+    public MessageController(MessageOpenService messageService, IDeviceService deviceService)
     {
         _MessageService = messageService;
+        _DeviceService = deviceService;
     }
 
-    @GetMapping("topic")
-    public @ResponseBody
-    ZResponse<?> getMessageByTopic(
-            @RequestParam(name = "topic")
-                    String topic,
-            @RequestParam(name = "limit",
-                          defaultValue = "1",
-                          required = false)
-                    int limit)
+    @PostMapping("submit")
+    public ZResponse<?> submit(
+            @RequestParam(name = "token")
+                    String token,
+            @RequestBody
+                    MessageBody body)
     {
-        return ZResponse.success(_MessageService.listByTopic(topic, limit));
+        DeviceEntity device = _DeviceService.findByToken(token);
+        if(device == null) {
+            return ZResponse.error(KingCode.MISS, "device not found");
+        }
+        _MessageService.submit(device.getId(), body);
+        return ZResponse.success("submit succeed");
     }
-
 }

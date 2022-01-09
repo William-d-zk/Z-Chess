@@ -34,7 +34,7 @@ import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.BrokerMsgEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMessageRepository;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.ISessionRepository;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
@@ -60,8 +60,8 @@ public class QttStorageService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IMessageJpaRepository              _MessageRepository;
-    private final ISessionRepository                 _SessionRepository;
+    private final IMessageRepository _MessageRepository;
+    private final ISessionRepository _SessionRepository;
     private final CacheManager                       _CacheManager;
     private final Random                             _Random;
     private final TimeWheel                          _TimeWheel;
@@ -69,7 +69,7 @@ public class QttStorageService
     private final ScheduleHandler<QttStorageService> _StorageHourCleaner;
 
     @Autowired
-    public QttStorageService(IMessageJpaRepository messageRepository,
+    public QttStorageService(IMessageRepository messageRepository,
                              ISessionRepository sessionRepository,
                              CacheManager cacheManager,
                              TimeWheel timeWheel)

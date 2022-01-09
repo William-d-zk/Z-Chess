@@ -37,4 +37,6 @@ public interface IPair
 
     IPair clone();
 
+    boolean isEmpty();
+
 }

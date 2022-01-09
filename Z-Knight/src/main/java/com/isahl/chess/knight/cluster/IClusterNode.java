@@ -23,16 +23,21 @@
 
 package com.isahl.chess.knight.cluster;
 
-import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
+import com.isahl.chess.bishop.sort.ZSortHolder;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
@@ -44,6 +49,7 @@ import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.stream.Stream;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
@@ -52,7 +58,8 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
  * @date 2020/4/23
  */
 public interface IClusterNode
-        extends ILocalPublisher
+        extends ILocalPublisher,
+                IActivity
 {
     default IAioConnector buildConnector(final String _Host,
                                          final int _Port,
@@ -175,4 +182,22 @@ public interface IClusterNode
     boolean isOwnedBy(long origin);
 
     IClusterPeer getPeer();
+
+    @Override
+    default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    {
+        if(session == null || outputs == null || outputs.length == 0) {return false;}
+        return publish(type,
+                       session.getEncoder(),
+                       Stream.of(outputs)
+                             .map(pro->Pair.of(pro, session))
+                             .toArray(IPair[]::new));
+    }
+
+    @Override
+    default void close(ISession session, IOperator.Type type)
+    {
+        if(session == null) {return;}
+        close(type, Pair.of(null, session), session.getCloser());
+    }
 }

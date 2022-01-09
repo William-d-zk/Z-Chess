@@ -24,8 +24,8 @@
 package com.isahl.chess.pawn.endpoint.device.api.features;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -43,5 +43,7 @@ public interface IMessageService
     Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
 
     List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
+
+    void submit(MessageEntity content);
 
 }

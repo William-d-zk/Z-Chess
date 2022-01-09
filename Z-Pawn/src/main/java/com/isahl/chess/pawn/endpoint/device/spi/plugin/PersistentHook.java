@@ -83,9 +83,19 @@ public class PersistentHook
                     msgEntity.setContent(contents);
                     msgEntity.setTopic(topic);
                     msgEntity.setNetAt(LocalDateTime.now());
+                    msgEntity.setOrigin(x113.session()
+                                            .getIndex());
                     _MainQueue.offer(msgEntity);
                 }
             }
+        }
+    }
+
+    @Override
+    public void afterConsume(IoSerial content)
+    {
+        if(content instanceof MessageEntity msg) {
+            _MainQueue.offer(msg);
         }
     }
 
@@ -109,7 +119,7 @@ public class PersistentHook
 
     public interface ISubscribe
     {
-        void onBatch( List<IoSerial> contents);
+        void onBatch(List<IoSerial> contents);
     }
 
 }

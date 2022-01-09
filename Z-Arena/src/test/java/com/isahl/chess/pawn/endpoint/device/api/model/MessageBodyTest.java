@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,25 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository;
+package com.isahl.chess.pawn.endpoint.device.api.model;
 
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
+import com.isahl.chess.king.base.util.JsonUtil;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author william.d.zk
- * @date 2020-1-20
- */
-@Repository("remote-device-jpa-repository")
-public interface IDeviceJpaRepository
-        extends BaseLongRepository<DeviceEntity>
+import java.nio.charset.StandardCharsets;
+
+class MessageBodyTest
 {
-    DeviceEntity findByToken(String token);
 
-    DeviceEntity findBySn(String sn);
+    @Test
+    void testJson()
+    {
+        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
 
-    DeviceEntity findBySnOrToken(String sn, String token);
-
-    DeviceEntity findByIdAndUsername(long id, String username);
+        System.out.println(JsonUtil.writeValueAsString(body));
+    }
 }
