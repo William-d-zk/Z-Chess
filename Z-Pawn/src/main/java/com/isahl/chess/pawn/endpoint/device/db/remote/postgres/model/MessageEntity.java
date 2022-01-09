@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,11 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.db.model;
+package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.queen.db.model.IStorage;
@@ -36,6 +41,8 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serial;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
@@ -46,8 +53,7 @@ import java.io.Serial;
        indexes = { @Index(name = "origin_idx",
                           columnList = "origin"),
                    @Index(name = "topic_idx",
-                          columnList = "topic")
-       })
+                          columnList = "topic") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class MessageEntity
@@ -62,19 +68,22 @@ public class MessageEntity
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator")
-    private long   id;
+    private long               id;
     @Column(updatable = false,
             nullable = false)
-    private long   origin;
+    private long               origin;
     @Column(length = 511,
             nullable = false,
             updatable = false)
-    private String topic;
+    private String             topic;
     @Lob
     @Column(name = "content")
     @Type(type = "org.hibernate.type.BinaryType")
-    private byte[] content;
-
+    private byte[]             content;
+    @Column(name = "net_at",
+            nullable = false,
+            updatable = false)
+    private LocalDateTime      netAt;
     @JsonIgnore
     @Transient
     private IStorage.Operation mOperation = IStorage.Operation.OP_NULL;
@@ -97,6 +106,20 @@ public class MessageEntity
     public void setOrigin(long origin)
     {
         this.origin = origin;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getNetAt()
+    {
+        return netAt;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setNetAt(LocalDateTime netAt)
+    {
+        this.netAt = netAt;
     }
 
     @Override
@@ -143,4 +166,11 @@ public class MessageEntity
         return content;
     }
 
+    @Override
+    public String toString()
+    {
+        return "MessageEntity{" + "id=" + id + ", origin=" + origin + ", topic='" + topic + '\'' + ", content=" +
+               new String(content, StandardCharsets.UTF_8) + ", netAt=" + netAt + ", mOperation=" + mOperation +
+               super.toString() + '}';
+    }
 }

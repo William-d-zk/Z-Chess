@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterCustom;
 import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -35,7 +36,6 @@ import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.model.Protocol2Sort;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.config.IAioConfig;
@@ -84,7 +84,7 @@ public class NodeService
                                           .stream()
                                           .map(listener->Triple.of(listener.getHost(),
                                                                    listener.getPort(),
-                                                                   Protocol2Sort._Mapping(listener.getScheme())))
+                                                                   ZSortHolder._Mapping(listener.getScheme())))
                                           .collect(Collectors.toList());
         _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
         _DeviceNode = new DeviceNode(hosts,

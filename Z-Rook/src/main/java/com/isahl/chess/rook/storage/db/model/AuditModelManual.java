@@ -37,6 +37,7 @@ import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
@@ -52,18 +53,21 @@ import java.time.LocalDateTime;
             @TypeDef(name = "int-array",
                      typeClass = IntArrayType.class),
             @TypeDef(name = "list-array",
-                     typeClass = ListArrayType.class)
-})
+                     typeClass = ListArrayType.class) })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = { "created_at", "updated_at"
-},
+@JsonIgnoreProperties(value = { "created_at",
+                                "updated_at" },
                       allowGetters = true)
 public abstract class AuditModelManual
         extends InnerProtocol
 {
-
+    @Column(name = "net_at",
+            nullable = false,
+            updatable = false)
+    @CreatedDate
+    private LocalDateTime netAt;
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
@@ -72,6 +76,20 @@ public abstract class AuditModelManual
     @Column(name = "updated_at",
             nullable = false)
     private LocalDateTime updatedAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getNetAt()
+    {
+        return netAt;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setNetAt(LocalDateTime netAt)
+    {
+        this.netAt = netAt;
+    }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -104,7 +122,6 @@ public abstract class AuditModelManual
     @Override
     public String toString()
     {
-        return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+        return String.format("net@ %s create@ %s update@ %s", getNetAt(), getCreatedAt(), getUpdatedAt());
     }
-
 }

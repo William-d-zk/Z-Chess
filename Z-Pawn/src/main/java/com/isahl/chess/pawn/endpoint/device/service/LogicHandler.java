@@ -83,17 +83,34 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     {
         List<ITriple> results = null;
         for(IAccessService service : _AccessService) {
-            if(service.isSupported(content)) {
+            if(!service.isSupported(content)) continue;
+            try {
+
                 if(results == null) {
                     results = service.onLogic(getManager(), session, content);
                 }
                 else {
-                    results.addAll(service.onLogic(getManager(), session, content));
+                    List<ITriple> appends = service.onLogic(getManager(), session, content);
+                    if(appends != null && !appends.isEmpty()) results.addAll(appends);
                 }
+            }
+            catch(Exception e) {
+                _Logger.warning("logic handle:%s",
+                                e,
+                                service.getClass()
+                                       .getSimpleName());
             }
         }
         for(IHandleHook hook : _HandleHooks) {
-            hook.handle(content, results);
+            try {
+                hook.afterLogic(content, results);
+            }
+            catch(Exception e) {
+                _Logger.warning("hook:%s",
+                                e,
+                                hook.getClass()
+                                    .getSimpleName());
+            }
         }
         return results;
     }
@@ -102,8 +119,15 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     public void serviceHandle(IoSerial request)
     {
         for(IAccessService service : _AccessService) {
-            if(service.isSupported(request)) {
+            if(!service.isSupported(request)) continue;
+            try {
                 service.consume(request);
+            }
+            catch(Exception e) {
+                _Logger.warning("service handle:%s",
+                                e,
+                                service.getClass()
+                                       .getSimpleName());
             }
         }
     }

@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -125,9 +126,9 @@ public class ConsistentData
                       new entry(session,
                                 peer,
                                 protocol,
-                                Protocol2Sort._Mapping(protocol)
-                                             .getSort()
-                                             .getFactory()));
+                                ZSortHolder._Mapping(protocol)
+                                           .getSort()
+                                           .getFactory()));
         }
         return remain;
     }
