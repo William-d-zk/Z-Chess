@@ -23,25 +23,21 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.Serial;
-import java.util.Map;
-import java.util.TreeMap;
-
-import static com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe.TYPE_SUBSCRIBES;
 
 /**
  * @author william.d.zk
@@ -57,119 +53,56 @@ public class SessionEntity
     private static final long serialVersionUID = -249635102504829625L;
 
     @Transient
-    private DeviceSubscribe mDeviceSubscribe;
-
-    private long       id;
-    @JsonIgnore
-    private String     willTopic;
-    @JsonIgnore
-    @Enumerated(EnumType.STRING)
-    private IQoS.Level willLevel;
-    @JsonIgnore
-    private byte[]     willPayload;
-    @JsonIgnore
-    private boolean    willRetain;
-    @JsonIgnore
-    private String     subscribes;
-
+    private DeviceClient mClient;
     @Transient
-    public DeviceSubscribe getDeviceSubscribe()
-    {
-        return mDeviceSubscribe;
-    }
+    private long         mId;
+    @Transient
+    private boolean      mClean;
 
     public void setId(long id)
     {
-        this.id = id;
+        mId = id;
     }
 
     @Id
     public long getId()
     {
-        return id;
+        return mId;
     }
 
-    @Column(name = "will_level",
-            length = 20)
-    @Enumerated(EnumType.STRING)
-    @JsonIgnore
-    public IQoS.Level getWillLevel()
-    {
-        return willLevel;
-    }
-
-    public void setWillLevel(IQoS.Level mWillLevel)
-    {
-        this.willLevel = mWillLevel;
-    }
-
-    @Column(name = "will_topic")
-    @JsonIgnore
-    public String getWillTopic()
-    {
-        return willTopic;
-    }
-
-    public void setWillTopic(String topic)
-    {
-        willTopic = topic;
-    }
-
-    @Column(name = "will_payload")
+    @Column(name = "device_client")
     @Type(type = "org.hibernate.type.BinaryType")
-    @JsonIgnore
-    public byte[] getWillPayload()
+    public void setDeviceClient(byte[] data)
     {
-        return willPayload;
+        mClient = data == null ? null : new DeviceClient(ByteBuf.wrap(data));
     }
 
-    public void setWillPayload(byte[] payload)
+    @Column(name = "device_client")
+    @Type(type = "org.hibernate.type.BinaryType")
+    public byte[] getDeviceClient()
     {
-        willPayload = payload;
+        return mClient.encoded();
     }
 
-    @Column(name = "will_retain")
-    public boolean isWillRetain()
+    public DeviceClient client()
     {
-        return willRetain;
+        return mClient;
     }
 
-    public void setWillRetain(boolean flag)
+    public void update(DeviceClient client)
     {
-        willRetain = flag;
+        mClient = client;
     }
 
-    public void afterQuery()
+    @Column(name = "clean")
+    public boolean isClean()
     {
-        Map<String, IQoS.Level> subscribes = IoUtil.isBlank(this.subscribes) ? new TreeMap<>()
-                                                                             : JsonUtil.readValue(this.subscribes,
-                                                                                                  TYPE_SUBSCRIBES);
-        mDeviceSubscribe = new DeviceSubscribe(subscribes);
-        mDeviceSubscribe.setWillTopic(willTopic);
-        mDeviceSubscribe.setWillPayload(willPayload);
-        mDeviceSubscribe.setWillLevel(willLevel);
-        mDeviceSubscribe.setWillRetain(willRetain);
+        return mClean;
     }
 
-    public void beforeSave()
+    @Column(name = "clean")
+    public void setClean(boolean clean)
     {
-        if(mDeviceSubscribe != null) {
-            subscribes = JsonUtil.writeValueAsString(mDeviceSubscribe.getSubscribes());
-        }
-        else {
-            subscribes = "{}";
-        }
-    }
-
-    @Column(name = "subscribes",
-            columnDefinition = "text")
-    public String getSubscribes()
-    {
-        return subscribes;
-    }
-
-    public void setSubscribes(String mSubscribes)
-    {
-        this.subscribes = mSubscribes;
+        mClean = clean;
     }
 }

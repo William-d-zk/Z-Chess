@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
@@ -520,7 +521,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public IoFactory getFactory()
+    public IoFactory<IProtocol> getFactory()
     {
         return _Sort.getFactory();
     }

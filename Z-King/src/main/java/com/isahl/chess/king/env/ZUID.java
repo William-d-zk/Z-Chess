@@ -51,7 +51,7 @@ public class ZUID
 {
 
     public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2021, Month.JUNE, 1, 0, 0);
-    public static final long          EPOCH_MILLI        = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
+    public static final long          EPOCH_SECOND       = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
     public static final int           SEQUENCE_BITS      = 10;
     public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
     public static final int           TIMESTAMP_BITS     = 38;
@@ -80,6 +80,7 @@ public class ZUID
     public static final  long           CLUSTER_MASK       =
             (((1L << IDC_BITS) - 1) << IDC_SHIFT) | (((1L << CLUSTER_BITS) - 1) << CLUSTER_SHIFT);
     public static final  long           PEER_MASK          = CLUSTER_MASK | (((1L << NODE_BITS) - 1) << NODE_SHIFT);
+    public static final  long           PREFIX_MASK        = -1L << 48;
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
     public static final  int            TYPE_PROVIDER_SLOT = 2;
@@ -173,20 +174,31 @@ public class ZUID
     public long getId(long type)
     {
         type &= TYPE_MASK;
+        generateSequence();
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) |
+               ((mLastTimestamp - EPOCH_SECOND) << TIMESTAMP_SHIFT) | type | mSequence;
+    }
+
+    public long moveOn(long id)
+    {
+        long prefix = PREFIX_MASK & id;
+        generateSequence();
+        return ((mLastTimestamp << TIMESTAMP_SHIFT) | mSequence) & ~PREFIX_MASK | prefix;
+    }
+
+    private void generateSequence()
+    {
         long timestamp = _TimestampSupplier.get();
         if(mLastTimestamp == timestamp) {
             mSequence = (mSequence + 1) & SEQUENCE_MASK;
             if(mSequence == 0) {
-                LockSupport.parkUntil(timestamp + 1);
-                timestamp = timestamp + 1;
+                LockSupport.parkUntil(++timestamp);
             }
         }
         else {
             mSequence = 0L;
         }
         mLastTimestamp = timestamp;
-        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) |
-               ((timestamp - EPOCH_MILLI) << TIMESTAMP_SHIFT) | type | mSequence;
     }
 
     public long getPeerId()

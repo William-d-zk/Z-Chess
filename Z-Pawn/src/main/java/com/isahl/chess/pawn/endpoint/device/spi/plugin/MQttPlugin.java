@@ -24,27 +24,32 @@
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.*;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.*;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
-import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
-import com.isahl.chess.bishop.protocol.mqtt.service.IQttRouter;
-import com.isahl.chess.bishop.protocol.mqtt.service.IQttStorage;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0A_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
+import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
+import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -55,7 +60,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -69,27 +73,30 @@ import static com.isahl.chess.king.config.KingCode.SUCCESS;
 @Component
 public class MQttPlugin
         implements IAccessService,
-                   IQttRouter,
+                   IRouter,
+                   IThread,
                    IValid
 {
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getName());
+    private final static Logger _Logger = Logger.getLogger("endpoint.pawn." + MQttPlugin.class.getName());
 
-    private final IDeviceService                     _DeviceService;
-    private final IQttStorage                        _QttStorage;
+    private final IDeviceService                  _DeviceService;
+    private final IMessageService                 _MessageService;
+    private final IStateService                   _StateService;
     /*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
-    /**
-     * 在 link-consumer 中处理 subscribe 和 unsubscribe
-     * 单线程执行，使用TreeMap 操作
-     */
-    private final Map<Pattern, Subscribe>            _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
-    private final Map<Long, Map<Integer, IProtocol>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
-    private final Queue<Pair<Long, Instant>>         _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
+    private final Map<Long, Map<Long, IProtocol>> _QttIdentifierMap = new ConcurrentSkipListMap<>();
+    private final Queue<Pair<Long, Instant>>      _SessionIdleQueue = new ConcurrentLinkedQueue<>();
 
     @Autowired
-    public MQttPlugin(IDeviceService deviceService, IQttStorage qttStorage)
+    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService)
     {
         _DeviceService = deviceService;
-        _QttStorage = qttStorage;
+        _MessageService = messageService;
+        _StateService = stateService;
+        DeviceClient._Factory = (buf)->{
+            X113_QttPublish x113 = new X113_QttPublish();
+            x113.decode(buf);
+            return x113;
+        };
     }
 
     @Override
@@ -125,10 +132,7 @@ public class MQttPlugin
                         x115.with(session);
                         results.add(Triple.of(x115, session, session.getEncoder()));
                         register(x115, session.getIndex());
-                        _QttStorage.receivedStorage((int) x113.getMsgId(),
-                                                    x113.getTopic(),
-                                                    x113.payload(),
-                                                    session.getIndex());
+                        _StateService.store(session.getIndex(), x113.getMsgId(), x113.getTopic(), x113.payload());
                         break;
                     default:
                         break;
@@ -138,7 +142,7 @@ public class MQttPlugin
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
                 ack(x114, session.getIndex());
-                _QttStorage.deleteMessage((int) x114.getMsgId(), session.getIndex());
+                _StateService.drop(session.getIndex(), x114.getMsgId());
                 break;
             case 0x115:
                 //x113.QoS2 → client → x115, 服务端恒定返回x116,Router无需操作。
@@ -148,7 +152,7 @@ public class MQttPlugin
                 results = new LinkedList<>();
                 results.add(Triple.of(x116.with(session), session, session.getEncoder()));
                 register(x116, session.getIndex());
-                _QttStorage.deleteMessage((int) x115.getMsgId(), session.getIndex());
+                _StateService.drop(session.getIndex(), x115.getMsgId());
                 break;
             case 0x116:
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
@@ -158,9 +162,15 @@ public class MQttPlugin
                 results = new LinkedList<>();
                 results.add(Triple.of(x117.with(session), session, session.getEncoder()));
                 if(ack(x116, session.getIndex())) {
-                    if(_QttStorage.hasReceived((int) x116.getMsgId(), session.getIndex())) {
-                        if((x113 = _QttStorage.takeStorage((int) x116.getMsgId(), session.getIndex())) != null) {
-                            brokerTopic(manager, x113, broker(x113.getTopic()), results);
+                    if(_StateService.exists(session.getIndex(), x116.getMsgId())) {
+                        MsgStateEntity received = _StateService.query(session.getIndex(), x116.getMsgId());
+                        if(received != null) {
+                            X113_QttPublish n113 = new X113_QttPublish();
+                            n113.with(session);
+                            n113.setTopic(received.getTopic());
+                            n113.withSub(received.payload());
+                            n113.setLevel(IQoS.Level.EXACTLY_ONCE);
+                            brokerTopic(manager, n113, broker(n113.getTopic()), results);
                         }
                     }
                 }
@@ -199,9 +209,12 @@ public class MQttPlugin
                     if(device == null) {
                         x112.rejectIdentifier();
                     }
+                    //@formatter:off
                     else if(!device.getUsername()
-                                   .equalsIgnoreCase(x111.getUserName()) || !device.getPassword()
-                                                                                   .equals(x111.getPassword()))
+                                   .equalsIgnoreCase(x111.getUserName()) ||
+                            !device.getPassword()
+                                   .equals(x111.getPassword()))
+                    //@formatter:on
                     {
                         /*
                          * @see DeviceEntity
@@ -256,7 +269,7 @@ public class MQttPlugin
     @Override
     public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
-        long origin = backload.getOrigin();
+        long origin = backload.origin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
@@ -268,7 +281,7 @@ public class MQttPlugin
                         clean(origin);
                     }
                     x112.responseOk();
-                    if(_QttStorage.sessionOnLogin(origin, this, x111)) {
+                    if(_StateService.onLogin(origin, x111.isClean())) {
                         x112.setPresent();
                     }
                 }
@@ -288,11 +301,11 @@ public class MQttPlugin
                     x119.with(x118.session());
                     x119.setMsgId(x118.getMsgId());
                     subscribes.forEach((topic, level)->{
-                        Subscribe subscribe = subscribe(topic, level, origin);
+                        Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
+                        Subscribe subscribe = subscribe(t, origin);
                         if(subscribe != null) {
                             //TODO 统计单指令多个Subscribe的情况
-                            _QttStorage.sessionOnSubscribe(origin, topic, level);
-                            x119.addResult(subscribe._SessionMap.get(origin));
+                            x119.addResult(subscribe.level(origin));
                         }
                         else {
                             x119.addResult(level);
@@ -311,8 +324,7 @@ public class MQttPlugin
                 List<String> topics = x11A.getTopics();
                 if(topics != null && backload.getCode() == SUCCESS) {
                     topics.forEach(topic->{
-                        unsubscribe(topic, origin);
-                        _QttStorage.sessionOnUnsubscribe(origin, topic);
+                        unsubscribe(new Topic(_QttTopicToRegex(topic)), origin);
                     });
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.with(x11A.session());
@@ -342,7 +354,7 @@ public class MQttPlugin
     @Override
     public void register(ICommand<?> stateMessage, long session)
     {
-        int msgId = (int) stateMessage.getMsgId();
+        long msgId = stateMessage.getMsgId();
         if(_QttIdentifierMap.computeIfPresent(session, (key, _MsgIdMessageMap)->{
             IProtocol old = _MsgIdMessageMap.put(msgId, stateMessage);
             if(old == null) {
@@ -352,7 +364,7 @@ public class MQttPlugin
         }) == null)
         {
             //previous == null
-            final Map<Integer, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
+            final Map<Long, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttIdentifierMap.put(session, _LocalIdMessageMap);
             _Logger.debug("first receive: %s", stateMessage);
@@ -395,103 +407,69 @@ public class MQttPlugin
     {
         Optional.ofNullable(_QttIdentifierMap.remove(session))
                 .ifPresent(Map::clear);
-        _Topic2SessionsMap.values()
-                          .forEach(map->map.remove(session));
-        _QttStorage.cleanSession(session);
+        _StateService.onDismiss(session);
     }
 
     @Override
-    public void retain(String topic, QttControl msg)
+    public void retain(String topic, IProtocol retained)
     {
-        Pattern pattern = topicToRegex(topic);
-        if(msg.payload() == null) {
-            _Topic2SessionsMap.computeIfPresent(pattern, (k, v)->{
-                v.mRetained = null;
-                return v;
-            });
-        }
-        else {
-            _Topic2SessionsMap.computeIfAbsent(pattern, Subscribe::new).mRetained = msg;
+        if(_StateService.mappings()
+                        .values()
+                        .parallelStream()
+                        .filter(subscribe->subscribe.pattern()
+                                                    .asMatchPredicate()
+                                                    .test(topic))
+                        .peek(subscribe->subscribe.setRetain(retained))
+                        .count() == 0)
+        {
+            Pattern pattern = _QttTopicToRegex(topic);
+            Subscribe subscribe = new Subscribe(pattern);
+            subscribe.setRetain(retained);
+            _StateService.mappings()
+                         .put(pattern, subscribe);
         }
     }
 
     @Override
-    public Map<Long, IQoS.Level> broker(String topic)
+    public List<Subscribe.Mapped> broker(String topic)
     {
-        return _Topic2SessionsMap.entrySet()
-                                 .parallelStream()
-                                 .map(entry->{
-                                     Pattern pattern = entry.getKey();
-                                     Subscribe subscribe = entry.getValue();
-                                     return pattern.matcher(topic)
-                                                   .matches() && !subscribe._SessionMap.isEmpty()
-                                            ? subscribe._SessionMap : null;
-
-                                 })
-                                 .filter(Objects::nonNull)
-                                 .map(Map::entrySet)
-                                 .flatMap(Set::stream)
-                                 .collect(Collectors.toMap(Map.Entry::getKey,
-                                                           Map.Entry::getValue,
-                                                           (l, r)->l.getValue() > r.getValue() ? l : r,
-                                                           ConcurrentSkipListMap::new));
+        return _StateService.mappings()
+                            .entrySet()
+                            .parallelStream()
+                            .filter(entry->entry.getKey()
+                                                .asMatchPredicate()
+                                                .test(topic))
+                            .map(Map.Entry::getValue)
+                            .flatMap(Subscribe::stream)
+                            .collect(Collectors.toList());
     }
 
-    public DeviceSubscribe groupBy(long session)
+    public List<IThread.Topic> groupBy(long session)
     {
         _Logger.debug("group by :%#x", session);
-        return new DeviceSubscribe(_Topic2SessionsMap.entrySet()
-                                                     .parallelStream()
-                                                     .flatMap(entry->{
-                                                         Pattern pattern = entry.getKey();
-                                                         Subscribe subscribe = entry.getValue();
-                                                         Map<Long, IQoS.Level> sessionsLv = subscribe._SessionMap;
-                                                         return sessionsLv.entrySet()
-                                                                          .stream()
-                                                                          .filter(e->e.getKey() == session)
-                                                                          .map(e->new Pair<>(pattern.pattern(),
-                                                                                             e.getValue()));
-                                                     })
-                                                     .collect(Collectors.toMap(IPair::getFirst, IPair::getSecond)));
+        return _StateService.mappings()
+                            .values()
+                            .parallelStream()
+                            .filter(subscribe->subscribe.contains(session))
+                            .map(subscribe->new IThread.Topic(subscribe.pattern(), subscribe.level(session), 0))
+                            .collect(Collectors.toList());
     }
 
     @Override
-    public Subscribe subscribe(String topic, IQoS.Level level, long session)
+    public IThread.Subscribe subscribe(IThread.Topic topic, long session)
     {
-        try {
-            Pattern pattern = topicToRegex(topic);
-            _Logger.debug("topic %s,pattern %s", topic, pattern);
-            Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern, p->new Subscribe(pattern));
-            if(session != 0) {
-                IQoS.Level lv = subscribe._SessionMap.computeIfPresent(session,
-                                                                       (key, old)->old.getValue() > level.getValue()
-                                                                                   ? old : level);
-                if(lv == null) {
-                    subscribe._SessionMap.put(session, level);
-                }
-            }
-            return subscribe;
-        }
-        catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            _Logger.warning("subscribe topic %s pattern error:", topic);
-        }
-        return null;
+        return _StateService.onSubscribe(topic, session);
     }
 
     @Override
-    public void unsubscribe(String topic, long session)
+    public void unsubscribe(IThread.Topic topic, long session)
     {
-        _Topic2SessionsMap.forEach((pattern, subscribe)->{
-            Matcher matcher = pattern.matcher(topic);
-            if(matcher.matches()) {
-                subscribe.remove(session);
-            }
-        });
+        _StateService.onUnsubscribe(topic, session);
     }
 
-    private Pattern topicToRegex(String topic)
+    public static Pattern _QttTopicToRegex(String topic)
     {
+        _Logger.debug("topic source: [%s]", topic);
         topic = topic.replaceAll("\\++", "+");
         topic = topic.replaceAll("#+", "#");
         topic = topic.replaceAll("(/#)+", "/#");
@@ -519,32 +497,43 @@ public class MQttPlugin
 
     private void brokerTopic(IManager manager,
                              X113_QttPublish x113,
-                             Map<Long, IQoS.Level> routes,
+                             List<Subscribe.Mapped> routes,
                              List<ITriple> results)
     {
-        routes.forEach((kIdx, lv)->{
-            ISession session = manager.findSessionByIndex(kIdx);
+        routes.forEach(mapped->{
+            ISession session = manager.findSessionByIndex(mapped.session());
             if(session != null) {
                 X113_QttPublish n113 = x113.copy();
                 n113.with(session);
-                n113.setLevel(lv);
-                if(lv.getValue() > 0) {
-                    n113.setMsgId(_QttStorage.generateMsgId(kIdx));
-                    register(n113, kIdx);
+                n113.setLevel(mapped.level());
+                if(mapped.level()
+                         .getValue() > 0)
+                {
+                    n113.setMsgId(_MessageService.generateId(mapped.session()));
+                    register(n113, n113.getMsgId());
                 }
                 results.add(Triple.of(n113, session, session.getEncoder()));
-                _QttStorage.brokerStorage((int) n113.getMsgId(), n113.getTopic(), n113.payload(), kIdx);
+                _StateService.add(mapped.session(), n113.getMsgId(), n113.getTopic(), n113.payload());
             }
             else {
-                _Logger.warning("no target session id[ %#x ] found ,ignore publish", kIdx);
+                _Logger.warning("no target session id[ %#x ] found ,ignore publish", mapped.session());
             }
         });
+        _Logger.debug("broker[%s]→%s | %s", x113.getTopic(), routes, x113.toString());
+    }
 
-        _Logger.debug("broker[%s]→%s | %s",
-                      x113.getTopic(),
-                      IoUtil.longArrayToHex(routes.keySet()
-                                                  .toArray(new Long[0])),
-                      x113.toString());
+    private DeviceClient ofX111(X111_QttConnect x111, long deviceId)
+    {
+
+        if(x111.hasWill()) {
+            Topic topic = new Topic(_QttTopicToRegex(x111.getWillTopic()), x111.getWillLevel(), 0);
+            X113_QttPublish x113 = new X113_QttPublish();
+            x113.withSub(x111.getWillMessage());
+            x113.setLevel(x111.getWillLevel());
+            if(x111.isWillRetain()) {topic.keep();}
+            return new DeviceClient(deviceId, x111.getKeepAlive(), null, x111.isWillRetain(), topic, x113);
+        }
+        return new DeviceClient(deviceId);
     }
 
 }

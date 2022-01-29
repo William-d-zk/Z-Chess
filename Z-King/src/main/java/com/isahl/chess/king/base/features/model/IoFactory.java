@@ -28,7 +28,8 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author william.d.zk
  */
-public interface IoFactory
+@FunctionalInterface
+public interface IoFactory<T extends IoSerial>
 {
-    <T extends IoSerial> T create(ByteBuf input);
+    T create(ByteBuf input);
 }

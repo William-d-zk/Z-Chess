@@ -69,6 +69,15 @@ public abstract class InnerProtocol
         _Type = type;
     }
 
+    public InnerProtocol(ByteBuf input)
+    {
+        int off = offHeader(input);
+        _Operation = Operation.valueOf(input.peek(off++));
+        _Strategy = Strategy.valueOf(input.peek(off));
+        _Type = CreatorType.CUSTOM;
+        decode(input);
+    }
+
     @Override
     public int length()
     {

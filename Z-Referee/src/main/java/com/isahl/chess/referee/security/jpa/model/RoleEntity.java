@@ -26,13 +26,14 @@ package com.isahl.chess.referee.security.jpa.model;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.io.Serial;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -42,80 +43,94 @@ import java.util.List;
 @Entity(name = "role")
 @Table(schema = "z_chess_security",
        indexes = { @Index(name = "role_name_idx",
-                          columnList = "name")
-       })
+                          columnList = "name") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class RoleEntity
         extends AuditModel
-        implements GrantedAuthority,
-                   Serializable
+        implements GrantedAuthority
 {
 
     @Serial
     private static final long serialVersionUID = -8748613422660526254L;
+
+    @Transient
+    private long                         mId;
+    @Transient
+    private String                       mName;
+    @Transient
+    private ListSerial<PermissionEntity> mPermissions;
+    @Transient
+    private ListSerial<UserEntity>       mUsers;
+
+    public void setId(long id)
+    {
+        mId = id;
+    }
 
     @Id
     @GeneratedValue(generator = "role_seq")
     @SequenceGenerator(name = "role_seq",
                        schema = "z_chess_security",
                        sequenceName = "role_sequence")
-    private long                   id;
+    public long getId()
+    {
+        return mId;
+    }
+
     @Column(nullable = false,
             unique = true)
-    private String                 name;
+    public String getName()
+    {
+        return mName;
+    }
+
+    public void setName(String name)
+    {
+        mName = name;
+    }
+
+    @Override
+    @Transient
+    public String getAuthority()
+    {
+        return mName;
+    }
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "role_permission",
                schema = "z_chess_security",
                joinColumns = @JoinColumn(name = "role_id"),
                inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private List<PermissionEntity> permissions;
-    @ManyToMany(mappedBy = "authorities")
-    private List<UserEntity>       users;
-
-    public void setId(long id)
-    {
-        this.id = id;
-    }
-
-    public long getId()
-    {
-        return id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    @Override
-    public String getAuthority()
-    {
-        return name;
-    }
-
     public List<PermissionEntity> getPermissions()
     {
-        return permissions;
+        return mPermissions;
     }
 
     public void setPermissions(List<PermissionEntity> permissions)
     {
-        this.permissions = permissions;
+        mPermissions = permissions == null ? new ListSerial<>(PermissionEntity::new)
+                                           : new ListSerial<>(permissions, PermissionEntity::new);
     }
 
+    @ManyToMany(mappedBy = "authorities")
     public List<UserEntity> getUsers()
     {
-        return users;
+        return mUsers;
     }
 
     public void setUsers(List<UserEntity> users)
     {
-        this.users = users;
+        mUsers = users == null ? new ListSerial<>(UserEntity::new) : new ListSerial<>(users, UserEntity::new);
+    }
+
+    public RoleEntity()
+    {
+        super();
+    }
+
+    public RoleEntity(ByteBuf input)
+    {
+        super(input);
     }
 }

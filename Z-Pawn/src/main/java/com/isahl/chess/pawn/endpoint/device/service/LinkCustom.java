@@ -109,7 +109,7 @@ public class LinkCustom
                  * leader → follower → client: x77_noitfy
                  * leader → follower: x76_response
                  */
-                ISession session = manager.findSessionByIndex(input.getOrigin());
+                ISession session = manager.findSessionByIndex(input.origin());
                 if(session != null && session.getFactory() != null && input.payload() != null) {
                     IProtocol request = session.getFactory()
                                                .create(ByteBuf.wrap(input.payload()));

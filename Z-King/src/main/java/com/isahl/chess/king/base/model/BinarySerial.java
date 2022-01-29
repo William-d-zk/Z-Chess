@@ -33,6 +33,8 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import java.io.Serial;
 import java.io.Serializable;
 
+import static java.lang.String.format;
+
 /**
  * @author william.d.zk
  * @date 2021-12-22
@@ -63,6 +65,21 @@ public class BinarySerial
     protected byte[]   mPayload;
     protected IoSerial mSubContent;
 
+    public BinarySerial() {}
+
+    public BinarySerial(ByteBuf input)
+    {
+        decode(input);
+    }
+
+    public int offHeader(ByteBuf input)
+    {
+        int off = 2;
+        int left = input.vPeekLength(off);
+        off += ByteBuf.vSizeOf(left) - left;
+        return off;
+    }
+
     @Override
     public int prefix(ByteBuf input)
     {
@@ -71,27 +88,28 @@ public class BinarySerial
         if(serial != serial()) {
             throw new ZException("serial[%d vs %d] no expected", serial, serial());
         }
-        return length;
+        mPayload = input.vGet();
+        return length - ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return output.putShort((short) serial())
-                     .vPutLength(length());
+                     .vPutLength(length())
+                     .vPut(mPayload);
     }
 
     @Override
     public void fold(ByteBuf input, int remain)
     {
         if(remain > 0) {
-            mPayload = new byte[remain];
-            input.get(mPayload);
+            throw new IndexOutOfBoundsException(format("decode %s remain[%d]", this, remain));
         }
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> void deserializeSub(IoFactory<T> factory)
     {
         ByteBuf subBuffer = subEncoded();
         if(subBuffer != null && factory != null) {
@@ -104,13 +122,13 @@ public class BinarySerial
     public ByteBuf encode()
     {
         return IoSerial.super.encode()
-                             .put(mPayload);//ByteBuf.put 忽略null 输入
+                             .vPut(mPayload);//ByteBuf.put 忽略null 输入
     }
 
     @Override
     public int length()
     {
-        return mPayload == null ? 0 : mPayload.length;
+        return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
     }
 
     @Override
@@ -154,5 +172,10 @@ public class BinarySerial
     public static int seekSerial(ByteBuf buffer)
     {
         return buffer.peekUnsignedShort(0);
+    }
+
+    public byte[] encoded()
+    {
+        return encode().array();
     }
 }

@@ -88,7 +88,7 @@ public class X76_RaftResp
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }

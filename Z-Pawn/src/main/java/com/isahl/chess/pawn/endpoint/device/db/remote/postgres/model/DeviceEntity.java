@@ -33,6 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -62,8 +63,7 @@ import java.time.LocalDateTime;
                    @Index(name = "device_idx_token",
                           columnList = "token"),
                    @Index(name = "device_idx_username",
-                          columnList = "username")
-       })
+                          columnList = "username") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class DeviceEntity
@@ -72,57 +72,42 @@ public class DeviceEntity
     @Serial
     private static final long serialVersionUID = -6645586986057373344L;
 
+    @Transient
+    private String        mSn;
+    @Transient
+    private String        password;
+    @Transient
+    private String        mUsername;
+    @Transient
+    private int           mPasswordId;
+    @Transient
+    private String        mToken;
+    @Transient
+    private LocalDateTime mInvalidAt;
+    @Transient
+    private DeviceProfile mProfile;
+
     @Id
     @JsonIgnore
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator")
-    private long          id;
-    @Column(length = 32,
-            nullable = false,
-            updatable = false)
-    private String        sn;
+    public long getId()
+    {
+        return primaryKey();
+    }
+
+    public void setId(long id)
+    {
+        pKey = id;
+    }
+
     @Column(length = 32,
             nullable = false)
     @Length(min = 17,
             max = 32,
             message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
-    private String        password;
-    @Column(length = 32,
-            nullable = false)
-    @Length(min = 8,
-            max = 32,
-            message = "* Your Username must have at least 8 characters less than 33 characters")
-    @NotBlank(message = "*Please provide your username")
-    private String        username;
-    @JsonIgnore
-    @Column(name = "password_id")
-    private int           passwordId;
-    @Column(length = 64,
-            nullable = false,
-            unique = true)
-    private String        token;
-    @Column(name = "invalid_at",
-            nullable = false)
-    private LocalDateTime invalidAt;
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private DeviceProfile profile;
-
-    @Transient
-    private Operation mOperation = Operation.OP_NULL;
-
-    public long getId()
-    {
-        return id;
-    }
-
-    public void setId(long id)
-    {
-        this.id = id;
-    }
-
     public String getPassword()
     {
         return password;
@@ -135,17 +120,89 @@ public class DeviceEntity
 
     public void increasePasswordId()
     {
-        passwordId++;
+        mPasswordId++;
     }
 
+    @Column(length = 64,
+            nullable = false,
+            unique = true)
     public String getToken()
     {
-        return token;
+        return mToken;
     }
 
     public void setToken(String token)
     {
-        this.token = token;
+        mToken = token;
+    }
+
+    @JsonIgnore
+    @Column(name = "password_id")
+    public int getPasswordId()
+    {
+        return mPasswordId;
+    }
+
+    public void setPasswordId(int passwordId)
+    {
+        mPasswordId = passwordId;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Column(name = "invalid_at",
+            nullable = false)
+    public LocalDateTime getInvalidAt()
+    {
+        return mInvalidAt;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setInvalidAt(LocalDateTime invalidAt)
+    {
+        mInvalidAt = invalidAt;
+    }
+
+    @Column(length = 32,
+            nullable = false,
+            updatable = false)
+    public String getSn()
+    {
+        return mSn;
+    }
+
+    public void setSn(String sn)
+    {
+        mSn = sn;
+    }
+
+    @Column(length = 32,
+            nullable = false)
+    @Length(min = 8,
+            max = 32,
+            message = "* Your Username must have at least 8 characters less than 33 characters")
+    @NotBlank(message = "*Please provide your username")
+    public String getUsername()
+    {
+        return mUsername;
+    }
+
+    public void setUsername(String username)
+    {
+        mUsername = username;
+    }
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    public DeviceProfile getProfile()
+    {
+        return mProfile;
+    }
+
+    public void setProfile(DeviceProfile profile)
+    {
+        mProfile = profile;
     }
 
     @Override
@@ -165,81 +222,13 @@ public class DeviceEntity
                 getInvalidAt());
     }
 
-    public int getPasswordId()
+    public DeviceEntity()
     {
-        return passwordId;
+        super();
     }
 
-    public void setPasswordId(int passwordId)
+    public DeviceEntity(ByteBuf input)
     {
-        this.passwordId = passwordId;
+        super(input);
     }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getInvalidAt()
-    {
-        return invalidAt;
-    }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public void setInvalidAt(LocalDateTime invalidAt)
-    {
-        this.invalidAt = invalidAt;
-    }
-
-    public String getSn()
-    {
-        return sn;
-    }
-
-    public void setSn(String sn)
-    {
-        this.sn = sn;
-    }
-
-    public String getUsername()
-    {
-        return username;
-    }
-
-    public void setUsername(String username)
-    {
-        this.username = username;
-    }
-
-    public DeviceProfile getProfile()
-    {
-        return profile;
-    }
-
-    public void setProfile(DeviceProfile profile)
-    {
-        this.profile = profile;
-    }
-
-    @Override
-    public long primaryKey()
-    {
-        return id;
-    }
-
-    @Override
-    public Operation operation()
-    {
-        return mOperation;
-    }
-
-    public void setOperation(Operation operation)
-    {
-        mOperation = operation;
-    }
-
-    @Override
-    public Strategy strategy()
-    {
-        return Strategy.RETAIN;
-    }
-
 }

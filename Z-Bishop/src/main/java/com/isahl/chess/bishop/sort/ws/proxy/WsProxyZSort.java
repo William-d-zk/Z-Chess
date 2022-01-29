@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.sort.ws.proxy;
 
-import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.protocol.ws.filter.WsHandShakeFilter;
@@ -31,8 +30,10 @@ import com.isahl.chess.bishop.protocol.ws.filter.WsProxyFilter;
 import com.isahl.chess.bishop.protocol.ws.proxy.WsProxyContext;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 public class WsProxyZSort<A extends IPContext>
@@ -65,7 +66,7 @@ public class WsProxyZSort<A extends IPContext>
     }
 
     @Override
-    public IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
     {
         throw new UnsupportedOperationException();
     }

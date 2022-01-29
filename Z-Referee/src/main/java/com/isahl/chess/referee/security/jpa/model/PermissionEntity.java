@@ -26,6 +26,8 @@ package com.isahl.chess.referee.security.jpa.model;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 
@@ -42,8 +44,7 @@ import java.util.List;
        indexes = { @Index(name = "name_idx",
                           columnList = "name"),
                    @Index(name = "url_idx",
-                          columnList = "url")
-       })
+                          columnList = "url") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class PermissionEntity
@@ -52,82 +53,98 @@ public class PermissionEntity
     @Serial
     private static final long serialVersionUID = -4078887725794775246L;
 
+    @Transient
+    private long                   mId;
+    @Transient
+    private String                 mName;
+    @Transient
+    private String                 mUrl;
+    @Transient
+    private String                 mDescription;
+    @Transient
+    private int                    mPriority;
+    @Transient
+    private ListSerial<RoleEntity> mRoles;
+
+    public void setId(long id)
+    {
+        mId = id;
+    }
+
     @Id
     @GeneratedValue(generator = "permission_seq")
     @SequenceGenerator(name = "permission_seq",
                        schema = "z_chess_security",
                        sequenceName = "permission_sequence")
-    private long             id;
-    @Column(nullable = false,
-            unique = true)
-    private String           name;
-    @Column(nullable = false,
-            unique = true)
-    private String           url;
-    @Column(nullable = false)
-    private String           description;
-    private int              priority;
-    @ManyToMany(mappedBy = "permissions")
-    private List<RoleEntity> roles;
-
-    public void setId(long id)
-    {
-        this.id = id;
-    }
-
     public long getId()
     {
-        return id;
+        return mId;
     }
 
+    @Column(nullable = false,
+            unique = true)
     public String getName()
     {
-        return name;
+        return mName;
     }
 
     public void setName(String name)
     {
-        this.name = name;
+        mName = name;
     }
 
+    @Column(nullable = false,
+            unique = true)
     public String getUrl()
     {
-        return url;
+        return mUrl;
     }
 
     public void setUrl(String url)
     {
-        this.url = url;
+        this.mUrl = url;
     }
 
+    @Column(nullable = false)
     public String getDescription()
     {
-        return description;
+        return mDescription;
     }
 
     public void setDescription(String description)
     {
-        this.description = description;
+        this.mDescription = description;
     }
 
+    @Column
     public int getPriority()
     {
-        return priority;
+        return mPriority;
     }
 
     public void setPriority(int priority)
     {
-        this.priority = priority;
+        mPriority = priority;
     }
 
+    @ManyToMany(mappedBy = "permissions")
     public List<RoleEntity> getRoles()
     {
-        return roles;
+        return mRoles;
     }
 
     public void setRoles(List<RoleEntity> roles)
     {
-        this.roles = roles;
+        mRoles = roles == null ? new ListSerial<>(RoleEntity::new) : new ListSerial<>(roles, RoleEntity::new);
     }
 
+    public PermissionEntity()
+    {
+        super();
+    }
+
+    public PermissionEntity(ByteBuf input)
+    {
+        super(input);
+    }
 }

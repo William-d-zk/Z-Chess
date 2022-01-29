@@ -14,7 +14,7 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
  * @see IAfterConnected
  */
 public interface IProtocolFactory<I extends IFrame, C extends IPContext>
-        extends IoFactory
+        extends IoFactory<IProtocol>
 {
     IControl<C> create(I frame, C context);
 }

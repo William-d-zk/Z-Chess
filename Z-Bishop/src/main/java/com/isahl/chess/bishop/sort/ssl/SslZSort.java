@@ -23,16 +23,17 @@
 
 package com.isahl.chess.bishop.sort.ssl;
 
-import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 import java.security.NoSuchAlgorithmException;
@@ -71,7 +72,7 @@ public class SslZSort<T extends IPContext>
     }
 
     @Override
-    public IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
     {
         throw new UnsupportedOperationException();
     }

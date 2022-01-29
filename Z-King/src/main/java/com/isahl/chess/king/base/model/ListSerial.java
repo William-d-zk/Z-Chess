@@ -25,9 +25,11 @@ package com.isahl.chess.king.base.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
+import java.util.Collection;
 import java.util.LinkedList;
 
 /**
@@ -39,16 +41,29 @@ public class ListSerial<T extends IoSerial>
         implements ICollectionSerial<T>
 {
 
-    private final IoFactory _Factory;
+    private final IoFactory<T> _Factory;
 
-    public ListSerial(IoFactory factory)
+    public ListSerial(IoFactory<T> factory)
     {
         super();
         _Factory = factory;
     }
 
+    public ListSerial(Collection<T> src, IoFactory<T> factory)
+    {
+        super(src);
+        _Factory = factory;
+    }
+
+    public ListSerial(ByteBuf input, IoFactory<T> factory)
+    {
+        super();
+        _Factory = factory;
+        decode(input);
+    }
+
     @Override
-    public IoFactory factory()
+    public IoFactory<T> factory()
     {
         return _Factory;
     }

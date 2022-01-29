@@ -46,14 +46,12 @@ public class QttFactory
     public static final QttFactory _Instance = new QttFactory();
 
     @Override
-    @SuppressWarnings("unchecked")
     public QttControl create(ByteBuf input)
     {
         QttControl instance = build(QttFrame.peekSubSerial(input));
         instance.header(input.get());
         instance.decode(input);
         return instance;
-
     }
 
     @Override

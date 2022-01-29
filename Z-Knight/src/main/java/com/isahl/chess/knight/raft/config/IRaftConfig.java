@@ -66,7 +66,7 @@ public interface IRaftConfig
 
     Uid getUid();
 
-    ZUID createZUID();
+    ZUID getZUID();
 
     Duration getElectInSecond();
 

@@ -25,7 +25,6 @@ public class ZChatFactory
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public ZControl create(ByteBuf input)
     {
         ZControl instance = build(ZFrame.peekSubSerial(input));

@@ -73,7 +73,7 @@ public class X75_RaftReq
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }

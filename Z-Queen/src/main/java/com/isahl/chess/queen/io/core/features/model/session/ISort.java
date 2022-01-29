@@ -25,6 +25,7 @@ package com.isahl.chess.queen.io.core.features.model.session;
 
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.events.functions.SessionIgnore;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
@@ -74,7 +75,7 @@ public interface ISort
 
     String getProtocol();
 
-    IoFactory getFactory();
+    IoFactory<IProtocol> getFactory();
 
-    IoFactory _SelectFactory(Mode mode, Type type);
+    IoFactory<IProtocol> _SelectFactory(Mode mode, Type type);
 }

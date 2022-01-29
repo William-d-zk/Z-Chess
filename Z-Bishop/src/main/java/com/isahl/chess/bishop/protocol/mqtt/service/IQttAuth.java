@@ -23,5 +23,13 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.service;
 
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
+
 public interface IQttAuth
-{}
+{
+
+    boolean onLogin(long session, IRouter router, X111_QttConnect x111);
+
+
+}

@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,8 +52,7 @@ import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
 @Entity(name = "user")
 @Table(schema = "z_chess_security",
        indexes = { @Index(name = "username_idx",
-                          columnList = "username")
-       })
+                          columnList = "username") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.STORAGE_ROOK_DB_SERIAL)
 public class UserEntity
@@ -61,117 +62,137 @@ public class UserEntity
     @Serial
     private static final long serialVersionUID = -9149289160528408957L;
 
+    @Transient
+    private long                   mId;
+    @Transient
+    private String                 mUsername;
+    @Transient
+    private String                 mPassword;
+    @Transient
+    private LocalDateTime          mInvalidAt;
+    @Transient
+    private Status                 mStatus = COMMON;
+    @Transient
+    private ListSerial<RoleEntity> mAuthorities;
+
+    public void setId(long id)
+    {
+        mId = id;
+    }
+
     @Id
     @GeneratedValue(generator = "user_seq")
     @SequenceGenerator(name = "user_seq",
                        schema = "z_chess_security",
                        sequenceName = "user_sequence")
-    private long          id;
+    public long getId()
+    {
+        return mId;
+    }
+
     @Column(nullable = false,
             updatable = false)
-    private String        username;
+    public String getUsername()
+    {
+        return mUsername;
+    }
+
+    @Override
+    @Transient
+    public boolean isAccountNonExpired()
+    {
+        return mStatus != Status.INVALID;
+    }
+
+    @Override
+    @Transient
+    public boolean isAccountNonLocked()
+    {
+        return mStatus != Status.LOCKED;
+    }
+
+    @Override
+    @Transient
+    public boolean isCredentialsNonExpired()
+    {
+        return LocalDateTime.now()
+                            .isBefore(mInvalidAt);
+    }
+
+    @Override
+    @Transient
+    public boolean isEnabled()
+    {
+        return mStatus != DISABLED;
+    }
+
+    public void setUsername(String username)
+    {
+        mUsername = username;
+    }
+
     @Column(nullable = false)
-    private String        password;
-    @Column(name = "invalid_at",
-            nullable = false)
-    private LocalDateTime invalidAt;
-    @Column(nullable = false)
-    private Status        status = COMMON;
+    public String getPassword()
+    {
+        return mPassword;
+    }
+
+    public void setPassword(String password)
+    {
+        mPassword = password;
+    }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
                schema = "z_chess_security",
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<RoleEntity> authorities;
-
-    public void setId(long id)
-    {
-        this.id = id;
-    }
-
-    public long getId()
-    {
-        return id;
-    }
-
-    public String getUsername()
-    {
-        return username;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return status != Status.INVALID;
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return status != Status.LOCKED;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return LocalDateTime.now()
-                            .isBefore(invalidAt);
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return status != DISABLED;
-    }
-
-    public void setUsername(String username)
-    {
-        this.username = username;
-    }
-
-    public String getPassword()
-    {
-        return password;
-    }
-
-    public void setPassword(String password)
-    {
-        this.password = password;
-    }
-
     @Override
     public List<RoleEntity> getAuthorities()
     {
-        return authorities;
+        return mAuthorities;
     }
 
     public void setAuthorities(List<RoleEntity> authorities)
     {
-        this.authorities = authorities;
+        mAuthorities = authorities == null ? new ListSerial<>(RoleEntity::new)
+                                           : new ListSerial<>(authorities, RoleEntity::new);
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Column(name = "invalid_at",
+            nullable = false)
     public LocalDateTime getInvalidAt()
     {
-        return invalidAt;
+        return mInvalidAt;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setInvalidAt(LocalDateTime invalidAt)
     {
-        this.invalidAt = invalidAt;
+        this.mInvalidAt = invalidAt;
     }
 
+    @Column(nullable = false)
     public Status getStatus()
     {
-        return status;
+        return mStatus;
     }
 
     public void setStatus(Status status)
     {
-        this.status = status;
+        this.mStatus = status;
+    }
+
+    public UserEntity()
+    {
+        super();
+    }
+
+    public UserEntity(ByteBuf input)
+    {
+        super(input);
     }
 }

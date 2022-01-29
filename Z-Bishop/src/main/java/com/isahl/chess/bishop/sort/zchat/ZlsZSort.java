@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.sort.zchat;
 
-import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.zchat.EZContext;
 import com.isahl.chess.bishop.protocol.zchat.factory.*;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZCommandFilter;
@@ -32,7 +31,9 @@ import com.isahl.chess.bishop.protocol.zchat.filter.ZEFilter;
 import com.isahl.chess.bishop.protocol.zchat.filter.ZFrameFilter;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 
 public class ZlsZSort
         extends BaseSort<EZContext>
@@ -61,7 +62,7 @@ public class ZlsZSort
     }
 
     @Override
-    public IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
     {
         return switch(mode) {
             case CLUSTER -> ZClusterFactory._Instance;

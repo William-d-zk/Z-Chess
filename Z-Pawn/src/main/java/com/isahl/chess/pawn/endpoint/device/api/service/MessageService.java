@@ -24,19 +24,21 @@
 package com.isahl.chess.pawn.endpoint.device.api.service;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMessageRepository;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.cache.CacheManager;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -49,14 +51,18 @@ public class MessageService
         implements IMessageService
 {
 
-    private final CacheManager _CacheManager;
-    private final Random       _Random = new Random();
+    private final CacheManager       _CacheManager;
+    private final IMessageRepository _MessageRepository;
+    private final ZUID               _ZUID;
 
-    public MessageService(CacheManager cacheManager)
+    public MessageService(CacheManager cacheManager, IMessageRepository messageRepository, ZUID zuid)
     {
         _CacheManager = cacheManager;
+        _MessageRepository = messageRepository;
+        _ZUID = zuid;
     }
 
+    @PostConstruct
     void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         EhcacheConfig.createCache(_CacheManager,
@@ -103,5 +109,11 @@ public class MessageService
     public void submit(MessageEntity post)
     {
 
+    }
+
+    @Override
+    public long generateId(long session)
+    {
+        return _ZUID.moveOn(session);
     }
 }

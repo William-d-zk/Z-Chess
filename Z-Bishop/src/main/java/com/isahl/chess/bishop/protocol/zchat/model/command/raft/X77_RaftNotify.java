@@ -103,7 +103,7 @@ public class X77_RaftNotify
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }

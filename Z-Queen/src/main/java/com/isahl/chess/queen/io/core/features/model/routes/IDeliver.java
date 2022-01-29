@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,38 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.mqtt.service;
-
-import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+package com.isahl.chess.queen.io.core.features.model.routes;
 
 /**
  * @author william.d.zk
+ * @date 2022-01-17
  */
-public interface IQttStorage
-
+public interface IDeliver
 {
-    boolean brokerStorage(int msgId, String topic, byte[] content, long target);
-
-    boolean deleteMessage(int msgId, long target);
-
-    int generateMsgId(long target);
-
-    /**
-     * @return session-present-storaged
-     */
-    boolean sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111);
-
-    void sessionOnSubscribe(long session, String topic, IQoS.Level level);
-
-    void sessionOnUnsubscribe(long session, String topic);
-
-    void cleanSession(long session);
-
-    boolean hasReceived(int msgId, long origin);
-
-    void receivedStorage(int msgId, String topic, byte[] content, long origin);
-
-    X113_QttPublish takeStorage(int msgId, long origin);
+    long target();
 }

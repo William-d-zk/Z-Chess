@@ -35,8 +35,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-
 /**
  * @author william.d.zk
  */
@@ -63,7 +61,6 @@ public class MessageOpenService
         entity.setTopic(body.getTopic());
         entity.setOrigin(deviceId);
         entity.setNetAt(LocalDateTime.now());
-        entity.setOperation(OP_INSERT);
         _Publisher.publish(IOperator.Type.SERVICE, null, Pair.of(entity, null));
     }
 }

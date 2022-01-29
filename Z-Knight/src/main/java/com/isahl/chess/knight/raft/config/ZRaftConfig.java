@@ -31,6 +31,7 @@ import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.model.IStorage.Operation;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -60,8 +61,9 @@ public class ZRaftConfig
     @PostConstruct
     public void load() throws IOException
     {
-        if(mConfig.getNodes() == null ||
-           mConfig.getNodes().isEmpty()){return;}
+        if(mConfig.getNodes() == null || mConfig.getNodes()
+                                                .isEmpty())
+        {return;}
         getUid().setNodeId(-1);
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
@@ -98,7 +100,7 @@ public class ZRaftConfig
                 if(hostname.equalsIgnoreCase(peerHost)) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
-                        peer.setId(createZUID().getPeerId());
+                        peer.setId(getZUID().getPeerId());
                         mPeerBind = peer;
                         _Logger.info("peer: %s ", mPeerBind);
                     }
@@ -108,7 +110,7 @@ public class ZRaftConfig
                     }
                 }
                 else {
-                    peer.setId(createZUID().getPeerIdByNode(peerEntry.getKey()));
+                    peer.setId(getZUID().getPeerIdByNode(peerEntry.getKey()));
                 }
                 _RaftNodeMap.put(peer.getId(), peer);
             }
@@ -163,8 +165,9 @@ public class ZRaftConfig
         return mConfig.getUid();
     }
 
+    @Bean
     @Override
-    public ZUID createZUID()
+    public ZUID getZUID()
     {
         return mZUid == null ? mZUid = new ZUID(getUid().getIdcId(),
                                                 getUid().getClusterId(),

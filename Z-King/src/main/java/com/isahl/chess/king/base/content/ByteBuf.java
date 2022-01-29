@@ -27,6 +27,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -47,7 +48,7 @@ public class ByteBuf
         capacity = size;
     }
 
-    public ByteBuf(byte[] bytes)
+    private ByteBuf(byte[] bytes)
     {
         _Direct = false;
         if(bytes != null && bytes.length > 0) {
@@ -86,7 +87,7 @@ public class ByteBuf
 
     public static ByteBuf wrap(byte[] bytes)
     {
-        return new ByteBuf(bytes);
+        return new ByteBuf(Objects.requireNonNull(bytes));
     }
 
     public ByteBuffer toReadBuffer()
@@ -271,6 +272,35 @@ public class ByteBuf
         readerIdx += len;
     }
 
+    public byte[] vGet()
+    {
+        int len = vLength();
+        if(len > 0) {
+            byte[] v = new byte[len];
+            get(v);
+            return v;
+        }
+        return null;
+    }
+
+    public byte[] vPeek(int offset)
+    {
+        int len = vPeekLength(offset);
+        if(len > 0) {
+            byte[] v = new byte[len];
+            checkOffset(len - 1);
+            buffer.get(readerIdx, v);
+            return v;
+        }
+        return null;
+    }
+
+    public String readUTF()
+    {
+        byte[] b = vGet();
+        return b == null ? null : new String(b, StandardCharsets.UTF_8);
+    }
+
     public String readUTF(int len)
     {
         if(len > 0) {
@@ -279,7 +309,7 @@ public class ByteBuf
             readerIdx += len;
             return str;
         }
-        return "";
+        return null;
     }
 
     public String readLine()
@@ -341,7 +371,7 @@ public class ByteBuf
         return length;
     }
 
-    public int vLength(int offset)
+    public int vPeekLength(int offset)
     {
         int length = 0;
         int cur, pos = 0;
@@ -462,6 +492,13 @@ public class ByteBuf
         checkCapacity(8);
         buffer.putLong(writerIdx, v);
         writerIdx += 8;
+        return this;
+    }
+
+    public ByteBuf vPut(byte[] v)
+    {
+        vPutLength(v == null ? 0 : v.length);
+        put(v);
         return this;
     }
 

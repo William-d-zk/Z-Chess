@@ -98,7 +98,7 @@ public class QttFrame
         else {
             header(input.peek(0));
             try {
-                int vLength = input.vLength(1);
+                int vLength = input.vPeekLength(1);
                 return 1 + ByteBuf.vSizeOf(vLength) - remain;
             }
             catch(ZException e) {

@@ -49,6 +49,7 @@ public class ZDeviceGenerator
         implements IdentifierGenerator
 {
     private static ZUID        _ZUID;
+
     private final  Logger      _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final  ZRaftConfig _ZClusterConfig;
 
@@ -71,7 +72,7 @@ public class ZDeviceGenerator
     public void init()
     {
         if(_ZClusterConfig == null) {return;}
-        _ZUID = _ZClusterConfig.createZUID();
+        _ZUID = _ZClusterConfig.getZUID();
     }
 
     @Override

@@ -82,7 +82,7 @@ public class X79_RaftAdjudge
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }
