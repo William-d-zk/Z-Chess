@@ -69,7 +69,7 @@ public class ZMessageGenerator
     public void init()
     {
         if(_ZClusterConfig == null) {return;}
-        _ZUID = _ZClusterConfig.createZUID();
+        _ZUID = _ZClusterConfig.getZUID();
     }
 
     @Override

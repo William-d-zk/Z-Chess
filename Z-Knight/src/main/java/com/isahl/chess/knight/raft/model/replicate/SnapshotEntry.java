@@ -99,7 +99,7 @@ public class SnapshotEntry
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }
@@ -143,7 +143,7 @@ public class SnapshotEntry
                       .putLong(getTerm())
                       .putLong(getCommit())
                       .putLong(getApplied())
-                      .putLong(getOrigin());
+                      .putLong(origin());
         return output;
     }
 
@@ -172,7 +172,7 @@ public class SnapshotEntry
                                      \t\tsub-payload(%d)
                                      }""",
                              serial(),
-                             getOrigin(),
+                             origin(),
                              getIndex(),
                              getTerm(),
                              getCommit(),

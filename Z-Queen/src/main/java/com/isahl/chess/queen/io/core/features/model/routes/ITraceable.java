@@ -28,5 +28,5 @@ package com.isahl.chess.queen.io.core.features.model.routes;
  */
 public interface ITraceable
 {
-    long getOrigin();
+    long origin();
 }

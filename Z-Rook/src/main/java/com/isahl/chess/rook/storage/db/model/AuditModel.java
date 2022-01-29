@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.message.InnerProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
@@ -44,7 +45,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 /**
  * @author william.d.zk
@@ -64,7 +68,6 @@ import java.time.LocalDateTime;
 public abstract class AuditModel
         extends InnerProtocol
 {
-
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
@@ -104,10 +107,57 @@ public abstract class AuditModel
         this.updatedAt = updatedAt;
     }
 
+    public AuditModel()
+    {
+        super();
+    }
+
+    public AuditModel(Operation operation, Strategy strategy)
+    {
+        super(operation, strategy);
+    }
+
+    public AuditModel(ByteBuf input)
+    {
+        super(input);
+    }
+
     @Override
     public String toString()
     {
         return String.format("  create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+    }
+
+    @Override
+    public int length()
+    {
+        return super.length() + // inner-protocol.length
+               8 + // create_at
+               8;  // update_at
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        long create_at = input.getLong();
+        long update_at = input.getLong();
+        remain -= 16;
+        setCreatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(create_at), ZoneId.systemDefault()));
+        setUpdatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(update_at), ZoneId.systemDefault()));
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(createdAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
+                                                                     .getId()))
+                                      .toEpochMilli())
+                    .putLong(updatedAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
+                                                                     .getId()))
+                                      .toEpochMilli());
     }
 
 }

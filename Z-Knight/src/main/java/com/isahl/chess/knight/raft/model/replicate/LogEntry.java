@@ -88,6 +88,11 @@ public class LogEntry
         super();
     }
 
+    public LogEntry(ByteBuf input)
+    {
+        super(input);
+    }
+
     public long getTerm()
     {
         return mTerm;
@@ -113,7 +118,7 @@ public class LogEntry
         return super.suffix(output)
                     .putLong(getTerm())
                     .putLong(getClient())
-                    .putLong(getOrigin());
+                    .putLong(origin());
     }
 
     @Override
@@ -133,7 +138,7 @@ public class LogEntry
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }
@@ -145,7 +150,7 @@ public class LogEntry
                              getIndex(),
                              getTerm(),
                              getClient(),
-                             getOrigin(),
+                             origin(),
                              mPayload == null ? 0 : mPayload.length);
     }
 

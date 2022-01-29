@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
@@ -36,125 +37,182 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import java.io.Serial;
+import java.nio.charset.StandardCharsets;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 @Entity(name = "msg_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
-public class BrokerMsgEntity
+public class MsgStateEntity
         extends AuditModel
         implements ICancelable
 {
     @Serial
     private static final long serialVersionUID = -7454808074804600508L;
 
-    private String  id;
-    private int     msgId;
-    private long    target;
-    private long    origin;
-    private String  topic;
-    private int     topicAlias;
-    private byte[]  content;
     @Transient
-    private boolean valid = true;
+    private String  mId;
+    @Transient
+    private long    mMsgId;
+    @Transient
+    private long    mTarget;
+    @Transient
+    private long    mOrigin;
+    @Transient
+    private String  mTopic;
+    @Transient
+    private int     mTopicAlias;
+    @Transient
+    private boolean mValid = true;
+
+    @Override
+    public int length()
+    {
+        return super.length() + // audit-model.length
+               8 + // msg-id
+               8 + // origin
+               8 + // target
+               4 + // topic-alias
+               vSizeOf(mId.getBytes(StandardCharsets.UTF_8).length) + // id.length
+               vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length); // topic-length
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mMsgId = input.getLong();
+        mOrigin = input.getLong();
+        mTarget = input.getLong();
+        mTopicAlias = input.getInt();
+        remain -= 28;
+        int tl = input.vLength();
+        mTopic = input.readUTF(tl);
+        remain -= vSizeOf(tl);
+        int il = input.vLength();
+        mId = input.readUTF(il);
+        remain -= vSizeOf(il);
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        output = super.suffix(output)
+                      .putLong(mMsgId)
+                      .putLong(mOrigin)
+                      .putLong(mTarget)
+                      .putInt(mTopicAlias);
+        output.vPut(mTopic.getBytes(StandardCharsets.UTF_8));
+        output.vPut(mId.getBytes(StandardCharsets.UTF_8));
+        return output;
+    }
 
     @Id
     public String getId()
     {
-        return id;
+        return mId;
     }
 
     @Column(name = "msg_id")
-    public int getMsgId()
+    public long getMsgId()
     {
-        return msgId;
+        return mMsgId;
     }
 
-    @Column(name = "origin")
+    @Column
     public long getOrigin()
     {
-        return origin;
+        return mOrigin;
     }
 
-    @Column(name = "target")
+    @Column
     public long getTarget()
     {
-        return target;
+        return mTarget;
     }
 
     @Column(length = 511,
             nullable = false,
-            updatable = false,
-            name = "topic")
+            updatable = false)
     public String getTopic()
     {
-        return topic;
+        return mTopic;
     }
 
     @Column(name = "topic_alias")
     public int getTopicAlias()
     {
-        return topicAlias;
+        return mTopicAlias;
     }
 
-    @Column(name = "content")
+    @Column
     @Type(type = "org.hibernate.type.BinaryType")
     public byte[] getContent()
     {
-        return content;
+        return payload();
     }
 
     @Transient
     public boolean isValid()
     {
-        return valid;
+        return mValid;
     }
 
     @Transient
     public boolean isInvalid()
     {
-        return !valid;
+        return !mValid;
     }
 
     public void cancel()
     {
-        valid = false;
+        mValid = false;
     }
 
     public void setId(String id)
     {
-        this.id = id;
+        mId = id;
     }
 
-    public void setMsgId(int msgId)
+    public void setMsgId(long msgId)
     {
-        this.msgId = msgId;
+        mMsgId = msgId;
     }
 
     public void setOrigin(long origin)
     {
-        this.origin = origin;
+        mOrigin = origin;
     }
 
     public void setTarget(long target)
     {
-        this.target = target;
+        mTarget = target;
     }
 
     public void setTopic(String topic)
     {
-        this.topic = topic;
+        mTopic = topic;
     }
 
     public void setTopicAlias(int alias)
     {
-        topicAlias = alias;
+        mTopicAlias = alias;
     }
 
-    public void setContent(byte[] content)
-    {
-        this.content = content;
-    }
+    public void setContent(byte[] content) {withSub(content);}
 
     public final static String BROKER_PRIMARY_FORMAT   = "%#20x-%7d-B";
     public final static String RECEIVER_PRIMARY_FORMAT = "%#20x-%7d-R";
+
+    public MsgStateEntity()
+    {
+        super();
+    }
+
+    public MsgStateEntity(ByteBuf input)
+    {
+        super(input);
+    }
 }

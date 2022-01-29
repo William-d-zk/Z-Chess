@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.sort.ws;
 
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.filter.WsControlFilter;
@@ -58,7 +59,7 @@ public class WsTextZSort
     }
 
     @Override
-    public IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
     {
         return ZServerFactory._Instance;
     }

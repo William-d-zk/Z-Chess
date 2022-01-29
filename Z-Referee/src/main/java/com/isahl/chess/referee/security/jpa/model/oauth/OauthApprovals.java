@@ -37,7 +37,6 @@ import com.isahl.chess.rook.storage.db.model.AuditModel;
 
 import javax.persistence.*;
 import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -54,28 +53,64 @@ public class OauthApprovals
     @Serial
     private static final long serialVersionUID = 4281980171453236833L;
 
+    @Transient
+    private String        mClientId;
+    @Transient
+    private String        mScope;
+    @Transient
+    private Status        mStatus = Status.COMMON;
+    @Transient
+    private LocalDateTime mInvalidAt;
+
     @Id
-    private String        clientId;
+    @Column(name = "client_id")
+    public String getClientId()
+    {
+        return mClientId;
+    }
+
     @Column(nullable = false)
-    private String        scope;
+    public String getScope()
+    {
+        return mScope;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private Status        status = Status.COMMON;
-    @Column(nullable = false,
-            name = "invalid_at")
-    private LocalDateTime invalidAt;
+    public Status getStatus()
+    {
+        return mStatus;
+    }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Column(nullable = false,
+            name = "invalid_at")
     public LocalDateTime getInvalidAt()
     {
-        return invalidAt;
+        return mInvalidAt;
+    }
+
+    public void setClientId(String clientId)
+    {
+        mClientId = clientId;
+    }
+
+    public void setScope(String scope)
+    {
+        mScope = scope;
+    }
+
+    public void setStatus(Status status)
+    {
+        mStatus = status;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setInvalidAt(LocalDateTime invalidAt)
     {
-        this.invalidAt = invalidAt;
+        mInvalidAt = invalidAt;
     }
+
 }

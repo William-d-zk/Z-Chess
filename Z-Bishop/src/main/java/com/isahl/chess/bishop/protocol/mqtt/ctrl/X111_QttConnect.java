@@ -22,11 +22,11 @@
  */
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
-import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -67,8 +67,10 @@ public class X111_QttConnect
     private String mWillTopic;
     private byte[] mWillMessage;
 
-    private final int _MQTT = IoUtil.readInt(new byte[]{ 'M', 'Q', 'T', 'T'
-    }, 0);
+    private final int _MQTT = IoUtil.readInt(new byte[]{ 'M',
+                                                         'Q',
+                                                         'T',
+                                                         'T' }, 0);
 
     @Override
     public String toString()
@@ -154,6 +156,7 @@ public class X111_QttConnect
     public void setKeepAlive(int seconds)
     {
         mKeepAlive = seconds;
+        if(seconds > 0xFFFF) {throw new ZException("keep alive illegal argument [ %d ] ", seconds);}
     }
 
     public int getKeepAlive()

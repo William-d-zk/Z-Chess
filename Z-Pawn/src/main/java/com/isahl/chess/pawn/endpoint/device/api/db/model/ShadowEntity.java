@@ -26,10 +26,11 @@ package com.isahl.chess.pawn.endpoint.device.api.db.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.protocol.mqtt.model.data.DeviceSubscribe;
-import com.isahl.chess.bishop.protocol.mqtt.model.data.SubscribeEntry;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.ListSerial;
+import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.Type;
@@ -37,6 +38,10 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serial;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
@@ -59,32 +64,35 @@ public class ShadowEntity
     @GeneratedValue
     @Column(name = "shadow_id")
     @JsonIgnore
-    private long            shadowId;
+    private long                      shadowId;
     @Column(name = "device_id",
             unique = true)
-    private long            deviceId;
+    private long                      deviceId;
     @Type(type = "jsonb")
     @Column(name = "subscribes",
             columnDefinition = "jsonb")
-    private DeviceSubscribe subscribes;
+    private ListSerial<IThread.Topic> subscribes;
     @Type(type = "jsonb")
     @Column(name = "will_subscribe",
             columnDefinition = "jsonb")
-    private SubscribeEntry  willSubscribe;
+    private IThread.Topic             willSubscribe;
     @Column(name = "will_payload")
     @Type(type = "org.hibernate.type.BinaryType")
-    private byte[]          willPayload;
-    @Column(length = 32,
+    private byte[]                    willPayload;
+    @Column(length = 64,
             name = "username")
-    private String          username;
+    private String                    username;
+    @Column(length = 128,
+            name = "sn")
+    private String                    sn;
+
+    public ShadowEntity(ByteBuf input)
+    {
+        super(input);
+    }
 
     public ShadowEntity()
     {
-    }
-
-    public ShadowEntity(long deviceId)
-    {
-        this.deviceId = deviceId;
     }
 
     public long getShadowId()
@@ -107,12 +115,12 @@ public class ShadowEntity
         this.deviceId = deviceId;
     }
 
-    public SubscribeEntry getWillSubscribe()
+    public IThread.Topic getWillSubscribe()
     {
         return willSubscribe;
     }
 
-    public void setWillSubscribe(SubscribeEntry willSubscribe)
+    public void setWillSubscribe(IThread.Topic willSubscribe)
     {
         this.willSubscribe = willSubscribe;
     }
@@ -169,13 +177,73 @@ public class ShadowEntity
         this.username = username;
     }
 
-    public DeviceSubscribe getSubscribes()
+    public List<IThread.Topic> getSubscribes()
     {
         return subscribes;
     }
 
-    public void setSubscribes(DeviceSubscribe subscribes)
+    public void setSubscribes(List<IThread.Topic> subscribes)
     {
-        this.subscribes = subscribes;
+        this.subscribes = new ListSerial<>(subscribes, IThread.Topic::new);
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        shadowId = input.getLong();
+        deviceId = input.getLong();
+        int sl = input.vLength();
+        sn = input.readUTF(sl);
+        remain -= 16 + vSizeOf(sl);
+        int ul = input.vLength();
+        username = input.readUTF(ul);
+        remain -= vSizeOf(ul);
+        subscribes = new ListSerial<>(input, IThread.Topic::new);
+        remain -= subscribes.sizeOf();
+        willSubscribe = new IThread.Topic(input);
+        remain -= willSubscribe.sizeOf();
+        int pl = input.vLength();
+        if(pl > 0) {
+            willPayload = new byte[pl];
+            input.get(willPayload);
+            remain -= vSizeOf(pl);
+        }
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(shadowId)
+                    .putLong(deviceId)
+                    .putUTF(sn)
+                    .putUTF(username)
+                    .put(subscribes.encode())
+                    .put(willSubscribe.encode())
+                    .vPut(willPayload);
+    }
+
+    @Override
+    public int length()
+    {
+        return super.length() + //
+               8 + // shadow-id
+               8 + // device-id
+               vSizeOf(sn.getBytes(StandardCharsets.UTF_8).length) + // sn.length
+               subscribes.sizeOf() + // subscribes.size_of
+               willSubscribe.sizeOf() + // will-subscribe.size_of
+               vSizeOf(willPayload == null ? 0 : willPayload.length);  // will-payload.size_of
     }
 }

@@ -28,13 +28,14 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
@@ -68,6 +69,11 @@ public class RaftNode
         mState = state;
     }
 
+    public RaftNode(ByteBuf input)
+    {
+        super(input);
+    }
+
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
@@ -95,7 +101,7 @@ public class RaftNode
         setHost(input.readUTF(hl));
         int gl = input.vLength();
         setGateHost(input.readUTF(gl));
-        return remain - 5 - ByteBuf.vSizeOf(hl) - ByteBuf.vSizeOf(gl);
+        return remain - 5 - vSizeOf(hl) - vSizeOf(gl);
     }
 
     @Override
@@ -104,8 +110,8 @@ public class RaftNode
         int length = 2 + // port
                      2 + // gate port
                      1;  // state
-        length += ByteBuf.vSizeOf(IoUtil.isBlank(getHost()) ? 0 : getHost().length());
-        length += ByteBuf.vSizeOf(IoUtil.isBlank(getGateHost()) ? 0 : getGateHost().length());
+        length += vSizeOf(IoUtil.isBlank(getHost()) ? 0 : getHost().length());
+        length += vSizeOf(IoUtil.isBlank(getGateHost()) ? 0 : getGateHost().length());
         return length + super.length();
     }
 
@@ -207,18 +213,5 @@ public class RaftNode
     {
         mGatePort = port;
     }
-
-    public static final IoFactory _Factory = new IoFactory()
-    {
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public RaftNode create(ByteBuf input)
-        {
-            RaftNode node = new RaftNode();
-            node.decode(input);
-            return node;
-        }
-    };
 
 }

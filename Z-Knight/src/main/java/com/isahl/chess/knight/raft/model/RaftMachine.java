@@ -44,7 +44,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.model.RaftNode._Factory;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
 
@@ -106,8 +105,8 @@ public class RaftMachine
         pKey = peerId;
         mMatchIndex = INDEX_NAN;
         mIndex = INDEX_NAN;
-        mPeerSet = new SetSerial<>(_Factory);
-        mGateSet = new SetSerial<>(_Factory);
+        mPeerSet = new SetSerial<>(RaftNode::new);
+        mGateSet = new SetSerial<>(RaftNode::new);
     }
 
     public RaftMachine()

@@ -82,7 +82,7 @@ public class X78_RaftChange
     }
 
     @Override
-    public long getOrigin()
+    public long origin()
     {
         return mOrigin;
     }

@@ -30,6 +30,7 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnectMode;
 import com.isahl.chess.queen.io.core.features.model.channels.IReadable;
 import com.isahl.chess.queen.io.core.features.model.channels.IWritable;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
@@ -171,7 +172,7 @@ public interface ISession
 
     IFilterChain getFilterChain();
 
-    IoFactory getFactory();
+    IoFactory<IProtocol> getFactory();
 
     void ready();
 

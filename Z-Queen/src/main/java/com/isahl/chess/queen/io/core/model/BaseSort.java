@@ -25,6 +25,7 @@ package com.isahl.chess.queen.io.core.model;
 
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.events.functions.*;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
@@ -35,16 +36,16 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 public abstract class BaseSort<C extends IPContext>
         implements IAioSort<C>
 {
-    private final AioWriter     _AioWriter     = new AioWriter();
-    private final ICloser       _CloseOperator = new Closer();
-    private final IFailed       _ErrorOperator = new Failed();
-    private final IPipeEncoder  _Encoder       = new PipeEncoder(_AioWriter);
-    private final IPipeDecoder  _Decoder       = new PipeDecoder();
-    private final SessionIgnore _Ignore        = new SessionIgnore();
-    private final Mode          _Mode;
-    private final Type          _Type;
-    private final String        _Protocol;
-    private final IoFactory     _Factory;
+    private final AioWriter            _AioWriter     = new AioWriter();
+    private final ICloser              _CloseOperator = new Closer();
+    private final IFailed              _ErrorOperator = new Failed();
+    private final IPipeEncoder         _Encoder       = new PipeEncoder(_AioWriter);
+    private final IPipeDecoder         _Decoder       = new PipeDecoder();
+    private final SessionIgnore        _Ignore        = new SessionIgnore();
+    private final Mode                 _Mode;
+    private final Type                 _Type;
+    private final String               _Protocol;
+    private final IoFactory<IProtocol> _Factory;
 
     protected BaseSort(Mode mode, Type type, String protocol)
     {
@@ -54,7 +55,7 @@ public abstract class BaseSort<C extends IPContext>
         _Factory = _SelectFactory(_Mode, _Type);
     }
 
-    protected BaseSort(Mode mode, Type type, String protocol, IoFactory factory)
+    protected BaseSort(Mode mode, Type type, String protocol, IoFactory<IProtocol> factory)
     {
         _Mode = mode;
         _Type = type;
@@ -111,7 +112,7 @@ public abstract class BaseSort<C extends IPContext>
     }
 
     @Override
-    public IoFactory getFactory()
+    public IoFactory<IProtocol> getFactory()
     {
         return _Factory;
     }

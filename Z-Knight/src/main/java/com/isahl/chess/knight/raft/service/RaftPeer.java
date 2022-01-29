@@ -36,7 +36,6 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftControl;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
@@ -102,7 +101,7 @@ public class RaftPeer
     {
         _TimeWheel = timeWheel;
         _RaftConfig = raftConfig;
-        _ZUid = raftConfig.createZUID();
+        _ZUid = raftConfig.getZUID();
         _RaftMapper = raftMapper;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::stepDown);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftPeer::heartbeat);
@@ -522,7 +521,9 @@ public class RaftPeer
         {
             //follower | elector
             if(x72.payload() != null) {
-                receiveLogs(RaftFactory.listOf(x72.subEncoded()));
+                ListSerial<LogEntry> logs = new ListSerial<>(LogEntry::new);
+                logs.decode(x72.subEncoded());
+                receiveLogs(logs);
             }
             return Triple.of(follow(x72.getTerm(),
                                     x72.getLeaderId(),
@@ -894,22 +895,22 @@ public class RaftPeer
     {
 
         if(_SelfMachine.isEqualState(LEADER)) {
-            List<ITriple> appends = append(x75.payload(), x75.getClientId(), x75.getOrigin(), manager);
+            List<ITriple> appends = append(x75.payload(), x75.getClientId(), x75.origin(), manager);
             if(appends != null && !appends.isEmpty()) {
                 return Triple.of(appends,
-                                 response(SUCCESS, x75.getClientId(), x75.getOrigin(), x75.getMsgId()).with(session),
+                                 response(SUCCESS, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
                                  BATCH);
             }
             else {
                 return Triple.of(null,
-                                 response(WAL_FAILED, x75.getClientId(), x75.getOrigin(), x75.getMsgId()).with(session),
-                                 SINGLE);
+                                 response(WAL_FAILED, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
+                                 NULL);
             }
         }
         else {
             return Triple.of(null,
-                             response(ILLEGAL_STATE, x75.getClientId(), x75.getOrigin(), x75.getMsgId()).with(session),
-                             SINGLE);
+                             response(ILLEGAL_STATE, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
+                             NULL);
         }
     }
 
@@ -1022,7 +1023,7 @@ public class RaftPeer
                 break CHECK;
             }
             // preIndex < self.index && preIndex >= 0
-            ListSerial<LogEntry> entryList = new ListSerial<>(RaftFactory._Instance);
+            ListSerial<LogEntry> entryList = new ListSerial<>(LogEntry::new);
             long next = preIndex + 1;//next >= 1
             if(next > MIN_START) {
                 if(next > _SelfMachine.getIndex()) {
@@ -1163,7 +1164,7 @@ public class RaftPeer
     private X79_RaftAdjudge createAdjudge(LogEntry raftLog)
     {
         X79_RaftAdjudge x79 = new X79_RaftAdjudge(_ZUid.getId());
-        x79.setOrigin(raftLog.getOrigin());
+        x79.setOrigin(raftLog.origin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
         x79.withSub(raftLog.payload());
@@ -1173,7 +1174,7 @@ public class RaftPeer
     private X77_RaftNotify createNotify(LogEntry raftLog)
     {
         X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        x77.setOrigin(raftLog.getOrigin());
+        x77.setOrigin(raftLog.origin());
         x77.setIndex(raftLog.getIndex());
         x77.setClient(raftLog.getClient());
         x77.withSub(raftLog.payload());

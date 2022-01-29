@@ -68,7 +68,6 @@ public class DeviceController
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
-        deviceEntity.setOperation(IStorage.Operation.OP_INSERT);
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 

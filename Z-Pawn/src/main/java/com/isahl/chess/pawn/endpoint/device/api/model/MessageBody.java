@@ -24,14 +24,21 @@
 package com.isahl.chess.pawn.endpoint.device.api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.model.BinarySerial;
 
 import java.io.Serial;
-import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
@@ -39,16 +46,19 @@ import java.io.Serializable;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@ISerialGenerator(parent = ISerial.BIZ_PLAYER_API_SERIAL)
 public class MessageBody
-        implements Serializable
+        extends BinarySerial
 {
-    private static final Logger _Logger = Logger.getLogger("endpoint.pawn." + MessageBody.class.getSimpleName());
 
     @Serial
     private static final long serialVersionUID = -8904730289818144372L;
 
     private final String _Topic;
     private final byte[] _Content;
+
+    @JsonIgnore
+    private transient String mTopic;
 
     @JsonCreator
     public MessageBody(
@@ -57,8 +67,20 @@ public class MessageBody
             @JsonProperty("content")
                     byte[] content)
     {
+        Objects.requireNonNull(topic);
+        Objects.requireNonNull(content);
         _Topic = topic;
         _Content = content;
+        withSub(content);
+    }
+
+    public MessageBody(ByteBuf input)
+    {
+        super(input);
+        Objects.requireNonNull(mTopic);
+        Objects.requireNonNull(mPayload);
+        _Topic = mTopic;
+        _Content = mPayload;
     }
 
     public String getTopic()
@@ -71,4 +93,25 @@ public class MessageBody
         return _Content;
     }
 
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        int tl = input.vLength();
+        mTopic = input.readUTF(tl);
+        return remain - vSizeOf(tl);
+    }
+
+    @Override
+    public int length()
+    {
+        return super.length() + vSizeOf(_Topic.getBytes(StandardCharsets.UTF_8).length);
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .vPut(_Topic.getBytes(StandardCharsets.UTF_8));
+    }
 }

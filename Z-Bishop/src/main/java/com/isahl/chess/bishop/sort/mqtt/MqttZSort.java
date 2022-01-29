@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.sort.mqtt;
 
-import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttCommandFilter;
 import com.isahl.chess.bishop.protocol.mqtt.filter.QttControlFilter;
@@ -31,7 +30,9 @@ import com.isahl.chess.bishop.protocol.mqtt.filter.QttFrameFilter;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
+import com.isahl.chess.queen.io.core.model.BaseSort;
 
 public class MqttZSort
         extends BaseSort<QttContext>
@@ -61,7 +62,7 @@ public class MqttZSort
     }
 
     @Override
-    public IoFactory _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
     {
         return QttFactory._Instance;
     }

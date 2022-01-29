@@ -75,7 +75,7 @@ public class ZFrame
                     return 9 - remain;
                 }
                 try {
-                    int vLength = input.vLength(9);
+                    int vLength = input.vPeekLength(9);
                     return 9 + ByteBuf.vSizeOf(vLength) - remain;
                 }
                 catch(ZException e) {
@@ -84,7 +84,7 @@ public class ZFrame
             }
             else {
                 try {
-                    int vLength = input.vLength(1);
+                    int vLength = input.vPeekLength(1);
                     return 1 + ByteBuf.vSizeOf(vLength) - remain;
                 }
                 catch(ZException e) {

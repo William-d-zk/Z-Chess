@@ -44,7 +44,7 @@ public class Client
     @Autowired
     public Client(IRaftConfig raft)
     {
-        _ZUID = raft.createZUID();
+        _ZUID = raft.getZUID();
     }
 
     public ISession getSession()

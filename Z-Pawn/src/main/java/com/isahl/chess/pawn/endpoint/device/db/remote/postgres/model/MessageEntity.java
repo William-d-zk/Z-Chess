@@ -33,7 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.GenericGenerator;
@@ -42,7 +42,14 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.TimeZone;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -63,114 +70,143 @@ public class MessageEntity
     @Serial
     private static final long serialVersionUID = -6502547239976531057L;
 
+    @Transient
+    private long          mOrigin;
+    @Transient
+    private String        mTopic;
+    @Transient
+    private LocalDateTime mNetAt;
+
+    public MessageEntity()
+    {
+        super(OP_INSERT, Strategy.RETAIN);
+    }
+
+    public MessageEntity(ByteBuf input)
+    {
+        super(input);
+    }
+
     @Id
     @JsonIgnore
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator")
-    private long               id;
-    @Column(updatable = false,
-            nullable = false)
-    private long               origin;
-    @Column(length = 511,
-            nullable = false,
-            updatable = false)
-    private String             topic;
-    @Lob
-    @Column(name = "content")
-    @Type(type = "org.hibernate.type.BinaryType")
-    private byte[]             content;
-    @Column(name = "net_at",
-            nullable = false,
-            updatable = false)
-    private LocalDateTime      netAt;
-    @JsonIgnore
-    @Transient
-    private IStorage.Operation mOperation = IStorage.Operation.OP_NULL;
-
     public long getId()
     {
-        return id;
+        return primaryKey();
     }
 
-    public void setId(long id)
+    @Override
+    public long origin()
     {
-        this.id = id;
+        return mOrigin;
     }
 
+    @Column(updatable = false,
+            nullable = false)
     public long getOrigin()
     {
-        return origin;
-    }
-
-    public void setOrigin(long origin)
-    {
-        this.origin = origin;
+        return mOrigin;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Column(name = "net_at",
+            nullable = false,
+            updatable = false)
     public LocalDateTime getNetAt()
     {
-        return netAt;
+        return mNetAt;
+    }
+
+    @Column(length = 511,
+            nullable = false,
+            updatable = false)
+    public String getTopic()
+    {
+        return mTopic;
+    }
+
+    @Lob
+    @Column(name = "content")
+    @Type(type = "org.hibernate.type.BinaryType")
+    public byte[] getContent()
+    {
+        return payload();
+    }
+
+    public void setId(long id)
+    {
+        pKey = id;
+    }
+
+    public void setOrigin(long origin)
+    {
+        mOrigin = origin;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setNetAt(LocalDateTime netAt)
     {
-        this.netAt = netAt;
-    }
-
-    @Override
-    public long primaryKey()
-    {
-        return id;
-    }
-
-    @Override
-    public IStorage.Operation operation()
-    {
-        return mOperation;
-    }
-
-    @JsonIgnore
-    public void setOperation(IStorage.Operation operation)
-    {
-        mOperation = operation;
-    }
-
-    @Override
-    public IStorage.Strategy strategy()
-    {
-        return IStorage.Strategy.RETAIN;
-    }
-
-    public String getTopic()
-    {
-        return topic;
+        mNetAt = netAt;
     }
 
     public void setTopic(String topic)
     {
-        this.topic = topic;
+        mTopic = topic;
     }
 
     public void setContent(byte[] data)
     {
-        content = data;
-    }
-
-    public byte[] getContent()
-    {
-        return content;
+        withSub(data);
     }
 
     @Override
     public String toString()
     {
-        return "MessageEntity{" + "id=" + id + ", origin=" + origin + ", topic='" + topic + '\'' + ", content=" +
-               new String(content, StandardCharsets.UTF_8) + ", netAt=" + netAt + ", mOperation=" + mOperation +
-               super.toString() + '}';
+        return format("MessageEntity{ id=%s, origin=%#x, topic:%s,msg:%s,netAt:%s[%s]}",
+                      getId(),
+                      getOrigin(),
+                      getTopic(),
+                      new String(getContent(), StandardCharsets.UTF_8),
+                      getNetAt(),
+                      super.toString());
+    }
+
+    @Override
+    public int length()
+    {
+        return super.length() + // content.length +  id.length
+               8 +// origin.length
+               8 + // net-at.length
+               vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length); // topic.length
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mOrigin = input.getLong();
+        mNetAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()),
+                                         TimeZone.getDefault()
+                                                 .toZoneId());
+        remain -= 16;
+        int tl = input.vLength();
+        mTopic = input.readUTF(tl);
+        remain -= vSizeOf(tl);
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(mOrigin)
+                    .putLong(mNetAt.toInstant(ZoneOffset.of(ZoneOffset.systemDefault()
+                                                                      .getId()))
+                                   .toEpochMilli())
+                    .putUTF(mTopic);
     }
 }

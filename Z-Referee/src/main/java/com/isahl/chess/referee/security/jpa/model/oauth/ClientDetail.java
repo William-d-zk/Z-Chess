@@ -26,16 +26,13 @@ package com.isahl.chess.referee.security.jpa.model.oauth;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serial;
-import java.io.Serializable;
 
 /**
  * @author william.d.zk
@@ -52,147 +49,170 @@ public class ClientDetail
     @Serial
     private static final long serialVersionUID = -3639493262081429501L;
 
+    @Transient
+    private String   mAppId;
+    @Transient
+    private String[] mResourceIds       = {};
+    @Transient
+    private String   mAppSecret;
+    @Transient
+    private String   mScope;
+    @Transient
+    private String[] mGrantTypes;
+    @Transient
+    private String   mRedirectUrl;
+    @Transient
+    private String[] mAuthorities       = {};
+    @Transient
+    private boolean  mAccessTokenValidity;
+    @Transient
+    private boolean  mRefreshTokenValidity;
+    @Transient
+    private byte[]   mAdditionalInformation;
+    @Transient
+    private String[] mAutoApproveScopes = {};
+
     @Id
-    private String   appId;
+    public String getAppId()
+    {
+        return mAppId;
+    }
+
     @Type(type = "string-array")
     @Column(name = "resource_ids",
             columnDefinition = "text[]")
-    private String[] resourceIds       = {};
+    public String[] getResourceIds()
+    {
+        return mResourceIds;
+    }
+
     @Column(nullable = false,
             name = "app_secret")
-    private String   appSecret;
+    public String getAppSecret()
+    {
+        return mAppSecret;
+    }
+
     @Column(nullable = false)
-    private String   scope;
+    public String getScope()
+    {
+        return mScope;
+    }
+
     @Type(type = "string-array")
     @Column(name = "grant_types",
             columnDefinition = "text[]")
-    private String[] grantTypes;
+    public String[] getGrantTypes()
+    {
+        return mGrantTypes;
+    }
+
     @Column(nullable = false,
             name = "redirect_url")
-    private String   redirectUrl;
+    public String getRedirectUrl()
+    {
+        return mRedirectUrl;
+    }
+
     @Type(type = "string-array")
     @Column(name = "authorities",
             columnDefinition = "text[]")
-    private String[] authorities       = {};
-    @Column(name = "access_token_validity")
-    private boolean  accessTokenValidity;
-    @Column(name = "refresh_token_validity")
-    private boolean  refreshTokenValidity;
+    public String[] getAuthorities()
+    {
+        return mAuthorities;
+    }
+
     @Column(nullable = false,
             name = "additional_information")
-    private byte[]   additionalInformation;
+    @Lob
+    @Type(type = "org.hibernate.type.BinaryType")
+    public byte[] getAdditionalInformation()
+    {
+        return mAdditionalInformation;
+    }
+
     @Type(type = "string-array")
     @Column(name = "auto_approve_scopes",
             columnDefinition = "text[]")
-    private String[] autoApproveScopes = {};
-
-    public String getAppId()
+    public String[] getAutoApproveScopes()
     {
-        return appId;
+        return mAutoApproveScopes;
+    }
+
+    @Column(name = "refresh_token_validity")
+    public boolean isRefreshTokenValidity()
+    {
+        return mRefreshTokenValidity;
+    }
+
+    @Column(name = "access_token_validity")
+    public boolean isAccessTokenValidity()
+    {
+        return mAccessTokenValidity;
     }
 
     public void setAppId(String appId)
     {
-        this.appId = appId;
-    }
-
-    public String[] getResourceIds()
-    {
-        return resourceIds;
+        mAppId = appId;
     }
 
     public void setResourceIds(String[] resourceIds)
     {
-        this.resourceIds = resourceIds;
-    }
-
-    public String getAppSecret()
-    {
-        return appSecret;
+        mResourceIds = resourceIds;
     }
 
     public void setAppSecret(String appSecret)
     {
-        this.appSecret = appSecret;
-    }
-
-    public String getScope()
-    {
-        return scope;
+        mAppSecret = appSecret;
     }
 
     public void setScope(String scope)
     {
-        this.scope = scope;
-    }
-
-    public String[] getGrantTypes()
-    {
-        return grantTypes;
+        mScope = scope;
     }
 
     public void setGrantTypes(String[] grantTypes)
     {
-        this.grantTypes = grantTypes;
-    }
-
-    public String getRedirectUrl()
-    {
-        return redirectUrl;
+        mGrantTypes = grantTypes;
     }
 
     public void setRedirectUrl(String redirectUrl)
     {
-        this.redirectUrl = redirectUrl;
-    }
-
-    public String[] getAuthorities()
-    {
-        return authorities;
+        mRedirectUrl = redirectUrl;
     }
 
     public void setAuthorities(String[] authorities)
     {
-        this.authorities = authorities;
-    }
-
-    public byte[] getAdditionalInformation()
-    {
-        return additionalInformation;
+        mAuthorities = authorities;
     }
 
     public void setAdditionalInformation(byte[] additionalInformation)
     {
-        this.additionalInformation = additionalInformation;
-    }
-
-    public String[] getAutoApproveScopes()
-    {
-        return autoApproveScopes;
+        mAdditionalInformation = additionalInformation;
     }
 
     public void setAutoApproveScopes(String[] autoApproveScopes)
     {
-        this.autoApproveScopes = autoApproveScopes;
-    }
-
-    public boolean isAccessTokenValidity()
-    {
-        return accessTokenValidity;
+        mAutoApproveScopes = autoApproveScopes;
     }
 
     public void setAccessTokenValidity(boolean accessTokenValidity)
     {
-        this.accessTokenValidity = accessTokenValidity;
-    }
-
-    public boolean isRefreshTokenValidity()
-    {
-        return refreshTokenValidity;
+        mAccessTokenValidity = accessTokenValidity;
     }
 
     public void setRefreshTokenValidity(boolean refreshTokenValidity)
     {
-        this.refreshTokenValidity = refreshTokenValidity;
+        mRefreshTokenValidity = refreshTokenValidity;
+    }
+
+    public ClientDetail()
+    {
+        super();
+    }
+
+    public ClientDetail(ByteBuf input)
+    {
+        super(input);
     }
 }

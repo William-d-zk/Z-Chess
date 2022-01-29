@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,29 +23,42 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.features;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
+import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-/**
- * @author william.d.zk
- * @date 2020/2/21
- */
-public interface IMessageService
+public interface IStateService
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
+    void store(long origin, long msgId, String topic, byte[] payload);
 
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
+    MsgStateEntity query(long origin, long msgId);
 
-    void submit(MessageEntity content);
+    boolean exists(long origin, long msgId);
 
-    long generateId(long session);
+    void extract(long origin, long msgId);
 
+    IThread.Subscribe onSubscribe(IThread.Topic topic, long session);
+
+    void onUnsubscribe(IThread.Topic topic, long session);
+
+    void add(long target, long msgId, String topic, byte[] payload);
+
+    void drop(long target, long msgId);
+
+    Map<Pattern, IThread.Subscribe> mappings();
+
+    boolean onLogin(long session, boolean clean);
+
+    /**
+     * 重新登录时，主动清除历史状态| 离线时也需根据 clean-flag 进行清除
+     *
+     * @param session session-idx
+     */
+    void onDismiss(long session);
+
+    SessionEntity load(long session);
 }

@@ -39,7 +39,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
-import static com.isahl.chess.knight.raft.model.RaftNode._Factory;
 
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
                   serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 1)
@@ -125,9 +124,9 @@ public class LogMeta
         setCommit(input.getLong());
         setApplied(input.getLong());
         remain -= 48;
-        mPeerSet = new SetSerial<>(_Factory);
+        mPeerSet = new SetSerial<>(RaftNode::new);
         mPeerSet.decode(input);
-        mGateSet = new SetSerial<>(_Factory);
+        mGateSet = new SetSerial<>(RaftNode::new);
         mGateSet.decode(input);
         remain -= mPeerSet.sizeOf();
         remain -= mGateSet.sizeOf();
@@ -174,16 +173,16 @@ public class LogMeta
         mIndexTerm = indexTerm;
         mCommit = commit;
         mApplied = applied;
-        mPeerSet = peerSet == null ? new SetSerial<>(_Factory) : new SetSerial<>(_Factory, peerSet);
-        mGateSet = gateSet == null ? new SetSerial<>(_Factory) : new SetSerial<>(_Factory, gateSet);
+        mPeerSet = peerSet == null ? new SetSerial<>(RaftNode::new) : new SetSerial<>(RaftNode::new, peerSet);
+        mGateSet = gateSet == null ? new SetSerial<>(RaftNode::new) : new SetSerial<>(RaftNode::new, gateSet);
     }
 
     public LogMeta()
     {
         super();
         mStart = MIN_START;
-        mPeerSet = new SetSerial<>(_Factory);
-        mGateSet = new SetSerial<>(_Factory);
+        mPeerSet = new SetSerial<>(RaftNode::new);
+        mGateSet = new SetSerial<>(RaftNode::new);
     }
 
     public long getStart()

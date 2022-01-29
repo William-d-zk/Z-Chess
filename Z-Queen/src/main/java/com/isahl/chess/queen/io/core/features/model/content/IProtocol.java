@@ -52,4 +52,6 @@ public interface IProtocol
     }
 
     default void transfer() {}
+
+    default byte[] encoded() {return encode().array();}
 }
