@@ -43,6 +43,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.cache.CacheManager;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -130,19 +131,47 @@ public class StateService
         }
     }
 
+    @PreDestroy
+    private void preDestroy()
+    {
+        try {
+            _SessionRepository.deleteAll();
+        }
+        catch(Throwable e) {
+            _Logger.warning(e);
+        }
+    }
+
     private static void cleanup(StateService self)
     {
         LocalDateTime idleTime = LocalDateTime.now()
                                               .minusHours(1);
         try {
             //@formatter:off
-            List<MsgStateEntity> idleHours =
+            List<MsgStateEntity> idleMsgHours =
                     self._MessageRepository
                         .findAll((root, criteriaQuery, criteriaBuilder)->
-                                        criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime)).getRestriction()
+                                        criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
+                                                     .getRestriction()
                                 );
+            List<SessionEntity> idleSessionHours =
+                    self._SessionRepository
+                        .findAll((root, criteriaQuery, criteriaBuilder)->
+                                         criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
+                                                      .getRestriction()
+                                );
+
+            if(!idleMsgHours.isEmpty()) {self._MessageRepository.deleteAll(idleMsgHours);}
+            if(!idleSessionHours.isEmpty()) {
+                self._SessionRepository.deleteAll(
+                        self._SessionWithIdentifierMap.isEmpty()
+                            ? idleSessionHours
+                            : idleSessionHours.stream()
+                                              .filter(entity->self._SessionWithIdentifierMap.containsKey(entity.getId()))
+                                              .toList()
+                                                 );
+            }
             //@formatter:on
-            if(!idleHours.isEmpty()) {self._MessageRepository.deleteAll(idleHours);}
         }
         catch(Throwable e) {
             self._Logger.warning("cycle cleaner x failed", e);
@@ -155,17 +184,19 @@ public class StateService
         Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
         SessionEntity sessionEntity;
         sessionEntity = sOptional.orElseGet(SessionEntity::new);
+        sessionEntity.setId(session);
         sessionEntity.setClean(clean);
         try {
-            if(clean) {
+            if(clean && !_Topic2Subscribe.isEmpty()) {
                 _Topic2Subscribe.values()
                                 .forEach(map->map.onDismiss(session));
             }
+            _SessionWithIdentifierMap.computeIfAbsent(session, k->new HashMap<>());
             _SessionRepository.save(sessionEntity);
             return true;
         }
         catch(Throwable e) {
-            _Logger.warning("session [%#x] login state save ", session);
+            _Logger.warning("session [%#x] login state save ", e, session);
         }
         return false;
     }
@@ -183,7 +214,7 @@ public class StateService
         Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
         if(sOptional.isPresent()) {
             SessionEntity present = sOptional.get();
-            if(present.isClean()) {
+            if(present.isClean() && !_Topic2Subscribe.isEmpty()) {
                 _Topic2Subscribe.values()
                                 .forEach(map->map.onDismiss(session));
             }
@@ -193,6 +224,10 @@ public class StateService
             _Topic2Subscribe.values()
                             .forEach(map->map.onDismiss(session));
         }
+        _SessionWithIdentifierMap.computeIfPresent(session, (k, v)->{
+            v.clear();
+            return null;
+        });
     }
 
     @Override

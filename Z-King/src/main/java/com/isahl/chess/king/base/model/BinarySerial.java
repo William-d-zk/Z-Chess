@@ -119,13 +119,6 @@ public class BinarySerial
     }
 
     @Override
-    public ByteBuf encode()
-    {
-        return IoSerial.super.encode()
-                             .vPut(mPayload);//ByteBuf.put 忽略null 输入
-    }
-
-    @Override
     public int length()
     {
         return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
@@ -163,19 +156,9 @@ public class BinarySerial
         return mSubContent;
     }
 
-    @Override
-    public ByteBuf subEncoded()
-    {
-        return mPayload != null && mPayload.length > 0 ? ByteBuf.wrap(mPayload) : null;
-    }
-
     public static int seekSerial(ByteBuf buffer)
     {
         return buffer.peekUnsignedShort(0);
     }
 
-    public byte[] encoded()
-    {
-        return encode().array();
-    }
 }
