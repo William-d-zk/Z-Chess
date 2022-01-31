@@ -25,6 +25,7 @@ package com.isahl.chess.king.base.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
 
@@ -43,6 +44,11 @@ public class TextSerial
 
     public TextSerial()
     {
+    }
+
+    public TextSerial(ByteBuf input)
+    {
+        super(input);
     }
 
     public String getText()

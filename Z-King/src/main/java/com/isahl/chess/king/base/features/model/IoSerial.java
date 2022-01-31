@@ -43,6 +43,8 @@ public interface IoSerial
 
     byte[] payload();
 
+    default byte[] encoded() {return encode().array();}
+
     @Override
     default int _sub()
     {

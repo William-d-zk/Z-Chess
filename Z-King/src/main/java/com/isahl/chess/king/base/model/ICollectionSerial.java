@@ -34,6 +34,7 @@ public interface ICollectionSerial<T extends IoSerial>
         extends IoSerial,
                 Collection<T>
 {
+
     IoFactory<T> factory();
 
     default void fold(ByteBuf input, int remain)
@@ -114,6 +115,4 @@ public interface ICollectionSerial<T extends IoSerial>
     {
         throw new UnsupportedOperationException();
     }
-
-    default  byte[] encoded(){return encode().array();}
 }

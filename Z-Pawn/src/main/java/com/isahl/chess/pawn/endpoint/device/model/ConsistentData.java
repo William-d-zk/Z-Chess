@@ -26,6 +26,7 @@ package com.isahl.chess.pawn.endpoint.device.model;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.util.HashMap;
@@ -41,39 +42,39 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 public class ConsistentData
         extends InnerProtocol
 {
-    class entry
+    static class entry
     {
-        long      peer;
-        long      session;
-        String    protocol;
-        IoFactory factory;
+        long                 mPeer;
+        long                 mSession;
+        String               mProtocol;
+        IoFactory<IProtocol> mFactory;
 
-        public entry(long session, long peer, String protocol, IoFactory factory)
+        public entry(long session, long peer, String protocol, IoFactory<IProtocol> factory)
         {
-            this.peer = peer;
-            this.session = session;
-            this.protocol = protocol;
-            this.factory = factory;
+            this.mPeer = peer;
+            this.mSession = session;
+            this.mProtocol = protocol;
+            this.mFactory = factory;
         }
 
         int size()
         {
-            Objects.requireNonNull(protocol);
+            Objects.requireNonNull(mProtocol);
             return 8 + // sessionId
                    8 + // peerId
-                   vSizeOf(protocol.length());// protocol.length
+                   vSizeOf(mProtocol.length());// protocol.length
         }
     }
 
     private final Map<Long, entry> _Data = new HashMap<>();
 
-    public void update(long session, long peerId, String protocol, IoFactory factory)
+    public void update(long session, long peerId, String protocol, IoFactory<IProtocol> factory)
     {
         entry old = _Data.putIfAbsent(session, new entry(session, peerId, protocol, factory));
-        old.session = session;
-        old.peer = peerId;
-        old.protocol = protocol;
-        old.factory = factory;
+        old.mSession = session;
+        old.mPeer = peerId;
+        old.mProtocol = protocol;
+        old.mFactory = factory;
     }
 
     public void remove(long session)
@@ -81,10 +82,10 @@ public class ConsistentData
         _Data.remove(session);
     }
 
-    public IoFactory findFactoryBySessionId(long sessionId)
+    public IoFactory<IProtocol> findFactoryBySessionId(long sessionId)
     {
         entry entry = _Data.get(sessionId);
-        return entry == null ? null : entry.factory;
+        return entry == null ? null : entry.mFactory;
     }
 
     @Override
@@ -104,9 +105,9 @@ public class ConsistentData
         output = super.suffix(output)
                       .putInt(_Data.size());
         for(entry e : _Data.values()) {
-            output = output.putLong(e.session)
-                           .putLong(e.peer)
-                           .putUTF(e.protocol);
+            output = output.putLong(e.mSession)
+                           .putLong(e.mPeer)
+                           .putUTF(e.mProtocol);
         }
         return output;
     }

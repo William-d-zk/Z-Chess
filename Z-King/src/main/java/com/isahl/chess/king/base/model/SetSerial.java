@@ -25,6 +25,7 @@ package com.isahl.chess.king.base.model;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
@@ -40,23 +41,25 @@ public class SetSerial<T extends IoSerial>
         extends TreeSet<T>
         implements ICollectionSerial<T>
 {
-    private final IoFactory _Factory;
+    private final IoFactory<T> _Factory;
 
-    public SetSerial(IoFactory factory)
+    public SetSerial(IoFactory<T> factory)
     {
         super();
         _Factory = factory;
     }
 
-    public SetSerial(IoFactory factory, Collection<T> e)
+    public SetSerial(IoFactory<T> factory, Collection<T> e)
     {
         super(e);
         _Factory = factory;
     }
 
     @Override
-    public IoFactory factory()
+    public IoFactory<T> factory()
     {
         return _Factory;
     }
+
+
 }

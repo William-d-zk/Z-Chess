@@ -24,6 +24,7 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.component.RaftFactory;
@@ -188,7 +189,7 @@ public class Mapper
                 JsonUtil.writeValueWithFile(_RaftConfig.getConfig(), configFile);
             }
         }
-        catch(IOException e) {
+        catch(IOException | ZException e) {
             _Logger.warning("config file create & write ", e);
         }
         _Logger.debug("raft dao dispose");

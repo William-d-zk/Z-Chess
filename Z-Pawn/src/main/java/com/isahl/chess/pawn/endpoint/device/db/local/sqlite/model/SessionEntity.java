@@ -81,7 +81,7 @@ public class SessionEntity
     @Type(type = "org.hibernate.type.BinaryType")
     public byte[] getDeviceClient()
     {
-        return mClient.encoded();
+        return mClient == null ? null : mClient.encoded();
     }
 
     public DeviceClient client()
