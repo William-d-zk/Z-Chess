@@ -209,6 +209,12 @@ public class StateService
     }
 
     @Override
+    public List<SessionEntity> loadAll()
+    {
+        return _SessionRepository.findAll();
+    }
+
+    @Override
     public void onDismiss(long session)
     {
         Optional<SessionEntity> sOptional = _SessionRepository.findById(session);

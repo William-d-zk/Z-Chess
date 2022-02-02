@@ -35,6 +35,7 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
@@ -63,13 +64,13 @@ public class UserEntity
     private static final long serialVersionUID = -9149289160528408957L;
 
     @Transient
-    private long                   mId;
-    @Transient
     private String                 mUsername;
     @Transient
     private String                 mPassword;
-    @Transient
-    private LocalDateTime          mInvalidAt;
+    @Column(name = "invalid_at",
+            nullable = false)
+    @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
+    private LocalDateTime          invalidAt;
     @Transient
     private Status                 mStatus = COMMON;
     @Transient
@@ -77,7 +78,7 @@ public class UserEntity
 
     public void setId(long id)
     {
-        mId = id;
+        pKey = id;
     }
 
     @Id
@@ -87,7 +88,7 @@ public class UserEntity
                        sequenceName = "user_sequence")
     public long getId()
     {
-        return mId;
+        return primaryKey();
     }
 
     @Column(nullable = false,
@@ -116,7 +117,7 @@ public class UserEntity
     public boolean isCredentialsNonExpired()
     {
         return LocalDateTime.now()
-                            .isBefore(mInvalidAt);
+                            .isBefore(invalidAt);
     }
 
     @Override
@@ -161,18 +162,16 @@ public class UserEntity
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @Column(name = "invalid_at",
-            nullable = false)
     public LocalDateTime getInvalidAt()
     {
-        return mInvalidAt;
+        return invalidAt;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setInvalidAt(LocalDateTime invalidAt)
     {
-        this.mInvalidAt = invalidAt;
+        this.invalidAt = invalidAt;
     }
 
     @Column(nullable = false)
