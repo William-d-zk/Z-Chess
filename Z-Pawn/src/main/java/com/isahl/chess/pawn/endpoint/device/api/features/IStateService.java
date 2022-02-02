@@ -27,6 +27,7 @@ import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -61,4 +62,6 @@ public interface IStateService
     void onDismiss(long session);
 
     SessionEntity load(long session);
+
+    List<SessionEntity> loadAll();
 }

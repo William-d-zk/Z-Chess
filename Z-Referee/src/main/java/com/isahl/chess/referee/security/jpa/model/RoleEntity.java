@@ -55,8 +55,6 @@ public class RoleEntity
     private static final long serialVersionUID = -8748613422660526254L;
 
     @Transient
-    private long                         mId;
-    @Transient
     private String                       mName;
     @Transient
     private ListSerial<PermissionEntity> mPermissions;
@@ -65,7 +63,7 @@ public class RoleEntity
 
     public void setId(long id)
     {
-        mId = id;
+        pKey = id;
     }
 
     @Id
@@ -75,7 +73,7 @@ public class RoleEntity
                        sequenceName = "role_sequence")
     public long getId()
     {
-        return mId;
+        return primaryKey();
     }
 
     @Column(nullable = false,

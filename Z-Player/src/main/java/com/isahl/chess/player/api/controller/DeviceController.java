@@ -28,10 +28,10 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
-import com.isahl.chess.queen.db.model.IStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
@@ -49,13 +49,16 @@ import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 @RequestMapping("device")
 public class DeviceController
 {
-    private final Logger         _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
     private final MixOpenService _MixOpenService;
+    private final IStateService  _StateService;
 
     @Autowired
-    public DeviceController(MixOpenService mixOpenService)
+    public DeviceController(MixOpenService mixOpenService, IStateService stateService)
     {
         _MixOpenService = mixOpenService;
+        _StateService = stateService;
     }
 
     @PostMapping("register")
@@ -131,7 +134,23 @@ public class DeviceController
                                                                        new Triple<>("username", username, AND)));
     }
 
-    @GetMapping("online/all")
+    @GetMapping("online/cached/")
+    public @ResponseBody
+    ZResponse<?> listOnlineCache(
+            @RequestParam(value = "session")
+                    long session)
+    {
+        return ZResponse.success(_StateService.load(session));
+    }
+
+    @GetMapping("online/cached/all")
+    public @ResponseBody
+    ZResponse<?> listOnlineCaches()
+    {
+        return ZResponse.success(_StateService.loadAll());
+    }
+
+    @GetMapping("online/shadow/all")
     public @ResponseBody
     ZResponse<?> listOnlineDevices(
             @RequestParam(value = "page",
@@ -148,7 +167,7 @@ public class DeviceController
         return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
     }
 
-    @GetMapping("online/group-by")
+    @GetMapping("online/shadow/group-by")
     public @ResponseBody
     ZResponse<?> filterOnlineDevicesByUsername(
             @RequestParam("username")

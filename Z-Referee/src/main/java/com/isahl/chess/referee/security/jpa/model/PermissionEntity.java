@@ -54,8 +54,6 @@ public class PermissionEntity
     private static final long serialVersionUID = -4078887725794775246L;
 
     @Transient
-    private long                   mId;
-    @Transient
     private String                 mName;
     @Transient
     private String                 mUrl;
@@ -68,7 +66,7 @@ public class PermissionEntity
 
     public void setId(long id)
     {
-        mId = id;
+        pKey = id;
     }
 
     @Id
@@ -78,7 +76,7 @@ public class PermissionEntity
                        sequenceName = "permission_sequence")
     public long getId()
     {
-        return mId;
+        return primaryKey();
     }
 
     @Column(nullable = false,
