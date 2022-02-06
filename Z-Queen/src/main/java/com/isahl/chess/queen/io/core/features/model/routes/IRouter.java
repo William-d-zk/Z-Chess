@@ -23,7 +23,8 @@
 
 package com.isahl.chess.queen.io.core.features.model.routes;
 
-import com.isahl.chess.queen.io.core.features.model.content.ICommand;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 /**
  * @author william.d.zk
@@ -35,19 +36,19 @@ public interface IRouter
     /**
      * register message with state for session by id
      *
-     * @param stateMessage message with state
-     * @param session      session index
+     * @param msgId 需要等待ack的消息 持有的msg-id
+     * @param body  消息本体
      */
-    void register(ICommand<?> stateMessage, long session);
+    <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body);
 
     /**
      * feed back message state
      *
-     * @param stateMessage message with state
-     * @param session      session index
+     * @param msgId  响应的msg-id
+     * @param origin 消息来源的session-index
      * @return 是否对消息完成了ack动作
      */
-    boolean ack(ICommand<?> stateMessage, long session);
+    boolean ack(long msgId, long origin);
 
     /**
      * clean session state machine for message stack

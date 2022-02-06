@@ -31,6 +31,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
@@ -59,7 +60,7 @@ public class X111_QttConnect
     }
 
     private byte   mAttr;
-    private int    mKeepAlive;
+    private long   mKeepAlive;
     private byte   mVersion;
     private String mUserName;
     private String mPassword;
@@ -76,7 +77,7 @@ public class X111_QttConnect
     public String toString()
     {
         return String.format(
-                "%s:[ctrl-code %#x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
+                "%s:[ctrl-code %#x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive-mills:%d ]",
                 getClass().getSimpleName(),
                 mAttr,
                 getClientId(),
@@ -155,11 +156,12 @@ public class X111_QttConnect
 
     public void setKeepAlive(int seconds)
     {
-        mKeepAlive = seconds;
+
         if(seconds > 0xFFFF) {throw new ZException("keep alive illegal argument [ %d ] ", seconds);}
+        mKeepAlive = TimeUnit.SECONDS.toMillis(seconds);
     }
 
-    public int getKeepAlive()
+    public long getKeepAlive()
     {
         return mKeepAlive;
     }
@@ -350,7 +352,7 @@ public class X111_QttConnect
               .putInt(_MQTT)
               .put(mVersion)
               .put(mAttr)
-              .putShort((short) getKeepAlive());
+              .putShort((short) TimeUnit.MILLISECONDS.toSeconds(getKeepAlive()));
         if(mPayload != null) {output.put(mPayload);}
         return output;
     }

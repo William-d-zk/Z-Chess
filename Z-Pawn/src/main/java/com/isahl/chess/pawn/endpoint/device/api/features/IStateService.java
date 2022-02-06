@@ -25,7 +25,10 @@ package com.isahl.chess.pawn.endpoint.device.api.features;
 
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.util.List;
 import java.util.Map;
@@ -33,26 +36,25 @@ import java.util.regex.Pattern;
 
 public interface IStateService
 {
+    <P extends IRoutable & IProtocol> void store(long origin, long msgId, P body);
 
-    void store(long origin, long msgId, String topic, byte[] payload);
+    void extract(long origin, long msgId);
 
     MsgStateEntity query(long origin, long msgId);
 
     boolean exists(long origin, long msgId);
 
-    void extract(long origin, long msgId);
-
     IThread.Subscribe onSubscribe(IThread.Topic topic, long session);
 
     void onUnsubscribe(IThread.Topic topic, long session);
 
-    void add(long target, long msgId, String topic, byte[] payload);
+    <P extends IRoutable & IProtocol & IQoS> void add(long msgId, P body);
 
-    void drop(long target, long msgId);
+    boolean drop(long target, long msgId);
 
     Map<Pattern, IThread.Subscribe> mappings();
 
-    boolean onLogin(long session, boolean clean);
+    boolean onLogin(long session, boolean clean, long keepalive);
 
     /**
      * 重新登录时，主动清除历史状态| 离线时也需根据 clean-flag 进行清除

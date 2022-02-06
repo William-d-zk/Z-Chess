@@ -31,7 +31,6 @@ import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.model.IStorage.Operation;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -57,6 +56,10 @@ public class ZRaftConfig
     private RaftNode   mPeerBind;
     private String     mBaseDir;
     private RaftConfig mConfig;
+
+    public ZRaftConfig()
+    {
+    }
 
     @PostConstruct
     public void load() throws IOException
@@ -165,7 +168,6 @@ public class ZRaftConfig
         return mConfig.getUid();
     }
 
-    @Bean
     @Override
     public ZUID getZUID()
     {

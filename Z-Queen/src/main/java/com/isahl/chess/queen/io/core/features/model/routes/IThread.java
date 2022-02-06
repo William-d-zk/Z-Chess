@@ -89,7 +89,6 @@ public interface IThread
         private Pattern    mPattern;
         private IQoS.Level mLevel;
         private int        mAlias;
-        private boolean    mRetain;
 
         public Topic(Pattern pattern, IQoS.Level level, int alias)
         {
@@ -125,13 +124,6 @@ public interface IThread
 
         public int alias() {return mAlias;}
 
-        public boolean retain() {return mRetain;}
-
-        public void keep()
-        {
-            mRetain = true;
-        }
-
         @Override
         public int length()
         {
@@ -147,8 +139,7 @@ public interface IThread
         {
             int remain = super.prefix(input);
             int b = input.get();
-            mRetain = (b & IQoS.Level._N_MASK) != 0;
-            mLevel = IQoS.Level.valueOf(b & IQoS.Level._MASK);
+            mLevel = IQoS.Level.valueOf(b);
             mAlias = input.getInt();
             int pl = input.vLength();
             if(pl > 0) {
@@ -163,7 +154,7 @@ public interface IThread
         public ByteBuf suffix(ByteBuf output)
         {
             return super.suffix(output)
-                        .put(mLevel.getValue() | (mRetain ? IQoS.Level._N_MASK : 0))
+                        .put(mLevel.getValue())
                         .putInt(mAlias)
                         .vPut(mPattern != null ? mPattern.pattern()
                                                          .getBytes(StandardCharsets.UTF_8) : null);
@@ -172,7 +163,7 @@ public interface IThread
         @Override
         public String toString()
         {
-            return format("Topic{ pattern:%s level:%s alais:%d with-retain:%s}", pattern(), level(), alias(), retain());
+            return format("Topic{ pattern:%s level:%s alais:%d }", pattern(), level(), alias());
         }
 
         @Override
@@ -204,7 +195,7 @@ public interface IThread
 
         private final Map<Long, IQoS.Level> _SessionMap = new ConcurrentSkipListMap<>();
         private final Pattern               _Pattern;
-        private       IProtocol             mRetained;
+        private       IProtocol             mRetain;
 
         public Subscribe(Pattern pattern) {_Pattern = pattern;}
 
@@ -215,7 +206,7 @@ public interface IThread
 
         public void setRetain(IProtocol content)
         {
-            mRetained = content;
+            mRetain = content;
         }
 
         public Pattern pattern()
@@ -223,9 +214,9 @@ public interface IThread
             return _Pattern;
         }
 
-        public IProtocol retained()
+        public IProtocol retain()
         {
-            return mRetained;
+            return mRetain;
         }
 
         public void onSubscribe(long session, IQoS.Level level)

@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.db.generator;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -48,10 +49,10 @@ import java.io.Serializable;
 public class ZDeviceGenerator
         implements IdentifierGenerator
 {
-    private static ZUID        _ZUID;
+    private static ZUID   _ZUID;
+    private final  Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final  Logger      _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-    private final  ZRaftConfig _ZClusterConfig;
+    private final IRaftConfig _ZClusterConfig;
 
     @Autowired
     public ZDeviceGenerator(ZRaftConfig config)

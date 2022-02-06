@@ -45,7 +45,7 @@ public class DeviceClient
     private static final long serialVersionUID = -3243787401563001082L;
 
     private long                      mIdx;
-    private long                      mKeepAliveTime;
+    private long                      mKeepAlive;
     private boolean                   mWillRetain;
     private IThread.Topic             mWillTopic;
     private IProtocol                 mWillMessage;
@@ -62,7 +62,7 @@ public class DeviceClient
         mWillRetain = willRetain;
         mWillTopic = willTopic;
         mWillMessage = willMessage;
-        mKeepAliveTime = keepalive;
+        mKeepAlive = keepalive;
         mSubscribes = subscribes == null ? new ListSerial<>(IThread.Topic::new)
                                          : new ListSerial<>(subscribes, IThread.Topic::new);
     }
@@ -79,6 +79,16 @@ public class DeviceClient
 
     public long getIdx() {return mIdx;}
 
+    public long getKeepAlive()
+    {
+        return mKeepAlive;
+    }
+
+    public void setKeepAlive(long keepalive)
+    {
+        mKeepAlive = keepalive;
+    }
+
     public IThread.Topic getWillTopic() {return mWillTopic;}
 
     public IProtocol getWillMessage() {return mWillMessage;}
@@ -91,7 +101,7 @@ public class DeviceClient
         int remain = super.prefix(input);
         mIdx = input.getLong();
         remain -= 8;
-        mKeepAliveTime = input.getLong();
+        mKeepAlive = input.getLong();
         mWillRetain = input.get() != 0;
         remain -= 9;
         mWillTopic = new IThread.Topic(input);
@@ -111,7 +121,7 @@ public class DeviceClient
     {
         return super.suffix(output)
                     .putLong(mIdx)
-                    .putLong(mKeepAliveTime)
+                    .putLong(mKeepAlive)
                     .put(mWillRetain ? 1 : 0)
                     .put(mWillTopic.encoded())
                     .put(mWillMessage.encoded())
