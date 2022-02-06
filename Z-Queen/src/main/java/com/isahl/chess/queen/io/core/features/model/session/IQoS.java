@@ -120,8 +120,6 @@ public interface IQoS
             };
         }
 
-        public final static int _MASK   = 0x8F;
-        public final static int _N_MASK = ~_MASK;
 
     }
 

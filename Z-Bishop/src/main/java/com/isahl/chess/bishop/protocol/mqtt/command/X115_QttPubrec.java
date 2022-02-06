@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 
 import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
@@ -38,12 +39,15 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
                   serial = 0x115)
 public class X115_QttPubrec
         extends QttCommand
+        implements IRoutable
 {
 
     public X115_QttPubrec()
     {
         generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC);
     }
+
+    private long mTarget;
 
     @Override
     public int prefix(ByteBuf input)
@@ -72,5 +76,22 @@ public class X115_QttPubrec
     public String toString()
     {
         return String.format("x115 pubrec:{msg-id:%d}", getMsgId());
+    }
+
+    @Override
+    public long target()
+    {
+        return mTarget;
+    }
+
+    public void target(long target)
+    {
+        mTarget = target;
+    }
+
+    @Override
+    public String getTopic()
+    {
+        return null;
     }
 }

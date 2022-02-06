@@ -28,6 +28,7 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -42,6 +43,7 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
                   serial = 0x113)
 public class X113_QttPublish
         extends QttCommand
+        implements IRoutable
 {
 
     public X113_QttPublish()
@@ -50,6 +52,7 @@ public class X113_QttPublish
     }
 
     private String mTopic;
+    private long   mTarget;
 
     @Override
     public int length()
@@ -71,9 +74,21 @@ public class X113_QttPublish
         return this;
     }
 
+    @Override
     public String getTopic()
     {
         return mTopic;
+    }
+
+    @Override
+    public long target()
+    {
+        return mTarget;
+    }
+
+    public void target(long target)
+    {
+        mTarget = target;
     }
 
     @Override

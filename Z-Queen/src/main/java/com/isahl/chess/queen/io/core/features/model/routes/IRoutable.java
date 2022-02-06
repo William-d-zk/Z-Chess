@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,27 +21,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.arena.start;
+package com.isahl.chess.queen.io.core.features.model.routes;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-/**
- * @author william.d.zk
- * @date 2021/02/17
- */
-
-@SpringBootApplication(scanBasePackages = { "com.isahl.chess.knight.raft",
-                                            "com.isahl.chess.rook.storage",
-                                            "com.isahl.chess.pawn.endpoint",
-                                            "com.isahl.chess.player.api",
-                                            "com.isahl.chess.referee.security",
-                                            "com.isahl.chess.arena.gateway" })
-public class ApplicationArena
+public interface IRoutable
+        extends IDeliver
 {
-
-    public static void main(String[] args)
-    {
-        SpringApplication.run(ApplicationArena.class, args);
-    }
+    String getTopic();
 }

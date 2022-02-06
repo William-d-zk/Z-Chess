@@ -54,8 +54,6 @@ public class SessionEntity
 
     @Transient
     private DeviceClient mClient;
-    @Transient
-    private boolean      mClean;
 
     public void setId(long id)
     {
@@ -92,14 +90,4 @@ public class SessionEntity
         mClient = client;
     }
 
-    @Column(name = "clean")
-    public boolean isClean()
-    {
-        return mClean;
-    }
-
-    public void setClean(boolean clean)
-    {
-        mClean = clean;
-    }
 }

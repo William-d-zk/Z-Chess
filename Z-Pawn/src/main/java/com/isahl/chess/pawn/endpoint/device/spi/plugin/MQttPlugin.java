@@ -31,11 +31,9 @@ import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0A_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
@@ -46,8 +44,8 @@ import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntit
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.ICommand;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -56,10 +54,10 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -79,12 +77,9 @@ public class MQttPlugin
 {
     private final static Logger _Logger = Logger.getLogger("endpoint.pawn." + MQttPlugin.class.getName());
 
-    private final IDeviceService                  _DeviceService;
-    private final IMessageService                 _MessageService;
-    private final IStateService                   _StateService;
-    /*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
-    private final Map<Long, Map<Long, IProtocol>> _QttIdentifierMap = new ConcurrentSkipListMap<>();
-    private final Queue<Pair<Long, Instant>>      _SessionIdleQueue = new ConcurrentLinkedQueue<>();
+    private final IDeviceService  _DeviceService;
+    private final IMessageService _MessageService;
+    private final IStateService   _StateService;
 
     @Autowired
     public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService)
@@ -112,7 +107,6 @@ public class MQttPlugin
         switch(content.serial()) {
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
-
                 if(x113.isRetain()) {
                     retain(x113.getTopic(), x113);
                 }
@@ -130,9 +124,10 @@ public class MQttPlugin
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.setMsgId(x113.getMsgId());
                         x115.with(session);
+                        x115.target(session.getIndex());
                         results.add(Triple.of(x115, session, session.getEncoder()));
-                        register(x115, session.getIndex());
-                        _StateService.store(session.getIndex(), x113.getMsgId(), x113.getTopic(), x113.payload());
+                        register(x115.getMsgId(), x115);
+                        _StateService.store(session.getIndex(), x113.getMsgId(), x113);
                         break;
                     default:
                         break;
@@ -141,7 +136,7 @@ public class MQttPlugin
             case 0x114:
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
-                ack(x114, session.getIndex());
+                ack(x114.getMsgId(), session.getIndex());
                 _StateService.drop(session.getIndex(), x114.getMsgId());
                 break;
             case 0x115:
@@ -149,10 +144,11 @@ public class MQttPlugin
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
+                x116.target(session.getIndex());
                 results = new LinkedList<>();
                 results.add(Triple.of(x116.with(session), session, session.getEncoder()));
-                register(x116, session.getIndex());
-                _StateService.drop(session.getIndex(), x115.getMsgId());
+                register(x116.getMsgId(), x116);
+                //                _StateService.drop(session.getIndex(), x115.getMsgId());
                 break;
             case 0x116:
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
@@ -161,7 +157,7 @@ public class MQttPlugin
                 x117.setMsgId(x116.getMsgId());
                 results = new LinkedList<>();
                 results.add(Triple.of(x117.with(session), session, session.getEncoder()));
-                if(ack(x116, session.getIndex())) {
+                if(ack(x116.getMsgId(), session.getIndex())) {
                     if(_StateService.exists(session.getIndex(), x116.getMsgId())) {
                         MsgStateEntity received = _StateService.query(session.getIndex(), x116.getMsgId());
                         if(received != null) {
@@ -177,7 +173,7 @@ public class MQttPlugin
                 break;
             case 0x117:
                 x117 = (X117_QttPubcomp) content;
-                ack(x117, session.getIndex());
+                ack(x117.getMsgId(), session.getIndex());
                 break;
             case 0x11C:
                 return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session),
@@ -281,7 +277,7 @@ public class MQttPlugin
                         clean(origin);
                     }
                     x112.responseOk();
-                    if(_StateService.onLogin(origin, x111.isClean())) {
+                    if(_StateService.onLogin(origin, x111.isClean(), x111.getKeepAlive())) {
                         x112.setPresent();
                     }
                 }
@@ -352,66 +348,25 @@ public class MQttPlugin
     }
 
     @Override
-    public void register(ICommand<?> stateMessage, long session)
+    public <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body)
     {
-        long msgId = stateMessage.getMsgId();
-        if(_QttIdentifierMap.computeIfPresent(session, (key, _MsgIdMessageMap)->{
-            IProtocol old = _MsgIdMessageMap.put(msgId, stateMessage);
-            if(old == null) {
-                _Logger.debug("retry receive: %s", stateMessage);
-            }
-            return _MsgIdMessageMap;
-        }) == null)
-        {
-            //previous == null
-            final Map<Long, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
-            _LocalIdMessageMap.put(msgId, stateMessage);
-            _QttIdentifierMap.put(session, _LocalIdMessageMap);
-            _Logger.debug("first receive: %s", stateMessage);
-        }
+        _StateService.add(msgId, body);
     }
 
     @Override
-    public boolean ack(ICommand<?> stateMessage, long session)
+    public boolean ack(long msgId, long origin)
     {
-        int idleMax = stateMessage.session()
-                                  .getReadTimeOutSeconds();
-        int msgId = (int) stateMessage.getMsgId();
-        boolean[] ack = { true,
-                          true };
-        ack[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
-            _Logger.debug("ack %d @ %#x", msgId, session);
-            ack[1] = old.remove(msgId) != null;
-            return old.isEmpty() ? old : null;
-        }) != null;
-        if(ack[0]) {
-            _Logger.debug("idle session: %#x", session);
-            _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
-        }
-        for(Iterator<Pair<Long, Instant>> it = _SessionIdleQueue.iterator(); it.hasNext(); ) {
-            IPair pair = it.next();
-            long rmSessionIndex = pair.getFirst();
-            Instant idle = pair.getSecond();
-            if(Instant.now()
-                      .isAfter(idle.plusSeconds(idleMax)))
-            {
-                _QttIdentifierMap.remove(rmSessionIndex);
-                it.remove();
-            }
-        }
-        return ack[0] & ack[1];
+        return _StateService.drop(origin, msgId);
     }
 
     @Override
     public void clean(long session)
     {
-        Optional.ofNullable(_QttIdentifierMap.remove(session))
-                .ifPresent(Map::clear);
         _StateService.onDismiss(session);
     }
 
     @Override
-    public void retain(String topic, IProtocol retained)
+    public void retain(String topic, IProtocol content)
     {
         if(_StateService.mappings()
                         .values()
@@ -419,12 +374,12 @@ public class MQttPlugin
                         .filter(subscribe->subscribe.pattern()
                                                     .asMatchPredicate()
                                                     .test(topic))
-                        .peek(subscribe->subscribe.setRetain(retained))
+                        .peek(subscribe->subscribe.setRetain(content))
                         .count() == 0)
         {
             Pattern pattern = _QttTopicToRegex(topic);
             Subscribe subscribe = new Subscribe(pattern);
-            subscribe.setRetain(retained);
+            subscribe.setRetain(content);
             _StateService.mappings()
                          .put(pattern, subscribe);
         }
@@ -505,15 +460,15 @@ public class MQttPlugin
             if(session != null) {
                 X113_QttPublish n113 = x113.copy();
                 n113.with(session);
+                n113.target(session.getIndex());
                 n113.setLevel(mapped.level());
                 if(mapped.level()
                          .getValue() > 0)
                 {
                     n113.setMsgId(_MessageService.generateId(mapped.session()));
-                    register(n113, n113.getMsgId());
+                    register(n113.getMsgId(), n113);
                 }
                 results.add(Triple.of(n113, session, session.getEncoder()));
-                _StateService.add(mapped.session(), n113.getMsgId(), n113.getTopic(), n113.payload());
             }
             else {
                 _Logger.warning("no target session id[ %#x ] found ,ignore publish", mapped.session());
@@ -530,7 +485,7 @@ public class MQttPlugin
             X113_QttPublish x113 = new X113_QttPublish();
             x113.withSub(x111.getWillMessage());
             x113.setLevel(x111.getWillLevel());
-            if(x111.isWillRetain()) {topic.keep();}
+            if(x111.isWillRetain()) {x113.setRetain();}
             return new DeviceClient(deviceId, x111.getKeepAlive(), null, x111.isWillRetain(), topic, x113);
         }
         return new DeviceClient(deviceId);

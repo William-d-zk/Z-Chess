@@ -26,16 +26,22 @@ package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.service;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMessageRepository;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.ISessionRepository;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Subscribe;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Topic;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -46,6 +52,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.cache.CacheManager;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -64,30 +71,32 @@ public class StateService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final ISessionRepository              _SessionRepository;
-    private final IMessageRepository              _MessageRepository;
-    private final CacheManager                    _CacheManager;
-    private final TimeWheel                       _TimeWheel;
-    private final ScheduleHandler<MsgStateEntity> _StorageCleaner;
-    private final ScheduleHandler<StateService>   _StorageHourCleaner;
-    private final ZUID                            _ZUID;
-    private final Map<Pattern, Subscribe>         _Topic2Subscribe;
-    private final Map<Long, Map<Long, IProtocol>> _SessionWithIdentifierMap;
+    private final ISessionRepository                      _SessionRepository;
+    private final IMessageRepository                      _MessageRepository;
+    private final CacheManager                            _CacheManager;
+    private final TimeWheel                               _TimeWheel;
+    private final ScheduleHandler<MsgStateEntity>         _StorageCleaner;
+    private final ScheduleHandler<StateService>           _StorageHourCleaner;
+    private final ZUID                                    _ZUID;
+    private final Map<Pattern, Subscribe>                 _Topic2Subscribe;
+    private final Map<Long, Map<Long, IProtocol>>         _SessionWithIdentifierMap;
+    private final NavigableMap<Long, Pair<Long, Instant>> _SessionIdleMap;
 
     @Autowired
     public StateService(ISessionRepository sessionRepository,
                         IMessageRepository messageRepository,
                         CacheManager cacheManager,
                         TimeWheel timeWheel,
-                        ZUID zuid)
+                        IRaftConfig raftConfig)
     {
         _SessionRepository = sessionRepository;
         _MessageRepository = messageRepository;
         _CacheManager = cacheManager;
         _TimeWheel = timeWheel;
-        _ZUID = zuid;
+        _ZUID = raftConfig.getZUID();
         _Topic2Subscribe = new TreeMap<>(Comparator.comparing(Pattern::pattern));
         _SessionWithIdentifierMap = new ConcurrentSkipListMap<>();
+        _SessionIdleMap = new ConcurrentSkipListMap<>();
         _StorageCleaner = new ScheduleHandler<>(Duration.ofMinutes(5), this::cleanup);
         _StorageHourCleaner = new ScheduleHandler<>(Duration.ofHours(1), true, StateService::cleanup);
     }
@@ -129,13 +138,27 @@ public class StateService
             MsgStateEntity inDb = inDbOptional.get();
             _MessageRepository.delete(inDb);
         }
+        for(Iterator<Map.Entry<Long, Pair<Long, Instant>>> it = _SessionIdleMap.entrySet()
+                                                                               .iterator(); it.hasNext(); ) {
+            Map.Entry<Long, Pair<Long, Instant>> entry = it.next();
+            long session = entry.getKey();
+            IPair pair = entry.getValue();
+            long keepalive = pair.getFirst();
+            Instant idle = pair.getSecond();
+            if(Instant.now()
+                      .isAfter(idle.plusMillis(keepalive)))
+            {
+                _SessionWithIdentifierMap.remove(session);
+                it.remove();
+            }
+        }
     }
 
     @PreDestroy
     private void preDestroy()
     {
         try {
-            _SessionRepository.deleteAll();
+            cleanup(this);
         }
         catch(Throwable e) {
             _Logger.warning(e);
@@ -179,26 +202,37 @@ public class StateService
     }
 
     @Override
-    public boolean onLogin(long session, boolean clean)
+    public boolean onLogin(long session, boolean clean, long keepalive)
     {
-        Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
-        SessionEntity sessionEntity;
-        sessionEntity = sOptional.orElseGet(SessionEntity::new);
-        sessionEntity.setId(session);
-        sessionEntity.setClean(clean);
-        try {
-            if(clean && !_Topic2Subscribe.isEmpty()) {
-                _Topic2Subscribe.values()
-                                .forEach(map->map.onDismiss(session));
+        boolean present = _SessionWithIdentifierMap.containsKey(session) || _SessionRepository.existsById(session);
+        if(clean && !_Topic2Subscribe.isEmpty()) {
+            _Topic2Subscribe.values()
+                            .forEach(map->map.onDismiss(session));
+            try {
+                _SessionRepository.deleteById(session);
             }
-            _SessionWithIdentifierMap.computeIfAbsent(session, k->new HashMap<>());
-            _SessionRepository.save(sessionEntity);
-            return true;
+            catch(Throwable e) {
+                _Logger.warning("session[%#x] clean → db error", e, session);
+            }
         }
-        catch(Throwable e) {
-            _Logger.warning("session [%#x] login state save ", e, session);
+        _SessionWithIdentifierMap.computeIfAbsent(session, k->new HashMap<>());
+        _SessionIdleMap.computeIfAbsent(session, k->Pair.of(keepalive, Instant.now()));
+        if(!clean) {
+            Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
+            SessionEntity sessionEntity;
+            sessionEntity = sOptional.orElseGet(SessionEntity::new);
+            sessionEntity.setId(session);
+            DeviceClient client = new DeviceClient(session);
+            client.setKeepAlive(keepalive);
+            sessionEntity.update(client);
+            try {
+                _SessionRepository.save(sessionEntity);
+            }
+            catch(Throwable e) {
+                _Logger.warning("session [%#x] login state save ", e, session);
+            }
         }
-        return false;
+        return present;
     }
 
     @Override
@@ -217,16 +251,7 @@ public class StateService
     @Override
     public void onDismiss(long session)
     {
-        Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
-        if(sOptional.isPresent()) {
-            SessionEntity present = sOptional.get();
-            if(present.isClean() && !_Topic2Subscribe.isEmpty()) {
-                _Topic2Subscribe.values()
-                                .forEach(map->map.onDismiss(session));
-            }
-            _SessionRepository.deleteById(session);
-        }
-        else {
+        if(!_Topic2Subscribe.isEmpty()) {
             _Topic2Subscribe.values()
                             .forEach(map->map.onDismiss(session));
         }
@@ -234,24 +259,47 @@ public class StateService
             v.clear();
             return null;
         });
+        _SessionIdleMap.remove(session);
+        Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
+        if(sOptional.isPresent()) {
+            SessionEntity sessionEntity = sOptional.get();
+            DeviceClient client = sessionEntity.client();
+            if(client != null) {
+
+            }
+        }
+
     }
 
     @Override
-    public void store(long origin, long msgId, String topic, byte[] payload)
+    public <P extends IRoutable & IProtocol> void store(long origin, long msgId, P body)
     {
-        MsgStateEntity message = new MsgStateEntity();
-        message.setTopic(topic);
-        message.setOrigin(origin);
-        message.setMsgId(msgId);
-        message.setTarget(_ZUID.getPeerId());
-        message.setContent(payload);
-        message.setId(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
-        try {
-            _MessageRepository.save(message);
-            _TimeWheel.acquire(message, _StorageCleaner);
-        }
-        catch(Throwable e) {
-            _Logger.warning("local storage received msg %s failed", message.getId(), e);
+        if(_SessionWithIdentifierMap.computeIfPresent(body.target(), (key, _MsgIdMessageMap)->{
+            IProtocol old = _MsgIdMessageMap.put(msgId, body);
+            if(old != null) {
+                _Logger.debug("duplicate received: %s", body);
+            }
+            return _MsgIdMessageMap;
+        }) == null)
+        {
+            final Map<Long, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
+            _LocalIdMessageMap.put(msgId, body);
+            _SessionWithIdentifierMap.put(body.target(), _LocalIdMessageMap);
+            _Logger.debug("first received: %s", body);
+            MsgStateEntity message = new MsgStateEntity();
+            message.setTopic(body.getTopic());
+            message.setOrigin(origin);
+            message.setMsgId(msgId);
+            message.setTarget(_ZUID.getPeerId());
+            message.setContent(body.payload());
+            message.setId(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
+            try {
+                _MessageRepository.save(message);
+                _TimeWheel.acquire(message, _StorageCleaner);
+            }
+            catch(Throwable e) {
+                _Logger.warning("local storage received msg %s failed", message.getId(), e);
+            }
         }
     }
 
@@ -279,39 +327,66 @@ public class StateService
     }
 
     @Override
-    public void add(long target, long msgId, String topic, byte[] payload)
+    public <P extends IRoutable & IProtocol & IQoS> void add(long msgId, P body)
     {
-        MsgStateEntity message = new MsgStateEntity();
-        message.setTopic(topic);
-        message.setOrigin(_ZUID.getPeerId());
-        message.setMsgId(msgId);
-        message.setTarget(target);
-        message.setContent(payload);
-        message.setId(String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, target, msgId));
-        try {
-            _MessageRepository.save(message);
-            _TimeWheel.acquire(message, _StorageCleaner);
+        if(_SessionWithIdentifierMap.computeIfPresent(body.target(), (key, _MsgIdMessageMap)->{
+            IProtocol old = _MsgIdMessageMap.put(msgId, body);
+            if(old != null) {
+                _Logger.debug("duplicate add: %s", body);
+            }
+            return _MsgIdMessageMap;
+        }) == null)
+        {
+            //previous == null
+            final Map<Long, IProtocol> _LocalIdMessageMap = new HashMap<>(16);
+            _LocalIdMessageMap.put(msgId, body);
+            _SessionWithIdentifierMap.put(body.target(), _LocalIdMessageMap);
+            _Logger.debug("first add: %s", body);
+            if(body.getLevel()
+                   .getValue() > IQoS.Level.ALMOST_ONCE.getValue())
+            {
+                MsgStateEntity message = new MsgStateEntity();
+                message.setTopic(body.getTopic());
+                message.setOrigin(_ZUID.getPeerId());
+                message.setMsgId(msgId);
+                message.setTarget(body.target());
+                message.setContent(body.payload());
+                message.setId(String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, body.target(), msgId));
+                try {
+                    _MessageRepository.save(message);
+                    _TimeWheel.acquire(message, _StorageCleaner);
+                }
+                catch(Throwable e) {
+                    _Logger.warning("local add broker msg %s failed", message.getId(), e);
+                }
+            }
         }
-        catch(Throwable e) {
-            _Logger.warning("local add broker msg %s failed", message.getId(), e);
-        }
-
     }
 
     @Override
-    public void drop(long target, long msgId)
+    public boolean drop(long target, long msgId)
     {
-        String primaryKey = String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, target, msgId);
+        boolean[] ack = { false,
+                          false,
+                          false };
+        ack[0] = _SessionWithIdentifierMap.computeIfPresent(target, (key, old)->{
+            _Logger.debug("drop %d @ %#x", msgId, target);
+            ack[1] = old.remove(msgId) != null;
+            ack[2] = old.isEmpty();
+            return old;
+        }) != null;
+        if(ack[0] && ack[2]) {
+            _SessionIdleMap.computeIfPresent(target, (key, old)->Pair.of(old.getFirst(), Instant.now()));
+        }
+        String key = String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, target, msgId);
+        boolean result = _MessageRepository.existsById(key) || (ack[0] && ack[1]);
         try {
-
-            Optional<MsgStateEntity> optional = _MessageRepository.findById(primaryKey);
-            if(optional.isPresent()) {
-                _MessageRepository.deleteById(primaryKey);
-            }
+            _MessageRepository.deleteById(key);
         }
         catch(Throwable e) {
-            _Logger.warning("local delete msg %s failed", primaryKey, e);
+            _Logger.warning("local delete msg %s failed", key, e);
         }
+        return result;
     }
 
     @Override
