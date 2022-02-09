@@ -322,21 +322,20 @@ public class Mapper
     {
         File dataDir = new File(_LogDataDir);
         if(!dataDir.isDirectory()) {throw new IllegalArgumentException("_LogDataDir doesn't point to a directory");}
-        File[] subs = dataDir.listFiles();
-        if(subs != null) {
-            return Stream.of(subs)
-                         .filter(sub->!sub.isDirectory())
-                         .map(sub->{
+        File[] subFiles = dataDir.listFiles();
+        if(subFiles != null) {
+            return Stream.of(subFiles)
+                         .filter(subFile->!subFile.isDirectory())
+                         .map(subFile->{
                              try {
-                                 String fileName = sub.getName();
+                                 String fileName = subFile.getName();
                                  _Logger.debug("sub:%s", fileName);
                                  Matcher matcher = SEGMENT_NAME_PATTERN.matcher(fileName);
                                  if(matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
-                                     long end = Long.parseLong(matcher.group(2));
                                      String g3 = matcher.group(3);
                                      boolean canWrite = SEGMENT_SUFFIX_WRITE.equalsIgnoreCase(g3);
-                                     return new Segment(sub, start, end, canWrite);
+                                     return new Segment(subFile, start, canWrite);
                                  }
                              }
                              catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
@@ -396,7 +395,7 @@ public class Mapper
                     segment.freeze();
                 }
             }
-            Segment targetSegment = null;
+            Segment segment = null;
             if(needNewFile) {
                 String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
                 _Logger.info("new segment file :%s", newFileName);
@@ -404,8 +403,8 @@ public class Mapper
                 if(!newFile.exists()) {
                     try {
                         if(newFile.createNewFile()) {
-                            targetSegment = new Segment(newFile, newEndIndex, 0, true);
-                            _Index2SegmentMap.put(newEndIndex, targetSegment);
+                            segment = new Segment(newFile, newEndIndex, true);
+                            _Index2SegmentMap.put(newEndIndex, segment);
                         }
                         else {throw new IOException("create file failed");}
                     }
@@ -416,11 +415,11 @@ public class Mapper
                 }
             }
             else {
-                targetSegment = _Index2SegmentMap.lastEntry()
-                                                 .getValue();
+                segment = _Index2SegmentMap.lastEntry()
+                                           .getValue();
             }
-            if(targetSegment != null) {
-                targetSegment.add(entry);
+            if(segment != null) {
+                segment.add(entry);
                 vTotalSize += size;
                 _Logger.debug("append ok: %d", newEndIndex);
                 return true;

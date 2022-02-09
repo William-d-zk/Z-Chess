@@ -71,7 +71,7 @@ public abstract class InnerProtocol
 
     public InnerProtocol(ByteBuf input)
     {
-        int off = offHeader(input);
+        int off = skipHeader(input);
         _Operation = Operation.valueOf(input.peek(off++));
         _Strategy = Strategy.valueOf(input.peek(off));
         _Type = CreatorType.CUSTOM;
@@ -168,6 +168,7 @@ public abstract class InnerProtocol
             input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
             buffer.seek(length);
             int serial = buffer.peekUnsignedShort(0);
+            _Logger.info("load [ %#x|%d ]", serial, serial);
             T t = (T) factory.build(serial);
             if(t.serial() == serial) { //vLength ≥ 1
                 t.decode(buffer);

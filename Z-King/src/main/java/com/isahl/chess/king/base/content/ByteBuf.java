@@ -35,36 +35,30 @@ import java.util.Objects;
  */
 public class ByteBuf
 {
-
-    public static ByteBuf allocate(int size)
-    {
-        return new ByteBuf(size, false);
-    }
-
     public ByteBuf(int size, boolean isDirect)
     {
         _Direct = isDirect;
-        if(size > 0) {buffer = _Direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);}
-        capacity = size;
+        if(size > 0) {mBuffer = _Direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);}
+        mCapacity = size;
     }
 
     private ByteBuf(byte[] bytes)
     {
         _Direct = false;
         if(bytes != null && bytes.length > 0) {
-            buffer = ByteBuffer.wrap(bytes);
-            capacity = bytes.length;
+            mBuffer = ByteBuffer.wrap(bytes);
+            mCapacity = bytes.length;
         }
-        writerIdx = capacity;
+        mWriterIdx = mCapacity;
     }
 
     public ByteBuf(ByteBuf exist)
     {
         _Direct = exist._Direct;
-        capacity = exist.capacity;
-        buffer = exist.buffer;
-        readerIdx = exist.readerIdx;
-        writerIdx = exist.writerIdx;
+        mCapacity = exist.mCapacity;
+        mBuffer = exist.mBuffer;
+        mReaderIdx = exist.mReaderIdx;
+        mWriterIdx = exist.mWriterIdx;
     }
 
     public ByteBuf()
@@ -72,17 +66,30 @@ public class ByteBuf
         _Direct = false;
     }
 
-    protected     ByteBuffer buffer;
-    protected     int        capacity;
-    protected     int        readerIdx;
-    protected     int        writerIdx;
-    private       int        readerMark = -1;
-    private       int        writerMark = -1;
+    public ByteBuf(ByteBuffer source)
+    {
+        _Direct = source.isDirect();
+        mBuffer = source;
+        mCapacity = mBuffer.capacity();
+        mWriterIdx = mCapacity;
+    }
+
+    protected     ByteBuffer mBuffer;
+    protected     int        mCapacity;
+    protected     int        mReaderIdx;
+    protected     int        mWriterIdx;
+    private       int        mReaderMark = -1;
+    private       int        mWriterMark = -1;
     private final boolean    _Direct;
 
     public int capacity()
     {
-        return capacity;
+        return mCapacity;
+    }
+
+    public static ByteBuf allocate(int size)
+    {
+        return new ByteBuf(size, false);
     }
 
     public static ByteBuf wrap(byte[] bytes)
@@ -90,24 +97,29 @@ public class ByteBuf
         return new ByteBuf(Objects.requireNonNull(bytes));
     }
 
+    public static ByteBuf wrap(ByteBuffer buffer)
+    {
+        return new ByteBuf(buffer);
+    }
+
     public ByteBuffer toReadBuffer()
     {
-        return buffer.slice(readerIdx, readableBytes());
+        return mBuffer.slice(mReaderIdx, readableBytes());
     }
 
     public ByteBuffer toWriteBuffer()
     {
-        return buffer.slice(writerIdx, writableBytes());
+        return mBuffer.slice(mWriterIdx, writableBytes());
     }
 
     public ByteBuf discard()
     {
-        if(readerIdx > 0) {
-            int gap = writerIdx - readerIdx;
-            buffer.put(0, buffer, readerIdx, gap);
-            writerIdx -= readerIdx;
-            readerIdx = 0;
-            readerMark = writerMark = -1;
+        if(mReaderIdx > 0) {
+            int gap = mWriterIdx - mReaderIdx;
+            mBuffer.put(0, mBuffer, mReaderIdx, gap);
+            mWriterIdx -= mReaderIdx;
+            mReaderIdx = 0;
+            mReaderMark = mWriterMark = -1;
         }
         return this;
     }
@@ -119,69 +131,69 @@ public class ByteBuf
 
     public ByteBuf clear()
     {
-        writerIdx = readerIdx = 0;
-        buffer.clear();
-        readerMark = writerMark = -1;
+        mWriterIdx = mReaderIdx = 0;
+        mBuffer.clear();
+        mReaderMark = mWriterMark = -1;
         return this;
     }
 
     public byte[] array()
     {
-        return capacity > 0 ? buffer.array() : null;
+        return mCapacity > 0 ? mBuffer.array() : null;
     }
 
     public int writableBytes()
     {
-        return capacity - writerIdx;
+        return mCapacity - mWriterIdx;
     }
 
     public int readableBytes()
     {
-        return writerIdx - readerIdx;
+        return mWriterIdx - mReaderIdx;
     }
 
     public ByteBuf skip(int length)
     {
         checkOffset(length - 1);
-        readerIdx += length;
+        mReaderIdx += length;
         return this;
     }
 
     public ByteBuf seek(int length)
     {
         checkCapacity(length);
-        writerIdx += length;
+        mWriterIdx += length;
         return this;
     }
 
-    public int readerIdx() {return readerIdx;}
+    public int readerIdx() {return mReaderIdx;}
 
-    public int writerIdx() {return writerIdx;}
+    public int writerIdx() {return mWriterIdx;}
 
     public ByteBuf copy()
     {
-        ByteBuf newBuf = new ByteBuf(capacity, _Direct);
-        newBuf.buffer.put(buffer.array())
-                     .clear();
-        newBuf.writerIdx = writerIdx;
-        newBuf.readerIdx = readerIdx;
+        ByteBuf newBuf = new ByteBuf(mCapacity, _Direct);
+        newBuf.mBuffer.put(mBuffer.array())
+                      .clear();
+        newBuf.mWriterIdx = mWriterIdx;
+        newBuf.mReaderIdx = mReaderIdx;
         return newBuf;
     }
 
     public boolean isReadable()
     {
-        return readerIdx < writerIdx;
+        return mReaderIdx < mWriterIdx;
     }
 
     public boolean isWritable()
     {
-        return writerIdx < capacity;
+        return mWriterIdx < mCapacity;
     }
 
     public byte peek(int offset)
     {
         checkOffset(offset);
-        return buffer.get(readerIdx + offset);
+        return mBuffer.get(mReaderIdx + offset);
     }
 
     public byte[] peekAll(int offset)
@@ -190,7 +202,7 @@ public class ByteBuf
         int remain = readableBytes() - offset;
         if(remain > 0) {
             byte[] p = new byte[remain];
-            buffer.get(readerIdx + offset, p);
+            mBuffer.get(mReaderIdx + offset, p);
             return p;
         }
         return null;
@@ -204,7 +216,7 @@ public class ByteBuf
     public int peekShort(int offset)
     {
         checkOffset(offset + 1);
-        return buffer.getShort(readerIdx + offset);
+        return mBuffer.getShort(mReaderIdx + offset);
     }
 
     public int peekUnsignedShort(int offset)
@@ -215,7 +227,7 @@ public class ByteBuf
     public byte get()
     {
         checkOffset(0);
-        return buffer.get(readerIdx++);
+        return mBuffer.get(mReaderIdx++);
     }
 
     public int getUnsigned()
@@ -226,8 +238,8 @@ public class ByteBuf
     public short getShort()
     {
         checkOffset(1);
-        short v = buffer.getShort(readerIdx);
-        readerIdx += 2;
+        short v = mBuffer.getShort(mReaderIdx);
+        mReaderIdx += 2;
         return v;
     }
 
@@ -239,37 +251,37 @@ public class ByteBuf
     public int getInt()
     {
         checkOffset(3);
-        int v = buffer.getInt(readerIdx);
-        readerIdx += 4;
+        int v = mBuffer.getInt(mReaderIdx);
+        mReaderIdx += 4;
         return v;
     }
 
     public long getLong()
     {
         checkOffset(7);
-        long v = buffer.getLong(readerIdx);
-        readerIdx += 8;
+        long v = mBuffer.getLong(mReaderIdx);
+        mReaderIdx += 8;
         return v;
     }
 
     public long peekLong(int offset)
     {
         checkOffset(offset + 7);
-        return buffer.getLong(readerIdx + offset);
+        return mBuffer.getLong(mReaderIdx + offset);
     }
 
     public void get(byte[] dst)
     {
         checkOffset(dst.length - 1);
-        buffer.get(readerIdx, dst);
-        readerIdx += dst.length;
+        mBuffer.get(mReaderIdx, dst);
+        mReaderIdx += dst.length;
     }
 
     public void get(byte[] dst, int off, int len)
     {
         checkOffset(len - 1);
-        buffer.get(readerIdx, dst, off, len);
-        readerIdx += len;
+        mBuffer.get(mReaderIdx, dst, off, len);
+        mReaderIdx += len;
     }
 
     public byte[] vGet()
@@ -289,7 +301,7 @@ public class ByteBuf
         if(len > 0) {
             byte[] v = new byte[len];
             checkOffset(len - 1);
-            buffer.get(readerIdx, v);
+            mBuffer.get(mReaderIdx, v);
             return v;
         }
         return null;
@@ -305,8 +317,8 @@ public class ByteBuf
     {
         if(len > 0) {
             checkOffset(len - 1);
-            String str = new String(buffer.array(), readerIdx, len, StandardCharsets.UTF_8);
-            readerIdx += len;
+            String str = new String(mBuffer.array(), mReaderIdx, len, StandardCharsets.UTF_8);
+            mReaderIdx += len;
             return str;
         }
         return null;
@@ -318,7 +330,7 @@ public class ByteBuf
             int offset = 0;
             int remain = readableBytes();
             while(offset < remain) {
-                if(buffer.get(readerIdx + offset++) == '\n') {
+                if(mBuffer.get(mReaderIdx + offset++) == '\n') {
                     return readUTF(offset).replace("\r", "")
                                           .replace("\n", "");
                 }
@@ -329,7 +341,7 @@ public class ByteBuf
 
     public boolean isOffsetReadable(int offset)
     {
-        return readerIdx + offset < writerIdx;
+        return mReaderIdx + offset < mWriterIdx;
     }
 
     private void checkOffset(int offset)
@@ -341,7 +353,7 @@ public class ByteBuf
 
     public boolean isCapacityWritable(int capacity)
     {
-        return writerIdx + capacity <= this.capacity;
+        return mWriterIdx + capacity <= this.mCapacity;
     }
 
     private void checkCapacity(int capacity)
@@ -353,7 +365,7 @@ public class ByteBuf
 
     private void checkPutAt(int position)
     {
-        if(position < 0 || position >= capacity) {
+        if(position < 0 || position >= mCapacity) {
             throw new ZException("position out of bounds");
         }
     }
@@ -425,6 +437,23 @@ public class ByteBuf
         throw new ZException("malformed length");
     }
 
+    public static int vLengthOff(int length)
+    {
+        if(length < 128) {
+            return 1;
+        }
+        else if(length < 16384) {
+            return 2;
+        }
+        else if(length < 2097152) {
+            return 3;
+        }
+        else if(length < 268435456) {
+            return 4;
+        }
+        throw new ZException("malformed length");
+    }
+
     public static int maxLength()
     {
         return 268435455;
@@ -432,66 +461,66 @@ public class ByteBuf
 
     public void markReader()
     {
-        readerMark = readerIdx;
+        mReaderMark = mReaderIdx;
     }
 
     public void markWriter()
     {
-        writerMark = writerIdx;
+        mWriterMark = mWriterIdx;
     }
 
     public int readerMark()
     {
-        return readerMark;
+        return mReaderMark;
     }
 
     public int writerMark()
     {
-        return writerMark;
+        return mWriterMark;
     }
 
     public ByteBuf put(byte v)
     {
         checkCapacity(1);
-        buffer.put(writerIdx++, v);
+        mBuffer.put(mWriterIdx++, v);
         return this;
     }
 
     public ByteBuf put(int v, int pos)
     {
         checkPutAt(pos);
-        buffer.put(pos, (byte) v);
+        mBuffer.put(pos, (byte) v);
         return this;
     }
 
     public ByteBuf put(int v)
     {
         checkCapacity(1);
-        buffer.put(writerIdx++, (byte) v);
+        mBuffer.put(mWriterIdx++, (byte) v);
         return this;
     }
 
     public ByteBuf putShort(short v)
     {
         checkCapacity(2);
-        buffer.putShort(writerIdx, v);
-        writerIdx += 2;
+        mBuffer.putShort(mWriterIdx, v);
+        mWriterIdx += 2;
         return this;
     }
 
     public ByteBuf putInt(int v)
     {
         checkCapacity(4);
-        buffer.putInt(writerIdx, v);
-        writerIdx += 4;
+        mBuffer.putInt(mWriterIdx, v);
+        mWriterIdx += 4;
         return this;
     }
 
     public ByteBuf putLong(long v)
     {
         checkCapacity(8);
-        buffer.putLong(writerIdx, v);
-        writerIdx += 8;
+        mBuffer.putLong(mWriterIdx, v);
+        mWriterIdx += 8;
         return this;
     }
 
@@ -506,8 +535,8 @@ public class ByteBuf
     {
         if(v == null || v.length == 0) {return this;}
         checkCapacity(v.length);
-        buffer.put(writerIdx, v);
-        writerIdx += v.length;
+        mBuffer.put(mWriterIdx, v);
+        mWriterIdx += v.length;
         return this;
     }
 
@@ -515,8 +544,8 @@ public class ByteBuf
     {
         if(v == null) {return this;}
         checkCapacity(len);
-        buffer.put(writerIdx, v, off, len);
-        writerIdx += len;
+        mBuffer.put(mWriterIdx, v, off, len);
+        mWriterIdx += len;
         return this;
     }
 
@@ -525,9 +554,9 @@ public class ByteBuf
         int len;
         if(v == null || v == this || (len = v.readableBytes()) == 0) {return this;}
         checkCapacity(len);
-        buffer.put(writerIdx, v.array(), v.readerIdx(), len);
-        v.readerIdx += len;
-        writerIdx += len;
+        mBuffer.put(mWriterIdx, v.array(), v.readerIdx(), len);
+        v.mReaderIdx += len;
+        mWriterIdx += len;
         return this;
     }
 
@@ -537,8 +566,8 @@ public class ByteBuf
         byte[] s = v.getBytes(StandardCharsets.UTF_8);
         vPutLength(s.length);
         checkCapacity(s.length);
-        buffer.put(writerIdx, s, 0, s.length);
-        writerIdx += s.length;
+        mBuffer.put(mWriterIdx, s, 0, s.length);
+        mWriterIdx += s.length;
         return this;
     }
 
@@ -547,29 +576,29 @@ public class ByteBuf
         if(v == null || v == this) {return this;}
         int len = Math.min(v.readableBytes(), writableBytes());
         if(len > 0) {
-            buffer.put(writerIdx, v.array(), v.readerIdx, len);
-            v.readerIdx += len;
-            writerIdx += len;
+            mBuffer.put(mWriterIdx, v.array(), v.mReaderIdx, len);
+            v.mReaderIdx += len;
+            mWriterIdx += len;
         }
         return this;
     }
 
     public void resetReader()
     {
-        if(readerMark >= 0 && readerMark <= capacity) {readerIdx = readerMark;}
-        readerMark = -1;
+        if(mReaderMark >= 0 && mReaderMark <= mCapacity) {mReaderIdx = mReaderMark;}
+        mReaderMark = -1;
     }
 
     public void resetWriter()
     {
-        if(writerMark >= 0 && writerMark <= capacity) {writerIdx = writerMark;}
-        writerMark = -1;
+        if(mWriterMark >= 0 && mWriterMark <= mCapacity) {mWriterIdx = mWriterMark;}
+        mWriterMark = -1;
     }
 
     public void expand(int size)
     {
-        buffer = IoUtil.expandBuffer(buffer, size);
-        capacity += size;
+        mBuffer = IoUtil.expandBuffer(mBuffer, size);
+        mCapacity += size;
     }
 
     public void append(ByteBuf other)

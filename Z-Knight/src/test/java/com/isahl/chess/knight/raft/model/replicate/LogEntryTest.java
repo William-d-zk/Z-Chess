@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,51 +21,30 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.base.model;
+package com.isahl.chess.knight.raft.model.replicate;
 
-import com.isahl.chess.board.annotation.ISerialGenerator;
-import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.features.model.IoSerial;
+import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
-/**
- * @author william.d.zk
- */
-@ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class ListSerial<T extends IoSerial>
-        extends LinkedList<T>
-        implements ICollectionSerial<T>
+class LogEntryTest
 {
-
-    private final IoFactory<T> _Factory;
-
-    public ListSerial(IoFactory<T> factory)
+    @Test
+    void testIo()
     {
-        super();
-        _Factory = factory;
-    }
+        LogEntry entry = new LogEntry(1,
+                                      2,
+                                      9981234,
+                                      9123,
+                                      new byte[]{ 1,
+                                                  2,
+                                                  3,
+                                                  4 });
+        System.out.println(entry.length());
+        System.out.println(entry.sizeOf());
+        byte[] encoded = entry.encoded();
+        LogEntry new1 = new LogEntry(ByteBuf.wrap(encoded));
 
-    public ListSerial(Collection<T> src, IoFactory<T> factory)
-    {
-        super(src);
-        _Factory = factory;
-    }
+        System.out.println(new1);
 
-    public ListSerial(ByteBuf input, IoFactory<T> factory)
-    {
-        super();
-        _Factory = factory;
-        decode(input);
     }
-
-    @Override
-    public IoFactory<T> factory()
-    {
-        return _Factory;
-    }
-
 }
