@@ -26,7 +26,6 @@ package com.isahl.chess.king.base.model;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 
@@ -56,6 +55,9 @@ public class BinarySerial
     @Serial
     private static final long serialVersionUID = 483533699319926685L;
 
+    public final static int SERIAL_POS = 0;
+    public final static int LENGTH_POS = 2;
+
     @Override
     public int sizeOf()
     {
@@ -72,11 +74,13 @@ public class BinarySerial
         decode(input);
     }
 
-    public int offHeader(ByteBuf input)
+    public int skipHeader(ByteBuf input)
     {
         int off = 2;
         int left = input.vPeekLength(off);
-        off += ByteBuf.vSizeOf(left) - left;
+        off += ByteBuf.vLengthOff(left);
+        int pl = input.vPeekLength(off);
+        off += ByteBuf.vSizeOf(pl);
         return off;
     }
 
@@ -86,7 +90,7 @@ public class BinarySerial
         int serial = input.getUnsignedShort();
         int length = input.vLength();
         if(serial != serial()) {
-            throw new ZException("serial[%d vs %d] no expected", serial, serial());
+            //            throw new ZException("serial[%d vs %d] no expected", serial, serial());
         }
         mPayload = input.vGet();
         return length - ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);

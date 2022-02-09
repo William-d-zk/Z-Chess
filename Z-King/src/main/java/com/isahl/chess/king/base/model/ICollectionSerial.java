@@ -35,6 +35,10 @@ public interface ICollectionSerial<T extends IoSerial>
                 Collection<T>
 {
 
+    int SIZE_POS   = 6;
+    int SERIAL_POS = 0;
+    int LENGTH_POS = 2;
+
     IoFactory<T> factory();
 
     default void fold(ByteBuf input, int remain)
@@ -48,7 +52,7 @@ public interface ICollectionSerial<T extends IoSerial>
     default int prefix(ByteBuf input)
     {
         int serial = input.getUnsignedShort();
-        int length = input.vLength();
+        int length = input.getInt();
         int size = input.getInt();
         for(int i = 0; i < size; i++) {
             T content = factory().create(input);
@@ -62,7 +66,7 @@ public interface ICollectionSerial<T extends IoSerial>
     default ByteBuf suffix(ByteBuf output)
     {
         output = output.putShort((short) serial())
-                       .vPutLength(length())
+                       .putInt(length())
                        .putInt(size());
         for(IoSerial t : this) {
             output.put(t.encode());
@@ -83,7 +87,7 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default int sizeOf()
     {
-        return ByteBuf.vSizeOf(length()) + 2;
+        return length() + 4 + 2;
     }
 
     @Override
