@@ -27,12 +27,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.component.RaftFactory;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
-import com.isahl.chess.queen.message.InnerProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -127,11 +125,11 @@ public class Mapper
         String logMetaName = _LogMetaDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
-            mLogMeta = InnerProtocol.load(RaftFactory._Instance, metaFile);
+            mLogMeta = BaseMeta.from(metaFile, LogMeta::new);
             if(mLogMeta == null) {
                 mLogMeta = new LogMeta();
+                mLogMeta.with(metaFile);
             }
-            mLogMeta.from(metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("log meta file not exist, name: %s", logMetaName);
@@ -143,11 +141,11 @@ public class Mapper
         String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
-            mSnapshotMeta = InnerProtocol.load(RaftFactory._Instance, metaFile);
+            mSnapshotMeta = BaseMeta.from(metaFile, SnapshotMeta::new);
             if(mSnapshotMeta == null) {
                 mSnapshotMeta = new SnapshotMeta();
+                mSnapshotMeta.with(metaFile);
             }
-            mSnapshotMeta.from(metaFile);
         }
         catch(FileNotFoundException e) {
             _Logger.warning("meta file not exist, name: %s", snapshotMetaName);

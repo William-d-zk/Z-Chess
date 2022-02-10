@@ -51,4 +51,11 @@ class RaftNodeTest
         meta.decode(output);
         System.out.println(meta);
     }
+
+    @Test
+    void testNoHost()
+    {
+        RaftNode node = new RaftNode();
+        System.out.println(node);
+    }
 }

@@ -175,7 +175,7 @@ public class AioPacket
             return mBuffer.array();
         }
         else {
-            return mBuffer.peekAll(0);
+            return mBuffer.peekAll();
         }
     }
 }

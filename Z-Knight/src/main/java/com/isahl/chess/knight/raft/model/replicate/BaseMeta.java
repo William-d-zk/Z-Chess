@@ -24,14 +24,17 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 public abstract class BaseMeta
         extends InnerProtocol
@@ -49,22 +52,25 @@ public abstract class BaseMeta
         super();
     }
 
+    public BaseMeta(ByteBuf input)
+    {
+        super(input);
+    }
+
     @JsonIgnore
     protected RandomAccessFile mFile;
 
     public void flush()
     {
         try {
-            mFile.seek(0);
-            byte[] toWrite = encode().array();
+            byte[] toWrite = encoded();
+            ByteBuffer mapped = mFile.getChannel()
+                                     .map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
             _Logger.info("write meta %s,size:%d,{%s}",
                          getClass().getSimpleName(),
                          toWrite.length,
                          JsonUtil.writeValueAsString(this));
-            mFile.write(IoUtil.variableLength(toWrite.length));
-            mFile.write(toWrite);
-            mFile.getFD()
-                 .sync();
+            mapped.put(toWrite);
         }
         catch(IOException e) {
             e.printStackTrace();
@@ -82,11 +88,19 @@ public abstract class BaseMeta
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected <T extends BaseMeta> T from(RandomAccessFile file)
+    public void with(RandomAccessFile file)
     {
         mFile = file;
-        return (T) this;
+    }
+
+    public static <T extends BaseMeta> T from(RandomAccessFile file, IoFactory<T> factory) throws IOException
+    {
+        if(factory == null || file.length() == 0) {return null;}
+        ByteBuffer mapped = file.getChannel()
+                                .map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+        T t = factory.create(ByteBuf.wrap(mapped));
+        t.mFile = file;
+        return t;
     }
 
 }

@@ -81,12 +81,8 @@ public class RaftNode
                       .putShort((short) getPort())
                       .putShort((short) getGatePort())
                       .put(getState().getCode());
-        byte[] hostBytes = hostBytes();
-        byte[] gateHostBytes = gateHostBytes();
-        output.vPutLength(hostBytes == null ? 0 : hostBytes.length)
-              .put(hostBytes())
-              .vPutLength(gateHostBytes == null ? 0 : gateHostBytes.length)
-              .put(gateHostBytes());
+        output.vPut(hostBytes())
+              .vPut(gateHostBytes());
         return output;
     }
 
@@ -166,29 +162,6 @@ public class RaftNode
         mState = state;
     }
 
-    /*
-     * 对比时，仅比较 id 与 host 忽略 port
-     * 不得在相同的host中绑定多个port，禁止这种操作
-     */
-    @Override
-    public int compareTo(RaftNode o)
-    {
-        int a = Long.compare(primaryKey(), o.primaryKey());
-        return a == 0 ? mHost.compareTo(o.mHost) : a;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }",
-                             primaryKey(),
-                             mHost,
-                             mPort,
-                             mState,
-                             mGateHost,
-                             mGatePort);
-    }
-
     public String getGateHost()
     {
         return mGateHost;
@@ -214,4 +187,26 @@ public class RaftNode
         mGatePort = port;
     }
 
+    /*
+     * 对比时，仅比较 id 与 host 忽略 port
+     * 不得在相同的host中绑定多个port，禁止这种操作
+     */
+    @Override
+    public int compareTo(RaftNode o)
+    {
+        int a = Long.compare(primaryKey(), o.primaryKey());
+        return a == 0 ? mHost.compareTo(o.mHost) : a;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }",
+                             primaryKey(),
+                             mHost,
+                             mPort,
+                             mState,
+                             mGateHost,
+                             mGatePort);
+    }
 }
