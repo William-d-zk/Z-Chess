@@ -62,6 +62,11 @@ public class SnapshotMeta
         super();
     }
 
+    public SnapshotMeta(ByteBuf input)
+    {
+        super(input);
+    }
+
     @Override
     public int length()
     {

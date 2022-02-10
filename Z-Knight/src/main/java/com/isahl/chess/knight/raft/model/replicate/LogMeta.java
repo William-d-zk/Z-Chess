@@ -185,6 +185,11 @@ public class LogMeta
         mGateSet = new SetSerial<>(RaftNode::new);
     }
 
+    public LogMeta(ByteBuf input)
+    {
+        super(input);
+    }
+
     public long getStart()
     {
         return mStart;
