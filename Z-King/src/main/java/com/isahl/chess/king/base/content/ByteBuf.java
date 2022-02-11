@@ -142,7 +142,7 @@ public class ByteBuf
         if(mCapacity > 0) {
             if(_Direct) {
                 byte[] v = new byte[mCapacity];
-                mBuffer.get(v);
+                mBuffer.get(0, v);
                 return v;
             }
             return mBuffer.array();
@@ -183,7 +183,7 @@ public class ByteBuf
         ByteBuf newBuf = new ByteBuf(mCapacity, _Direct);
         if(_Direct) {
             byte[] v = new byte[mCapacity];
-            mBuffer.get(v);
+            mBuffer.get(0, v);
             newBuf.mBuffer.put(v)
                           .clear();
         }
@@ -343,7 +343,7 @@ public class ByteBuf
             String str;
             if(_Direct) {
                 byte[] v = new byte[len];
-                mBuffer.get(v);
+                mBuffer.get(mReaderIdx, v);
                 str = new String(v, StandardCharsets.UTF_8);
             }
             else {
