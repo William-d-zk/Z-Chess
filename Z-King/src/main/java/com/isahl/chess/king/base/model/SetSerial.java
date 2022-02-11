@@ -37,7 +37,7 @@ import java.util.TreeSet;
  * @date 2022-01-07
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class SetSerial<T extends IoSerial>
+public class SetSerial<T extends IoSerial & Comparable<T>>
         extends TreeSet<T>
         implements ICollectionSerial<T>
 {
@@ -55,11 +55,17 @@ public class SetSerial<T extends IoSerial>
         _Factory = factory;
     }
 
+    public SetSerial(ByteBuf input, IoFactory<T> factory)
+    {
+        super();
+        _Factory = factory;
+        decode(input);
+    }
+
     @Override
     public IoFactory<T> factory()
     {
         return _Factory;
     }
-
 
 }
