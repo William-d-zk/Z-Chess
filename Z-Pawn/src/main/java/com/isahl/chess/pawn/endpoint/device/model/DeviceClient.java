@@ -70,7 +70,6 @@ public class DeviceClient
     public DeviceClient(long idx)
     {
         mIdx = idx;
-        mSubscribes = new ListSerial<>(IThread.Topic::new);
     }
 
     public DeviceClient(ByteBuf input) {super(input);}
@@ -104,28 +103,39 @@ public class DeviceClient
         mKeepAlive = input.getLong();
         mWillRetain = input.get() != 0;
         remain -= 9;
-        mWillTopic = new IThread.Topic(input);
-        remain -= mWillTopic.sizeOf();
-        if(_Factory != null) {
+        if(remain > 0) {
+            mWillTopic = new IThread.Topic(input);
+            remain -= mWillTopic.sizeOf();
+        }
+        if(_Factory != null && remain > 0) {
             mWillMessage = _Factory.create(input);
             remain -= mWillMessage.sizeOf();
         }
-        mSubscribes = new ListSerial<>(IThread.Topic::new);
-        mSubscribes.decode(input);
-        remain -= mSubscribes.sizeOf();
+        if(remain > 0) {
+            mSubscribes = new ListSerial<>(IThread.Topic::new);
+            mSubscribes.decode(input);
+            remain -= mSubscribes.sizeOf();
+        }
         return remain;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        return super.suffix(output)
-                    .putLong(mIdx)
-                    .putLong(mKeepAlive)
-                    .put(mWillRetain ? 1 : 0)
-                    .put(mWillTopic.encoded())
-                    .put(mWillMessage.encoded())
-                    .put(mSubscribes.encoded());
+        output = super.suffix(output)
+                      .putLong(mIdx)
+                      .putLong(mKeepAlive)
+                      .put(mWillRetain ? 1 : 0);
+        if(mWillTopic != null) {
+            output.put(mWillTopic.encode());
+        }
+        if(mWillMessage != null) {
+            output.put(mWillMessage.encode());
+        }
+        if(mSubscribes != null) {
+            output.put(mSubscribes.encoded());
+        }
+        return output;
     }
 
     @Override
