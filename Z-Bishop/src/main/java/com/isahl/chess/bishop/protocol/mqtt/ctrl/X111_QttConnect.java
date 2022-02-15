@@ -228,13 +228,12 @@ public class X111_QttConnect
         return (mAttr & Flag.Password.getMask()) > 0;
     }
 
-    public X111_QttConnect setClientId(String id)
+    public void setClientId(String id)
     {
         if(isBlank(id)) {
             throw new IllegalArgumentException("unsupported anonymous access,server never create temporary client-id");
         }
         mClientId = id;
-        return this;
     }
 
     public String getClientId()

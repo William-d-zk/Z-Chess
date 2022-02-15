@@ -28,7 +28,7 @@ import com.isahl.chess.rook.storage.db.repository.BaseStringRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository("local-message-jpa-repository")
-public interface IMessageRepository
+public interface IMsgStateRepository
         extends BaseStringRepository<MsgStateEntity>
 {
 

@@ -34,7 +34,7 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMessageRepository;
+import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMsgStateRepository;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.ISessionRepository;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -71,9 +71,9 @@ public class StateService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final ISessionRepository                      _SessionRepository;
-    private final IMessageRepository                      _MessageRepository;
-    private final CacheManager                            _CacheManager;
+    private final ISessionRepository  _SessionRepository;
+    private final IMsgStateRepository _MessageRepository;
+    private final CacheManager        _CacheManager;
     private final TimeWheel                               _TimeWheel;
     private final ScheduleHandler<MsgStateEntity>         _StorageCleaner;
     private final ScheduleHandler<StateService>           _StorageHourCleaner;
@@ -84,7 +84,7 @@ public class StateService
 
     @Autowired
     public StateService(ISessionRepository sessionRepository,
-                        IMessageRepository messageRepository,
+                        IMsgStateRepository messageRepository,
                         CacheManager cacheManager,
                         TimeWheel timeWheel,
                         IRaftConfig raftConfig)

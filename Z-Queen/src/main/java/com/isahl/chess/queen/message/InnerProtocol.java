@@ -23,15 +23,9 @@
 
 package com.isahl.chess.queen.message;
 
-import com.isahl.chess.board.base.IFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.model.BinarySerial;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.db.model.IStorage;
-
-import java.io.DataInput;
-import java.io.IOException;
 
 /**
  * @author william.d.zk
@@ -154,29 +148,6 @@ public abstract class InnerProtocol
             output.putLong(fKey);
         }
         return output;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends InnerProtocol> T load(IFactory factory, DataInput input) throws IOException
-    {
-        final Logger _Logger = Logger.getLogger("io.queen." + InnerProtocol.class.getSimpleName());
-        //TODO 升级成zero-copy 模式【mapping-buffer】
-        int length = IoUtil.readVariableIntLength(input);
-        _Logger.info("length: %d", length);
-        if(length > 0) {
-            ByteBuf buffer = ByteBuf.allocate(length);
-            input.readFully(buffer.array(), buffer.writerIdx(), buffer.writableBytes());
-            buffer.seek(length);
-            int serial = buffer.peekUnsignedShort(0);
-            _Logger.info("load [ %#x|%d ]", serial, serial);
-            T t = (T) factory.build(serial);
-            if(t.serial() == serial) { //vLength ≥ 1
-                t.decode(buffer);
-            }
-            _Logger.info("inner-protool load:[%s]", t.toString());
-            return t;
-        }
-        return null;
     }
 
 }
