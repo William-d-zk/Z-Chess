@@ -23,15 +23,11 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.service;
 
-import com.isahl.chess.king.base.cron.ScheduleHandler;
-import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
@@ -50,12 +46,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -72,27 +65,15 @@ public class DeviceService
 
     private final IDeviceRepository _DeviceRepository;
     private final CacheManager      _CacheManager;
-    private final CryptoUtil        _CryptoUtil       = new CryptoUtil();
+    private final CryptoUtil        _CryptoUtil = new CryptoUtil();
     private final MixConfig         _MixConfig;
-    private final TimeWheel         _TimeWheel;
-    private final ShadowBatch       _BatchHandleLogin = new ShadowBatch();
-    private final ShadowBatch       _BatchHandleIdle  = new ShadowBatch();
-
-    private static class ShadowBatch
-            extends ConcurrentLinkedQueue<ShadowEntity>
-            implements IValid
-    {}
 
     @Autowired
-    public DeviceService(IDeviceRepository deviceRepository,
-                         CacheManager cacheManager,
-                         MixConfig mixConfig,
-                         TimeWheel timeWheel)
+    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig)
     {
         _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;
         _MixConfig = mixConfig;
-        _TimeWheel = timeWheel;
     }
 
     @PostConstruct
@@ -109,13 +90,6 @@ public class DeviceService
                                   DeviceEntity.class,
                                   Duration.of(15, MINUTES));
         EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(5, MINUTES));
-        _TimeWheel.acquire(_BatchHandleLogin,
-                           new ScheduleHandler<>(Duration.ofSeconds(10),
-                                                 true,
-                                                 this::batchHandleLogin,
-                                                 PRIORITY_NORMAL));
-        _TimeWheel.acquire(_BatchHandleIdle,
-                           new ScheduleHandler<>(Duration.ofSeconds(20), true, this::batchHandleIdle, PRIORITY_NORMAL));
     }
 
     @Cacheable(value = "device_id_cache",
@@ -228,53 +202,8 @@ public class DeviceService
     }
 
     @Override
-    public final List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification,
-                                                     Pageable pageable) throws ZException
-    {
-        return null;
-    }
-
-    @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
         return _DeviceRepository.findAllById(deviceIdList);
-    }
-
-    private void batchHandleLogin(ShadowBatch batch)
-    {
-        if(batch.isEmpty()) {return;}
-        _Logger.info("batch login: %d", batch.size());
-        try {
-            for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {
-                ShadowEntity shadow = it.next();
-                it.remove();
-                /*
-                ShadowEntity exist = _ShadowJpaRepository.findByDeviceId(shadow.getDeviceId());
-                if(exist != null) {
-                    shadow.setShadowId(exist.getShadowId());
-                }
-                _ShadowJpaRepository.save(shadow);
-                */
-            }
-        }
-        catch(Exception e) {
-            _Logger.warning(e);
-        }
-    }
-
-    private void batchHandleIdle(ShadowBatch batch)
-    {
-        if(batch.isEmpty()) {return;}
-        _Logger.info("batch handle idle: %d", batch.size());
-        try {
-            for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {
-                ShadowEntity shadow = it.next();
-                it.remove();
-                //  _ShadowJpaRepository.deleteByDevice(shadow.getDeviceId());
-            }
-        }
-        catch(Exception e) {
-            _Logger.warning(e);
-        }
     }
 }

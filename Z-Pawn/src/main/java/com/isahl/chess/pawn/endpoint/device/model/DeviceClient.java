@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022~2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,98 +23,193 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 
 import java.io.Serial;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
- * @date 2022-01-09
+ * @date 2021/5/9
  */
-
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = ISerial.BIZ_PLAYER_API_SERIAL)
 public class DeviceClient
         extends BinarySerial
 {
+
     @Serial
-    private static final long serialVersionUID = -3243787401563001082L;
+    private static final long serialVersionUID = -6248323684179351633L;
 
-    private long                      mIdx;
-    private long                      mKeepAlive;
-    private boolean                   mWillRetain;
-    private IThread.Topic             mWillTopic;
-    private IProtocol                 mWillMessage;
+    private long                      mDeviceId;
+    private String                    mUsername;
+    private String                    mSN;
+    private IThread.Topic             mWillContent;
     private ListSerial<IThread.Topic> mSubscribes;
+    private long                      mKeepAlive;
+    private long                      mInvalidAt;
+    private boolean                   mClean;
 
-    public DeviceClient(long idx,
-                        long keepalive,
-                        List<IThread.Topic> subscribes,
-                        boolean willRetain,
-                        IThread.Topic willTopic,
-                        IProtocol willMessage)
+    private transient Map<Long, IProtocol> tIdentifierReceivedMap = new HashMap<>();
+    private transient Map<Long, IProtocol> tIdentifierSendingMap  = new HashMap<>();
+
+    @JsonCreator
+    public DeviceClient(
+            @JsonProperty("device_id")
+                    long deviceId,
+            @JsonProperty("username")
+                    String username,
+            @JsonProperty("sn")
+                    String sn)
+
     {
-        mIdx = idx;
-        mWillRetain = willRetain;
-        mWillTopic = willTopic;
-        mWillMessage = willMessage;
-        mKeepAlive = keepalive;
-        mSubscribes = subscribes == null ? new ListSerial<>(IThread.Topic::new)
-                                         : new ListSerial<>(subscribes, IThread.Topic::new);
+        mDeviceId = deviceId;
+        mSubscribes = new ListSerial<>(IThread.Topic::new);
+        mUsername = Objects.requireNonNull(username, "username null");
+        mSN = Objects.requireNonNull(sn, "sn null");
     }
 
-    public DeviceClient(long idx)
+    public DeviceClient(long deviceId)
     {
-        mIdx = idx;
+        mDeviceId = deviceId;
+        mUsername = "undefined";
+        mSN = "undefined";
     }
 
-    public DeviceClient(ByteBuf input) {super(input);}
+    public DeviceClient(ByteBuf input)
+    {
+        super(input);
+    }
 
-    public DeviceClient() {}
+    public long getDeviceId()
+    {
+        return mDeviceId;
+    }
 
-    public long getIdx() {return mIdx;}
+    public List<IThread.Topic> getSubscribes()
+    {
+        return mSubscribes;
+    }
+
+    public IThread.Topic getWillContent()
+    {
+        return mWillContent;
+    }
+
+    public String getSn()
+    {
+        return mSN;
+    }
+
+    public String getUsername()
+    {
+        return mUsername;
+    }
 
     public long getKeepAlive()
     {
         return mKeepAlive;
     }
 
-    public void setKeepAlive(long keepalive)
+    public long getInvalidAt()
     {
-        mKeepAlive = keepalive;
+        return mInvalidAt;
     }
 
-    public IThread.Topic getWillTopic() {return mWillTopic;}
+    public boolean isClean()
+    {
+        return mClean;
+    }
 
-    public IProtocol getWillMessage() {return mWillMessage;}
+    public Map<Long, IProtocol> identifierReceivedMap()
+    {
+        return tIdentifierReceivedMap;
+    }
 
-    public List<IThread.Topic> getSubscribes() {return mSubscribes;}
+    public Map<Long, IProtocol> identifierSendingMap()
+    {
+        return tIdentifierSendingMap;
+    }
+
+    public void setSubscribes(List<IThread.Topic> subscribes)
+    {
+        mSubscribes.clear();
+        mSubscribes.addAll(subscribes);
+    }
+
+    public void setWillContent(IThread.Topic content)
+    {
+        mWillContent = content;
+    }
+
+    public void setKeepAlive(long duration)
+    {
+        mKeepAlive = duration;
+    }
+
+    public void setInvalidAt(long timestamp)
+    {
+        mInvalidAt = timestamp;
+    }
+
+    public void setClean(boolean clean)
+    {
+        mClean = clean;
+    }
+
+    @Override
+    public int length()
+    {
+        return super.length() + // pyaload
+               8 + // device_id
+               8 + // keep alive
+               8 + // invalid at
+               1 + // clean
+               mSubscribes.sizeOf() +  // subscribes.size_of
+               vSizeOf(mUsername.getBytes(StandardCharsets.UTF_8).length) + // username-length
+               vSizeOf(mSN.getBytes(StandardCharsets.UTF_8).length) +// sn-length
+               (mWillContent == null ? 0 : mWillContent.sizeOf()); // will-content
+    }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mIdx = input.getLong();
+        mDeviceId = input.getLong();
         remain -= 8;
         mKeepAlive = input.getLong();
-        mWillRetain = input.get() != 0;
-        remain -= 9;
+        remain -= 8;
+        mInvalidAt = input.getLong();
+        remain -= 8;
+        mClean = input.get() != 0;
+        remain -= 1;
+        mSubscribes = new ListSerial<>(input, IThread.Topic::new);
+        remain -= mSubscribes.sizeOf();
+        int ul = input.vLength();
+        mUsername = input.readUTF(ul);
+        remain -= vSizeOf(ul);
+        int sl = input.vLength();
+        mSN = input.readUTF(sl);
+        remain -= vSizeOf(sl);
         if(remain > 0) {
-            mWillTopic = new IThread.Topic(input);
-            remain -= mWillTopic.sizeOf();
-        }
-        if(_Factory != null && remain > 0) {
-            mWillMessage = _Factory.create(input);
-            remain -= mWillMessage.sizeOf();
-        }
-        if(remain > 0) {
-            mSubscribes = new ListSerial<>(IThread.Topic::new);
-            mSubscribes.decode(input);
-            remain -= mSubscribes.sizeOf();
+            mWillContent = new IThread.Topic(input);
+            remain -= mWillContent.sizeOf();
         }
         return remain;
     }
@@ -123,33 +218,17 @@ public class DeviceClient
     public ByteBuf suffix(ByteBuf output)
     {
         output = super.suffix(output)
-                      .putLong(mIdx)
+                      .putLong(mDeviceId)
                       .putLong(mKeepAlive)
-                      .put(mWillRetain ? 1 : 0);
-        if(mWillTopic != null) {
-            output.put(mWillTopic.encode());
-        }
-        if(mWillMessage != null) {
-            output.put(mWillMessage.encode());
-        }
-        if(mSubscribes != null) {
-            output.put(mSubscribes.encoded());
+                      .putLong(mInvalidAt)
+                      .put(mClean ? 1 : 0)
+                      .put(mSubscribes.encode())
+                      .putUTF(mUsername)
+                      .putUTF(mSN);
+        if(mWillContent != null) {
+            output.put(mWillContent.encode());
         }
         return output;
     }
-
-    @Override
-    public int length()
-    {
-        return super.length() + // super
-               8 + // idx
-               8 + // keep-alive-duration
-               1 + // will-retain
-               (mWillTopic != null ? mWillTopic.sizeOf() : 0) + // will-topic
-               (mWillMessage != null ? mWillMessage.sizeOf() : 0) + // will-message
-               (mSubscribes != null ? mSubscribes.sizeOf() : 0); // subscribes
-    }
-
-    public static IoFactory<IProtocol> _Factory;
 
 }

@@ -25,9 +25,7 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.config.CodeKing;
-import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
@@ -36,10 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 
 /**
  * @author william.d.zk
@@ -100,7 +95,7 @@ public class DeviceController
         return ZResponse.error(CodeKing.MISS.getCode(), "device miss");
     }
 
-    /**
+    /*
      * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
      * 推荐使用带有 查询条件的请求方式
      * 引入 click-house 建立搜索引擎的模式
@@ -108,7 +103,7 @@ public class DeviceController
      * @param page
      * @param size
      * @return
-     */
+
     @GetMapping("all")
     public @ResponseBody
     ZResponse<?> listDevices(
@@ -133,24 +128,9 @@ public class DeviceController
                                                                        createAt == null ? ZUID.EPOCH_DATE : createAt,
                                                                        new Triple<>("username", username, AND)));
     }
+    */
 
-    @GetMapping("online/cached/")
-    public @ResponseBody
-    ZResponse<?> listOnlineCache(
-            @RequestParam(value = "session")
-                    long session)
-    {
-        return ZResponse.success(_StateService.load(session));
-    }
-
-    @GetMapping("online/cached/all")
-    public @ResponseBody
-    ZResponse<?> listOnlineCaches()
-    {
-        return ZResponse.success(_StateService.loadAll());
-    }
-
-    @GetMapping("online/shadow/all")
+    @GetMapping("online/all")
     public @ResponseBody
     ZResponse<?> listOnlineDevices(
             @RequestParam(value = "page",
@@ -167,11 +147,9 @@ public class DeviceController
         return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
     }
 
-    @GetMapping("online/shadow/group-by")
+    @GetMapping("online/stored")
     public @ResponseBody
-    ZResponse<?> filterOnlineDevicesByUsername(
-            @RequestParam("username")
-                    String username,
+    ZResponse<?> listStored(
             @RequestParam(value = "page",
                           required = false,
                           defaultValue = "0")
@@ -183,9 +161,6 @@ public class DeviceController
     {
         size = size < 1 ? 10 : size > 50 ? 50 : size;
         page = page < 0 ? 0 : page;
-        if(isBlank(username)) {
-            return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
-        }
-        return ZResponse.success(_MixOpenService.getOnlineDevicesGroupByUsername(username, PageRequest.of(page, size)));
+        return ZResponse.success(_MixOpenService.getStorageDevice(PageRequest.of(page, size)));
     }
 }

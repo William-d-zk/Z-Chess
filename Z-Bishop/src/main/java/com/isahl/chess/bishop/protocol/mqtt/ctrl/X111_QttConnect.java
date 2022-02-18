@@ -77,7 +77,7 @@ public class X111_QttConnect
     public String toString()
     {
         return String.format(
-                "%s:[ctrl-code %#x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive-mills:%d ]",
+                "%s:[ctrl-code %#x client-id:%s clean:%s will-qos:%s will-retain:%s will-topic:%s will-message:%s user:%s password:%s keepalive-mills:%d ]",
                 getClass().getSimpleName(),
                 mAttr,
                 getClientId(),
