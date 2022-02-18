@@ -25,6 +25,8 @@ package com.isahl.chess.queen.io.core.features.model.routes;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -80,6 +82,7 @@ public interface IThread
     void unsubscribe(Topic topic, long session);
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @ISerialGenerator(parent = ISerial.ENDPOINT_PAWN_SERIAL)
     class Topic
             extends BinarySerial
     {
@@ -89,6 +92,7 @@ public interface IThread
         private Pattern    mPattern;
         private IQoS.Level mLevel;
         private int        mAlias;
+        private boolean    mRetain;
 
         public Topic(Pattern pattern, IQoS.Level level, int alias)
         {
@@ -124,11 +128,14 @@ public interface IThread
 
         public int alias() {return mAlias;}
 
+        public boolean retain() {return mRetain;}
+
         @Override
         public int length()
         {
             int length = 4 + // alias
-                         1;  // level
+                         1 + // level
+                         1;  // retain
             length += vSizeOf(mPattern.pattern()
                                       .getBytes(StandardCharsets.UTF_8).length);
             return super.length() + length;
@@ -140,13 +147,14 @@ public interface IThread
             int remain = super.prefix(input);
             int b = input.get();
             mLevel = IQoS.Level.valueOf(b);
+            mRetain = input.get() != 0;
             mAlias = input.getInt();
             int pl = input.vLength();
             if(pl > 0) {
                 String pattern = input.readUTF(pl);
                 mPattern = Pattern.compile(pattern);
             }
-            remain -= 5 + vSizeOf(pl);
+            remain -= 6 + vSizeOf(pl);
             return remain;
         }
 
@@ -155,15 +163,16 @@ public interface IThread
         {
             return super.suffix(output)
                         .put(mLevel.getValue())
+                        .put(mRetain ? 1 : 0)
                         .putInt(mAlias)
-                        .vPut(mPattern != null ? mPattern.pattern()
-                                                         .getBytes(StandardCharsets.UTF_8) : null);
+                        .vPut(mPattern.pattern() // pattern 恒不为 null
+                                      .getBytes(StandardCharsets.UTF_8));
         }
 
         @Override
         public String toString()
         {
-            return format("Topic{ pattern:%s level:%s alais:%d }", pattern(), level(), alias());
+            return format("Topic{ pattern:%s level:%s alais:%d retain:%s}", pattern(), level(), alias(), retain());
         }
 
         @Override

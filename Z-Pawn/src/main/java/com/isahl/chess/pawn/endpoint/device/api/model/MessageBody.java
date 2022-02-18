@@ -54,11 +54,8 @@ public class MessageBody
     @Serial
     private static final long serialVersionUID = -8904730289818144372L;
 
-    private final String _Topic;
-    private final byte[] _Content;
-
     @JsonIgnore
-    private transient String mTopic;
+    private String mTopic;
 
     @JsonCreator
     public MessageBody(
@@ -67,30 +64,23 @@ public class MessageBody
             @JsonProperty("content")
                     byte[] content)
     {
-        Objects.requireNonNull(topic);
-        Objects.requireNonNull(content);
-        _Topic = topic;
-        _Content = content;
-        withSub(content);
+        mTopic = Objects.requireNonNull(topic);
+        withSub(Objects.requireNonNull(content));
     }
 
     public MessageBody(ByteBuf input)
     {
         super(input);
-        Objects.requireNonNull(mTopic);
-        Objects.requireNonNull(mPayload);
-        _Topic = mTopic;
-        _Content = mPayload;
     }
 
     public String getTopic()
     {
-        return _Topic;
+        return mTopic;
     }
 
     public byte[] getContent()
     {
-        return _Content;
+        return payload();
     }
 
     @Override
@@ -105,13 +95,13 @@ public class MessageBody
     @Override
     public int length()
     {
-        return super.length() + vSizeOf(_Topic.getBytes(StandardCharsets.UTF_8).length);
+        return super.length() + vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length);
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .vPut(_Topic.getBytes(StandardCharsets.UTF_8));
+                    .vPut(mTopic.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -51,15 +51,13 @@ public class DeviceDo
     }
 
     public void setSn(
-            @NonNull
-                    String sn)
+            @NonNull String sn)
     {
         this.mSn = sn.toUpperCase();
     }
 
     public void setPassword(
-            @NonNull
-                    String password)
+            @NonNull String password)
     {
         this.mPassword = password;
     }
@@ -70,8 +68,7 @@ public class DeviceDo
     }
 
     public void setToken(
-            @NonNull
-                    String token)
+            @NonNull String token)
     {
         this.mToken = token.toUpperCase();
     }

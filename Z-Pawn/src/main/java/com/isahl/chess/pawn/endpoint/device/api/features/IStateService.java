@@ -25,10 +25,12 @@ package com.isahl.chess.pawn.endpoint.device.api.features;
 
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -36,11 +38,9 @@ import java.util.regex.Pattern;
 
 public interface IStateService
 {
-    <P extends IRoutable & IProtocol> void store(long origin, long msgId, P body);
+    <P extends IRoutable & IProtocol & IQoS> void store(long origin, long msgId, P body);
 
-    void extract(long origin, long msgId);
-
-    MsgStateEntity query(long origin, long msgId);
+    MsgStateEntity extract(long origin, long msgId);
 
     boolean exists(long origin, long msgId);
 
@@ -48,7 +48,7 @@ public interface IStateService
 
     void onUnsubscribe(IThread.Topic topic, long session);
 
-    <P extends IRoutable & IProtocol & IQoS> void add(long msgId, P body);
+    <P extends IRoutable & IProtocol & IQoS> boolean add(long msgId, P body);
 
     boolean drop(long target, long msgId);
 
@@ -63,7 +63,9 @@ public interface IStateService
      */
     void onDismiss(long session);
 
-    SessionEntity load(long session);
+    List<Long> listSessions();
 
-    List<SessionEntity> loadAll();
+    DeviceClient getClient(long session);
+
+    List<SessionEntity> listStorages(Pageable pageable);
 }

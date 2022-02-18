@@ -24,7 +24,6 @@
 package com.isahl.chess.pawn.endpoint.device.api.features;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -45,7 +44,5 @@ public interface IDeviceService
     List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
 
     DeviceEntity getOneDevice(long id);
-
-    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
 
 }

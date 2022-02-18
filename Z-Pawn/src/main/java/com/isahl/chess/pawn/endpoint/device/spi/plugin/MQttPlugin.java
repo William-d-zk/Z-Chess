@@ -41,7 +41,6 @@ import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -87,11 +86,7 @@ public class MQttPlugin
         _DeviceService = deviceService;
         _MessageService = messageService;
         _StateService = stateService;
-        DeviceClient._Factory = (buf)->{
-            X113_QttPublish x113 = new X113_QttPublish();
-            x113.decode(buf);
-            return x113;
-        };
+
     }
 
     @Override
@@ -159,7 +154,7 @@ public class MQttPlugin
                 results.add(Triple.of(x117.with(session), session, session.getEncoder()));
                 if(ack(x116.getMsgId(), session.getIndex())) {
                     if(_StateService.exists(session.getIndex(), x116.getMsgId())) {
-                        MsgStateEntity received = _StateService.query(session.getIndex(), x116.getMsgId());
+                        MsgStateEntity received = _StateService.extract(session.getIndex(), x116.getMsgId());
                         if(received != null) {
                             X113_QttPublish n113 = new X113_QttPublish();
                             n113.with(session);
@@ -477,18 +472,6 @@ public class MQttPlugin
         _Logger.debug("broker[%s]→%s | %s", x113.getTopic(), routes, x113.toString());
     }
 
-    private DeviceClient ofX111(X111_QttConnect x111, long deviceId)
-    {
 
-        if(x111.hasWill()) {
-            Topic topic = new Topic(_QttTopicToRegex(x111.getWillTopic()), x111.getWillLevel(), 0);
-            X113_QttPublish x113 = new X113_QttPublish();
-            x113.withSub(x111.getWillMessage());
-            x113.setLevel(x111.getWillLevel());
-            if(x111.isWillRetain()) {x113.setRetain();}
-            return new DeviceClient(deviceId, x111.getKeepAlive(), null, x111.isWillRetain(), topic, x113);
-        }
-        return new DeviceClient(deviceId);
-    }
 
 }
