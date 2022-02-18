@@ -86,7 +86,6 @@ public class MQttPlugin
         _DeviceService = deviceService;
         _MessageService = messageService;
         _StateService = stateService;
-
     }
 
     @Override
@@ -471,7 +470,5 @@ public class MQttPlugin
         });
         _Logger.debug("broker[%s]→%s | %s", x113.getTopic(), routes, x113.toString());
     }
-
-
 
 }
