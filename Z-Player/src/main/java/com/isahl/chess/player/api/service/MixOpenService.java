@@ -116,7 +116,7 @@ public class MixOpenService
                                     (int) pageable.next()
                                                   .getOffset()))
                        .stream()
-                       .map(deviceIdx->DeviceDo.of(_DeviceService.getOneDevice(deviceIdx)))
+                       .map(deviceIdx->DeviceDo.of(_StateService.getClient(deviceIdx)))
                        .toList();
     }
 
@@ -124,7 +124,7 @@ public class MixOpenService
     {
         return _StateService.listStorages(pageable)
                             .stream()
-                            .map(se->DeviceDo.of(_DeviceService.getOneDevice(se.getId())))
+                            .map(se->DeviceDo.of(se.client()))
                             .toList();
     }
 }

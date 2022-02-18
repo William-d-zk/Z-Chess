@@ -24,6 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -32,6 +33,7 @@ import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.king.base.model.ListSerial;
+import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 
@@ -40,7 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
@@ -48,6 +49,7 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
  * @author william.d.zk
  * @date 2021/5/9
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.BIZ_PLAYER_API_SERIAL)
 public class DeviceClient
@@ -81,15 +83,14 @@ public class DeviceClient
     {
         mDeviceId = deviceId;
         mSubscribes = new ListSerial<>(IThread.Topic::new);
-        mUsername = Objects.requireNonNull(username, "username null");
-        mSN = Objects.requireNonNull(sn, "sn null");
+        mUsername = username;
+        mSN = sn;
     }
 
     public DeviceClient(long deviceId)
     {
         mDeviceId = deviceId;
-        mUsername = "undefined";
-        mSN = "undefined";
+        mSubscribes = new ListSerial<>(IThread.Topic::new);
     }
 
     public DeviceClient(ByteBuf input)
@@ -173,6 +174,12 @@ public class DeviceClient
         mClean = clean;
     }
 
+    public void of(DeviceEntity device)
+    {
+        mUsername = device.getUsername();
+        mSN = device.getSn();
+    }
+
     @Override
     public int length()
     {
@@ -182,8 +189,8 @@ public class DeviceClient
                8 + // invalid at
                1 + // clean
                mSubscribes.sizeOf() +  // subscribes.size_of
-               vSizeOf(mUsername.getBytes(StandardCharsets.UTF_8).length) + // username-length
-               vSizeOf(mSN.getBytes(StandardCharsets.UTF_8).length) +// sn-length
+               vSizeOf(mUsername == null ? 0 : mUsername.getBytes(StandardCharsets.UTF_8).length) + // username-length
+               vSizeOf(mSN == null ? 0 : mSN.getBytes(StandardCharsets.UTF_8).length) +// sn-length
                (mWillContent == null ? 0 : mWillContent.sizeOf()); // will-content
     }
 

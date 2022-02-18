@@ -593,7 +593,10 @@ public class ByteBuf
 
     public ByteBuf putUTF(String v)
     {
-        if(v == null) {return this;}
+        if(v == null) {
+            vPutLength(0);
+            return this;
+        }
         byte[] s = v.getBytes(StandardCharsets.UTF_8);
         vPutLength(s.length);
         checkCapacity(s.length);

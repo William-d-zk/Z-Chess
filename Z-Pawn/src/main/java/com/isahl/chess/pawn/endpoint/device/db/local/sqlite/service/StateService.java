@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
@@ -69,6 +70,7 @@ public class StateService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
+    private final IDeviceService                _DeviceService;
     private final ISessionRepository            _SessionRepository;
     private final IMsgStateRepository           _MessageRepository;
     private final CacheManager                  _CacheManager;
@@ -79,12 +81,14 @@ public class StateService
     private final Map<Long, DeviceClient>       _ClientPool;
 
     @Autowired
-    public StateService(ISessionRepository sessionRepository,
+    public StateService(IDeviceService deviceService,
+                        ISessionRepository sessionRepository,
                         IMsgStateRepository messageRepository,
                         CacheManager cacheManager,
                         TimeWheel timeWheel,
                         IRaftConfig raftConfig)
     {
+        _DeviceService = deviceService;
         _SessionRepository = sessionRepository;
         _MessageRepository = messageRepository;
         _CacheManager = cacheManager;
@@ -187,6 +191,7 @@ public class StateService
             _ClientPool.put(session, client);
         }
         client.setKeepAlive(duration);
+        client.of(_DeviceService.getOneDevice(session));
         if(clean) {
             if(!_Topic2Subscribe.isEmpty()) {
                 _Topic2Subscribe.values()

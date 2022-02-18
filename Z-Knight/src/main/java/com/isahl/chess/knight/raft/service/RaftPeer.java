@@ -151,7 +151,7 @@ public class RaftPeer
             _SelfMachine.setGateSet(meta.getGateSet());
         }
         if(!_RaftConfig.isInCongress()) {
-            _Logger.info("single mode , ignore state listen");
+            _Logger.info("single mode , ignore cluster state-machine initialize");
             return;
         }
         _TimeWheel.acquire(_RaftMapper,

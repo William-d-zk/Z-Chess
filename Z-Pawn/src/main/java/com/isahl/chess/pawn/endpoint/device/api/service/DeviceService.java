@@ -27,15 +27,16 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IDeviceRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import com.isahl.chess.rook.storage.cache.ehcache.CacheChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -69,7 +70,10 @@ public class DeviceService
     private final MixConfig         _MixConfig;
 
     @Autowired
-    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig)
+    public DeviceService(IDeviceRepository deviceRepository,
+                         CacheManager cacheManager,
+                         MixConfig mixConfig,
+                         CacheChecker cacheChecker)
     {
         _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;
@@ -89,28 +93,11 @@ public class DeviceService
                                   Long.class,
                                   DeviceEntity.class,
                                   Duration.of(15, MINUTES));
-        EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(5, MINUTES));
-    }
-
-    @Cacheable(value = "device_id_cache",
-               key = "#session",
-               unless = "#session == 0 || #result == null")
-    public DeviceEntity findDeviceById(long session)
-    {
-        return _DeviceRepository.findById(session)
-                                .orElse(null);
-    }
-
-    @Cacheable(value = "device_token_cache",
-               key = "#token",
-               unless = "#result == null")
-    public DeviceEntity findDeviceByToken(String token)
-    {
-        return _DeviceRepository.findByToken(token);
     }
 
     @CachePut(value = "device_token_cache",
-              key = "#device.token")
+              key = "#device.token",
+              condition = "#result!=null")
     public DeviceEntity saveDevice(DeviceEntity device)
     {
         return _DeviceRepository.save(device);
@@ -171,10 +158,13 @@ public class DeviceService
         }
     }
 
-    @Cacheable(value = "device_token_cache",
-               key = "#token",
-               unless = "#token == null",
-               condition = "#result != null")
+    @Caching(cacheable = { @Cacheable(value = "device_token_cache",
+                                      key = "#token",
+                                      condition = "#token != null",
+                                      unless = "#result == null") },
+             put = { @CachePut(value = "device_id_cache",
+                               key = "#result.id",
+                               condition = "#result != null") })
     @Override
     public DeviceEntity findByToken(String token) throws ZException
     {
@@ -194,6 +184,10 @@ public class DeviceService
                                 .toList();
     }
 
+    @Cacheable(value = "device_id_cache",
+               key = "#id",
+               condition = "#id != 0",
+               unless = "#result == null")
     @Override
     public DeviceEntity getOneDevice(long id)
     {
