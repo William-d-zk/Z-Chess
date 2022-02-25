@@ -54,14 +54,14 @@ public class RaftGraph
     }
 
     /**
-     * @param peer
+     * @param peer peer-node id
      */
     public void remove(long peer)
     {
         _NodeMap.remove(peer);
     }
 
-    public NavigableMap<Long, RaftMachine> getNodeMap()
+    public NavigableMap<Long, RaftMachine> getPeerMap()
     {
         return _NodeMap;
     }
@@ -76,8 +76,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() == term &&
-                                        machine.getCandidate() == candidate)
+                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -86,8 +85,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() == term &&
-                                        machine.getApplied() >= index &&
+                       .filter(machine->machine.getTerm() == term && machine.getApplied() >= index &&
                                         machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
@@ -97,8 +95,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine->machine.getTerm() >= term &&
-                                        machine.getCandidate() != candidate)
+                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
                        .count() > _NodeMap.size() / 2;
     }
 

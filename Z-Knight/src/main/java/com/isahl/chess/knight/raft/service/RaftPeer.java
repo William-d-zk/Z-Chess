@@ -83,8 +83,8 @@ public class RaftPeer
     private final TimeWheel       _TimeWheel;
     private final RaftGraph       _RaftGraph;
     private final RaftMachine     _SelfMachine;
-    private final Queue<LogEntry> _LogQueue = new LinkedList<>();
-    private final Random          _Random   = new Random();
+    private final Queue<LogEntry> _RecvLogQueue = new LinkedList<>();
+    private final Random          _Random       = new Random();
     private final long            _SnapshotFragmentMaxSize;
 
     /*
@@ -691,7 +691,7 @@ public class RaftPeer
             /* follower 与 Leader 状态一致
                开始同步接受缓存在_LogQueue中的数据
              */
-                for(Iterator<LogEntry> it = _LogQueue.iterator(); it.hasNext(); ) {
+                for(Iterator<LogEntry> it = _RecvLogQueue.iterator(); it.hasNext(); ) {
                     LogEntry entry = it.next();
                     if(_RaftMapper.append(entry)) {
                         _SelfMachine.append(entry.getIndex(), entry.getTerm(), _RaftMapper);
@@ -724,20 +724,20 @@ public class RaftPeer
                                     _SelfMachine.getPeerId());
                 }
                 else {//_SelfMachine.getIndexTerm() < preIndexTerm
-                    if(rollback(_LogQueue, preIndex)) {
+                    if(rollback(_RecvLogQueue, preIndex)) {
                         break CHECK;
                     }
                 }
             }
             else { // _SelfMachine.index == preIndex && _SelfMachine.indexTerm!=preIndexTerm
-                if(rollback(_LogQueue, preIndex)) {
+                if(rollback(_RecvLogQueue, preIndex)) {
                     break CHECK;
                 }
             }
-            _LogQueue.clear();
+            _RecvLogQueue.clear();
             return false;
         }
-        _LogQueue.clear();
+        _RecvLogQueue.clear();
         return true;
     }
 
@@ -843,7 +843,7 @@ public class RaftPeer
     private void receiveLogs(List<LogEntry> logList)
     {
         if(logList == null || logList.isEmpty()) {return;}
-        _LogQueue.addAll(logList);
+        _RecvLogQueue.addAll(logList);
     }
 
     public List<ITriple> onSubmit(byte[] payload, IManager manager, long origin)
@@ -959,7 +959,7 @@ public class RaftPeer
 
     private List<ITriple> createVotes(IManager manager)
     {
-        return _RaftGraph.getNodeMap()
+        return _RaftGraph.getPeerMap()
                          .keySet()
                          .stream()
                          .filter(peerId->peerId != _SelfMachine.getPeerId())
@@ -986,7 +986,7 @@ public class RaftPeer
 
     private List<ITriple> createAppends(IManager manager)
     {
-        return _RaftGraph.getNodeMap()
+        return _RaftGraph.getPeerMap()
                          .values()
                          .stream()
                          .filter(other->other.getPeerId() != _SelfMachine.getPeerId())
@@ -1110,9 +1110,9 @@ public class RaftPeer
     }
 
     @Override
-    public void changeTopology(RaftNode delta, IStorage.Operation operation)
+    public void changeTopology(RaftNode delta)
     {
-        _RaftConfig.changeTopology(delta, operation);
+        _RaftConfig.changeTopology(delta);
         final RingBuffer<QEvent> _ConsensusApiEvent = mClusterPublisher.getPublisher(IOperator.Type.CLUSTER_TOPOLOGY);
         final ReentrantLock _ConsensusApiLock = mClusterPublisher.getLock(IOperator.Type.CLUSTER_TOPOLOGY);
         _ConsensusApiLock.lock();
@@ -1120,7 +1120,7 @@ public class RaftPeer
             long sequence = _ConsensusApiEvent.next();
             try {
                 QEvent event = _ConsensusApiEvent.get(sequence);
-                event.produce(IOperator.Type.CLUSTER_TOPOLOGY, new Pair<>(delta, operation), null);
+                event.produce(IOperator.Type.CLUSTER_TOPOLOGY, Pair.of(this, delta), null);
             }
             finally {
                 _ConsensusApiEvent.publish(sequence);

@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -52,7 +51,7 @@ public class SnapshotEntry
     private static final long serialVersionUID = -8360451804196525728L;
 
     private long mOrigin;
-    private long mIndex;
+    private long mEnd;
     private long mTerm;
     private long mCommit;
     private long mApplied;
@@ -60,98 +59,80 @@ public class SnapshotEntry
     @Override
     public int length()
     {
-        int length = 8 + // index
-                     8 + // term
-                     8 + // origin
-                     8 + // commit
-                     8;  // applied
-
-        return length + super.length();
+        return 8 + // origin
+               8 + // end
+               8 + // term
+               8 + // commit
+               8 + // applied
+               super.length();
     }
 
     @JsonCreator
     public SnapshotEntry(
             @JsonProperty("origin")
                     long origin,
-            @JsonProperty("index")
-                    long index,
+            @JsonProperty("start")
+                    long start,
+            @JsonProperty("end")
+                    long end,
             @JsonProperty("term")
                     long term,
             @JsonProperty("commit")
                     long commit,
             @JsonProperty("applied")
                     long applied,
-            @JsonProperty("payload")
-                    byte[] payload)
+            @JsonProperty("content")
+                    byte[] content)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mOrigin = origin;
-        mIndex = index;
+        pKey = start;
+        mEnd = end;
         mTerm = term;
         mCommit = commit;
         mApplied = applied;
-        mPayload = payload;
+        withSub(content);
     }
 
-    public SnapshotEntry()
+    public SnapshotEntry(ByteBuf input)
     {
-        super();
-    }
-
-    @Override
-    public long origin()
-    {
-        return mOrigin;
-    }
-
-    public long getIndex()
-    {
-        return mIndex;
-    }
-
-    public long getTerm()
-    {
-        return mTerm;
-    }
-
-    public long getCommit()
-    {
-        return mCommit;
-    }
-
-    public long getApplied()
-    {
-        return mApplied;
-    }
-
-    public byte[] getPayload()
-    {
-        return payload();
+        super(input);
+        buildSub();
     }
 
     @Override
-    public int _sub()
-    {
-        return mPayload == null || mPayload.length < 2 ? -1 : IoUtil.readUnsignedShort(mPayload, 0);
-    }
+    public long origin() {return mOrigin;}
+
+    public long getOrigin() {return origin();}
+
+    public long getStart() {return primaryKey();}
+
+    public long getEnd() {return mEnd;}
+
+    public long getTerm() {return mTerm;}
+
+    public long getCommit() {return mCommit;}
+
+    public long getApplied() {return mApplied;}
+
+    public byte[] getContent() {return payload();}
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output = super.suffix(output)
-                      .putLong(getIndex())
-                      .putLong(getTerm())
-                      .putLong(getCommit())
-                      .putLong(getApplied())
-                      .putLong(origin());
-        return output;
+        return super.suffix(output)
+                    .putLong(getEnd())
+                    .putLong(getTerm())
+                    .putLong(getCommit())
+                    .putLong(getApplied())
+                    .putLong(origin());
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mIndex = input.getLong();
+        mEnd = input.getLong();
         mTerm = input.getLong();
         mCommit = input.getLong();
         mApplied = input.getLong();
@@ -165,18 +146,19 @@ public class SnapshotEntry
         return String.format("""
                                      snapshot entry @ %#x {
                                      \t\torigin[%#x],
-                                     \t\tindex[%d],
+                                     \t\tstart[%d],
+                                     \t\tend[%d],
                                      \t\tterm[%d],
                                      \t\tcommit[%d],
-                                     \t\tsub[%#x],
-                                     \t\tsub-payload(%d)
+                                     \t\tsub[%#x](%d),
                                      }""",
                              serial(),
                              origin(),
-                             getIndex(),
+                             getStart(),
+                             getEnd(),
                              getTerm(),
                              getCommit(),
                              _sub(),
-                             mPayload == null ? 0 : mPayload.length);
+                             pLength());
     }
 }

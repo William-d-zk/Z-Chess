@@ -36,15 +36,15 @@ import com.isahl.chess.king.base.model.TextSerial;
  * @date 2020/4/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
-public class ConsistentProtocol
+@ISerialGenerator(parent = ISerial.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
+public class ConsistentText
         extends TextSerial
 {
 
     private final long _ClientId;
 
     @JsonCreator
-    public ConsistentProtocol(
+    public ConsistentText(
             @JsonProperty("text")
                     String text,
             @JsonProperty("client_id")

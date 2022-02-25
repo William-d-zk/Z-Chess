@@ -23,11 +23,13 @@
 
 package com.isahl.chess.knight.raft.features;
 
+import com.isahl.chess.king.base.features.model.IoSerial;
+
 /**
  * @author william.d.zk
  * @date 2020/2/5
  */
 public interface IRaftClient
 {
-    void setConsistentData(byte[] payload);
+    <T extends IoSerial> void submit(T content);
 }
