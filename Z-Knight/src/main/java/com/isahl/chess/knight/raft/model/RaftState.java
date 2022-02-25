@@ -33,9 +33,10 @@ public enum RaftState
     ELECTOR((byte) 2),
     CANDIDATE((byte) 3),
     LEADER((byte) 4),
-    GATE((byte) 7),
-    LEARNER((byte) 8),
-    CLIENT((byte) 16);
+    UNION((byte) 8),
+    GATE((byte) 16),
+    LEARNER((byte) 32),
+    CLIENT((byte) 64);
 
     private final byte _Code;
 
@@ -56,9 +57,10 @@ public enum RaftState
             case 2 -> ELECTOR;
             case 3 -> CANDIDATE;
             case 4 -> LEADER;
-            case 7 -> GATE;
-            case 8 -> LEARNER;
-            case 16 -> CLIENT;
+            case 8 -> UNION;
+            case 16 -> GATE;
+            case 32 -> LEARNER;
+            case 64 -> CLIENT;
             default -> throw new IllegalArgumentException();
         };
     }

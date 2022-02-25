@@ -160,6 +160,16 @@ public class BinarySerial
         return mSubContent;
     }
 
+    public IoSerial buildSub()
+    {
+        return mPayload == null ? null : (mSubContent = new BinarySerial(ByteBuf.wrap(mPayload)));
+    }
+
+    public int pLength()
+    {
+        return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
+    }
+
     public static int seekSerial(ByteBuf buffer)
     {
         return buffer.peekUnsignedShort(0);

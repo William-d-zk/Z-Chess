@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.raft.features;
 
+import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.io.core.features.model.content.IControl;
 
@@ -31,7 +32,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
  * @date 2020/1/4
  */
 public interface IRaftControl
-        extends IControl
+        extends IControl<ZContext>
 {
     long getPeerId();
 

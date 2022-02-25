@@ -77,18 +77,18 @@ public class RaftMachine
     @Override
     public int length()
     {   //peer @ pKey
-        int length = 8 + // term
-                     8 + // index
-                     8 + // index-term
-                     8 + // match-index
-                     8 + // applied
-                     8 + // commit
-                     8 + // candidate
-                     8 + // leader
-                     1;  // state
-        length += mPeerSet.sizeOf();
-        length += mGateSet.sizeOf();
-        return length + super.length();
+        return 8 + // term
+               8 + // index
+               8 + // index-term
+               8 + // match-index
+               8 + // applied
+               8 + // commit
+               8 + // candidate
+               8 + // leader
+               1 + // state
+               mPeerSet.sizeOf() + // peer-set.v_size
+               mGateSet.sizeOf() + // gate-set.v_size
+               super.length();
     }
 
     @JsonCreator
@@ -109,9 +109,9 @@ public class RaftMachine
         mGateSet = new SetSerial<>(RaftNode::new);
     }
 
-    public RaftMachine()
+    public RaftMachine(ByteBuf input)
     {
-        super(Operation.OP_MODIFY, Strategy.RETAIN);
+        super(input);
     }
 
     @Override
@@ -128,8 +128,10 @@ public class RaftMachine
         mLeader = input.getLong();
         mState = input.get();
         remain -= 65;// 8x8 +1;
+        if(mPeerSet == null) {mPeerSet = new SetSerial<>(RaftNode::new);}
         mPeerSet.decode(input);
         remain -= mPeerSet.sizeOf();
+        if(mGateSet == null) {mGateSet = new SetSerial<>(RaftNode::new);}
         mGateSet.decode(input);
         remain -= mGateSet.sizeOf();
         return remain;

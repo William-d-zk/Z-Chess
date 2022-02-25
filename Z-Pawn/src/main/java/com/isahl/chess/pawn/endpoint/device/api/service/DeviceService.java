@@ -97,7 +97,7 @@ public class DeviceService
 
     @CachePut(value = "device_token_cache",
               key = "#device.token",
-              condition = "#result!=null")
+              condition = "#result != null")
     public DeviceEntity saveDevice(DeviceEntity device)
     {
         return _DeviceRepository.save(device);

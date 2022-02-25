@@ -50,7 +50,6 @@ public class LogEntry
     private final static long serialVersionUID = -3944638115324945253L;
 
     private long mTerm;
-    private long mIndex;
     /*
     纪录哪个Raft-Client发起的当前这次一致性记录
      */
@@ -72,20 +71,15 @@ public class LogEntry
                     long client,
             @JsonProperty("origin")
                     long origin,
-            @JsonProperty("payload")
-                    byte[] payload)
+            @JsonProperty("content")
+                    byte[] content)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
+        pKey = index;
         mTerm = term;
-        pKey = mIndex = index;
         mClient = client;
         mOrigin = origin;
-        mPayload = payload;
-    }
-
-    public LogEntry()
-    {
-        super();
+        withSub(content);
     }
 
     public LogEntry(ByteBuf input)
@@ -93,44 +87,11 @@ public class LogEntry
         super(input);
     }
 
-    public long getTerm()
-    {
-        return mTerm;
-    }
+    public long getTerm() {return mTerm;}
 
-    public long getIndex()
-    {
-        return mIndex;
-    }
+    public long getIndex() {return primaryKey();}
 
-    @Override
-    public int length()
-    {
-        return 8 + //term
-               8 + //client
-               8 +  //origin
-               super.length(); //pKey == index
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(getTerm())
-                    .putLong(getClient())
-                    .putLong(origin());
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mIndex = pKey;
-        mTerm = input.getLong();
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        return remain - 24;
-    }
+    public byte[] getContent() {return payload();}
 
     public long getClient()
     {
@@ -143,15 +104,46 @@ public class LogEntry
         return mOrigin;
     }
 
+    public long getOrigin() {return origin();}
+
+    @Override
+    public int length()
+    {
+        return 8 + //term
+               8 + //client
+               8 + //origin
+               super.length(); //pKey == index
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(getTerm())
+                    .putLong(getClient())
+                    .putLong(getOrigin());
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mTerm = input.getLong();
+        mClient = input.getLong();
+        mOrigin = input.getLong();
+        return remain - 24;
+    }
+
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub-size:%d }",
+        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub[%#x](%d) }",
                              getIndex(),
                              getTerm(),
                              getClient(),
-                             origin(),
-                             mPayload == null ? 0 : mPayload.length);
+                             getOrigin(),
+                             _sub(),
+                             pLength());
     }
 
 }

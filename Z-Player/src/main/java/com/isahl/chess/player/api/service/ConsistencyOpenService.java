@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
-import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
+import com.isahl.chess.knight.cluster.model.ConsistentText;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -57,7 +57,7 @@ public class ConsistencyOpenService
     public ICode submit(String content)
     {
         if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
-        ConsistentProtocol consistency = new ConsistentProtocol(content, _RaftPeer.generateId());
+        ConsistentText consistency = new ConsistentText(content, _RaftPeer.generateId());
         ICode result = submit(consistency, _DeviceNode);
 
         if(result.getCode() == KingCode.SUCCESS) {
