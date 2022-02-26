@@ -23,7 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.db.config;
 
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import com.isahl.chess.rook.storage.db.config.BaseJpaConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -44,6 +46,8 @@ import javax.sql.DataSource;
 public class ApiJpaConfig
         extends BaseJpaConfig
 {
+    @Autowired
+    public ApiJpaConfig(EhcacheConfig cacheConfig) {super(cacheConfig);}
 
     @Bean("api-entity-manager")
     public LocalContainerEntityManagerFactoryBean createRemoteEntityManager(

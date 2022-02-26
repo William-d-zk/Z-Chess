@@ -31,14 +31,17 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.cache.CacheManager;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +57,7 @@ import java.util.stream.Stream;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.TERM_NAN;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
 public class Mapper
@@ -69,6 +73,7 @@ public class Mapper
     private final TreeMap<Long, Segment>    _Index2SegmentMap          = new TreeMap<>();
     private final IRaftConfig               _RaftConfig;
     private final TypeReference<RaftConfig> _TypeReferenceOfRaftConfig = new TypeReference<>() {};
+    private final CacheManager              _CacheManager;
 
     private          LogMeta       mLogMeta;
     private          SnapshotMeta  mSnapshotMeta;
@@ -81,9 +86,10 @@ public class Mapper
     private final    Lock          _SnapshotLock    = new ReentrantLock();
 
     @Autowired
-    public Mapper(ZRaftConfig config)
+    public Mapper(ZRaftConfig config, CacheManager cacheManager)
     {
         String baseDir = config.getBaseDir();
+        _CacheManager = cacheManager;
         _RaftConfig = config;
         _RaftConfigDir = String.format("%s%s.conf", baseDir, File.separator);
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
@@ -93,13 +99,18 @@ public class Mapper
     }
 
     @PostConstruct
-    private void init()
+    private void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         _Logger.debug("mapper-initialize conf:[%s] meta:[%s] data:[%s] snap:[%s] ",
                       _RaftConfigDir,
                       _LogMetaDir,
                       _LogDataDir,
                       _SnapshotDir);
+        EhcacheConfig.createCache(_CacheManager,
+                                  "raft_log_entry",
+                                  Long.class,
+                                  LogEntry.class,
+                                  Duration.of(30, SECONDS));
         File file = new File(_RaftConfigDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _RaftConfigDir));

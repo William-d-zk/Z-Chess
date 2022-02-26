@@ -26,8 +26,8 @@ package com.isahl.chess.queen.events.functions;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.IFailed;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author william.d.zk
