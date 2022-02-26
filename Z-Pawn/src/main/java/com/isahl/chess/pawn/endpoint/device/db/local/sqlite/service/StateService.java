@@ -107,6 +107,11 @@ public class StateService
                                   Long.class,
                                   Integer.class,
                                   Duration.of(2, MINUTES));
+//        EhcacheConfig.createCache(_CacheManager,
+//                                  "raft_log_entry",
+//                                  Long.class,
+//                                  LogEntry.class,
+//                                  Duration.of(30, SECONDS));
         _TimeWheel.acquire(this, _StorageHourCleaner);
     }
 

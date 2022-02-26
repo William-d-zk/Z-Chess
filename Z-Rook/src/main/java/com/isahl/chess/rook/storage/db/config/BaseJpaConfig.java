@@ -23,6 +23,8 @@
 
 package com.isahl.chess.rook.storage.db.config;
 
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
@@ -39,6 +41,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 @EnableJpaAuditing
@@ -48,6 +51,18 @@ import javax.sql.DataSource;
 @PropertySource({ "classpath:db.properties" })
 public class BaseJpaConfig
 {
+    private final EhcacheConfig _CacheConfig;
+
+    @Autowired
+    public BaseJpaConfig(EhcacheConfig cacheConfig) {_CacheConfig = cacheConfig;}
+
+    @PostConstruct
+    private void initialize()
+    {
+        System.out.println("init cache!");
+        _CacheConfig.defaultDefine();
+    }
+
     @Bean("primary-data-source")
     @ConfigurationProperties(prefix = "z.rook.primary.datasource")
     public DataSource getPrimaryDataSource()

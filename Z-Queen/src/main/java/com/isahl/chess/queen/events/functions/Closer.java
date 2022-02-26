@@ -24,8 +24,8 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.io.IOException;
 

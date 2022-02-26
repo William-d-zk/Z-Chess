@@ -23,13 +23,13 @@
 
 package com.isahl.chess.rook.storage.cache.config;
 
-import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import java.time.Duration;
@@ -48,14 +48,13 @@ import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguratio
 public class EhcacheConfig
 {
 
-    private final Logger _Logger = Logger.getLogger("rook.cache." + getClass().getSimpleName());
-
-    private static       XmlConfiguration _RookConfig;
+    private static       XmlConfiguration RookConfig;
     private static final String           DEFAULT_TEMPLATE_NAME = "rook-default";
 
-    public EhcacheConfig()
+    @PostConstruct
+    private void load()
     {
-        _RookConfig = new XmlConfiguration(Objects.requireNonNull(getClass().getResource("/ehcache.xml")));
+        RookConfig = new XmlConfiguration(Objects.requireNonNull(getClass().getResource("/ehcache.xml")));
     }
 
     public static <K, V> Cache<K, V> createCache(CacheManager cacheManager,
@@ -64,12 +63,17 @@ public class EhcacheConfig
                                                  Class<V> valueType,
                                                  Duration expiry) throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        CacheConfigurationBuilder<K, V> builder = _RookConfig.newCacheConfigurationBuilderFromTemplate(
+        CacheConfigurationBuilder<K, V> builder = RookConfig.newCacheConfigurationBuilderFromTemplate(
                 DEFAULT_TEMPLATE_NAME,
                 keyType,
                 valueType);
         return cacheManager.createCache(cacheName,
                                         fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
                                                                              .build()));
+    }
+
+    public void defaultDefine()
+    {
+
     }
 }

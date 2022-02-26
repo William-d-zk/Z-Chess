@@ -39,6 +39,11 @@
             <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.isahl.chess</groupId>
+            <artifactId>storage.z-rook</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!--spring boot-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -62,6 +67,7 @@
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
         </dependency>
+
     </dependencies>
     <build>
         <plugins>

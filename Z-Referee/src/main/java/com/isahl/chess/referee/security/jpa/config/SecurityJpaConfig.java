@@ -23,7 +23,9 @@
 
 package com.isahl.chess.referee.security.jpa.config;
 
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import com.isahl.chess.rook.storage.db.config.BaseJpaConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -48,6 +50,9 @@ import javax.sql.DataSource;
 public class SecurityJpaConfig
         extends BaseJpaConfig
 {
+    @Autowired
+    public SecurityJpaConfig(EhcacheConfig cacheConfig) {super(cacheConfig);}
+
     @Bean("security-entity-manager")
     public LocalContainerEntityManagerFactoryBean createSecurityEntityManager(
             @Qualifier("primary-data-source")

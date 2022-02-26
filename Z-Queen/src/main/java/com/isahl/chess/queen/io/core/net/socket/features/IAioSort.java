@@ -24,8 +24,8 @@
 package com.isahl.chess.queen.io.core.net.socket.features;
 
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
 /**
  * @author william.d.zk

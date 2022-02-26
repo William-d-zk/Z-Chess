@@ -22,7 +22,6 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
