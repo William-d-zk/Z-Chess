@@ -104,7 +104,7 @@ public interface IClusterNode
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X08_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                    return new Triple<>(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()),
                                         session,
                                         SINGLE);
                 }
@@ -166,7 +166,7 @@ public interface IClusterNode
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X08_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
+                    return new Triple<>(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()),
                                         session,
                                         SINGLE);
                 }

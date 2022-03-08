@@ -96,11 +96,10 @@ public class X76_RaftResp
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output = super.suffix(output)
-                      .putLong(mClientId)
-                      .putLong(mOrigin)
-                      .putInt(mCode);
-        return output;
+        return super.suffix(output)
+                    .putLong(mClientId)
+                    .putLong(mOrigin)
+                    .putInt(mCode);
     }
 
     @Override

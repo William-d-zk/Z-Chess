@@ -27,7 +27,12 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -93,6 +98,14 @@ public class X78_RaftChange
         int remain = super.prefix(input);
         mOrigin = input.getLong();
         return remain - 8;
+    }
+
+    public <T extends IoSerial> List<T> getNewGraph(IoFactory<T> factory)
+    {
+        if(mPayload == null || factory == null) {return null;}
+        ListSerial<T> result = new ListSerial<>(factory);
+        result.decode(ByteBuf.wrap(mPayload));
+        return result;
     }
 
     @Override

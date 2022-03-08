@@ -76,7 +76,7 @@ public abstract class BaseAioConnector
     @Override
     public boolean retry()
     {
-        retry:
+        OUTSIDE:
         for(; ; ) {
             int c = _State.get();
             int rs = ITask.stateOf(c, RETRY_LIMIT);
@@ -87,7 +87,7 @@ public abstract class BaseAioConnector
                 if(ITask.compareAndIncrementRetry(_State, rc)) {return true;}
                 c = _State.get();// reload
                 if(ITask.stateOf(c, RETRY_LIMIT) != rs) {
-                    continue retry;
+                    continue OUTSIDE;
                 }
             }
         }

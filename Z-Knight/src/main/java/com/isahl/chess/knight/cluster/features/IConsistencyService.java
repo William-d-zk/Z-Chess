@@ -58,7 +58,7 @@ public interface IConsistencyService
                 event.produce(CONSISTENCY_SERVICE,
                               new Pair<>(request,
                                          node.getPeer()
-                                             .getPeerId()),
+                                             .peerId()),
                               null);
             }
             finally {

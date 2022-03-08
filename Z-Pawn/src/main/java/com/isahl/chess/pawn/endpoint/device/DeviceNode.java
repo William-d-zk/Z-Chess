@@ -99,7 +99,7 @@ public class DeviceNode
             final int _PeerBindPort = peerBind.getPort();
             hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
             _PeerPing = new X0B_Ping(String.format("%#x,%s:%d",
-                                                   _ClusterPeer.getPeerId(),
+                                                   _ClusterPeer.peerId(),
                                                    _PeerBindHost,
                                                    _PeerBindPort));
         }
@@ -112,7 +112,7 @@ public class DeviceNode
             final int _GateBindPort = gateBind.getGatePort();
             hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
             _GatePing = new X0B_Ping(String.format("%#x,%s:%d",
-                                                   _ClusterPeer.getPeerId(),
+                                                   _ClusterPeer.peerId(),
                                                    _GateBindHost,
                                                    _GateBindPort));
         }
@@ -235,7 +235,7 @@ public class DeviceNode
     @Override
     public boolean isOwnedBy(long origin)
     {
-        return _ClusterPeer.getPeerId() == (origin & ZUID.PEER_MASK);
+        return _ClusterPeer.peerId() == (origin & ZUID.PEER_MASK);
     }
 
     @Override

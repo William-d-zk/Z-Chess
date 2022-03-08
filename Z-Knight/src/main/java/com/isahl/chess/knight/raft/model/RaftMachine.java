@@ -62,14 +62,14 @@ public class RaftMachine
 
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
-    private long                mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private long                mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private long                mIndexTerm; // 本地日志对应的Term
-    private long                mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private long                mCandidate;
-    private long                mLeader;
-    private long                mCommit;    // 集群中已知的最大CommitIndex
-    private long                mApplied;   // 本地已被应用的Index
+    private long                mTerm;      // 触发选举时 term > index-term
+    private long                mIndex;     // 本地日志 index，leader-index >= commit-index 其他状态：follower-index <= commit-index
+    private long                mIndexTerm; // 本地日志对应的 term
+    private long                mMatchIndex;// leader: 记录 follower 已经接收的记录
+    private long                mCandidate; // candidate
+    private long                mLeader;    // leader
+    private long                mCommit;    // 集群中已知的最大 commit-index
+    private long                mApplied;   // 本地已被应用的 applied-index
     private int                 mState = FOLLOWER.getCode();
     private SetSerial<RaftNode> mPeerSet;
     private SetSerial<RaftNode> mGateSet;
@@ -532,5 +532,20 @@ public class RaftMachine
     public boolean isEqualState(RaftState state)
     {
         return mState == state.getCode();
+    }
+
+    public void from(RaftMachine source)
+    {
+        mTerm = source.getTerm();
+        mIndex = source.getIndex();
+        mIndexTerm = source.getIndexTerm();
+        mMatchIndex = source.getMatchIndex();
+        mCandidate = source.getCandidate();
+        mLeader = source.getLeader();
+        mCommit = source.getCommit();
+        mApplied = source.getApplied();
+        mState = source.mState;
+        mPeerSet.addAll(source.getPeerSet());
+        mGateSet.addAll(source.getGateSet());
     }
 }
