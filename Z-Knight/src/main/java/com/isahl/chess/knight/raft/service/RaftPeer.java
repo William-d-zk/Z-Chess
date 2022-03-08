@@ -38,7 +38,6 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftControl;
-import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
@@ -51,7 +50,6 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
@@ -81,8 +79,10 @@ public class RaftPeer
     private final IRaftConfig     _RaftConfig;
     private final IRaftMapper     _RaftMapper;
     private final TimeWheel       _TimeWheel;
-    private final RaftGraph       _RaftGraph;
+    private final RaftGraph       _SelfGraph;
+    private final RaftGraph       _JointGraph;
     private final RaftMachine     _SelfMachine;
+    private final RaftMachine     _JointMachine;
     private final Queue<LogEntry> _RecvLogQueue = new LinkedList<>();
     private final Random          _Random       = new Random();
     private final long            _SnapshotFragmentMaxSize;
@@ -94,8 +94,8 @@ public class RaftPeer
     private final Map<Long, X75_RaftReq>    _Cached = new TreeMap<>();
     private final ScheduleHandler<RaftPeer> _ElectSchedule, _HeartbeatSchedule, _TickSchedule, _CleanSchedule;
 
-    private ILocalPublisher mClusterPublisher;
-    private ICancelable     mElectTask, mHeartbeatTask, mTickTask;
+    private IClusterNode mClusterNode;
+    private ICancelable  mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftMapper)
     {
@@ -108,9 +108,12 @@ public class RaftPeer
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
                                                          .multipliedBy(2), RaftPeer::startVote);
         _CleanSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), true, RaftPeer::cleanCache);
-        _RaftGraph = new RaftGraph();
+        _SelfGraph = new RaftGraph();
+        _JointGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUid.getPeerId());
-        _RaftGraph.append(_SelfMachine);
+        _JointMachine = new RaftMachine(_ZUid.getPeerId());
+        _SelfGraph.append(_SelfMachine);
+        _JointGraph.append(_JointMachine);
         _SnapshotFragmentMaxSize = _RaftConfig.getSnapshotFragmentMaxSize();
     }
 
@@ -150,6 +153,7 @@ public class RaftPeer
             _SelfMachine.setPeerSet(meta.getPeerSet());
             _SelfMachine.setGateSet(meta.getGateSet());
         }
+        _JointMachine.from(_SelfMachine);
         if(!_RaftConfig.isInCongress()) {
             _Logger.info("single mode , ignore cluster state-machine initialize");
             return;
@@ -164,56 +168,51 @@ public class RaftPeer
     public void start(final IClusterNode _Node)
     {
         init();
-        mClusterPublisher = _Node;
+        mClusterNode = _Node;
         if(_RaftConfig.isClusterMode()) {
             // 启动集群连接
-            if(_SelfMachine.getPeerSet() != null) {
-                for(RaftNode remote : _SelfMachine.getPeerSet()) {
-                    long peerId = remote.getId();
-                    // Graph中 装入所有需要管理的集群状态机，self已经装入了，此处不再重复
-                    if(peerId != _SelfMachine.getPeerId()) {
-                        _RaftGraph.append(new RaftMachine(peerId));
-                    }
-                    // 仅连接NodeId<自身的节点
-                    if(peerId < _SelfMachine.getPeerId()) {
-                        try {
-                            _Node.setupPeer(remote.getHost(), remote.getPort());
-                            _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
-                        }
-                        catch(Exception e) {
-                            _Logger.warning("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
-                        }
-                    }
-                }
-            }
-            if(_SelfMachine.getGateSet() != null) {
-                for(RaftNode remote : _SelfMachine.getGateSet()) {
-                    long gateId = remote.getId();
-                    if(_ZUid.isTheGate(gateId)) {
-                        try {
-                            _Node.setupGate(remote.getGateHost(), remote.getGatePort());
-                            _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
-                        }
-                        catch(Exception e) {
-                            _Logger.warning("gate connect error: %s:%d", e, remote.getGateHost(), remote.getGatePort());
-                        }
-
-                    }
-                }
-            }
+            installGraph(_SelfGraph, _SelfMachine.getPeerSet(), _SelfMachine.getGateSet());
             _Logger.info("raft-node : %#x start", _SelfMachine.getPeerId());
         }
     }
 
-    public IRaftConfig getRaftConfig()
+    private void installGraph(RaftGraph main, Iterable<RaftNode> peers, Iterable<RaftNode> gates)
     {
-        return _RaftConfig;
+        if(peers != null) {
+            for(RaftNode remote : peers) {
+                long peerId = remote.getId();
+                // Graph中 装入所有需要管理的集群状态机，self已经装入了，此处不再重复
+                if(peerId != _SelfMachine.getPeerId()) {
+                    main.append(new RaftMachine(peerId));
+                }
+                // 仅连接NodeId<自身的节点
+                if(peerId < _SelfMachine.getPeerId()) {
+                    try {
+                        mClusterNode.setupPeer(remote.getHost(), remote.getPort());
+                        _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
+                    }
+                    catch(Exception e) {
+                        _Logger.warning("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
+                    }
+                }
+            }
+        }
+        if(gates != null) {
+            for(RaftNode remote : gates) {
+                long gateId = remote.getId();
+                if(_ZUid.isTheGate(gateId)) {
+                    try {
+                        mClusterNode.setupGate(remote.getGateHost(), remote.getGatePort());
+                        _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
+                    }
+                    catch(Exception e) {
+                        _Logger.warning("gate connect error: %s:%d", e, remote.getGateHost(), remote.getGatePort());
+                    }
+                }
+            }
+        }
     }
 
-    public void reinstallGraph()
-    {
-
-    }
 
     public void installSnapshot(List<IRaftControl> snapshot)
     {
@@ -222,7 +221,6 @@ public class RaftPeer
 
     public void takeSnapshot(IRaftMapper snapshot)
     {
-
         long localTerm;
         if(_RaftMapper.getTotalSize() < _RaftConfig.getSnapshotMinSize()) {
             _Logger.debug("snapshot size less than threshold");
@@ -247,11 +245,6 @@ public class RaftPeer
             _Logger.debug("snapshot truncate prefix %d", lastSnapshotIndex);
         }
 
-    }
-
-    public IRaftMachine getMachine()
-    {
-        return _SelfMachine;
     }
 
     /**
@@ -476,7 +469,7 @@ public class RaftPeer
         //@formatter:off
         if(_SelfMachine.getState() == CANDIDATE &&
            _SelfMachine.getTerm() ==  x71.getTerm() &&
-           _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
+           _SelfGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
         //@formatter:on
         { //term == my term
             beLeader();
@@ -544,7 +537,7 @@ public class RaftPeer
 
     private RaftMachine getMachine(long peerId, long term)
     {
-        RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
+        RaftMachine peerMachine = _SelfGraph.getMachine(peerId);
         if(peerMachine == null) {
             _Logger.warning("peer %#x is not found", peerId);
             return null;
@@ -583,7 +576,7 @@ public class RaftPeer
          */
         long nextCommit = _SelfMachine.getCommit() + 1;
         if(peerMachine.getApplied() > _SelfMachine.getCommit() &&
-           _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
+           _SelfGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
         {
             // peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
             _SelfMachine.commit(nextCommit, _RaftMapper);
@@ -656,7 +649,7 @@ public class RaftPeer
                         break STEP_DOWN;
                     }
                 }
-                if(_RaftGraph.isMajorReject(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+                if(_SelfGraph.isMajorReject(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
                     stepDown(_SelfMachine.getTerm());
                 }
             }
@@ -959,7 +952,7 @@ public class RaftPeer
 
     private List<ITriple> createVotes(IManager manager)
     {
-        return _RaftGraph.getPeerMap()
+        return _SelfGraph.getPeerMap()
                          .keySet()
                          .stream()
                          .filter(peerId->peerId != _SelfMachine.getPeerId())
@@ -986,7 +979,7 @@ public class RaftPeer
 
     private List<ITriple> createAppends(IManager manager)
     {
-        return _RaftGraph.getPeerMap()
+        return _SelfGraph.getPeerMap()
                          .values()
                          .stream()
                          .filter(other->other.getPeerId() != _SelfMachine.getPeerId())
@@ -1043,7 +1036,7 @@ public class RaftPeer
                     }
                     else {
                         _Logger.warning("matched %#x vs %#x no consistency;%d@%d",
-                                        getPeerId(),
+                                        peerId(),
                                         follower.getPeerId(),
                                         preIndex,
                                         preIndexTerm);
@@ -1089,7 +1082,7 @@ public class RaftPeer
     }
 
     @Override
-    public long getPeerId()
+    public long peerId()
     {
         return _SelfMachine.getPeerId();
     }
@@ -1103,8 +1096,8 @@ public class RaftPeer
     @Override
     public RaftNode getLeader()
     {
-        if(getMachine().getLeader() != INVALID_PEER_ID) {
-            return _RaftConfig.findById(getMachine().getLeader());
+        if(_SelfMachine.getLeader() != INVALID_PEER_ID) {
+            return _RaftConfig.findById(_SelfMachine.getLeader());
         }
         return null;
     }
@@ -1112,9 +1105,9 @@ public class RaftPeer
     @Override
     public void changeTopology(RaftNode delta)
     {
-        _RaftConfig.changeTopology(delta);
-        final RingBuffer<QEvent> _ConsensusApiEvent = mClusterPublisher.getPublisher(IOperator.Type.CLUSTER_TOPOLOGY);
-        final ReentrantLock _ConsensusApiLock = mClusterPublisher.getLock(IOperator.Type.CLUSTER_TOPOLOGY);
+
+        final RingBuffer<QEvent> _ConsensusApiEvent = mClusterNode.getPublisher(IOperator.Type.CLUSTER_TOPOLOGY);
+        final ReentrantLock _ConsensusApiLock = mClusterNode.getLock(IOperator.Type.CLUSTER_TOPOLOGY);
         _ConsensusApiLock.lock();
         try {
             long sequence = _ConsensusApiEvent.next();
@@ -1134,8 +1127,8 @@ public class RaftPeer
     @Override
     public <T extends IStorage> void trigger(T content)
     {
-        final RingBuffer<QEvent> _ConsensusEvent = mClusterPublisher.getPublisher(IOperator.Type.CLUSTER_TIMER);
-        final ReentrantLock _ConsensusLock = mClusterPublisher.getLock(IOperator.Type.CLUSTER_TIMER);
+        final RingBuffer<QEvent> _ConsensusEvent = mClusterNode.getPublisher(IOperator.Type.CLUSTER_TIMER);
+        final ReentrantLock _ConsensusLock = mClusterNode.getLock(IOperator.Type.CLUSTER_TIMER);
         /*
         通过 Schedule thread-pool 进行 timer 执行, 排队执行。
          */
@@ -1144,7 +1137,7 @@ public class RaftPeer
             long sequence = _ConsensusEvent.next();
             try {
                 QEvent event = _ConsensusEvent.get(sequence);
-                event.produce(IOperator.Type.CLUSTER_TIMER, new Pair<>(content, null), null);
+                event.produce(IOperator.Type.CLUSTER_TIMER, Pair.of(content, null), null);
             }
             finally {
                 _ConsensusEvent.publish(sequence);

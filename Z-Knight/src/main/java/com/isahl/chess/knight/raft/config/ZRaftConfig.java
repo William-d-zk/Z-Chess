@@ -97,8 +97,7 @@ public class ZRaftConfig
         if(peersIn != null && !peersIn.isEmpty()) {
             peersIn.forEach((i, s)->{
                 RaftNode peer = toPeerNode(s, RaftState.FOLLOWER);
-                String peerHost = peer.getHost();
-                if(hostname.equalsIgnoreCase(peerHost)) {
+                if(hostname.equalsIgnoreCase(peer.getHost())) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
                         peer.setId(getZUID().getPeerId());
@@ -116,29 +115,26 @@ public class ZRaftConfig
                 _PeerMap.put(peer.getId(), peer);
             });
         }
-        if(isInCongress()) {
-            Map<Long, String> gatesIn = mConfig.getGates();
-            if(gatesIn != null && !gatesIn.isEmpty()) {
-                gatesIn.forEach((l, s)->{
-                    RaftNode gate = toGateNode(s, RaftState.GATE);
-                    gate.setId(l);
-                    if(hostname.equalsIgnoreCase(gate.getHost())) {
-                        if(!isGateNode()) {
-                            mPeerBind.setGateHost(gate.getGateHost());
-                            mPeerBind.setGatePort(gate.getGatePort());
-                        }
-                        else {
-                            _Logger.warning("duplicate gate:%s", s);
-                            return;
-                        }
+        Map<Long, String> gatesIn = mConfig.getGates();
+        if(gatesIn != null && !gatesIn.isEmpty()) {
+            gatesIn.forEach((l, s)->{
+                RaftNode gate = toGateNode(s, RaftState.GATE);
+                gate.setId(l);
+                if(hostname.equalsIgnoreCase(gate.getHost())) {
+                    if(!isGateNode()) {
+                        mPeerBind.setGateHost(gate.getGateHost());
+                        mPeerBind.setGatePort(gate.getGatePort());
                     }
-                    _GateMap.put(gate.getId(), gate);
-                });
-
-            }
-            if(!isGateNode()) {
-                _Logger.info("the node [ %s ] isn't gate", hostname);
-            }
+                    else {
+                        _Logger.warning("duplicate gate:%s", gate);
+                        return;
+                    }
+                }
+                _GateMap.put(gate.getId(), gate);
+            });
+        }
+        if(!isGateNode()) {
+            _Logger.info("the node [ %s ] isn't gate", hostname);
         }
     }
 
@@ -190,7 +186,6 @@ public class ZRaftConfig
         _GateMap.clear();
     }
 
-    @Override
     public void changeTopology(RaftNode delta)
     {
         Objects.requireNonNull(delta);
@@ -202,37 +197,36 @@ public class ZRaftConfig
         /*
           此处不使用map.computeIf* 的结构是因为判断过于复杂还是for的表达容易理解
          */
-        boolean present = false;
-        CHECK:
+        boolean present = false, remove = false;
+        LOOP:
         {
-            LOOP:
-            {
-                for(RaftNode senator : _PeerMap.values()) {
-                    present = present || delta.compareTo(senator) == 0;
-                    switch(operation) {
-                        case OP_APPEND -> {
-                            if(present) {
-                                if(delta.getState() == RaftState.GATE && senator.getGateHost() == null) {
-                                    senator.setGateHost(delta.getGateHost());
-                                    senator.setGatePort(delta.getGatePort());
-                                }
-                                break CHECK;
+            for(RaftNode senator : _PeerMap.values()) {
+                present = present || delta.compareTo(senator) == 0;
+                switch(operation) {
+                    case OP_APPEND -> {
+                        if(present) {
+                            if(delta.getState() == RaftState.GATE && senator.getGateHost() == null) {
+                                senator.setGateHost(delta.getGateHost());
+                                senator.setGatePort(delta.getGatePort());
                             }
+                            return;
                         }
-                        case OP_REMOVE, OP_MODIFY -> {
-                            if(present) {
-                                break LOOP;//map.put:update delta→present
-                            }
+                    }
+                    case OP_REMOVE, OP_MODIFY -> {
+                        if(present) {
+                            remove = true;
+                            break LOOP;//map.put:update delta→present
                         }
                     }
                 }
             }
-            if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
-                break CHECK;
-            }
+        }
+        if(remove) {
+            _PeerMap.remove(delta.getId());
+        }
+        else if(!present) {
             _PeerMap.put(delta.getId(), delta);
         }
-
     }
 
     @Override

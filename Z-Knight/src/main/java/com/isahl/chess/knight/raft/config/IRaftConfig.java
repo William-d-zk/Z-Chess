@@ -37,7 +37,6 @@ import java.util.List;
  * @author william.d.zk
  */
 public interface IRaftConfig
-        extends IRaftModify
 {
     /**
      * 当前集群的节点列表

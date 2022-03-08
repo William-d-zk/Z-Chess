@@ -29,7 +29,7 @@ package com.isahl.chess.queen.io.core.features.cluster;
  */
 public interface IClusterPeer
 {
-    long getPeerId();
+    long peerId();
 
     long generateId();
 

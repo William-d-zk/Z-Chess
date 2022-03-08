@@ -152,7 +152,7 @@ public class RaftCustom
         _Logger.debug("cluster new topology %s", topology);
         //Accept Machine State
         return _RaftPeer.onSubmit(topology.encode()
-                                          .array(), manager, _RaftPeer.getPeerId());
+                                          .array(), manager, _RaftPeer.peerId());
     }
 
     @Override
