@@ -25,26 +25,29 @@ package com.isahl.chess.knight.raft.config;
 
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.features.IRaftModify;
-import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 
-import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
+import java.util.Map;
 
 /**
  * @author william.d.zk
  */
 public interface IRaftConfig
 {
+    void commit();
+
+    void change(RaftNode delta);
+
     /**
      * 当前集群的节点列表
      *
      * @return cluster peer topology
      */
 
-    List<RaftNode> getPeers();
+    Map<Long, RaftNode> getPeers();
+
+    Map<Long, RaftNode> getNodes();
 
     /**
      * 集群服务绑定的服务地址 host:port
@@ -53,18 +56,18 @@ public interface IRaftConfig
      */
     RaftNode getPeerBind();
 
+    boolean isInCongress();
+
+    boolean isClusterMode();
+
+    boolean isGateNode();
+
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
      *
      * @return cluster uid setting
      * @see ZUID
      */
-    boolean isInCongress();
-
-    boolean isGateNode();
-
-    Uid getUid();
-
     ZUID getZUID();
 
     Duration getElectInSecond();
@@ -79,15 +82,9 @@ public interface IRaftConfig
 
     long getSnapshotFragmentMaxSize();
 
-    List<RaftNode> getGates();
+    Map<Long, RaftNode> getGates();
 
     long getMaxSegmentSize();
-
-    boolean isClusterMode();
-
-    RaftConfig getConfig();
-
-    void update(RaftConfig source) throws IOException;
 
     RaftNode findById(long peerId);
 

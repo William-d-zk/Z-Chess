@@ -23,8 +23,9 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
@@ -35,22 +36,28 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
 public class ZRaftConfig
-        implements IRaftConfig,
-                   IReset
+        implements IRaftConfig
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     private final Map<Long, RaftNode> _PeerMap = new TreeMap<>();
     private final Map<Long, RaftNode> _GateMap = new TreeMap<>();
+    private final Map<Long, RaftNode> _NodeMap = new TreeMap<>();
+
+    private final static String FILE_NAME = "raft.json";
 
     private ZUID       mZUid;
     private RaftNode   mPeerBind;
@@ -61,42 +68,78 @@ public class ZRaftConfig
     {
     }
 
-    @PostConstruct
-    public void load() throws IOException
+    private boolean storage(boolean overwrite)
     {
-        if(mConfig.getNodes() == null || mConfig.getNodes()
-                                                .isEmpty())
-        {return;}
-        getUid().setNodeId(-1);
+        try {
+            File file = new File(mBaseDir + File.separator + FILE_NAME);
+            boolean exists = file.exists();
+            if(exists && overwrite || !exists && file.createNewFile()) {
+                JsonUtil.writeValueWithFile(mConfig, file);
+            }
+            return exists;
+        }
+        catch(IOException | ZException e) {
+            _Logger.warning("config file create & write ", e);
+        }
+        return false;
+    }
+
+    @PostConstruct
+    private void load() throws IOException
+    {
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
-        for(Iterator<Map.Entry<Integer, String>> nIt = mConfig.getNodes()
-                                                              .entrySet()
-                                                              .iterator(); nIt.hasNext(); ) {
-            Map.Entry<Integer, String> entry = nIt.next();
-            String nodeHost = entry.getValue();
-            if(hostname.equalsIgnoreCase(nodeHost)) {
-                if(getUid().getNodeId() < 0) {
-                    getUid().setNodeId(entry.getKey());
+        if(!storage(false)) {
+            //no exists → load default from package's inner-properties
+            getUid().setNodeId(0);
+            _Logger.info("load default → local properties");
+        }
+        else {
+            //load custom define
+            File file = new File(mBaseDir + File.separator + FILE_NAME);
+            mConfig = JsonUtil.readValue(file, RaftConfig.class);
+            _Logger.info("load exists config file");
+        }
+        // define self-node-id
+        Map<Integer, String> nodes = mConfig.getNodes();
+        if(nodes == null || nodes.isEmpty()) {
+            throw new ZException("cluster's nodes is empty");
+        }
+        else {
+            int nodeId = -1;
+            for(Iterator<Map.Entry<Integer, String>> nIt = nodes.entrySet()
+                                                                .iterator(); nIt.hasNext(); ) {
+                Map.Entry<Integer, String> entry = nIt.next();
+                RaftNode node = toPeer(entry.getValue());
+                if(hostname.equalsIgnoreCase(node.getHost())) {
+                    if(nodeId < 0) {
+                        getUid().setNodeId(nodeId = entry.getKey());
+                    }
+                    else {
+                        _Logger.warning("duplicate node: %s", node.getHost());
+                        nIt.remove();
+                    }
                 }
                 else {
-                    _Logger.warning("duplicate node: %s", nodeHost);
-                    nIt.remove();
+                    _Logger.debug("node: %s", node.getHost());
                 }
             }
-            else {
-                _Logger.info("node: %s", nodeHost);
+            if(nodeId < 0) {
+                _Logger.warning("hostname [ %s ] isn't one of nodes", hostname);
+                getUid().setNodeId(127);
             }
+            else {
+                getUid().setNodeId(nodeId);
+            }
+            ZUID zuid = getZUID();
+            nodes.forEach((k, v)->_NodeMap.put(zuid.getPeerIdByNode(k), toPeer(v)));
         }
-        if(getUid().getNodeId() < 0) {
-            _Logger.warning("hostname [ %s ] isn't one of nodes", hostname);
-            getUid().setNodeId(0);
-            return;
-        }
+        // define self - peer bind & load peers graph
         Map<Integer, String> peersIn = mConfig.getPeers();
         if(peersIn != null && !peersIn.isEmpty()) {
             peersIn.forEach((i, s)->{
-                RaftNode peer = toPeerNode(s, RaftState.FOLLOWER);
+                RaftNode peer = toPeer(s);
+                peer.setState(RaftState.FOLLOWER);
                 if(hostname.equalsIgnoreCase(peer.getHost())) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
@@ -106,7 +149,6 @@ public class ZRaftConfig
                     }
                     else {
                         _Logger.warning("duplicate peer: %s", peer);
-                        return;
                     }
                 }
                 else {
@@ -115,10 +157,11 @@ public class ZRaftConfig
                 _PeerMap.put(peer.getId(), peer);
             });
         }
+        // define self gate bind & load gates graph
         Map<Long, String> gatesIn = mConfig.getGates();
         if(gatesIn != null && !gatesIn.isEmpty()) {
             gatesIn.forEach((l, s)->{
-                RaftNode gate = toGateNode(s, RaftState.GATE);
+                RaftNode gate = toGateNode(s);
                 gate.setId(l);
                 if(hostname.equalsIgnoreCase(gate.getHost())) {
                     if(!isGateNode()) {
@@ -127,34 +170,33 @@ public class ZRaftConfig
                     }
                     else {
                         _Logger.warning("duplicate gate:%s", gate);
-                        return;
                     }
                 }
                 _GateMap.put(gate.getId(), gate);
             });
         }
-        if(!isGateNode()) {
-            _Logger.info("the node [ %s ] isn't gate", hostname);
-        }
-    }
-
-    @Override
-    public RaftConfig getConfig()
-    {
-        return mConfig;
+        _Logger.info("the local bind [ %s ]  \\npeers:\\n %s \\ngates:\\n %s ",
+                     mPeerBind,
+                     _PeerMap.values(),
+                     _GateMap.values());
     }
 
     public void setConfig(RaftConfig config)
     {
         mConfig = config;
-        if(mConfig != null && mConfig.getGates() != null) {
-            mConfig.getGates()
-                   .forEach((k, v)->_Logger.info("gate-key:%#x → %s", k, v));
+        if(mConfig != null) {
+            if(mConfig.getGates() != null) {
+                mConfig.getGates()
+                       .forEach((k, v)->_Logger.info("gate-key:%#x → %s", k, v));
+            }
+            if(mConfig.getPeers() != null) {
+                mConfig.getPeers()
+                       .forEach((k, v)->_Logger.info("peer-key:%d → %s", k, v));
+            }
         }
     }
 
-    @Override
-    public Uid getUid()
+    private Uid getUid()
     {
         return mConfig.getUid();
     }
@@ -169,24 +211,13 @@ public class ZRaftConfig
     }
 
     @Override
-    public void update(RaftConfig source) throws IOException
+    public void commit()
     {
-        reset();
-        setConfig(source);
-        load();
+        storage(true);
     }
 
     @Override
-    public void reset()
-    {
-        mConfig = null;
-        mZUid = null;
-        mPeerBind = null;
-        _PeerMap.clear();
-        _GateMap.clear();
-    }
-
-    public void changeTopology(RaftNode delta)
+    public void change(RaftNode delta)
     {
         Objects.requireNonNull(delta);
         if(delta.getId() == -1) {
@@ -223,24 +254,44 @@ public class ZRaftConfig
         }
         if(remove) {
             _PeerMap.remove(delta.getId());
+            _GateMap.remove(delta.getId());
         }
         else if(!present) {
             _PeerMap.put(delta.getId(), delta);
         }
+        if(mConfig.getPeers() != null) {
+            mConfig.getPeers()
+                   .clear();
+            _PeerMap.values()
+                    .forEach(n->mConfig.getPeers()
+                                       .put(ZUID.getNodeId(n.getId()),
+                                            String.format("%s:%d", n.getHost(), n.getPort())));
+        }
+        if(mConfig.getGates() != null) {
+            mConfig.getGates()
+                   .clear();
+            _GateMap.values()
+                    .forEach(g->mConfig.getGates()
+                                       .put(g.getId(),
+                                            String.format("%s/%s:%d", g.getHost(), g.getGateHost(), g.getGatePort())));
+        }
     }
 
     @Override
-    public List<RaftNode> getPeers()
+    public Map<Long, RaftNode> getPeers()
     {
-        if(_PeerMap.isEmpty()) {return null;}
-        return new ArrayList<>(_PeerMap.values());
+        return _PeerMap;
+    }
+
+    public Map<Long, RaftNode> getNodes()
+    {
+        return _NodeMap;
     }
 
     @Override
-    public List<RaftNode> getGates()
+    public Map<Long, RaftNode> getGates()
     {
-        if(_GateMap.isEmpty()) {return null;}
-        return new ArrayList<>(_GateMap.values());
+        return _GateMap;
     }
 
     @Override
@@ -265,15 +316,15 @@ public class ZRaftConfig
         return mPeerBind;
     }
 
-    private RaftNode toPeerNode(String content, RaftState state)
+    private RaftNode toPeer(String content)
     {
         String[] split = content.split(":", 2);
         String host = split[0];
         int port = Integer.parseInt(split[1]);
-        return new RaftNode(host, port, state);
+        return new RaftNode(host, port, RaftState.OUTSIDE);
     }
 
-    private RaftNode toGateNode(String content, RaftState state)
+    private RaftNode toGateNode(String content)
     {
         String[] split0 = content.split("/", 2);
         String host = split0[0];
@@ -281,7 +332,7 @@ public class ZRaftConfig
         String[] split1 = gate.split(":", 2);
         String gateHost = split1[0];
         int gatePort = Integer.parseInt(split1[1]);
-        RaftNode node = new RaftNode(host, -1, state);
+        RaftNode node = new RaftNode(host, -1, RaftState.GATE);
         node.setGateHost(gateHost);
         node.setGatePort(gatePort);
         return node;
@@ -331,7 +382,7 @@ public class ZRaftConfig
     @Override
     public boolean isClusterMode()
     {
-        return isInCongress() || mConfig.isBeLearner();
+        return isInCongress() || _NodeMap.containsKey(getZUID().getPeerId());
     }
 
     @Override

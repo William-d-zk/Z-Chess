@@ -30,13 +30,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.model.SetSerial;
-import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.io.Serial;
-import java.util.Collection;
-import java.util.Set;
 
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
@@ -55,48 +51,38 @@ public class LogMeta
      * <p>
      * ``` 1 ``` 为首条日志index
      */
-    private long                mStart;
+    private long mStart;
     /**
      * 本机存储日志的 index
      */
-    private long                mIndex;
+    private long mIndex;
     /**
      * 本机存储日志的 index-term
      */
-    private long                mIndexTerm;
+    private long mIndexTerm;
     /**
      * 已存储的最大任期号
      */
-    private long                mTerm;
+    private long mTerm;
     /**
      * 集群中已知的最大的被提交的日志index
      */
-    private long                mCommit;
+    private long mCommit;
     /**
      * 已被应用到状态机日志index
      */
-    private long                mApplied;
-    /**
-     * 集群节点信息
-     */
-    private SetSerial<RaftNode> mPeerSet;
-    /**
-     * 集群跨分区网关
-     */
-    private SetSerial<RaftNode> mGateSet;
+    private long mApplied;
 
     @Override
     public int length()
     {
-        int length = 8 + // start
-                     8 + // term
-                     8 + // index
-                     8 + // index term
-                     8 + // commit
-                     8;  // applied
-        length += mPeerSet.sizeOf();
-        length += mGateSet.sizeOf();
-        return length + super.length(); //primary key => System.current-mills
+        return 8 + // start
+               8 + // term
+               8 + // index
+               8 + // index term
+               8 + // commit
+               8 + // applied
+               super.length(); //primary key => System.current-mills
     }
 
     @Override
@@ -108,9 +94,7 @@ public class LogMeta
                     .putLong(getIndex())
                     .putLong(getIndexTerm())
                     .putLong(getCommit())
-                    .putLong(getApplied())
-                    .put(mPeerSet.encode())
-                    .put(mGateSet.encode());
+                    .putLong(getApplied());
     }
 
     @Override
@@ -124,12 +108,6 @@ public class LogMeta
         setCommit(input.getLong());
         setApplied(input.getLong());
         remain -= 48;
-        mPeerSet = new SetSerial<>(RaftNode::new);
-        mPeerSet.decode(input);
-        mGateSet = new SetSerial<>(RaftNode::new);
-        mGateSet.decode(input);
-        remain -= mPeerSet.sizeOf();
-        remain -= mGateSet.sizeOf();
         return remain;
     }
 
@@ -142,8 +120,6 @@ public class LogMeta
         mTerm = 0;
         mCommit = 0;
         mApplied = 0;
-        if(mPeerSet != null) {mPeerSet.clear();}
-        if(mGateSet != null) {mGateSet.clear();}
         flush();
     }
 
@@ -160,11 +136,7 @@ public class LogMeta
             @JsonProperty("commit")
                     long commit,
             @JsonProperty("applied")
-                    long applied,
-            @JsonProperty("peer_set")
-                    Set<RaftNode> peerSet,
-            @JsonProperty("gate_set")
-                    Set<RaftNode> gateSet)
+                    long applied)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mStart = start;
@@ -173,16 +145,12 @@ public class LogMeta
         mIndexTerm = indexTerm;
         mCommit = commit;
         mApplied = applied;
-        mPeerSet = peerSet == null ? new SetSerial<>(RaftNode::new) : new SetSerial<>(RaftNode::new, peerSet);
-        mGateSet = gateSet == null ? new SetSerial<>(RaftNode::new) : new SetSerial<>(RaftNode::new, gateSet);
     }
 
     public LogMeta()
     {
         super();
         mStart = MIN_START;
-        mPeerSet = new SetSerial<>(RaftNode::new);
-        mGateSet = new SetSerial<>(RaftNode::new);
     }
 
     public LogMeta(ByteBuf input)
@@ -228,36 +196,6 @@ public class LogMeta
     public void setApplied(long applied)
     {
         mApplied = applied;
-    }
-
-    public Set<RaftNode> getPeerSet()
-    {
-        return mPeerSet;
-    }
-
-    public void setPeerSet(Collection<RaftNode> peers)
-    {
-        if(peers instanceof SetSerial<RaftNode> set) {
-            mPeerSet = set;
-        }
-        else if(peers != null) {
-            mPeerSet.addAll(peers);
-        }
-    }
-
-    public Set<RaftNode> getGateSet()
-    {
-        return mGateSet;
-    }
-
-    public void setGateSet(Collection<RaftNode> gates)
-    {
-        if(gates instanceof SetSerial<RaftNode> set) {
-            mGateSet = set;
-        }
-        else if(gates != null) {
-            mGateSet.addAll(gates);
-        }
     }
 
     public long getIndex()

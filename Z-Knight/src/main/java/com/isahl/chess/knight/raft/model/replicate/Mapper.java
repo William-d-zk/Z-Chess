@@ -24,10 +24,7 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
@@ -39,7 +36,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.cache.CacheManager;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.List;
@@ -68,10 +68,8 @@ public class Mapper
     private final String                    _LogDataDir;
     private final String                    _LogMetaDir;
     private final String                    _SnapshotDir;
-    private final String                    _RaftConfigDir;
     private final long                      _MaxSegmentSize;
     private final TreeMap<Long, Segment>    _Index2SegmentMap          = new TreeMap<>();
-    private final IRaftConfig               _RaftConfig;
     private final TypeReference<RaftConfig> _TypeReferenceOfRaftConfig = new TypeReference<>() {};
     private final CacheManager              _CacheManager;
 
@@ -90,8 +88,6 @@ public class Mapper
     {
         String baseDir = config.getBaseDir();
         _CacheManager = cacheManager;
-        _RaftConfig = config;
-        _RaftConfigDir = String.format("%s%s.conf", baseDir, File.separator);
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
         _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
@@ -101,21 +97,12 @@ public class Mapper
     @PostConstruct
     private void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        _Logger.debug("mapper-initialize conf:[%s] meta:[%s] data:[%s] snap:[%s] ",
-                      _RaftConfigDir,
-                      _LogMetaDir,
-                      _LogDataDir,
-                      _SnapshotDir);
         EhcacheConfig.createCache(_CacheManager,
                                   "raft_log_entry",
                                   Long.class,
                                   LogEntry.class,
                                   Duration.of(30, SECONDS));
-        File file = new File(_RaftConfigDir);
-        if(!file.exists() && !file.mkdirs()) {
-            throw new SecurityException(String.format("%s check mkdir authority", _RaftConfigDir));
-        }
-        file = new File(_LogMetaDir);
+        File file = new File(_LogMetaDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
         }
@@ -164,18 +151,6 @@ public class Mapper
         catch(IOException e) {
             _Logger.warning("snapshot meta load file error", e);
         }
-
-        File configFile = getConfigFile();
-        try {
-            FileInputStream fis = new FileInputStream(configFile);
-            _RaftConfig.update(JsonUtil.readValue(fis, _TypeReferenceOfRaftConfig));
-        }
-        catch(FileNotFoundException e) {
-            _Logger.warning("config file not exist, name: %s", configFile.getName());
-        }
-        catch(IOException e) {
-            _Logger.warning("update config failed", e);
-        }
         if(checkState()) {
             installSnapshot();
         }
@@ -191,30 +166,7 @@ public class Mapper
     {
         mLogMeta.close();
         mSnapshotMeta.close();
-        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
-        try {
-            File configFile = new File(configFileName);
-            if(configFile.exists() || configFile.createNewFile()) {
-                JsonUtil.writeValueWithFile(_RaftConfig.getConfig(), configFile);
-            }
-        }
-        catch(IOException | ZException e) {
-            _Logger.warning("config file create & write ", e);
-        }
         _Logger.debug("raft dao dispose");
-    }
-
-    private File getConfigFile()
-    {
-        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
-        return new File(configFileName);
-    }
-
-    @Override
-    public void loadDefaultGraphSet()
-    {
-        mLogMeta.setPeerSet(_RaftConfig.getPeers());
-        mLogMeta.setGateSet(_RaftConfig.getGates());
     }
 
     @Override
@@ -222,7 +174,6 @@ public class Mapper
     {
         mLogMeta.flush();
         mSnapshotMeta.flush();
-        JsonUtil.writeValueWithFile(_RaftConfig.getConfig(), getConfigFile());
     }
 
     @Override
@@ -286,14 +237,14 @@ public class Mapper
     }
 
     @Override
-    public void updateLogIndexAndTerm(long index, long term)
+    public void updateIndexAtTerm(long index, long term)
     {
         mLogMeta.setIndex(index);
         mLogMeta.setIndexTerm(term);
     }
 
     @Override
-    public void updateLogCommit(long commit)
+    public void updateCommit(long commit)
     {
         mLogMeta.setCommit(commit);
         mSnapshotMeta.setCommit(commit);
@@ -307,7 +258,7 @@ public class Mapper
     }
 
     @Override
-    public void updateLogApplied(long applied)
+    public void updateAccept(long applied)
     {
         mLogMeta.setApplied(applied);
     }
@@ -578,7 +529,6 @@ public class Mapper
         mLogMeta.reset();
         mSnapshotMeta.reset();
         clearSegments();
-        loadDefaultGraphSet();
         flushAll();
     }
 }

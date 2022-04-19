@@ -29,14 +29,14 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
+    CLIENT((byte) 0),
     FOLLOWER((byte) 1),
     ELECTOR((byte) 2),
     CANDIDATE((byte) 3),
     LEADER((byte) 4),
     JOINT((byte) 8),
     GATE((byte) 16),
-    LEARNER((byte) 32),
-    CLIENT((byte) 64);
+    OUTSIDE((byte) 128);
 
     private final byte _Code;
 
@@ -53,14 +53,14 @@ public enum RaftState
     public static RaftState valueOf(int code)
     {
         return switch(code) {
+            case 0 -> CLIENT;
             case 1 -> FOLLOWER;
             case 2 -> ELECTOR;
             case 3 -> CANDIDATE;
             case 4 -> LEADER;
             case 8 -> JOINT;
             case 16 -> GATE;
-            case 32 -> LEARNER;
-            case 64 -> CLIENT;
+            case 128 -> OUTSIDE;
             default -> throw new IllegalArgumentException();
         };
     }

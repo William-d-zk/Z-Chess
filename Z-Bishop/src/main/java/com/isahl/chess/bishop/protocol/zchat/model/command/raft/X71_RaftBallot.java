@@ -60,52 +60,55 @@ public class X71_RaftBallot
         return Level.AT_LEAST_ONCE;
     }
 
-    private long mElectorId;
+    private long mElector;
     private long mTerm;
     private long mIndex;
     private long mIndexTerm;
-    private long mCandidateId;
     private long mCommit;
+    private long mCandidate;
+    private long mAccept;
 
     @Override
     public int length()
     {
-        return super.length() + 48;
+        return super.length() + 56;
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mElectorId = input.getLong();
+        mElector = input.getLong();
         mTerm = input.getLong();
         mIndex = input.getLong();
         mIndexTerm = input.getLong();
-        mCandidateId = input.getLong();
+        mAccept = input.getLong();
         mCommit = input.getLong();
-        return remain - 48;
+        mCandidate = input.getLong();
+        return remain - 56;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mElectorId)
+                    .putLong(mElector)
                     .putLong(mTerm)
                     .putLong(mIndex)
                     .putLong(mIndexTerm)
-                    .putLong(mCandidateId)
-                    .putLong(mCommit);
+                    .putLong(mAccept)
+                    .putLong(mCommit)
+                    .putLong(mCandidate);
     }
 
-    public long getElectorId()
+    public long getElector()
     {
-        return mElectorId;
+        return mElector;
     }
 
-    public void setElectorId(long electorId)
+    public void setElector(long electorId)
     {
-        mElectorId = electorId;
+        mElector = electorId;
     }
 
     public long getTerm()
@@ -118,14 +121,14 @@ public class X71_RaftBallot
         mTerm = term;
     }
 
-    public long getCandidateId()
+    public long getCandidate()
     {
-        return mCandidateId;
+        return mCandidate;
     }
 
-    public void setCandidateId(long candidate)
+    public void setCandidate(long candidate)
     {
-        mCandidateId = candidate;
+        mCandidate = candidate;
     }
 
     public long getIndex()
@@ -158,16 +161,27 @@ public class X71_RaftBallot
         mCommit = commit;
     }
 
+    public void setAccept(long accept)
+    {
+        mAccept = accept;
+    }
+
+    public long getAccept()
+    {
+        return mAccept;
+    }
+
     @Override
     public String toString()
     {
-        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x,commit:%d }",
-                             mElectorId,
+        return String.format("X71_RaftBallot{ elector:%#x, term:%d, last:%d@%d,accept:%d, commit:%d, candidate:%#x }",
+                             mElector,
                              mTerm,
                              mIndex,
                              mIndexTerm,
-                             mCandidateId,
-                             mCommit);
+                             mAccept,
+                             mCommit,
+                             mCandidate);
     }
 
 }

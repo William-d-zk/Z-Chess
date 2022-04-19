@@ -38,7 +38,7 @@ class ApplicationAudienceTest
     @Test
     void test()
     {
-        LogEntry logEntry = new LogEntry(1, 0, 0xc000000000000000L, 0x5f6291e987000L, null);
+        LogEntry logEntry = new LogEntry(1, 0, 0xc000000000000000L, 0x5f6291e987000L, 0x5f6291e987001L, null);
 
         mapper.append(logEntry);
 

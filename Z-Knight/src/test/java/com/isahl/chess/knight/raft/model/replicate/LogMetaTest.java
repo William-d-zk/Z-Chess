@@ -42,8 +42,6 @@ class LogMetaTest
         RaftNode node1 = new RaftNode("raft1", 5228, RaftState.FOLLOWER);
         RaftNode gate = new RaftNode("gate0", 5666, RaftState.GATE);
         RaftNode gate1 = new RaftNode("gate1", 5666, RaftState.GATE);
-        meta.setPeerSet(Arrays.asList(node, node1));
-        meta.setGateSet(Arrays.asList(gate, gate1));
         ByteBuf buffer = meta.encode();
 
         LogMeta meta2 = new LogMeta();
@@ -58,8 +56,6 @@ class LogMetaTest
         RaftNode node1 = new RaftNode("raft1", 5228, RaftState.FOLLOWER);
         RaftNode gate = new RaftNode("gate0", 5666, RaftState.GATE);
         RaftNode gate1 = new RaftNode("gate1", 5666, RaftState.GATE);
-        meta.setPeerSet(Arrays.asList(node, node1));
-        meta.setGateSet(Arrays.asList(gate, gate1));
 
         RandomAccessFile raf = new RandomAccessFile("z-meta", "rw");
         meta.with(raf);

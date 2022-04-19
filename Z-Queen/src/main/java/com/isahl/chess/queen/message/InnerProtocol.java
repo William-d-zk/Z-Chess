@@ -72,6 +72,12 @@ public abstract class InnerProtocol
         decode(input);
     }
 
+    public InnerProtocol(byte[] bytes)
+    {
+        this(Operation.OP_INSERT, Strategy.RETAIN);
+        withSub(bytes);
+    }
+
     @Override
     public int length()
     {

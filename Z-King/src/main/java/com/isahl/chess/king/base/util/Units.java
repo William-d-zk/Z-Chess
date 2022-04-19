@@ -32,12 +32,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.isahl.chess.king.base.constant.BasicData.EUR_CNY_EXCHANGE_RATE;
+import static com.isahl.chess.king.base.constant.BasicData.USD_CNY_EXCHANGE_RATE;
+
 /**
  * @author william.d.zk
  * @date 2018/1/3
  */
 public enum Units
 {
+
     /**
      * 人民币
      */
@@ -54,7 +58,7 @@ public enum Units
         }
 
     },
-    CURRENCY_EUR("€%f", 7.93f, 2, SignModel.FRONT) {
+    CURRENCY_EUR("€%f", EUR_CNY_EXCHANGE_RATE, 2, SignModel.FRONT) {
         @Override
         public float translate(Units to, float data)
         {
@@ -67,7 +71,7 @@ public enum Units
         }
 
     },
-    CURRENCY_USD("[＄|\\$]%f", 6.84f, 2, SignModel.FRONT) {
+    CURRENCY_USD("[＄|\\$]%f", USD_CNY_EXCHANGE_RATE, 2, SignModel.FRONT) {
         @Override
         public float translate(Units to, float data)
         {
@@ -158,7 +162,7 @@ public enum Units
     /**
      * 立方米
      */
-    VOLUME_CubicM("%dM3", 1000, 2, SignModel.BEHIND) {
+    VOLUME_CubicM("%dM³", 1000, 2, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {
@@ -361,7 +365,7 @@ public enum Units
     /**
      * 每千米美元价格
      */
-    PRICE_DIS_USD_KM("[＄|\\$]%f/KM", 6.84f / 1000, 5, SignModel.MIDDLE) {
+    PRICE_DIS_USD_KM("[＄|\\$]%f/KM", USD_CNY_EXCHANGE_RATE / 1000, 5, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
@@ -377,7 +381,7 @@ public enum Units
     /**
      * 每米美元价格
      */
-    PRICE_DIS_USD_M("[＄|\\$]%f/M", 6.84f, 5, SignModel.MIDDLE) {
+    PRICE_DIS_USD_M("[＄|\\$]%f/M", USD_CNY_EXCHANGE_RATE, 5, SignModel.MIDDLE) {
         @Override
         public float translate(Units to, float data)
         {
@@ -394,7 +398,7 @@ public enum Units
      * 分/立方
      * e.g 装货速度，卸货速度
      */
-    TIME_VOLUME_M_CubicM("M/M3", 1f / 1000, 3, SignModel.BEHIND) {
+    TIME_VOLUME_M_CubicM("M/M³", 1f / 1000, 3, SignModel.BEHIND) {
         @Override
         public float translate(Units to, float data)
         {

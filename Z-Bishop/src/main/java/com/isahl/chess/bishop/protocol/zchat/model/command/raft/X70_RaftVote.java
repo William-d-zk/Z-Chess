@@ -54,53 +54,55 @@ public class X70_RaftVote
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
 
-    // candidateId
-    private long mCandidateId;
+    private long mCandidate;
+    private long mElector;
     private long mTerm;
     private long mIndex;
     private long mIndexTerm;
+    private long mAccept;
     private long mCommit;
-    private long mElectorId;
 
     @Override
     public int length()
     {
-        return super.length() + 48;
+        return super.length() + 56;
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mCandidateId = input.getLong();
+        mCandidate = input.getLong();
+        mElector = input.getLong();
         mTerm = input.getLong();
         mIndex = input.getLong();
         mIndexTerm = input.getLong();
-        mElectorId = input.getLong();
+        mAccept = input.getLong();
         mCommit = input.getLong();
-        return remain - 48;
+        return remain - 56;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mCandidateId)
+                    .putLong(mCandidate)
+                    .putLong(mElector)
                     .putLong(mTerm)
                     .putLong(mIndex)
                     .putLong(mIndexTerm)
-                    .putLong(mElectorId)
+                    .putLong(mAccept)
                     .putLong(mCommit);
     }
 
-    public long getCandidateId()
+    public long getCandidate()
     {
-        return mCandidateId;
+        return mCandidate;
     }
 
-    public void setCandidateId(long peerId)
+    public void setCandidate(long peerId)
     {
-        mCandidateId = peerId;
+        mCandidate = peerId;
     }
 
     public long getTerm()
@@ -133,19 +135,24 @@ public class X70_RaftVote
         mIndexTerm = term;
     }
 
-    public long getElectorId()
+    public long getElector()
     {
-        return mElectorId;
+        return mElector;
     }
 
-    public void setElectorId(long elector)
+    public void setElector(long elector)
     {
-        mElectorId = elector;
+        mElector = elector;
     }
 
-    public void setCommit(long commit)
+    public void setAccept(long accept)
     {
-        mCommit = commit;
+        mAccept = accept;
+    }
+
+    public long getAccept()
+    {
+        return mAccept;
     }
 
     public long getCommit()
@@ -153,16 +160,22 @@ public class X70_RaftVote
         return mCommit;
     }
 
+    public void setCommit(long commit)
+    {
+        mCommit = commit;
+    }
+
     @Override
     public String toString()
     {
-        return String.format("X70_RaftVote{ candidate=%#x  term: %d,last: %d@%d, commit=%d, elector=%#x }",
-                             mCandidateId,
+        return String.format("X70_RaftVote{ candidate=%#x from %#x term: %d,last: %d@%d, accept=%d, commit=%d }",
+                             mCandidate,
+                             mElector,
                              mTerm,
                              mIndex,
                              mIndexTerm,
-                             mCommit,
-                             mElectorId);
+                             mAccept,
+                             mCommit);
     }
 
     @Override
