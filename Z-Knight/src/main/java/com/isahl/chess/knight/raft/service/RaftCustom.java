@@ -28,7 +28,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -40,7 +40,7 @@ import java.util.List;
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 public class RaftCustom
-        implements IClusterCustom<RaftMachine>
+        implements IClusterCustom<IRaftMachine>
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
@@ -125,15 +125,15 @@ public class RaftCustom
     }
 
     @Override
-    public List<ITriple> onTimer(IManager manager, RaftMachine machine)
+    public List<ITriple> onTimer(IManager manager, IRaftMachine machine)
     {
-        return machine == null ? null : switch(machine.operation()) {
+        return machine == null ? null : switch(machine.state()) {
             // step down → follower
-            case OP_MODIFY -> _RaftPeer.turnToFollower(machine);
+            case FOLLOWER -> _RaftPeer.turnDown(machine);
             // vote
-            case OP_INSERT -> _RaftPeer.checkVoteState(machine, manager);
+            case CANDIDATE -> _RaftPeer.vote4me(machine, manager);
             // heartbeat
-            case OP_APPEND -> _RaftPeer.checkLogAppend(machine, manager);
+            case LEADER -> _RaftPeer.logAppend(machine, manager);
             default -> null;
         };
     }

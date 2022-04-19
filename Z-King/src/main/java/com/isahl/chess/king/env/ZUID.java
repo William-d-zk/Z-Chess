@@ -79,7 +79,8 @@ public class ZUID
     public static final  long           TYPE_CLUSTER       = 3L << TYPE_SHIFT;
     public static final  long           CLUSTER_MASK       =
             (((1L << IDC_BITS) - 1) << IDC_SHIFT) | (((1L << CLUSTER_BITS) - 1) << CLUSTER_SHIFT);
-    public static final  long           PEER_MASK          = CLUSTER_MASK | (((1L << NODE_BITS) - 1) << NODE_SHIFT);
+    public static final  long           NODE_MASK          = ((1L << NODE_BITS) - 1) << NODE_SHIFT;
+    public static final  long           PEER_MASK          = CLUSTER_MASK | NODE_MASK;
     public static final  long           PREFIX_MASK        = -1L << 48;
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
@@ -230,4 +231,10 @@ public class ZUID
     {
         return (id & TYPE_MASK) == TYPE_CLUSTER;
     }
+
+    public static int getNodeId(long id)
+    {
+        return (int) ((id & NODE_MASK) >>> NODE_SHIFT);
+    }
+
 }

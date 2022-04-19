@@ -23,13 +23,16 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
 
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -37,66 +40,88 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * Raft 集群的拓扑关系
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftGraph
 {
-    private final NavigableMap<Long, RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
+    private final NavigableMap<Long, IRaftMachine> _Peers;
+    private final NavigableMap<Long, IRaftMachine> _Members;
 
-    public boolean contains(long peerId)
+    private RaftGraph()
     {
-        return _NodeMap.containsKey(peerId);
+        _Peers = new ConcurrentSkipListMap<>();
+        _Members = new ConcurrentSkipListMap<>();
     }
 
-    @JsonIgnore
-    public RaftMachine getMachine(long peerId)
+    public IRaftMachine get(long peerId)
     {
-        return _NodeMap.get(peerId);
+        return _Members.get(peerId);
     }
 
-    /**
-     * @param peer peer-node id
-     */
-    public void remove(long peer)
+    public NavigableMap<Long, IRaftMachine> getPeers()
     {
-        _NodeMap.remove(peer);
+        return _Peers;
     }
 
-    public NavigableMap<Long, RaftMachine> getPeerMap()
+    public void append(IRaftMachine machine)
     {
-        return _NodeMap;
+        _Peers.putIfAbsent(machine.peer(), machine);
+        if(!machine.isEqualState(CLIENT)) {
+            _Members.putIfAbsent(machine.peer(), machine);
+        }
     }
 
-    public void append(RaftMachine machine)
+    public boolean isMajorAccept(long candidate, long term)
     {
-        _NodeMap.putIfAbsent(machine.getPeerId(), machine);
-    }
-
-    @JsonIgnore
-    public boolean isMajorAcceptCandidate(long candidate, long term)
-    {
-        return _NodeMap.values()
+        return _Members.values()
                        .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
-                       .count() > _NodeMap.size() / 2;
+                       .filter(machine->machine.term() <= term && machine.candidate() == candidate)
+                       .count() > _Members.size() / 2;
     }
 
-    @JsonIgnore
-    public boolean isMajorAcceptLeader(long leader, long term, long index)
-    {
-        return _NodeMap.values()
-                       .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getApplied() >= index &&
-                                        machine.getLeader() == leader)
-                       .count() > _NodeMap.size() / 2;
-    }
-
-    @JsonIgnore
     public boolean isMajorReject(long candidate, long term)
     {
-        return _NodeMap.values()
+        return _Members.values()
                        .stream()
-                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
-                       .count() > _NodeMap.size() / 2;
+                       .filter(machine->machine.term() >= term && machine.candidate() != candidate)
+                       .count() > _Members.size() / 2;
+    }
+
+    public boolean isMajorAccept(long accept)
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.accept() >= accept)
+                       .count() > _Members.size() / 2;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder("{");
+        _Members.forEach((k, v)->sb.append(format("#%x->%s\\n", k, v.toPrimary())));
+        return sb.append('}')
+                 .toString();
+    }
+
+    public static RaftGraph create()
+    {
+        return new RaftGraph();
+    }
+
+    public static Map<Long, IRaftMachine> union(long self, RaftGraph left, RaftGraph right)
+    {
+        Map<Long, IRaftMachine> union = new TreeMap<>();
+        if(left._Members.containsKey(self) && right._Members.containsKey(self)) {
+            left._Members.forEach(union::putIfAbsent);
+            right._Members.forEach(union::putIfAbsent);
+            return union;
+        }
+        else if(left._Members.containsKey(self)) {
+            union.putAll(left._Members);
+        }
+        else if(right._Members.containsKey(self)) {
+            union.putAll(right._Members);
+        }
+        return union;
     }
 
 }

@@ -50,6 +50,7 @@ public class X73_RaftAccept
     private long mTerm;
     private long mCatchUp;
     private long mCatchUpTerm;
+    private long mCommit;
     private long mLeaderId;
 
     @Override
@@ -67,7 +68,7 @@ public class X73_RaftAccept
     @Override
     public int length()
     {
-        return super.length() + 40;
+        return super.length() + 48;
     }
 
     @Override
@@ -78,8 +79,9 @@ public class X73_RaftAccept
         mTerm = input.getLong();
         mCatchUp = input.getLong();
         mCatchUpTerm = input.getLong();
+        mCommit = input.getLong();
         mLeaderId = input.getLong();
-        return remain - 40;
+        return remain - 48;
     }
 
     @Override
@@ -90,6 +92,7 @@ public class X73_RaftAccept
                     .putLong(mTerm)
                     .putLong(mCatchUp)
                     .putLong(mCatchUpTerm)
+                    .putLong(mCommit)
                     .putLong(mLeaderId);
     }
 
@@ -123,22 +126,32 @@ public class X73_RaftAccept
         mCatchUpTerm = catchUpTerm;
     }
 
-    public long getFollowerId()
+    public void setCommit(long commit)
+    {
+        mCommit = commit;
+    }
+
+    public long getCommit()
+    {
+        return mCommit;
+    }
+
+    public long getFollower()
     {
         return mFollowerId;
     }
 
-    public void setFollowerId(long peerId)
+    public void setFollower(long peerId)
     {
         mFollowerId = peerId;
     }
 
-    public void setLeaderId(long leaderId)
+    public void setLeader(long leaderId)
     {
         mLeaderId = leaderId;
     }
 
-    public long getLeaderId()
+    public long getLeader()
     {
         return mLeaderId;
     }

@@ -35,6 +35,7 @@ class LogEntryTest
                                       2,
                                       9981234,
                                       9123,
+                                      9124,
                                       new byte[]{ 1,
                                                   2,
                                                   3,

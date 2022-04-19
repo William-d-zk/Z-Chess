@@ -160,9 +160,9 @@ public class BinarySerial
         return mSubContent;
     }
 
-    public IoSerial buildSub()
+    public void buildSub()
     {
-        return mPayload == null ? null : (mSubContent = new BinarySerial(ByteBuf.wrap(mPayload)));
+        mSubContent = mPayload == null ? null : new BinarySerial(ByteBuf.wrap(mPayload));
     }
 
     public int pLength()

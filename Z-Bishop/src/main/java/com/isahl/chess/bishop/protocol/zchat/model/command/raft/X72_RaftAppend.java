@@ -48,12 +48,13 @@ public class X72_RaftAppend
     }
 
     // leaderId
-    private long mLeaderId;
+    private long mLeader;
     private long mTerm;
     private long mPreIndex;
     private long mPreIndexTerm;
+    private long mAccept;
     private long mCommit;
-    private long mFollowerId;
+    private long mFollower;
 
     @Override
     public int priority()
@@ -70,42 +71,44 @@ public class X72_RaftAppend
     @Override
     public int length()
     {
-        return super.length() + 48;
+        return super.length() + 56;
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mLeaderId = input.getLong();
+        mLeader = input.getLong();
         mTerm = input.getLong();
         mPreIndex = input.getLong();
         mPreIndexTerm = input.getLong();
+        mAccept = input.getLong();
         mCommit = input.getLong();
-        mFollowerId = input.getLong();
-        return remain - 48;
+        mFollower = input.getLong();
+        return remain - 56;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mLeaderId)
+                    .putLong(mLeader)
                     .putLong(mTerm)
                     .putLong(mPreIndex)
                     .putLong(mPreIndexTerm)
+                    .putLong(mAccept)
                     .putLong(mCommit)
-                    .putLong(mFollowerId);
+                    .putLong(mFollower);
     }
 
-    public long getLeaderId()
+    public long getLeader()
     {
-        return mLeaderId;
+        return mLeader;
     }
 
-    public void setLeaderId(long peerId)
+    public void setLeader(long peerId)
     {
-        this.mLeaderId = peerId;
+        this.mLeader = peerId;
     }
 
     public long getTerm()
@@ -116,6 +119,16 @@ public class X72_RaftAppend
     public void setTerm(long term)
     {
         this.mTerm = term;
+    }
+
+    public long getAccept()
+    {
+        return mAccept;
+    }
+
+    public void setAccept(long accept)
+    {
+        mAccept = accept;
     }
 
     public long getCommit()
@@ -150,20 +163,20 @@ public class X72_RaftAppend
 
     public void setFollower(long follower)
     {
-        mFollowerId = follower;
+        mFollower = follower;
     }
 
     public long getFollower()
     {
-        return mFollowerId;
+        return mFollower;
     }
 
     @Override
     public String toString()
     {
         return String.format("X72_RaftAppend{ %#x → %#x ; term:%d, pre:%d@%d  commit:%d  payload-size[%d] }",
-                             mLeaderId,
-                             mFollowerId,
+                             mLeader,
+                             mFollower,
                              mTerm,
                              mPreIndex,
                              mPreIndexTerm,

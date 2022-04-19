@@ -23,10 +23,6 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -40,7 +36,6 @@ import java.io.Serializable;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends InnerProtocol
         implements ITraceable,
@@ -61,25 +56,14 @@ public class LogEntry
      */
     private long mOrigin;
 
-    @JsonCreator
-    public LogEntry(
-            @JsonProperty("term")
-                    long term,
-            @JsonProperty("index")
-                    long index,
-            @JsonProperty("client")
-                    long client,
-            @JsonProperty("origin")
-                    long origin,
-            @JsonProperty("content")
-                    byte[] content)
+    public LogEntry(long index, long term, long client, long origin, long cached, byte[] content)
     {
-        super(Operation.OP_INSERT, Strategy.RETAIN);
+        super(content);
         pKey = index;
+        fKey = cached;
         mTerm = term;
         mClient = client;
         mOrigin = origin;
-        withSub(content);
     }
 
     public LogEntry(ByteBuf input)
@@ -90,6 +74,8 @@ public class LogEntry
     public long getTerm() {return mTerm;}
 
     public long getIndex() {return primaryKey();}
+
+    public long getCached() {return foreignKey();}
 
     public byte[] getContent() {return payload();}
 
@@ -137,11 +123,12 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d [%d], raft-client:%#x, biz-session:%#x, sub[%#x](%d) }",
+        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, cached:%d, sub[%#x](%d) }",
                              getIndex(),
                              getTerm(),
                              getClient(),
                              getOrigin(),
+                             getCached(),
                              _sub(),
                              pLength());
     }

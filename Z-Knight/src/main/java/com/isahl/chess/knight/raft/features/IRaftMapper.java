@@ -51,13 +51,13 @@ public interface IRaftMapper
 
     void updateLogStart(long firstLogIndex);
 
-    void updateLogIndexAndTerm(long index, long indexTerm);
+    void updateIndexAtTerm(long index, long indexTerm);
 
-    void updateLogCommit(long commit);
+    void updateCommit(long commit);
 
     void updateTerm(long term);
 
-    void updateLogApplied(long applied);
+    void updateAccept(long applied);
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
@@ -74,6 +74,4 @@ public interface IRaftMapper
     SnapshotEntry getSnapshot();
 
     long getTotalSize();
-
-    void loadDefaultGraphSet();
 }

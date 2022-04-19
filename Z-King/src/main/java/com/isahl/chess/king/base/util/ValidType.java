@@ -1,7 +1,8 @@
+
 /*
  * MIT License
  *
- * Copyright (c) 2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,35 +22,39 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.knight.raft.model.replicate.LogMeta;
-import org.junit.jupiter.api.Test;
-
-class RaftNodeTest
+/**
+ * @author william.d.zk
+ * @date 2022-3-25
+ */
+public enum ValidType
 {
-    @Test
-    public void testSerialization()
+    string("string"),
+    number("number"),
+    integer("integer"),
+    bool("boolean"),
+    object("object"),
+    array("array"),
+    nil("null");
+
+    private final String _JsonType;
+
+    ValidType(String jsonType) {_JsonType = jsonType;}
+
+    public String getJsonType() {return _JsonType;}
+
+    public static ValidType of(String type)
     {
-        RaftNode node = new RaftNode("raft0", 5443, RaftState.LEADER);
-        RaftNode gate = new RaftNode("raft0", -1, RaftState.GATE);
-        gate.setGateHost("gate0");
-        gate.setGatePort(6553);
-
-        LogMeta meta = new LogMeta(1, 1, 1, 1, 1, 1);
-        LogMeta meta2 = new LogMeta(1, 1, 1, 1, 1, 1);
-
-        ByteBuf output = meta2.encode();
-
-        meta.decode(output);
-        System.out.println(meta);
-    }
-
-    @Test
-    void testNoHost()
-    {
-        RaftNode node = new RaftNode();
-        System.out.println(node);
+        return switch(type.toLowerCase()) {
+            case "string" -> string;
+            case "number" -> number;
+            case "integer" -> integer;
+            case "bool", "boolean" -> bool;
+            case "object" -> object;
+            case "array" -> array;
+            case "nil", "null" -> nil;
+            default -> throw new IllegalArgumentException(type);
+        };
     }
 }

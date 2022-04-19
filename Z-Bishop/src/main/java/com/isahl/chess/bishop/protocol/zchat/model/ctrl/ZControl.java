@@ -247,7 +247,7 @@ public abstract class ZControl
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> void deserializeSub(IoFactory<T> factory)
     {
         mSubContent = factory.create(subEncoded());
     }
