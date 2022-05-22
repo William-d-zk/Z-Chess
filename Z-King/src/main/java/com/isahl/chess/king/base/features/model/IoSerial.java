@@ -56,6 +56,6 @@ public interface IoSerial
 
     IoSerial withSub(byte[] sub);
 
-    <T extends IoSerial> void deserializeSub(IoFactory<T> factory);
+    <T extends IoSerial> T deserializeSub(IoFactory<T> factory);
 
 }

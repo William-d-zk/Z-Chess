@@ -25,8 +25,10 @@ package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
@@ -70,12 +72,12 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
+    public List<ITriple> notify(IManager manager, IProtocol response, IConsistent backload)
     {
-        if(request != null) {
+        if(response != null) {
             for(IAccessService service : _AccessServices) {
-                if(service.isSupported(request)) {
-                    return service.onConsistency(manager, backload, request);
+                if(service.isSupported(response)) {
+                    return service.onConsistency(manager, backload, response);
                 }
             }
         }
@@ -106,15 +108,18 @@ public class LinkCustom
         switch(input.serial()) {
             case 0x76, 0x77 -> {
                 /*
-                 * leader → follower → client: x77_noitfy
+                 * leader → follower → client: x77_notify
                  * leader → follower: x76_response
                  */
-                ISession session = manager.findSessionByIndex(input.origin());
-                if(session != null && session.getFactory() != null && input.payload() != null) {
-                    IProtocol request = session.getFactory()
-                                               .create(ByteBuf.wrap(input.payload()));
-                    request.with(session);
-                    return request;
+                IoSerial sub = input.subContent();
+                if(sub instanceof LogEntry entry) {
+                    ISession session = manager.findSessionByIndex(entry.origin());
+                    if(session != null && session.getFactory() != null && entry.payload() != null) {
+                        IProtocol response = session.getFactory()
+                                                    .create(ByteBuf.wrap(entry.payload()));
+                        response.with(session);
+                        return response;
+                    }
                 }
                 return null;
             }

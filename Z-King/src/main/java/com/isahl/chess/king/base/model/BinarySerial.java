@@ -113,13 +113,16 @@ public class BinarySerial
     }
 
     @Override
-    public <T extends IoSerial> void deserializeSub(IoFactory<T> factory)
+    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
         ByteBuf subBuffer = subEncoded();
         if(subBuffer != null && factory != null) {
-            mSubContent = factory.create(subBuffer);
-            mSubContent.decode(subBuffer);
+            T t = factory.create(subBuffer);
+            t.decode(subBuffer);
+            mSubContent = t;
+            return t;
         }
+        return null;
     }
 
     @Override

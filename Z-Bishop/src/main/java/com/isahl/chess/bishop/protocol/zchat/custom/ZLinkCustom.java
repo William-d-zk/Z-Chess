@@ -63,7 +63,7 @@ public class ZLinkCustom
     }
 
     @Override
-    public IOperator<IConsistent, IManager, IProtocol> getUnboxer()
+    public IOperator<IConsistent, IManager, IProtocol> getUnbox()
     {
         return this::unbox;
     }

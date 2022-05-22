@@ -56,6 +56,8 @@ public class RaftConfig
     private DataSize             maxSegmentSize;
     private IRaftConfig.Uid      uid;
 
+    private int syncBatchMaxSize;
+
     public Map<Integer, String> getPeers()
     {
         return peers;
@@ -166,6 +168,15 @@ public class RaftConfig
         this.uid = uid;
     }
 
+    public int getSyncBatchMaxSize()
+    {
+        return syncBatchMaxSize;
+    }
+
+    public void setSyncBatchMaxSize(int syncBatchMaxSize)
+    {
+        this.syncBatchMaxSize = syncBatchMaxSize;
+    }
 }
 
 

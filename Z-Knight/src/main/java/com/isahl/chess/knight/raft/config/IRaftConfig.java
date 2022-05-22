@@ -88,6 +88,8 @@ public interface IRaftConfig
 
     RaftNode findById(long peerId);
 
+    int getSyncBatchMaxSize();
+
     class Uid
             implements IReset
     {

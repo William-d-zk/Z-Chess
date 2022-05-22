@@ -22,6 +22,8 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -54,4 +56,14 @@ public interface IProtocol
     default void transfer() {}
 
     default byte[] encoded() {return encode().array();}
+
+    @Override
+    default <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
+    {
+        ByteBuf encoded = subEncoded();
+        if(encoded != null && factory != null) {
+            return factory.create(encoded);
+        }
+        return null;
+    }
 }

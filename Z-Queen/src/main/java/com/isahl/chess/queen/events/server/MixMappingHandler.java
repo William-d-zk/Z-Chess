@@ -198,7 +198,7 @@ public class MixMappingHandler<T extends IStorage>
                                 publish(_Transfer,
                                         LINK_CONSISTENT_RESULT,
                                         Pair.of(backload, _SessionManager),
-                                        _LinkCustom.getUnboxer());
+                                        _LinkCustom.getUnbox());
                             }
                             else {
                                 _Logger.debug("cluster received ignore :%s", received);
@@ -265,12 +265,12 @@ public class MixMappingHandler<T extends IStorage>
                                                    .getFirst();
                     IManager manager = event.getContent()
                                             .getSecond();
-                    IOperator<IConsistent, IManager, IProtocol> unboxer = event.getEventOp();
+                    IOperator<IConsistent, IManager, IProtocol> unbox = event.getEventOp();
                     if(consistency != null) {
                         try {
                             publish(_Writer,
                                     _LinkCustom.notify(_SessionManager,
-                                                       unboxer.handle(consistency, manager),
+                                                       unbox.handle(consistency, manager),
                                                        consistency));
                         }
                         catch(Exception e) {
@@ -304,7 +304,7 @@ public class MixMappingHandler<T extends IStorage>
     private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IProtocol received)
     {
         ITriple result = custom.handle(manager, session, received);
-        _Logger.debug("recv:[ %s ],resp:[ %s ]", received, result);
+        _Logger.debug("receive:[ %s ],resp:[ %s ]", received, result);
         if(result != null) {
             IOperator.Type type = result.getThird();
             switch(type) {
