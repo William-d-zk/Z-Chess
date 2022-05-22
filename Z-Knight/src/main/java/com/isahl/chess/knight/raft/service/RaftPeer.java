@@ -76,8 +76,7 @@ public class RaftPeer
                    IRaftService,
                    IClusterTimer
 {
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
-
+    private final Logger          _Logger       = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final ZUID            _ZUid;
     private final IRaftConfig     _RaftConfig;
     private final IRaftMapper     _RaftMapper;
@@ -88,6 +87,7 @@ public class RaftPeer
     private final Queue<LogEntry> _RecvLogQueue = new LinkedList<>();
     private final Random          _Random       = new Random();
     private final long            _SnapshotFragmentMaxSize;
+    private final int             _SyncBatchMaxSize;
 
     /*
      * key(Long) → msgId
@@ -117,6 +117,7 @@ public class RaftPeer
         _SelfGraph.append(_SelfMachine);
         _JointGraph.append(_SelfMachine);
         _SnapshotFragmentMaxSize = _RaftConfig.getSnapshotFragmentMaxSize();
+        _SyncBatchMaxSize = _RaftConfig.getSyncBatchMaxSize();
     }
 
     private IRaftMachine updateMachine(IRaftMachine machine, RaftState state)
@@ -160,12 +161,12 @@ public class RaftPeer
         mClusterNode = _Node;
         if(_RaftConfig.isClusterMode()) {
             // 启动集群连接
-            installGraph(_SelfGraph,
-                         // _RaftConfig.getPeers().keySet() 是议会的成员
-                         _RaftConfig.getPeers()
-                                    .keySet(),
-                         _RaftConfig.getNodes()
-                                    .keySet());
+            graphInit(_SelfGraph,
+                      // _RaftConfig.getPeers().keySet() 是议会的成员
+                      _RaftConfig.getPeers()
+                                 .keySet(),
+                      _RaftConfig.getNodes()
+                                 .keySet());
             if(_RaftConfig.isInCongress()) {
                 _SelfMachine.state(FOLLOWER);
                 // 周期性检查 leader 是否存在
@@ -184,11 +185,12 @@ public class RaftPeer
         }
     }
 
-    private void installGraph(RaftGraph graph, Collection<Long> congress, Collection<Long> nodes)
+    private void graphInit(RaftGraph graph, Collection<Long> congress, Collection<Long> nodes)
     {
         for(long node : nodes) {
             // Graph中 装入所有需要管理的集群状态机，self已经装入了，此处不再重复
             IRaftMachine machine = RaftMachine.createBy(node, OP_MODIFY);
+            // nodes 至少是配置图谱中的一员，所以
             machine.state(congress.contains(node) ? FOLLOWER : CLIENT);
             graph.append(machine);
         }
@@ -249,7 +251,7 @@ public class RaftPeer
          * 关闭的，或关闭异常。同时cancel 配置了lock 防止意外出现。
          */
         tickCancel();
-        _Logger.debug("peer[%s],restart", _SelfMachine.state());
+        _Logger.debug("peer[%s], restart", _SelfMachine.state());
         switch(_SelfMachine.state()) {
             case CLIENT -> _Logger.info("peer[%#] → CLIENT, don't join congress", peerId());
             case JOINT -> {
@@ -275,10 +277,10 @@ public class RaftPeer
         trigger(updateMachine(_SelfMachine, CANDIDATE));
     }
 
-    private Collection<Long> vote4me()
+    private Collection<Long> vote4me(long term)
     {
         tickCancel();
-        _RaftMapper.updateTerm(_SelfMachine.term() + 1);
+        updateTerm(term);
         _SelfMachine.candidate(_SelfMachine.peer());
         _SelfMachine.leader(INVALID_PEER_ID);
         _SelfMachine.state(CANDIDATE);
@@ -286,6 +288,12 @@ public class RaftPeer
         _Logger.debug("vote4me follower → candidate %s", _SelfMachine.toPrimary());
         return RaftGraph.union(_SelfMachine.peer(), _SelfGraph, _JointGraph)
                         .keySet();
+    }
+
+    private void updateTerm(long term)
+    {
+        _SelfMachine.term(term);
+        _RaftMapper.updateTerm(term);
     }
 
     private List<ITriple> createVotes(Collection<Long> peers, IManager manager)
@@ -314,10 +322,10 @@ public class RaftPeer
                     .collect(Collectors.toList());
     }
 
-    private List<ITriple> rejectThenVote(RaftCode reason, long rejectTo, long msgId, IManager manager, ISession session)
+    private List<ITriple> rejectThenVote(long rejectTo, long msgId, IManager manager, ISession session)
     {
-        List<ITriple> broadcast = createVotes(vote4me(), manager);
-        X74_RaftReject x74 = reject(reason, rejectTo, msgId);
+        List<ITriple> broadcast = createVotes(vote4me(_SelfMachine.term()), manager);
+        X74_RaftReject x74 = reject(RaftCode.OBSOLETE, rejectTo, msgId);
         broadcast.add(Triple.of(x74, session, session.getEncoder()));
         return broadcast;
     }
@@ -332,7 +340,7 @@ public class RaftPeer
            update.candidate() == _SelfMachine.peer())
         //@formatter:on
         {
-            return createVotes(vote4me(), manager);
+            return createVotes(vote4me(update.term()), manager);
         }
         _Logger.warning("check vote failed; now: %s", _SelfMachine);
         return null;
@@ -341,70 +349,69 @@ public class RaftPeer
     public ITriple onVote(X70_RaftVote x70, IManager manager, ISession session)
     {
         IRaftMachine machine = getMachine(_SelfGraph, x70.getCandidate());
-        if(machine == null) {return null;}
-        machine.term(x70.getTerm());
-        machine.index(x70.getIndex());
-        machine.indexTerm(x70.getIndexTerm());
-        machine.commit(x70.getCommit());
-        machine.accept(x70.getAccept());
-        machine.candidate(x70.getCandidate());
-        machine.state(CANDIDATE);
-        if(lowTerm(x70.getTerm())) {
-            // reject election term < my term
-            _Logger.debug("elect {low term: reject %#x,mine:[%d@%d[%d]] candidate:[%d@%d[%d]]}",
-                          x70.getCandidate(),
-                          _SelfMachine.index(),
-                          _SelfMachine.indexTerm(),
-                          _SelfMachine.term(),
-                          machine.index(),
-                          machine.indexTerm(),
-                          machine.term());
-            return Triple.of(reject(LOWER_TERM, x70.getCandidate(), x70.getMsgId()).with(session), null, SINGLE);
-        }
-        if(highTerm(x70.getTerm())) {
-            // term > my term
-            _Logger.debug("elect {step down [%#x → follower]}", _SelfMachine.peer());
-            stepDown(x70.getTerm());
-        }
-        if(_SelfMachine.state() == FOLLOWER) {
-            //@formatter:off
-            if(_SelfMachine.commit() > x70.getCommit() ||
-               _SelfMachine.accept() > x70.getAccept() ||
-               _SelfMachine.indexTerm() > x70.getIndexTerm() ||
-               _SelfMachine.index() > x70.getIndex()
-            )
-            //@formatter:on
-            {
-                _Logger.debug(
-                        "less than me; reject[%s]  mine:[%d@%d,a:%d|c:%d] > candidate:[%d@%d,a:%d|c:%d] then vote4me[ follower → candidate] |",
-                        OBSOLETE,
-                        _SelfMachine.index(),
-                        _SelfMachine.indexTerm(),
-                        _SelfMachine.accept(),
-                        _SelfMachine.commit(),
-                        x70.getIndex(),
-                        x70.getIndexTerm(),
-                        x70.getAccept(),
-                        x70.getCommit());
-                return Triple.of(rejectThenVote(OBSOLETE, x70.getCandidate(), x70.getMsgId(), manager, session),
-                                 null,
-                                 BATCH);
+        if(machine != null) {
+            machine.term(x70.getTerm());
+            machine.index(x70.getIndex());
+            machine.indexTerm(x70.getIndexTerm());
+            machine.commit(x70.getCommit());
+            machine.accept(x70.getAccept());
+            machine.candidate(x70.getCandidate());
+            machine.state(CANDIDATE);
+            if(lowTerm(x70.getTerm())) {
+                // reject election term < my term
+                _Logger.debug("elect {low term: reject %#x,mine:[%d@%d[%d]] candidate:[%d@%d[%d]]}",
+                              x70.getCandidate(),
+                              _SelfMachine.index(),
+                              _SelfMachine.indexTerm(),
+                              _SelfMachine.term(),
+                              machine.index(),
+                              machine.indexTerm(),
+                              machine.term());
+                return Triple.of(reject(LOWER_TERM, x70.getCandidate(), x70.getMsgId()).with(session), null, SINGLE);
             }
-            else {
-                _Logger.debug("new term [ %d ] follower[%#x] → elector | candidate: %#x",
-                              x70.getTerm(),
-                              _SelfMachine.peer(),
+            if(highTerm(x70.getTerm())) {
+                // term > my term
+                _Logger.debug("elect {step down [%#x → follower]}", _SelfMachine.peer());
+                stepDown(x70.getTerm());
+            }
+            if(_SelfMachine.state() == FOLLOWER) {
+                //@formatter:off
+                if(_SelfMachine.commit() > x70.getCommit() ||
+                   _SelfMachine.accept() > x70.getAccept() ||
+                   _SelfMachine.indexTerm() > x70.getIndexTerm() ||
+                   _SelfMachine.index() > x70.getIndex()
+                )
+                //@formatter:on
+                {
+                    _Logger.debug(
+                            "less than me; reject[%s]  mine:[ %d@%d,a:%d | c:%d ] > candidate:[ %d@%d, a:%d | c:%d ] then vote4me[ follower → candidate ] ",
+                            OBSOLETE,
+                            _SelfMachine.index(),
+                            _SelfMachine.indexTerm(),
+                            _SelfMachine.accept(),
+                            _SelfMachine.commit(),
+                            x70.getIndex(),
+                            x70.getIndexTerm(),
+                            x70.getAccept(),
+                            x70.getCommit());
+                    return Triple.of(rejectThenVote(x70.getCandidate(), x70.getMsgId(), manager, session), null, BATCH);
+                }
+                else {
+                    _Logger.debug("new term [ %d ] follower [ %#x ] → elector | candidate:[ %#x ]",
+                                  x70.getTerm(),
+                                  _SelfMachine.peer(),
+                                  x70.getCandidate());
+                    IProtocol ballot = stepUp(x70.getTerm(), x70.getCandidate(), x70.getMsgId());
+                    return Triple.of(ballot.with(session), null, SINGLE);
+                }
+            }
+            // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
+            else if(_SelfMachine.candidate() != x70.getCandidate()) {
+                _Logger.debug("already vote [elector ×] | vote for:[ %#x not ♂ %#x ]",
+                              _SelfMachine.candidate(),
                               x70.getCandidate());
-                IProtocol ballot = stepUp(x70.getTerm(), x70.getCandidate(), x70.getMsgId());
-                return Triple.of(ballot.with(session), null, SINGLE);
+                return Triple.of(reject(ALREADY_VOTE, x70.getCandidate(), x70.getMsgId()).with(session), null, SINGLE);
             }
-        }
-        // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
-        else if(_SelfMachine.candidate() != x70.getCandidate()) {
-            _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x",
-                          _SelfMachine.candidate(),
-                          x70.getCandidate());
-            return Triple.of(reject(ALREADY_VOTE, x70.getCandidate(), x70.getMsgId()).with(session), null, SINGLE);
         }
         return null;
     }
@@ -412,39 +419,40 @@ public class RaftPeer
     public ITriple onBallot(X71_RaftBallot x71, IManager manager, ISession session)
     {
         IRaftMachine machine = getMachine(_SelfGraph, x71.getElector());
-        if(machine == null) {return null;}
-        machine.term(x71.getTerm());
-        machine.index(x71.getIndex());
-        machine.indexTerm(x71.getIndexTerm());
-        machine.accept(x71.getAccept());
-        machine.commit(x71.getCommit());
-        machine.candidate(_SelfMachine.peer());
-        machine.state(ELECTOR);
-        //@formatter:off
-        if(_SelfMachine.state() == CANDIDATE &&
-           _SelfMachine.term() ==  x71.getTerm() &&
-           _SelfGraph.isMajorAccept(_SelfMachine.peer(), _SelfMachine.term())
-        )
-        //@formatter:on
-        {
-            //term == my term
-            lead();
-            return Triple.of(createAppends(_SelfGraph.getPeers(), manager), null, BATCH);
-        }
-        else if(highTerm(x71.getTerm())) {
-            //term > my term
-            _Logger.debug("ballot {step down [%s → follower] %s}", _SelfMachine.state(), _SelfMachine.toPrimary());
-            stepDown(x71.getTerm());
-        }
-        else {
-            //term < my term
-            _Logger.debug("ballot {reject %#x,mine:[%d@%d] candidate:[%d@%d]}",
-                          x71.getElector(),
-                          _SelfMachine.index(),
-                          _SelfMachine.term(),
-                          machine.index(),
-                          machine.term());
-            return Triple.of(reject(LOWER_TERM, x71.getElector(), x71.getMsgId()).with(session), null, SINGLE);
+        if(machine != null) {
+            machine.term(x71.getTerm());
+            machine.index(x71.getIndex());
+            machine.indexTerm(x71.getIndexTerm());
+            machine.accept(x71.getAccept());
+            machine.commit(x71.getCommit());
+            machine.candidate(_SelfMachine.peer());
+            machine.state(ELECTOR);
+            //@formatter:off
+            if(_SelfMachine.state() == CANDIDATE &&
+               _SelfMachine.term() ==  x71.getTerm() &&
+               _SelfGraph.isMajorAccept(_SelfMachine.peer(), _SelfMachine.term())
+            )
+            //@formatter:on
+            {
+                //term == my term
+                lead();
+                return Triple.of(createAppends(_SelfGraph.getPeers(), manager), null, BATCH);
+            }
+            else if(highTerm(x71.getTerm())) {
+                //term > my term
+                _Logger.debug("ballot {step down [%s → follower] %s}", _SelfMachine.state(), _SelfMachine.toPrimary());
+                stepDown(x71.getTerm());
+            }
+            else {
+                //term < my term
+                _Logger.debug("ballot {reject %#x,mine:[%d@%d] candidate:[%d@%d]}",
+                              x71.getElector(),
+                              _SelfMachine.index(),
+                              _SelfMachine.term(),
+                              machine.index(),
+                              machine.term());
+                return Triple.of(reject(LOWER_TERM, x71.getElector(), x71.getMsgId()).with(session), null, SINGLE);
+            }
         }
         return null;
     }
@@ -452,6 +460,7 @@ public class RaftPeer
     public ITriple onAppend(X72_RaftAppend x72, ISession session)
     {
         if(lowTerm(x72.getTerm())) {
+            //leader's term < my term
             _Logger.warning("old leader rise %#x @%d, reject}", x72.getLeader(), x72.getTerm());
             return Triple.of(reject(LOWER_TERM, x72.getLeader(), x72.getMsgId()).with(session), null, SINGLE);
         }
@@ -467,7 +476,6 @@ public class RaftPeer
                                 _SelfMachine.leader(),
                                 x72.getLeader());
                 return Triple.of(reject(SPLIT_CLUSTER, x72.getLeader(), x72.getMsgId()).with(session), null, SINGLE);
-
             }
             case FOLLOWER, ELECTOR -> {
                 if(x72.payload() != null) {
@@ -476,93 +484,92 @@ public class RaftPeer
                     _RecvLogQueue.addAll(logs);
                 }
                 IRaftMachine machine = getMachine(_SelfGraph, x72.getLeader());
-                if(machine == null) {return null;}
-                machine.term(x72.getTerm());
-                machine.index(x72.getPreIndex());
-                machine.indexTerm(x72.getPreIndexTerm());
-                machine.accept(x72.getAccept());
-                machine.commit(x72.getCommit());
-                machine.candidate(x72.getLeader());
-                machine.leader(x72.getLeader());
-                machine.state(LEADER);
-                IProtocol response = follow(machine.term(),
-                                            machine.leader(),
-                                            machine.commit(),
-                                            x72.getPreIndex(),
-                                            x72.getPreIndexTerm(),
-                                            x72.getMsgId()).with(session);
-
-
-
-
-                return Triple.of(, null, SINGLE);
+                if(machine != null) {
+                    machine.term(x72.getTerm());
+                    machine.index(x72.getPreIndex());
+                    machine.indexTerm(x72.getPreIndexTerm());
+                    machine.accept(x72.getAccept());
+                    machine.commit(x72.getCommit());
+                    machine.candidate(x72.getLeader());
+                    machine.leader(x72.getLeader());
+                    machine.state(LEADER);
+                    return follow(x72.getTerm(),
+                                  x72.getLeader(),
+                                  x72.getCommit(),
+                                  x72.getPreIndex(),
+                                  x72.getPreIndexTerm(),
+                                  x72.getMsgId(),
+                                  session);
+                }
             }
-            default -> {
-                _Logger.warning("illegal state :%s", _SelfMachine.state());
-                return null;
-            }
+            default -> _Logger.warning("illegal state :%s", _SelfMachine.state());
         }
+        return null;
     }
 
     public ITriple onReject(X74_RaftReject x74, ISession session)
     {
         IRaftMachine machine = getMachine(_SelfGraph, x74.getPeer());
-        if(machine == null) {return null;}
-        machine.term(x74.getTerm());
-        machine.index(x74.getIndex());
-        machine.indexTerm(x74.getIndexTerm());
-        machine.accept(x74.getAccept());
-        machine.commit(x74.getCommit());
-        machine.candidate(x74.getCandidate());
-        machine.leader(x74.getLeader());
-        machine.state(RaftState.valueOf(x74.getState()));
-        if(highTerm(x74.getTerm())) {
-            //term > my term
-            _Logger.debug(" → reject {step down [%s → follower]}", _SelfMachine.state());
-            stepDown(x74.getTerm());
-        }
-        else {
-            // term == my term
-            // term <  my term 是不存在的情况
-            STEP_DOWN:
-            {
-                switch(RaftCode.valueOf(x74.getCode())) {
-                    case CONFLICT -> {
-                        if(_SelfMachine.state() == LEADER) {
-                            _Logger.debug("follower %#x,match failed,rollback %d@%d",
-                                          machine.peer(),
-                                          machine.index(),
-                                          machine.indexTerm());
-                            return Triple.of(createAppend(machine, 1).with(session), null, SINGLE);
+        if(machine != null) {
+            machine.term(x74.getTerm());
+            machine.index(x74.getIndex());
+            machine.indexTerm(x74.getIndexTerm());
+            machine.accept(x74.getAccept());
+            machine.commit(x74.getCommit());
+            machine.candidate(x74.getCandidate());
+            machine.leader(x74.getLeader());
+            machine.state(RaftState.valueOf(x74.getState()));
+            if(highTerm(x74.getTerm())) {
+                //peer's term > my term
+                _Logger.debug(" → reject {step down [%s → follower]}", _SelfMachine.state());
+                stepDown(x74.getTerm());
+            }
+            else {
+                // peer's term == my term
+                // peer's term <  my term 是不存在的情况
+                STEP_DOWN:
+                {
+                    switch(RaftCode.valueOf(x74.getCode())) {
+                        case CONFLICT -> {
+                            // follower 持有的 log 纪录 index@term 与leader 投送的不一致，后续进行覆盖同步
+                            if(_SelfMachine.state() == LEADER) {
+                                _Logger.debug("follower %#x,match failed,rollback %d@%d",
+                                              machine.peer(),
+                                              machine.index(),
+                                              machine.indexTerm());
+                                return Triple.of(createAppend(machine,
+                                                              min((int) (_SelfMachine.commit() - machine.index()),
+                                                                  _SyncBatchMaxSize)).with(session), null, SINGLE);
+                            }
+                            else {
+                                _Logger.warning("self %#x is old leader & send logs → %#x,next-index wasn't catchup",
+                                                _SelfMachine.peer(),
+                                                machine.peer());
+                                // Ignore
+                            }
                         }
-                        else {
-                            _Logger.warning("self %#x is old leader & send logs → %#x,next-index wasn't catchup",
-                                            _SelfMachine.peer(),
-                                            machine.peer());
-                            // Ignore
+                        case SPLIT_CLUSTER -> {
+                            if(_SelfMachine.state() == LEADER) {
+                                _Logger.debug("other leader:[%#x]", machine.peer());
+                            }
+                        }
+                        case ALREADY_VOTE -> {
+                            if(_SelfMachine.state() == CANDIDATE) {
+                                _Logger.debug("elector[%#x] has vote", machine.peer());
+                            }
+                        }
+                        case OBSOLETE -> {
+                            if(_SelfMachine.state()
+                                           .getCode() > FOLLOWER.getCode())
+                            {
+                                stepDown(_SelfMachine.term());
+                            }
+                            break STEP_DOWN;
                         }
                     }
-                    case SPLIT_CLUSTER -> {
-                        if(_SelfMachine.state() == LEADER) {
-                            _Logger.debug("other leader:[%#x]", machine.peer());
-                        }
+                    if(_SelfGraph.isMajorReject(_SelfMachine.peer(), _SelfMachine.term())) {
+                        stepDown(_SelfMachine.term());
                     }
-                    case ALREADY_VOTE -> {
-                        if(_SelfMachine.state() == CANDIDATE) {
-                            _Logger.debug("elector[%#x] has vote", machine.peer());
-                        }
-                    }
-                    case OBSOLETE -> {
-                        if(_SelfMachine.state()
-                                       .getCode() > FOLLOWER.getCode())
-                        {
-                            stepDown(_SelfMachine.term());
-                        }
-                        break STEP_DOWN;
-                    }
-                }
-                if(_SelfGraph.isMajorReject(_SelfMachine.peer(), _SelfMachine.term())) {
-                    stepDown(_SelfMachine.term());
                 }
             }
         }
@@ -580,39 +587,41 @@ public class RaftPeer
     public ITriple onAccept(X73_RaftAccept x73, IManager manager)
     {
         IRaftMachine machine = getMachine(_SelfGraph, x73.getFollower());
-        if(machine == null) {return null;}
-        machine.state(FOLLOWER);
-        machine.term(x73.getTerm());
-        machine.index(x73.getCatchUp());
-        machine.indexTerm(x73.getCatchUpTerm());
-        machine.accept(x73.getCatchUp());
-        machine.matchIndex(x73.getCatchUp());
-        machine.commit(x73.getCommit());
-        machine.leader(x73.getLeader());
-        machine.candidate(x73.getLeader());
-        /*
-         * member.accept > leader.commit 完成半数 match 之后只触发一次 leader commit
-         */
-        long next = _SelfMachine.commit() + 1;
-        if(machine.accept() >= next && _SelfGraph.isMajorAccept(next)) {
-            _SelfMachine.commit(next, _RaftMapper);
-            _Logger.debug("leader commit: %d @%d", next, _SelfMachine.term());
-            LogEntry raftLog = _RaftMapper.getEntry(next);
-            // machine.accept() > _SelfMachine.commit()时，raftLog 不可能为 null
-            if(raftLog.getClient() != _SelfMachine.peer()) {
-                // leader → client → device
-                ISession client = manager.findSessionByPrefix(raftLog.getClient());
-                if(client != null) {
-                    return Triple.of(createNotify(raftLog).with(client), null, SINGLE);
+        if(machine != null) {
+            machine.state(FOLLOWER);
+            machine.term(x73.getTerm());
+            machine.index(x73.getCatchUp());
+            machine.indexTerm(x73.getCatchUpTerm());
+            machine.accept(x73.getCatchUp());
+            machine.matchIndex(x73.getCatchUp());
+            machine.commit(x73.getCommit());
+            machine.leader(x73.getLeader());
+            machine.candidate(x73.getLeader());
+            /*
+             * member.accept > leader.commit 完成半数 match 之后只触发一次 leader commit
+             */
+            long next = _SelfMachine.commit() + 1;
+            if(machine.accept() >= next && _SelfGraph.isMajorAccept(next)) {
+                _SelfMachine.commit(next, _RaftMapper);
+                _Logger.debug("leader commit: %d@%d", next, _SelfMachine.term());
+                LogEntry logEntry = _RaftMapper.getEntry(next);
+                if(logEntry.getClient() != _SelfMachine.peer()) {
+                    // leader → client → device
+                    ISession session = manager.findSessionByPrefix(logEntry.getClient());
+                    if(session != null) {
+                        return Triple.of(createNotify(logEntry).with(session), null, SINGLE);
+                    }
+                }
+                else {
+                    // leader ≡ client → device
+                    return Triple.of(null, createNotify(logEntry), NULL);
                 }
             }
             else {
-                // leader ≡ client → device
-                return Triple.of(null, createNotify(raftLog), NULL);
+                // machine.accept < next → 已经执行过 self commit 过, 无须重复 commit
+                // !_SelfGraph.isMajorAccept(next) → 未满足 commit 条件, 不执行 commit
+                _Logger.debug("member %#x, catchup:%d → %d", machine.peer(), machine.accept(), _SelfMachine.accept());
             }
-        }
-        else {
-            _Logger.debug("member %#x, catchup:%d → %d", machine.peer(), machine.commit(), _SelfMachine.commit());
         }
         return null;
     }
@@ -672,11 +681,10 @@ public class RaftPeer
     private X71_RaftBallot stepUp(long term, long candidate, long msgId)
     {
         tickCancel();
+        updateTerm(term);
         _SelfMachine.state(ELECTOR);
         _SelfMachine.leader(INVALID_PEER_ID);
-        _SelfMachine.term(term);
         _SelfMachine.candidate(candidate);
-        _RaftMapper.updateTerm(term);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.debug("[follower → elector] %s", _SelfMachine.toPrimary());
         return ballot(msgId);
@@ -689,11 +697,10 @@ public class RaftPeer
         {
             beatCancel();
             electCancel();
+            updateTerm(term);
             _SelfMachine.candidate(INVALID_PEER_ID);
             _SelfMachine.leader(INVALID_PEER_ID);
             _SelfMachine.state(FOLLOWER);
-            _SelfMachine.term(term);
-            _RaftMapper.updateTerm(term);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         }
         else {_Logger.warning("step down [ignore],state has already changed to FOLLOWER");}
@@ -713,20 +720,32 @@ public class RaftPeer
         trigger(updateMachine(_SelfMachine, FOLLOWER));
     }
 
-    private IProtocol follow(long term, long leader, long commit, long preIndex, long preIndexTerm, long msgId)
+    private ITriple follow(long term,
+                           long leader,
+                           long commit,
+                           long preIndex,
+                           long preIndexTerm,
+                           long msgId,
+                           ISession session)
     {
         tickCancel();
         _SelfMachine.follow(term, leader, _RaftMapper);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if(catchUp(preIndex, preIndexTerm)) {
+            IProtocol notify = null;
             if(preIndex <= commit) {
-                _SelfMachine.commit(preIndex);
+                ListSerial<LogEntry> sub = new ListSerial<>(LogEntry::new);
+                for(long i = preIndex; i <= commit; i++) {
+                    _SelfMachine.commit(i);
+                    sub.add(_RaftMapper.getEntry(i));
+                }
+                notify = createNotify(sub);
             }
-            return accept(msgId);
+            return Triple.of(accept(msgId).with(session), notify, SINGLE);
         }
         else {
             _Logger.debug("catch up failed reject → %#x ", leader);
-            return reject(CONFLICT, leader, msgId);
+            return Triple.of(reject(CONFLICT, leader, msgId).with(session), null, SINGLE);
         }
     }
 
@@ -798,6 +817,7 @@ public class RaftPeer
                     LogEntry entry = it.next();
                     if(_RaftMapper.append(entry)) {
                         _SelfMachine.append(entry.getIndex(), entry.getTerm(), _RaftMapper);
+                        _SelfMachine.accept(entry.getIndex());
                         _Logger.debug("follower catch up %d@%d", entry.getIndex(), entry.getTerm());
                     }
                     it.remove();
@@ -816,7 +836,7 @@ public class RaftPeer
                  * 2.leader 已经获知follower的需求 但是 self.index < leader.start
                  * 需要follower先完成snapshot的安装才能正常同步。
                  */
-                _Logger.debug("leader doesn't know my next  || leader hasn't log,need to install snapshot");
+                _Logger.debug("leader doesn't know my next  || leader hasn't log, need to install snapshot");
             }
             else if(rollback(_RecvLogQueue, preIndex)) {
                 // _SelfMachine.index >= preIndex
@@ -825,7 +845,6 @@ public class RaftPeer
             _RecvLogQueue.clear();
             return false;
         }
-        _RecvLogQueue.clear();
         return true;
     }
 
@@ -845,14 +864,16 @@ public class RaftPeer
             }
             else {
                 //刚好follow是空的, leader投过来的数据就接收了
-                LogEntry entry = _LogQueue.poll();
-                if(_RaftMapper.append(entry)) {
+                LogEntry entry;
+                // mapper.append false的状态包含了, _LogQueue.empty的情况
+                while(_RaftMapper.append(entry = _LogQueue.poll())) {
                     //mapper.append 包含了preIndex ==1 && entry.index ==1 && newEndIndex == 0
+                    assert entry != null;
                     _SelfMachine.append(entry.getIndex(), entry.getTerm(), _RaftMapper);
                     _SelfMachine.accept(_RaftMapper);
                     _Logger.debug("follower catch up %d@%d", entry.getIndex(), entry.getTerm());
-                    return true;
                 }
+                return true;
             }
         }
         else {
@@ -863,7 +884,8 @@ public class RaftPeer
                 _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
             }
             else if(newEndIndex >= _RaftMapper.getStartIndex()) {
-                _Logger.fetal("lost data → reset ");
+                // rollback == null
+                _Logger.fetal("lost data → reset machine & mapper ");
                 _SelfMachine.reset();
                 _RaftMapper.reset();
             }
@@ -904,7 +926,7 @@ public class RaftPeer
         //@formatter:on
         {
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
-            return createAppends(manager);
+            return createAppends(RaftGraph.union(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
         }
         // state change => ignore
         _Logger.warning("check leader heartbeat failed; now:%s", _SelfMachine);
@@ -962,20 +984,14 @@ public class RaftPeer
         if(_SelfMachine.isEqualState(LEADER)) {
             List<ITriple> appends = append(x75.payload(), x75.getClientId(), x75.origin(), manager);
             if(appends != null && !appends.isEmpty()) {
-                return Triple.of(appends,
-                                 response(SUCCESS, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
-                                 BATCH);
+                return Triple.of(appends, response(SUCCESS, x75.getClientId(), x75.getMsgId()).with(session), BATCH);
             }
             else {
-                return Triple.of(null,
-                                 response(WAL_FAILED, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
-                                 NULL);
+                return Triple.of(null, response(WAL_FAILED, x75.getClientId(), x75.getMsgId()).with(session), NULL);
             }
         }
         else {
-            return Triple.of(null,
-                             response(ILLEGAL_STATE, x75.getClientId(), x75.origin(), x75.getMsgId()).with(session),
-                             NULL);
+            return Triple.of(null, response(ILLEGAL_STATE, x75.getClientId(), x75.getMsgId()).with(session), NULL);
         }
     }
 
@@ -990,20 +1006,19 @@ public class RaftPeer
         return Triple.of(null, x76, NULL);
     }
 
-    public ITriple onNotify(X77_RaftNotify x77, IManager manager)
+    public ITriple onNotify(X77_RaftNotify x77)
     {
-        LogEntry entry = getLogEntry(x77.getIndex());
+        LogEntry entry = x77.deserializeSub(LogEntry::new);
         if(entry != null) {
             return Triple.of(null, x77.withSub(entry.payload()), NULL);
         }
         return null;
     }
 
-    private X76_RaftResp response(RaftCode code, long client, long origin, long reqId)
+    private X76_RaftResp response(RaftCode code, long client, long reqId)
     {
         X76_RaftResp x76 = new X76_RaftResp(reqId);
         x76.setClientId(client);
-        x76.setOrigin(origin);
         x76.setCode(code.getCode());
         return x76;
     }
@@ -1011,12 +1026,12 @@ public class RaftPeer
     private List<ITriple> append(byte[] payload, long client, long origin, IManager manager)
     {
         _Logger.debug("leader append new log");
-        LogEntry newEntry = new LogEntry(_SelfMachine.term(), _SelfMachine.index() + 1, client, origin, payload);
+        LogEntry newEntry = new LogEntry(_SelfMachine.index() + 1, _SelfMachine.term(), client, origin, payload);
         if(_RaftMapper.append(newEntry)) {
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _SelfMachine.accept(_RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
-            return createAppends(manager);
+            return createAppends(_SelfMachinemanager);
         }
         _Logger.fetal("RAFT WAL failed!");
         return null;
@@ -1179,9 +1194,10 @@ public class RaftPeer
     }
 
     @Override
-    public List<RaftNode> getTopology()
+    public Collection<RaftNode> getTopology()
     {
-        return _RaftConfig.getPeers();
+        return _RaftConfig.getPeers()
+                          .values();
     }
 
     private X79_RaftAdjudge createAdjudge(LogEntry raftLog)
@@ -1197,11 +1213,16 @@ public class RaftPeer
     private X77_RaftNotify createNotify(LogEntry... raftLog)
     {
         X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        x77.setOrigin(raftLog.origin());
-        x77.setIndex(raftLog.getIndex());
-        x77.setClient(raftLog.getClient());
-        x77.withSub(raftLog.payload());
+        ListSerial<LogEntry> logs = new ListSerial<>(LogEntry::new);
+        logs.addAll(List.of(raftLog));
+        x77.withSub(logs);
         return x77;
     }
 
+    private X77_RaftNotify createNotify(ListSerial<LogEntry> logs)
+    {
+        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
+        x77.withSub(logs);
+        return x77;
+    }
 }

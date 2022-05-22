@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
@@ -64,75 +63,6 @@ public class X77_RaftNotify
         return Level.ALMOST_ONCE;
     }
 
-    /*
-    raft-log-index
-     */
-    private long mIndex;
-    /*
-    raft-client
-     */
-    private long mClient;
-    /*
-     request.& → raft-client
-     */
-    private long mOrigin;
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mIndex)
-                    .putLong(mClient)
-                    .putLong(mOrigin);
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mIndex = input.getLong();
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        return remain - 24;
-    }
-
-    @Override
-    public int length()
-    {
-        return super.length() + 24;
-    }
-
-    @Override
-    public long origin()
-    {
-        return mOrigin;
-    }
-
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
-    }
-
-    public long getIndex()
-    {
-        return mIndex;
-    }
-
-    public void setIndex(long index)
-    {
-        this.mIndex = index;
-    }
-
-    public long getClient()
-    {
-        return mClient;
-    }
-
-    public void setClient(long client)
-    {
-        this.mClient = client;
-    }
-
     @Override
     public int getCode()
     {
@@ -142,6 +72,6 @@ public class X77_RaftNotify
     @Override
     public String toString()
     {
-        return String.format("X77_RaftNotify { index:%#x,client:%#x,origin:%#x }", mIndex, mClient, mOrigin);
+        return String.format("X77_RaftNotify { sub:%s }", subContent());
     }
 }

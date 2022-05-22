@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 /**
@@ -81,7 +82,6 @@ public class X79_RaftAdjudge
         mOrigin = origin;
     }
 
-    @Override
     public long origin()
     {
         return mOrigin;
@@ -144,5 +144,6 @@ public class X79_RaftAdjudge
     {
         this.mIndex = index;
     }
+
 
 }

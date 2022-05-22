@@ -33,10 +33,8 @@ import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 
-import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.model.RaftState.*;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_MODIFY;
+import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
 import static java.lang.String.format;
 
 /**
@@ -247,6 +245,7 @@ public class RaftMachine
         mAccept = accept;
     }
 
+    /*
     @Override
     public void beLeader(IRaftMapper mapper)
     {
@@ -299,8 +298,6 @@ public class RaftMachine
         return candidate;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
     public RaftMachine createFollower()
     {
         RaftMachine follower = new RaftMachine(peer(), OP_MODIFY);
@@ -313,7 +310,7 @@ public class RaftMachine
         follower.state(FOLLOWER);
         return follower;
     }
-
+*/
     @Override
     public void follow(long term, long leader, IRaftMapper mapper)
     {
@@ -328,18 +325,16 @@ public class RaftMachine
     public void accept(IRaftMapper mapper)
     {
         mapper.updateAccept(mAccept = mIndex);
-        _Logger.debug("apply : %d | [index %d commit %d]", mAccept, mIndex, mCommit);
+        _Logger.debug("accept : [%d] ", mAccept);
     }
 
     @Override
     public void commit(long index, IRaftMapper mapper)
     {
-        if(mCommit < index) {
-            mCommit = index;
-            mapper.updateCommit(mCommit);
-            mapper.flush();
-            _Logger.debug("%s commit[%d] ", state(), mCommit);
-        }
+        mCommit = index;
+        mapper.updateCommit(mCommit);
+        mapper.flush();
+        _Logger.debug("commit: [%d] ", mCommit);
     }
 
     @Override

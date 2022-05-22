@@ -103,7 +103,7 @@ public class RaftCustom
             }
             // leader → client
             case 0x77 -> {
-                return _RaftPeer.onNotify((X77_RaftNotify) received, manager);
+                return _RaftPeer.onNotify((X77_RaftNotify) received);
             }
             case 0x78 -> {
                 //TODO
@@ -165,13 +165,8 @@ public class RaftCustom
     public IConsistent skipConsistency(IoSerial request)
     {
         X76_RaftResp x76 = new X76_RaftResp();
-
         x76.setCode(SUCCESS);
-        if(request instanceof IProtocol protocol) {
-            long origin = protocol.session()
-                                  .getIndex();
-            x76.setOrigin(origin);
-        }
+        x76.withSub(request);
         return x76;
     }
 }

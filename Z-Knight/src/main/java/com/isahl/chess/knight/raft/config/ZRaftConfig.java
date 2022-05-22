@@ -396,4 +396,10 @@ public class ZRaftConfig
     {
         return _PeerMap.get(peerId);
     }
+
+    @Override
+    public int getSyncBatchMaxSize()
+    {
+        return mConfig.getSyncBatchMaxSize();
+    }
 }

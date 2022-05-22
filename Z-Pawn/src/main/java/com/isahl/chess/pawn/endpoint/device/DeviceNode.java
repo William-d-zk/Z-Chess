@@ -34,7 +34,7 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
@@ -98,10 +98,7 @@ public class DeviceNode
             final String _PeerBindHost = peerBind.getHost();
             final int _PeerBindPort = peerBind.getPort();
             hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
-            _PeerPing = new X0B_Ping(String.format("%#x,%s:%d",
-                                                   _ClusterPeer.peerId(),
-                                                   _PeerBindHost,
-                                                   _PeerBindPort));
+            _PeerPing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _PeerBindHost, _PeerBindPort));
         }
         else {
             _PeerPing = null;
@@ -111,10 +108,7 @@ public class DeviceNode
             final String _GateBindHost = gateBind.getGateHost();
             final int _GateBindPort = gateBind.getGatePort();
             hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
-            _GatePing = new X0B_Ping(String.format("%#x,%s:%d",
-                                                   _ClusterPeer.peerId(),
-                                                   _GateBindHost,
-                                                   _GateBindPort));
+            _GatePing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _GateBindHost, _GateBindPort));
         }
         else {
             _GatePing = null;
@@ -174,7 +168,7 @@ public class DeviceNode
 
     public void start(ILogicHandler.factory logicFactory,
                       ILinkCustom linkCustom,
-                      IClusterCustom<RaftMachine> clusterCustom)
+                      IClusterCustom<IRaftMachine> clusterCustom)
     {
         build(logicFactory, linkCustom, clusterCustom, Encryptor::new);
         for(IAioServer server : _AioServers) {

@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
  */
 public interface IConsistencyBackload
 {
-    default IOperator<IConsistent, IManager, IProtocol> getUnboxer()
+    default IOperator<IConsistent, IManager, IProtocol> getUnbox()
     {
         return this::unbox;
     }

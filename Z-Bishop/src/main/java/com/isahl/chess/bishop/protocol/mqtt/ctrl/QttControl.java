@@ -126,7 +126,7 @@ public abstract class QttControl
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
         throw new UnsupportedOperationException();
     }

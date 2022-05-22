@@ -33,14 +33,14 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 /**
  * @author William.d.zk
  */
-public abstract class WsControl<T extends WsContext>
-        implements IControl<T>
+public abstract class WsControl<C extends WsContext>
+        implements IControl<C>
 {
 
     protected byte     mFrameHeader;
     protected byte[]   mPayload;
     private   ISession mSession;
-    private   T        mContext;
+    private   C        mContext;
 
     public WsControl(byte opCode)
     {
@@ -66,7 +66,7 @@ public abstract class WsControl<T extends WsContext>
     }
 
     @Override
-    public WsControl<T> withSub(IoSerial sub)
+    public WsControl<C> withSub(IoSerial sub)
     {
         if(sub != null) {
             ByteBuf buf = sub.encode();
@@ -78,7 +78,7 @@ public abstract class WsControl<T extends WsContext>
     }
 
     @Override
-    public WsControl<T> withSub(byte[] sub)
+    public WsControl<C> withSub(byte[] sub)
     {
         mPayload = sub == null || sub.length > 0 ? sub : null;
         return this;
@@ -122,11 +122,11 @@ public abstract class WsControl<T extends WsContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public WsControl<T> with(ISession session)
+    public WsControl<C> with(ISession session)
     {
         if(session == null) {return this;}
         mSession = session;
-        wrap((T) session.getContext(WsContext.class));
+        wrap((C) session.getContext(WsContext.class));
         return this;
     }
 
@@ -151,14 +151,14 @@ public abstract class WsControl<T extends WsContext>
     }
 
     @Override
-    public WsControl<T> wrap(T context)
+    public WsControl<C> wrap(C context)
     {
         mContext = context;
         return this;
     }
 
     @Override
-    public T context()
+    public C context()
     {
         return mContext;
     }
@@ -170,7 +170,7 @@ public abstract class WsControl<T extends WsContext>
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
         throw new UnsupportedOperationException();
     }

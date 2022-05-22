@@ -56,11 +56,10 @@ public class LogEntry
      */
     private long mOrigin;
 
-    public LogEntry(long index, long term, long client, long origin, long cached, byte[] content)
+    public LogEntry(long index, long term, long client, long origin, byte[] content)
     {
         super(content);
         pKey = index;
-        fKey = cached;
         mTerm = term;
         mClient = client;
         mOrigin = origin;
@@ -74,8 +73,6 @@ public class LogEntry
     public long getTerm() {return mTerm;}
 
     public long getIndex() {return primaryKey();}
-
-    public long getCached() {return foreignKey();}
 
     public byte[] getContent() {return payload();}
 
@@ -123,12 +120,11 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, cached:%d, sub[%#x](%d) }",
+        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, sub[%#x](%d) }",
                              getIndex(),
                              getTerm(),
                              getClient(),
                              getOrigin(),
-                             getCached(),
                              _sub(),
                              pLength());
     }

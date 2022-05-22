@@ -253,10 +253,11 @@ public class ZFrame
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
-        mSubContent = Objects.requireNonNull(factory)
-                             .create(subEncoded());
+        T t = super.deserializeSub(factory);
+        mSubContent = t;
+        return t;
     }
 
     @Override

@@ -24,14 +24,12 @@
 package com.isahl.chess.queen.io.core.features.cluster;
 
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
 /**
  * @author william.d.zk
  */
 public interface IConsistent
-        extends ITraceable,
-                IoSerial
+        extends IoSerial
 {
     int getCode();
 }

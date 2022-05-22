@@ -49,7 +49,6 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default int prefix(ByteBuf input)
     {
-        int serial = input.getUnsignedShort();
         int length = input.getInt();
         int size = input.getInt();
         for(int i = 0; i < size; i++) {
@@ -113,8 +112,9 @@ public interface ICollectionSerial<T extends IoSerial>
     }
 
     @Override
-    default <E extends IoSerial> void deserializeSub(IoFactory<E> factory)
+    default <E extends IoSerial> E deserializeSub(IoFactory<E> factory)
     {
         throw new UnsupportedOperationException();
     }
+
 }

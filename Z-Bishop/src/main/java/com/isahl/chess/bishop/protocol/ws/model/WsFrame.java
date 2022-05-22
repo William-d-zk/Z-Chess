@@ -260,10 +260,15 @@ public class WsFrame
     }
 
     @Override
-    public void deserializeSub(IoFactory factory)
+    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
-        Objects.requireNonNull(factory)
-               .create(subEncoded());
+        ByteBuf encoded = subEncoded();
+        if(encoded != null && factory != null) {
+            T t = factory.create(encoded);
+            mSubContent = t;
+            return t;
+        }
+        return null;
     }
 
     @Override

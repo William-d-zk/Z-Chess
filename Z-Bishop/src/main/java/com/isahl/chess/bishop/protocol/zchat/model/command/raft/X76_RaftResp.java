@@ -50,7 +50,6 @@ public class X76_RaftResp
     }
 
     private long mClientId;
-    private long mOrigin;
     private int  mCode;
 
     @Override
@@ -68,12 +67,7 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x, origin:%#x }", mClientId, mOrigin);
-    }
-
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
+        return String.format("X76_RaftResp { raft-client:%#x}", mClientId);
     }
 
     public void setCode(int code)
@@ -88,17 +82,10 @@ public class X76_RaftResp
     }
 
     @Override
-    public long origin()
-    {
-        return mOrigin;
-    }
-
-    @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
                     .putLong(mClientId)
-                    .putLong(mOrigin)
                     .putInt(mCode);
     }
 
@@ -107,15 +94,14 @@ public class X76_RaftResp
     {
         int remain = super.prefix(input);
         mClientId = input.getLong();
-        mOrigin = input.getLong();
         mCode = input.getInt();
-        return remain - 20;
+        return remain - 12;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 20;
+        return super.length() + 12;
     }
 
     public long getClientId()
