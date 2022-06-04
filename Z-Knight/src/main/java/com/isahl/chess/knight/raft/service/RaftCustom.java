@@ -58,9 +58,6 @@ public class RaftCustom
      * @return ITriple
      * fst : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
      * snd : command implements 'IControl/IConsistent', 需要传递给LINK的内容，
-     * 只有两个环节出现：
-     * leader→link.adjudge(x79),用来进行全局状态更新的内容，Leader维持全状态最新
-     * →client→link.notify(x77),用来向link反馈一致性请求的结果
      * trd : operator-type [SINGLE|BATCH]
      */
     @Override
@@ -106,7 +103,7 @@ public class RaftCustom
                 return _RaftPeer.onNotify((X77_RaftNotify) received);
             }
             case 0x78 -> {
-                //TODO
+                return _RaftPeer.onJoint((X78_RaftModify) received, manager);
             }
             case 0x79 -> {
                 //TODO

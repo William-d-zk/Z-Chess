@@ -29,23 +29,23 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
-    CLIENT((byte) 0),
-    FOLLOWER((byte) 1),
-    ELECTOR((byte) 2),
-    CANDIDATE((byte) 3),
-    LEADER((byte) 4),
-    JOINT((byte) 8),
-    GATE((byte) 16),
-    OUTSIDE((byte) 128);
+    CLIENT(0),
+    FOLLOWER(1),
+    ELECTOR(2),
+    CANDIDATE(3),
+    LEADER(4),
+    JOINT(8),
+    GATE(16),
+    OUTSIDE(128);
 
-    private final byte _Code;
+    private final int _Code;
 
-    RaftState(byte code)
+    RaftState(int code)
     {
         _Code = code;
     }
 
-    public byte getCode()
+    public int getCode()
     {
         return _Code;
     }

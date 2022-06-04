@@ -70,7 +70,7 @@ public interface IRaftMachine
     /**
      * @return 节点状态
      */
-    RaftState state();
+    int state();
 
     /**
      * @return 已知最大的已提交日志的索引值
@@ -96,7 +96,7 @@ public interface IRaftMachine
 
     void leader(long leader);
 
-    void state(RaftState state);
+    void state(int state);
 
     void commit(long commit);
 
@@ -113,7 +113,7 @@ public interface IRaftMachine
 
     void rollBack(long index, long indexTerm, IRaftMapper mapper);
 
-    default boolean isEqualState(RaftState state) {return state() == state;}
+    default boolean isInState(RaftState state) {return (state() & state.getCode()) != 0;}
 
     @Override
     default int compareTo(IRaftMachine o)

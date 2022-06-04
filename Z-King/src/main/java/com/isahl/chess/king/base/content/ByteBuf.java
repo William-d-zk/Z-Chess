@@ -571,6 +571,19 @@ public class ByteBuf
         return this;
     }
 
+    public ByteBuf putLongArray(long[] v)
+    {
+        if(v == null || v.length == 0) {
+            return this;
+        }
+        checkCapacity(v.length * 8);
+        for(long l : v) {
+            mBuffer.putLong(mWriterIdx, l);
+            mWriterIdx += 8;
+        }
+        return this;
+    }
+
     public ByteBuf put(byte[] v, int off, int len)
     {
         if(v == null) {return this;}

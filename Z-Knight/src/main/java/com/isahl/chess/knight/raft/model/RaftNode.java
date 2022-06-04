@@ -49,11 +49,11 @@ public class RaftNode
     @Serial
     private static final long serialVersionUID = 7634053506664147831L;
 
-    private String    mHost;
-    private int       mPort;
-    private String    mGateHost;
-    private int       mGatePort;
-    private RaftState mState;
+    private String mHost;
+    private int    mPort;
+    private String mGateHost;
+    private int    mGatePort;
+    private byte   mState;
 
     public RaftNode()
     {
@@ -65,7 +65,7 @@ public class RaftNode
         this();
         mHost = host;
         mPort = port;
-        mState = state;
+        mState = state.getCode();
     }
 
     public RaftNode(ByteBuf input)
@@ -79,7 +79,7 @@ public class RaftNode
         output = super.suffix(output)
                       .putShort((short) getPort())
                       .putShort((short) getGatePort())
-                      .put(getState().getCode());
+                      .put(mState);
         output.vPut(hostBytes())
               .vPut(gateHostBytes());
         return output;
@@ -91,7 +91,7 @@ public class RaftNode
         int remain = super.prefix(input);
         setPort(input.getUnsignedShort());
         setGatePort(input.getUnsignedShort());
-        setState(RaftState.valueOf(input.get()));
+        setState(input.get());
         int hl = input.vLength();
         setHost(input.readUTF(hl));
         int gl = input.vLength();
@@ -145,17 +145,12 @@ public class RaftNode
         mPort = port;
     }
 
-    public RaftState getState()
+    public boolean isInState(RaftState state)
     {
-        return mState;
+        return (mState & state.getCode()) != 0;
     }
 
-    public void setState(String state)
-    {
-        mState = RaftState.valueOf(state);
-    }
-
-    public void setState(RaftState state)
+    public void setState(byte state)
     {
         mState = state;
     }
