@@ -51,15 +51,15 @@ public class RaftMachine
 
     private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
-    private long      mTerm;          // 触发选举时 term > index-term
-    private long      mIndex;         // 本地日志 index，leader-index >= commit-index 其他状态：follower-index <= commit-index
-    private long      mIndexTerm;     // 本地日志对应的 term
-    private long      mMatchIndex;    // leader: 记录 follower 已经接收的记录
-    private long      mCandidate;     // candidate
-    private long      mLeader;        // leader
-    private long      mCommit;        // 集群中已知的最大 commit-index
-    private long      mAccept;       // 本地已被应用的 applied-index
-    private RaftState mState = CLIENT;// 集群节点状态 默认从 CLIENT 开始
+    private long mTerm;                     // 触发选举时 term > index-term
+    private long mIndex;                    // 本地日志 index，leader-index >= commit-index 其他状态：follower-index <= commit-index
+    private long mIndexTerm;                // 本地日志对应的 term
+    private long mMatchIndex;               // leader: 记录 follower 已经接收的记录
+    private long mCandidate;                // candidate
+    private long mLeader;                   // leader
+    private long mCommit;                   // 集群中已知的最大 commit-index
+    private long mAccept;                   // 本地已被应用的 applied-index
+    private int  mState = CLIENT.getCode(); // 集群节点状态 默认从 CLIENT 开始
 
     @Override
     public int length()
@@ -111,7 +111,7 @@ public class RaftMachine
         mCommit = input.getLong();
         mCandidate = input.getLong();
         mLeader = input.getLong();
-        mState = RaftState.valueOf(input.get());
+        mState = input.get();
         remain -= 65;// 8x8 +1;
         return remain;
     }
@@ -128,7 +128,7 @@ public class RaftMachine
                     .putLong(mCommit)
                     .putLong(mCandidate)
                     .putLong(mLeader)
-                    .put(mState.getCode());
+                    .put(mState);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class RaftMachine
     }
 
     @Override
-    public RaftState state()
+    public int state()
     {
         return mState;
     }
@@ -228,7 +228,7 @@ public class RaftMachine
     }
 
     @Override
-    public void state(RaftState state)
+    public void state(int state)
     {
         mState = state;
     }
@@ -314,7 +314,7 @@ public class RaftMachine
     @Override
     public void follow(long term, long leader, IRaftMapper mapper)
     {
-        mState = FOLLOWER;
+        state(FOLLOWER.getCode());
         mTerm = term;
         mLeader = leader;
         mCandidate = leader;

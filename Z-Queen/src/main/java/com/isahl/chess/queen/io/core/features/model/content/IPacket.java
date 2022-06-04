@@ -79,7 +79,7 @@ public interface IPacket
     }
 
     @Override
-    default void deserializeSub(IoFactory factory)
+    default <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
     {
         throw new UnsupportedOperationException();
     }

@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 /**
@@ -35,17 +34,17 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
                   serial = 0x79)
-public class X79_RaftAdjudge
+public class X7B_RaftExchange
         extends ZCommand
         implements IConsistent
 {
 
-    public X79_RaftAdjudge()
+    public X7B_RaftExchange()
     {
         super();
     }
 
-    public X79_RaftAdjudge(long msgId)
+    public X7B_RaftExchange(long msgId)
     {
         super(msgId);
     }

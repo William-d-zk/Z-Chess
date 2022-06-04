@@ -33,24 +33,26 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x76)
-public class X76_RaftResp
+                  serial = 0x79)
+public class X7A_RaftJoint
         extends ZCommand
         implements IConsistent
 {
-    public X76_RaftResp()
+
+    public X7A_RaftJoint()
     {
         super();
     }
 
-    public X76_RaftResp(long msgId)
+    public X7A_RaftJoint(long msgId)
     {
         super(msgId);
     }
 
-    private long mClientId;
+    private long mIndex;
+    private long mClient;
+    private long mOrigin;
     private int  mCode;
-    private int  mState;
 
     @Override
     public int priority()
@@ -61,18 +63,27 @@ public class X76_RaftResp
     @Override
     public Level getLevel()
     {
-        return Level.ALMOST_ONCE;
+        return Level.AT_LEAST_ONCE;
     }
 
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { to-client[%#x],%s}", mClientId, RaftState.valueOf(mState));
+        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x, code:%d}",
+                             mIndex,
+                             mClient,
+                             mOrigin,
+                             mCode);
     }
 
-    public void setCode(int code)
+    public void setOrigin(long origin)
     {
-        mCode = code;
+        mOrigin = origin;
+    }
+
+    public long origin()
+    {
+        return mOrigin;
     }
 
     @Override
@@ -81,12 +92,18 @@ public class X76_RaftResp
         return mCode;
     }
 
+    public void setCode(int code)
+    {
+        mCode = code;
+    }
+
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mClientId)
-                    .put(mState)
+                    .putLong(mIndex)
+                    .putLong(mClient)
+                    .putLong(mOrigin)
                     .putInt(mCode);
     }
 
@@ -94,26 +111,38 @@ public class X76_RaftResp
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mClientId = input.getLong();
-        mState = input.get();
+        mIndex = input.getLong();
+        mClient = input.getLong();
+        mOrigin = input.getLong();
         mCode = input.getInt();
-        return remain - 13;
+        return remain - 28;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 13;
+        return super.length() + 28;
     }
 
-    public long getClientId()
+    public long getClient()
     {
-        return mClientId;
+        return mClient;
     }
 
-    public void setClientId(long clientId)
+    public void setClient(long client)
     {
-        mClientId = clientId;
+        mClient = client;
     }
+
+    public long getIndex()
+    {
+        return mIndex;
+    }
+
+    public void setIndex(long index)
+    {
+        this.mIndex = index;
+    }
+
 
 }

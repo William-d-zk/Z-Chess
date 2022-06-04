@@ -27,29 +27,30 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.model.ListSerial;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
+import java.util.Arrays;
 import java.util.List;
+
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 /**
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
                   serial = 0x78)
-public class X78_RaftChange
+public class X78_RaftModify
         extends ZCommand
-        implements ITraceable
+        implements IConsistent
 {
 
-    public X78_RaftChange()
+    public X78_RaftModify()
     {
         super();
     }
 
-    public X78_RaftChange(long msgId)
+    public X78_RaftModify(long msgId)
     {
         super(msgId);
     }
@@ -69,48 +70,93 @@ public class X78_RaftChange
     @Override
     public int length()
     {
-        return super.length() + 8;
+        return super.length() + 16 + 4 + mCount * 8;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mOrigin);
+                    .putLong(mClient)
+                    .putLong(mLeader)
+                    .putInt(mCount)
+                    .putLongArray(mPeers);
     }
 
-    private long mOrigin;
-
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
-    }
+    private long   mClient;
+    private long   mLeader;
+    private int    mCount;
+    private long[] mPeers;
 
     @Override
-    public long origin()
+    public X78_RaftModify copy()
     {
-        return mOrigin;
+        X78_RaftModify n = new X78_RaftModify();
+        n.mCount = mCount;
+        n.mLeader = mLeader;
+        n.mClient = mClient;
+        n.mPeers = Arrays.copyOf(mPeers, mPeers.length);
+        return n;
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mOrigin = input.getLong();
-        return remain - 8;
+        mClient = input.getLong();
+        mLeader = input.getLong();
+        remain -= 16;
+        mCount = input.getInt();
+        remain -= 4;
+        mPeers = new long[mCount];
+        for(int i = 0; i < mCount; i++) {
+            mPeers[i] = input.getLong();
+        }
+        return remain - 8 * mCount;
     }
 
-    public <T extends IoSerial> List<T> getNewGraph(IoFactory<T> factory)
+    public long getLeader()
     {
-        if(mPayload == null || factory == null) {return null;}
-        ListSerial<T> result = new ListSerial<>(factory);
-        result.decode(ByteBuf.wrap(mPayload));
-        return result;
+        return mLeader;
+    }
+
+    public long[] getNewGraph()
+    {
+        return mPeers;
+    }
+
+    public void newGraph(long leader, List<Long> peers)
+    {
+        mLeader = leader;
+        mCount = peers.size();
+        mPeers = new long[mCount];
+        Arrays.setAll(mPeers, peers::get);
+    }
+
+    public long getClient()
+    {
+        return mClient;
+    }
+
+    public void setClient(long client)
+    {
+        mClient = client;
     }
 
     @Override
     public String toString()
     {
-        return String.format("X78_RaftChange { origin:%#x }", mOrigin);
+        return String.format("X78_RaftModify { from:[%#x] to:[%#x] peers-%d:%s }",
+                             mClient,
+                             mLeader,
+                             mCount,
+                             IoUtil.longArrayToHex(mPeers));
     }
+
+    @Override
+    public int getCode()
+    {
+        return SUCCESS;
+    }
+
 }

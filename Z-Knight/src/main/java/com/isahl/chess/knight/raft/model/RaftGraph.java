@@ -64,7 +64,7 @@ public class RaftGraph
     public void append(IRaftMachine machine)
     {
         _Peers.putIfAbsent(machine.peer(), machine);
-        if(!machine.isEqualState(CLIENT)) {
+        if(!machine.isInState(CLIENT)) {
             _Members.putIfAbsent(machine.peer(), machine);
         }
     }
@@ -107,6 +107,11 @@ public class RaftGraph
         return new RaftGraph();
     }
 
+    /**
+     * 联合一致发生时old_leader与new_leader结果上是相同的
+     * old_leader 必然包含在 joint_graph 中, 由raft的变更流程保障
+     * old_leader 发布转换状态指令,  joint_graph 开始执行选举流程。
+     */
     public static Map<Long, IRaftMachine> union(long self, RaftGraph left, RaftGraph right)
     {
         Map<Long, IRaftMachine> union = new TreeMap<>();

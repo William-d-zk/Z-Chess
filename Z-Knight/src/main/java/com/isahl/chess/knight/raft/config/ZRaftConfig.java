@@ -139,7 +139,7 @@ public class ZRaftConfig
         if(peersIn != null && !peersIn.isEmpty()) {
             peersIn.forEach((i, s)->{
                 RaftNode peer = toPeer(s);
-                peer.setState(RaftState.FOLLOWER);
+                peer.setState(RaftState.FOLLOWER.getCode());
                 if(hostname.equalsIgnoreCase(peer.getHost())) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
@@ -236,7 +236,7 @@ public class ZRaftConfig
                 switch(operation) {
                     case OP_APPEND -> {
                         if(present) {
-                            if(delta.getState() == RaftState.GATE && senator.getGateHost() == null) {
+                            if(delta.isInState(RaftState.GATE) && senator.getGateHost() == null) {
                                 senator.setGateHost(delta.getGateHost());
                                 senator.setGatePort(delta.getGatePort());
                             }
