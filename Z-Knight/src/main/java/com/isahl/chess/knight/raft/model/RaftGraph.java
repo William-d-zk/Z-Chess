@@ -111,8 +111,13 @@ public class RaftGraph
      * 联合一致发生时old_leader与new_leader结果上是相同的
      * old_leader 必然包含在 joint_graph 中, 由raft的变更流程保障
      * old_leader 发布转换状态指令,  joint_graph 开始执行选举流程。
+     * <p>
+     * self ∈ left && self ∈ right 返回并集
+     * self ∈ left && self ∉ right 返回 left
+     * self ∉ left && self ∈ right 返回 right
+     * self ∉ left && self ∉ right 返回 empty map
      */
-    public static Map<Long, IRaftMachine> union(long self, RaftGraph left, RaftGraph right)
+    public static Map<Long, IRaftMachine> join(long self, RaftGraph left, RaftGraph right)
     {
         Map<Long, IRaftMachine> union = new TreeMap<>();
         if(left._Members.containsKey(self) && right._Members.containsKey(self)) {

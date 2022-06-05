@@ -290,7 +290,7 @@ public class RaftPeer
         _SelfMachine.state(CANDIDATE.getCode());
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.debug("vote4me follower → candidate %s", _SelfMachine.toPrimary());
-        return RaftGraph.union(_SelfMachine.peer(), _SelfGraph, _JointGraph)
+        return RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph)
                         .keySet();
     }
 
@@ -924,7 +924,7 @@ public class RaftPeer
         //@formatter:on
         {
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
-            return createAppends(RaftGraph.union(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
+            return createAppends(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
         }
         // state change => ignore
         _Logger.warning("check leader heartbeat failed; now:%s", _SelfMachine);
@@ -1026,13 +1026,14 @@ public class RaftPeer
         x76.setClientId(x78.getClient());
         x76.setCode(SUCCESS.getCode());
         x76.setMsgId(x78.getMsgId());
-        switch(RaftState.valueOf(_SelfMachine.state())) {
+        RaftState state = RaftState.valueOf(_SelfMachine.state());
+        switch(state) {
             case LEADER -> {
                 //old_graph
                 _SelfMachine.state(JOINT.getCode());
                 for(long peer : peers) {_JointGraph.append(RaftMachine.createBy(peer, OP_MODIFY));}
                 List<IProtocol> joints = new LinkedList<>();
-                RaftGraph.union(leader, _SelfGraph, _JointGraph)
+                RaftGraph.join(leader, _SelfGraph, _JointGraph)
                          .forEach((peer, machine)->{
                              machine.state(JOINT.getCode());
                              ISession session = manager.findSessionByPrefix(peer);
@@ -1057,15 +1058,14 @@ public class RaftPeer
             }
             case FOLLOWER -> {
                 if(_SelfMachine.leader() == leader) {
+                    _SelfMachine.state(JOINT.getCode());
                     return Triple.of(x76, null, SINGLE);
                 }
                 //else 选举态,返回失败
+                _Logger.warning("expect:{FOLLOW→%#x},from:%#x; illegal state", _SelfMachine.leader(), leader);
             }
-            default -> {
-                //ignore ELECTOR, CANDIDATE, GATE
-            }
+            default -> _Logger.warning("illegal state: [%s]", state); //ignore ELECTOR, CANDIDATE, GATE
         }
-
         x76.setCode(ILLEGAL_STATE.getCode());
         return Triple.of(x76, null, SINGLE);
     }
@@ -1086,7 +1086,7 @@ public class RaftPeer
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _SelfMachine.accept(_RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
-            return createAppends(RaftGraph.union(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
+            return createAppends(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
         }
         _Logger.fetal("RAFT WAL failed!");
         return null;
