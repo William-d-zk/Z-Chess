@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.server;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.events.cluster.IConsistencyBackload;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -50,7 +50,7 @@ public interface ILinkCustom
      * @param backload cluster 处理请求的返回结果
      * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload);
+    List<ITriple> notify(IManager manager, IProtocol request, IConsistentResult backload);
 
     /**
      * 当出现了关闭 session 的需要时

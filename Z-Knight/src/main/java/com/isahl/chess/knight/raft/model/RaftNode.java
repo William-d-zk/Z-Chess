@@ -53,7 +53,7 @@ public class RaftNode
     private int    mPort;
     private String mGateHost;
     private int    mGatePort;
-    private byte   mState;
+    private int    mState;
 
     public RaftNode()
     {
@@ -150,7 +150,7 @@ public class RaftNode
         return (mState & state.getCode()) != 0;
     }
 
-    public void setState(byte state)
+    public void setState(int state)
     {
         mState = state;
     }

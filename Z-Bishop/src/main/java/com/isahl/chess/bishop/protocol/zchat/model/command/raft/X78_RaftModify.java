@@ -70,20 +70,18 @@ public class X78_RaftModify
     @Override
     public int length()
     {
-        return super.length() + 16 + 4 + mCount * 8;
+        return super.length() + 8 + 4 + mCount * 8;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mClient)
                     .putLong(mLeader)
                     .putInt(mCount)
                     .putLongArray(mPeers);
     }
 
-    private long   mClient;
     private long   mLeader;
     private int    mCount;
     private long[] mPeers;
@@ -94,7 +92,6 @@ public class X78_RaftModify
         X78_RaftModify n = new X78_RaftModify();
         n.mCount = mCount;
         n.mLeader = mLeader;
-        n.mClient = mClient;
         n.mPeers = Arrays.copyOf(mPeers, mPeers.length);
         return n;
     }
@@ -103,16 +100,16 @@ public class X78_RaftModify
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mClient = input.getLong();
         mLeader = input.getLong();
-        remain -= 16;
+        remain -= 8;
         mCount = input.getInt();
         remain -= 4;
         mPeers = new long[mCount];
         for(int i = 0; i < mCount; i++) {
             mPeers[i] = input.getLong();
+            remain -= 8;
         }
-        return remain - 8 * mCount;
+        return remain;
     }
 
     public long getLeader()
@@ -133,21 +130,10 @@ public class X78_RaftModify
         Arrays.setAll(mPeers, peers::get);
     }
 
-    public long getClient()
-    {
-        return mClient;
-    }
-
-    public void setClient(long client)
-    {
-        mClient = client;
-    }
-
     @Override
     public String toString()
     {
-        return String.format("X78_RaftModify { from:[%#x] to:[%#x] peers-%d:%s }",
-                             mClient,
+        return String.format("X78_RaftModify { leader:[%#x] peers-%d:%s }",
                              mLeader,
                              mCount,
                              IoUtil.longArrayToHex(mPeers));

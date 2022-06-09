@@ -43,10 +43,12 @@ import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -257,15 +259,18 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
+    public  List<ITriple> onConsistency(IManager manager,
+                                        IConsistentResult backload,
+                                                                                   IoSerial consensusBody)
     {
+        int code = backload.getCode();
         long origin = backload.origin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.with(x111.session());
-                if(backload.getCode() == SUCCESS) {
+                if(code == SUCCESS) {
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if(x111.isClean()) {
                         clean(origin);
@@ -286,7 +291,7 @@ public class MQttPlugin
             case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                if(subscribes != null && backload.getCode() == SUCCESS) {
+                if(subscribes != null && code == SUCCESS) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.with(x118.session());
                     x119.setMsgId(x118.getMsgId());
@@ -301,7 +306,6 @@ public class MQttPlugin
                             x119.addResult(level);
                         }
                     });
-
                     _Logger.info("subscribe topic:%s", x118.getSubscribes());
                     return Collections.singletonList(Triple.of(x119,
                                                                x119.session(),
@@ -312,10 +316,8 @@ public class MQttPlugin
             case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                if(topics != null && backload.getCode() == SUCCESS) {
-                    topics.forEach(topic->{
-                        unsubscribe(new Topic(_QttTopicToRegex(topic)), origin);
-                    });
+                if(topics != null && code == SUCCESS) {
+                    topics.forEach(topic->unsubscribe(new Topic(_QttTopicToRegex(topic)), origin));
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.with(x11A.session());
                     x11B.setMsgId(x11A.getMsgId());
