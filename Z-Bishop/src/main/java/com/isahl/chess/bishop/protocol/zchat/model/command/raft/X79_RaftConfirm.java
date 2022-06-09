@@ -34,23 +34,24 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
                   serial = 0x79)
-public class X79_RaftModify
+public class X79_RaftConfirm
         extends ZCommand
         implements IConsistent
 {
 
-    public X79_RaftModify()
+    public X79_RaftConfirm()
     {
         super();
     }
 
-    public X79_RaftModify(long msgId)
+    public X79_RaftConfirm(long msgId)
     {
         super(msgId);
     }
 
-    private int mState;
-    private int mCode;
+    private long mPeer;
+    private int  mState;
+    private int  mCode;
 
     @Override
     public int priority()
@@ -67,11 +68,7 @@ public class X79_RaftModify
     @Override
     public String toString()
     {
-        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x, code:%d}",
-                             mIndex,
-                             mClient,
-                             mOrigin,
-                             mCode);
+        return String.format("X79_RaftConfirm { state:%d, code:%d}", mState, mCode);
     }
 
     @Override
@@ -85,13 +82,32 @@ public class X79_RaftModify
         mCode = code;
     }
 
+    public int getState()
+    {
+        return mState;
+    }
+
+    public void setState(int state)
+    {
+        this.mState = state;
+    }
+
+    public long getPeer()
+    {
+        return mPeer;
+    }
+
+    public void setPeer(long peer)
+    {
+        mPeer = peer;
+    }
+
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mIndex)
-                    .putLong(mClient)
-                    .putLong(mOrigin)
+                    .putLong(mPeer)
+                    .put(mState)
                     .putInt(mCode);
     }
 
@@ -99,37 +115,16 @@ public class X79_RaftModify
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mIndex = input.getLong();
-        mClient = input.getLong();
-        mOrigin = input.getLong();
+        mPeer = input.getLong();
+        mState = input.get();
         mCode = input.getInt();
-        return remain - 28;
+        return remain - 13;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 28;
-    }
-
-    public long getClient()
-    {
-        return mClient;
-    }
-
-    public void setClient(long client)
-    {
-        mClient = client;
-    }
-
-    public long getIndex()
-    {
-        return mIndex;
-    }
-
-    public void setIndex(long index)
-    {
-        this.mIndex = index;
+        return super.length() + 13;
     }
 
 }

@@ -48,9 +48,9 @@ public class X76_RaftResp
         super(msgId);
     }
 
-    private long mClientId;
-    private int  mCode;
-    private int  mState;
+    private long mClientId;//8 byte
+    private int  mCode;//4 byte
+    private int  mState;//1 byte
 
     @Override
     public int priority()
@@ -67,7 +67,7 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { to-client[%#x],%s}", mClientId, RaftState.valueOf(mState));
+        return String.format("X76_RaftResp { to-client[%#x],%d}", mClientId, mState);
     }
 
     public void setCode(int code)

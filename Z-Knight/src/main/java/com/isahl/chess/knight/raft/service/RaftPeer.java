@@ -1022,10 +1022,10 @@ public class RaftPeer
     {
         long[] peers = x78.getNewGraph();
         long leader = x78.getLeader();
-        X76_RaftResp x76 = new X76_RaftResp();
-        x76.setClientId(x78.getClient());
-        x76.setCode(SUCCESS.getCode());
-        x76.setMsgId(x78.getMsgId());
+        X79_RaftConfirm x79 = new X79_RaftConfirm();
+        x79.setCode(SUCCESS.getCode());
+        x79.setMsgId(x78.getMsgId());
+        x79.setPeer(_SelfMachine.peer());
         RaftState state = RaftState.valueOf(_SelfMachine.state());
         switch(state) {
             case LEADER -> {
@@ -1045,7 +1045,7 @@ public class RaftPeer
                              }
                          });
 
-                return Triple.of(joints, x76, BATCH);
+                return Triple.of(joints, x79, BATCH);
             }
             case CLIENT, OUTSIDE -> {
                 for(long peer : peers) {
@@ -1055,19 +1055,20 @@ public class RaftPeer
                     }
                     _JointGraph.append(RaftMachine.createBy(peer, OP_MODIFY));
                 }
+                return Triple.of(x79, null, SINGLE);
             }
             case FOLLOWER -> {
                 if(_SelfMachine.leader() == leader) {
                     _SelfMachine.state(JOINT.getCode());
-                    return Triple.of(x76, null, SINGLE);
+                    return Triple.of(x79, null, SINGLE);
                 }
                 //else 选举态,返回失败
                 _Logger.warning("expect:{FOLLOW→%#x},from:%#x; illegal state", _SelfMachine.leader(), leader);
             }
             default -> _Logger.warning("illegal state: [%s]", state); //ignore ELECTOR, CANDIDATE, GATE
         }
-        x76.setCode(ILLEGAL_STATE.getCode());
-        return Triple.of(x76, null, SINGLE);
+        x79.setCode(ILLEGAL_STATE.getCode());
+        return Triple.of(x79, null, SINGLE);
     }
 
     private X76_RaftResp response(RaftCode code, long client, long reqId)

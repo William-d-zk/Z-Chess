@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022~2022. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,26 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.audience.start;
+package com.isahl.chess.queen.io.core.features.cluster;
 
-import com.isahl.chess.knight.raft.model.replicate.LogEntry;
-import com.isahl.chess.knight.raft.model.replicate.Mapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
-@SpringBootTest
-class ApplicationAudienceTest
-{
-    @Autowired
-    Mapper mapper;
-
-    @Test
-    void test()
-    {
-        LogEntry logEntry = new LogEntry(1, 0, 0xc000000000000000L, 0x5f6291e987000L, null);
-
-        mapper.append(logEntry);
-
-    }
-}
+/**
+ * @author william.d.zk
+ */
+public interface IConsistentResult
+        extends IConsistent,
+                ITraceable,
+                IoSerial
+{}

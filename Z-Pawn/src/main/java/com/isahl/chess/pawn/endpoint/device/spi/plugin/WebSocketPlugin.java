@@ -31,7 +31,7 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -97,7 +97,7 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistentResult backload, IoSerial consensusBody)
     {
         return null;
     }

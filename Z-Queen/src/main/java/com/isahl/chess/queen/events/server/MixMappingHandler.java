@@ -37,6 +37,7 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
@@ -261,8 +262,8 @@ public class MixMappingHandler<T extends IStorage>
                  *  cluster（cluster-client） → Linker ｜ Linker notify → device.session
                  */
                 case LINK_CONSISTENT_RESULT -> {
-                    IConsistent consistency = event.getContent()
-                                                   .getFirst();
+                    IConsistentResult consistency = event.getContent()
+                                                         .getFirst();
                     IManager manager = event.getContent()
                                             .getSecond();
                     IOperator<IConsistent, IManager, IProtocol> unbox = event.getEventOp();

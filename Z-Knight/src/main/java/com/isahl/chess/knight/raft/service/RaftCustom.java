@@ -29,9 +29,11 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -124,7 +126,7 @@ public class RaftCustom
     @Override
     public List<ITriple> onTimer(IManager manager, IRaftMachine machine)
     {
-        return machine == null ? null : switch(machine.state()) {
+        return machine == null ? null : switch(RaftState.valueOf(machine.state())) {
             // step down → follower
             case FOLLOWER -> _RaftPeer.turnDown(machine);
             // vote
@@ -159,11 +161,12 @@ public class RaftCustom
     }
 
     @Override
-    public IConsistent skipConsistency(IoSerial request)
+    @SuppressWarnings("unchecked")
+    public <B extends IConsistent & ITraceable> B skipConsistency(IoSerial request)
     {
         X76_RaftResp x76 = new X76_RaftResp();
         x76.setCode(SUCCESS);
         x76.withSub(request);
-        return x76;
+        return (B) x76;
     }
 }
