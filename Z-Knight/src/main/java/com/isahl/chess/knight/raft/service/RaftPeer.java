@@ -1082,6 +1082,7 @@ public class RaftPeer
             fromRecord(x7c, _JointGraph, x7c.peer());
             if(_SelfGraph.isMajorConfirm() && _JointGraph.isMajorConfirm()) {
                 _SelfMachine.confirm();
+                _SelfGraph.resetTo(_JointGraph);
                 Map<Long, IRaftMachine> union = RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph);
                 if(union != null) {
                     return Triple.of(union.entrySet()
@@ -1111,9 +1112,10 @@ public class RaftPeer
     public void onConfirm(X79_RaftConfirm x79)
     {
         if(_SelfMachine.isInState(JOINT)) {
-            IRaftMachine leader = getMachine(_JointGraph,x79.peer());
-            if(leader!=null){leader.confirm();}
+            IRaftMachine leader = getMachine(_JointGraph, x79.peer());
+            if(leader != null) {leader.confirm();}
             _SelfMachine.confirm();
+            _SelfGraph.resetTo(_JointGraph);
             _Logger.debug("joint confirm");
         }
     }
