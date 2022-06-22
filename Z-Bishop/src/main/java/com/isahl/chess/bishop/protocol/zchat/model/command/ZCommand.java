@@ -51,19 +51,19 @@ public abstract class ZCommand
     public ZCommand(long msgId)
     {
         super();
-        setMsgId(msgId);
+        msgId(msgId);
         mFrameHeader ^= ZFrame.frame_op_code_ctrl;
     }
 
     @Override
-    public void setMsgId(long msgId)
+    public void msgId(long msgId)
     {
         withId(true);
         mMsgId = msgId;
     }
 
     @Override
-    public long getMsgId()
+    public long msgId()
     {
         return mMsgId;
     }
@@ -80,7 +80,7 @@ public abstract class ZCommand
         if(!isWithId()) {
             throw new ZException("z-chat-command without msg-id?!");
         }
-        setMsgId(input.getLong());
+        msgId(input.getLong());
         return input.readableBytes();
     }
 
@@ -88,6 +88,6 @@ public abstract class ZCommand
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(getMsgId());
+                    .putLong(msgId());
     }
 }

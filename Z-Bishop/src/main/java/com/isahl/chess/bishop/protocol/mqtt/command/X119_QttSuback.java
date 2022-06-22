@@ -73,7 +73,7 @@ public class X119_QttSuback
     @Override
     public int prefix(ByteBuf input)
     {
-        setMsgId(input.getUnsignedShort());
+        msgId(input.getUnsignedShort());
         mResultList = new ArrayList<>();
         while(input.isReadable()) {
             mResultList.add(Level.valueOf(input.getUnsigned()));
@@ -84,7 +84,7 @@ public class X119_QttSuback
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) getMsgId());
+        output.putShort((short) msgId());
         if(mResultList != null) {
             for(Level qosLevel : mResultList) {
                 output.put(qosLevel.getValue());
@@ -102,6 +102,6 @@ public class X119_QttSuback
     @Override
     public String toString()
     {
-        return String.format("%#x { suback msg-id %d, %s }", serial(), getMsgId(), getQosLevels());
+        return String.format("%#x { suback msg-id %d, %s }", serial(), msgId(), getQosLevels());
     }
 }

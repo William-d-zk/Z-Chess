@@ -31,12 +31,16 @@ public enum RaftState
 {
     CLIENT(0),
     FOLLOWER(1),
-    ELECTOR(2),
-    CANDIDATE(3),
-    LEADER(4),
-    JOINT(8),
-    GATE(16),
-    OUTSIDE(128);
+    ELECTOR(1 << 1),
+    CANDIDATE(1 << 2),
+    LEADER(1 << 3),
+
+    JOINT(1 << 4),
+    MASK(JOINT.getCode() - 1),
+
+    GATE(1 << 5),
+    BOUNDARY(1 << 6),
+    OUTSIDE(1 << 7);
 
     private final int _Code;
 
@@ -52,16 +56,18 @@ public enum RaftState
 
     public static RaftState valueOf(int code)
     {
-        return switch(code) {
+        return switch(code & MASK.getCode()) {
             case 0 -> CLIENT;
             case 1 -> FOLLOWER;
             case 2 -> ELECTOR;
             case 3 -> CANDIDATE;
             case 4 -> LEADER;
-            case 8 -> JOINT;
-            case 16 -> GATE;
-            case 128 -> OUTSIDE;
-            default -> throw new IllegalArgumentException();
+            default -> switch(code & ~MASK.getCode()) {
+                case 8 -> JOINT;
+                case 16 -> GATE;
+                case 128 -> OUTSIDE;
+                default -> throw new IllegalArgumentException();
+            };
         };
     }
 }

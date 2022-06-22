@@ -87,7 +87,7 @@ public class X118_QttSubscribe
     @Override
     public int prefix(ByteBuf input)
     {
-        setMsgId(input.getUnsignedShort());
+        msgId(input.getUnsignedShort());
         while(input.isReadable()) {
             int length = input.getUnsignedShort();
             String topic = input.readUTF(length);
@@ -100,7 +100,7 @@ public class X118_QttSubscribe
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) getMsgId());
+        output.putShort((short) msgId());
         if(mSubscribes != null) {
             for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
                 byte[] topic = entry.getKey()
@@ -118,7 +118,7 @@ public class X118_QttSubscribe
     public String toString()
     {
         return String.format("subscribe msg-id:%d topics:%s",
-                             getMsgId(),
+                             msgId(),
                              mSubscribes != null ? mSubscribes.toString() : null);
     }
     @Override

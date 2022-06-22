@@ -64,7 +64,7 @@ public class X77_RaftNotify
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return SUCCESS;
     }

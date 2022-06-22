@@ -37,13 +37,13 @@ public abstract class QttCommand
     protected short mMsgId;
 
     @Override
-    public void setMsgId(long msgId)
+    public void msgId(long msgId)
     {
         mMsgId = (short) msgId;
     }
 
     @Override
-    public long getMsgId()
+    public long msgId()
     {
         return mMsgId;
     }

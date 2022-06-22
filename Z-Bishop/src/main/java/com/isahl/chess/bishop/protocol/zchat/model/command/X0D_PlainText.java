@@ -46,7 +46,7 @@ public class X0D_PlainText
     public X0D_PlainText(long msgId)
     {
         super();
-        setMsgId(msgId);
+        msgId(msgId);
     }
 
     public X0D_PlainText setText(String text)

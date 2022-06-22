@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 /**
  * @author william.d.zk
@@ -36,6 +37,8 @@ import com.isahl.chess.king.base.content.ByteBuf;
                   serial = 0x74)
 public class X74_RaftReject
         extends ZCommand
+        implements IRaftRecord,
+                   IConsistent
 {
 
     public X74_RaftReject(long msgId)
@@ -113,77 +116,82 @@ public class X74_RaftReject
                     .put(mState);
     }
 
-    public long getPeer()
+    @Override
+    public long peer()
     {
         return mPeer;
     }
 
-    public void setPeer(long peerId)
+    public void peer(long peerId)
     {
         mPeer = peerId;
     }
 
-    public long getTerm()
+    public long term()
     {
         return mTerm;
     }
 
-    public void setTerm(long term)
+    public void term(long term)
     {
         mTerm = term;
     }
 
-    public long getIndex()
+    @Override
+    public long index()
     {
         return mIndex;
     }
 
-    public void setIndex(long index)
+    public void index(long index)
     {
         mIndex = index;
     }
 
-    public long getIndexTerm()
+    @Override
+    public long indexTerm()
     {
         return mIndexTerm;
     }
 
-    public void setIndexTerm(long indexTerm)
+    public void indexTerm(long indexTerm)
     {
         mIndexTerm = indexTerm;
     }
 
-    public long getReject()
+    public long reject()
     {
         return mReject;
     }
 
-    public void setReject(long peerId)
+    public void reject(long peerId)
     {
         mReject = peerId;
     }
 
-    public long getLeader()
+    @Override
+    public long leader()
     {
         return mLeader;
     }
 
-    public void setLeader(long leader)
+    public void leader(long leader)
     {
         mLeader = leader;
     }
 
-    public long getCandidate()
+    public long candidate()
     {
         return mCandidate;
     }
 
-    public void setCandidate(long candidate)
+    public void candidate(long candidate)
     {
         mCandidate = candidate;
     }
 
-    public int getCode()
+    @Override
+    public int code()
     {
         return mCode;
     }
@@ -203,22 +211,24 @@ public class X74_RaftReject
         mState = state;
     }
 
-    public long getAccept()
+    @Override
+    public long accept()
     {
         return mAccept;
     }
 
-    public void setAccept(long accept)
+    public void accept(long accept)
     {
         mAccept = accept;
     }
 
-    public void setCommit(long commit)
+    public void commit(long commit)
     {
         mCommit = commit;
     }
 
-    public long getCommit()
+    @Override
+    public long commit()
     {
         return mCommit;
     }
@@ -226,11 +236,11 @@ public class X74_RaftReject
     @Override
     public String toString()
     {
-        return String.format("X74_RaftReject{ peerId:%#x,term:%d,current:%d@%d,reject:%#x,code:%d,state:%d }",
+        return String.format("X74_RaftReject{ peer:%#x, current:[%d@%d;%d], reject to:%#x, code:%d, state:%d }",
                              mPeer,
-                             mTerm,
                              mIndex,
                              mIndexTerm,
+                             mTerm,
                              mReject,
                              mCode,
                              mState);

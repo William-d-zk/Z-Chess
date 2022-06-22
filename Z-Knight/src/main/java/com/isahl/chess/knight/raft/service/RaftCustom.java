@@ -82,7 +82,7 @@ public class RaftCustom
             }
             // leader → follower
             case 0x72 -> {
-                return _RaftPeer.onAppend((X72_RaftAppend) received, session);
+                return _RaftPeer.onAppend((X72_RaftAppend) received, manager, session);
             }
             // follower → leader
             case 0x73 -> {
@@ -105,10 +105,11 @@ public class RaftCustom
                 return _RaftPeer.onNotify((X77_RaftNotify) received);
             }
             case 0x78 -> {
-                return _RaftPeer.onJoint((X78_RaftModify) received, manager);
+                return _RaftPeer.onModify((X78_RaftModify) received, manager);
             }
-            case 0x79 -> {
-                //TODO
+            case 0x79 -> _RaftPeer.onConfirm((X79_RaftConfirm) received);
+            case 0x7C -> {
+                return _RaftPeer.onConfirm((X7C_RaftConfirm) received, manager);
             }
             // peer *, behind in config → previous in config
             case 0x08 -> {
@@ -165,7 +166,7 @@ public class RaftCustom
     public <B extends IConsistent & ITraceable> B skipConsistency(IoSerial request)
     {
         X76_RaftResp x76 = new X76_RaftResp();
-        x76.setCode(SUCCESS);
+        x76.code(SUCCESS);
         x76.withSub(request);
         return (B) x76;
     }

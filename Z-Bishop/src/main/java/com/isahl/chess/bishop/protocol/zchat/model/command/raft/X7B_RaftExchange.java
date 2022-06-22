@@ -87,7 +87,7 @@ public class X7B_RaftExchange
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return mCode;
     }

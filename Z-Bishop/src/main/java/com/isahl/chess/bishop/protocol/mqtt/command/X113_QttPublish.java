@@ -96,7 +96,7 @@ public class X113_QttPublish
     {
         mTopic = input.readUTF(input.getUnsignedShort());
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            setMsgId(input.getUnsignedShort());
+            msgId(input.getUnsignedShort());
         }
         return input.readableBytes();
     }
@@ -108,7 +108,7 @@ public class X113_QttPublish
         output.putShort((short) topicBytes.length);
         output.put(topicBytes);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            output.putShort((short) getMsgId());
+            output.putShort((short) msgId());
         }
         if(mPayload != null) {
             output.put(mPayload);
@@ -123,7 +123,7 @@ public class X113_QttPublish
                              isDuplicate(),
                              isRetain(),
                              getLevel(),
-                             getMsgId(),
+                             msgId(),
                              getTopic(),
                              mPayload == null ? "NULL" : new String(mPayload, StandardCharsets.UTF_8));
     }

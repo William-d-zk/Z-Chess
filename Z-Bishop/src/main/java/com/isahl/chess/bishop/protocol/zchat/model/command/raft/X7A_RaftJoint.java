@@ -49,8 +49,8 @@ public class X7A_RaftJoint
         super(msgId);
     }
 
+    private long mPeer;
     private long mIndex;
-    private long mClient;
     private long mOrigin;
     private int  mCode;
 
@@ -69,14 +69,14 @@ public class X7A_RaftJoint
     @Override
     public String toString()
     {
-        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x, code:%d}",
+        return String.format("X7A_RaftJoint { answer:%d, peer:%#x, origin:%#x, code:%d}",
                              mIndex,
-                             mClient,
+                             mPeer,
                              mOrigin,
                              mCode);
     }
 
-    public void setOrigin(long origin)
+    public void origin(long origin)
     {
         mOrigin = origin;
     }
@@ -87,12 +87,12 @@ public class X7A_RaftJoint
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return mCode;
     }
 
-    public void setCode(int code)
+    public void code(int code)
     {
         mCode = code;
     }
@@ -101,8 +101,8 @@ public class X7A_RaftJoint
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
+                    .putLong(mPeer)
                     .putLong(mIndex)
-                    .putLong(mClient)
                     .putLong(mOrigin)
                     .putInt(mCode);
     }
@@ -111,8 +111,8 @@ public class X7A_RaftJoint
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
+        mPeer = input.getLong();
         mIndex = input.getLong();
-        mClient = input.getLong();
         mOrigin = input.getLong();
         mCode = input.getInt();
         return remain - 28;
@@ -124,25 +124,24 @@ public class X7A_RaftJoint
         return super.length() + 28;
     }
 
-    public long getClient()
+    public long peer()
     {
-        return mClient;
+        return mPeer;
     }
 
-    public void setClient(long client)
+    public void peer(long peer)
     {
-        mClient = client;
+        mPeer = peer;
     }
 
-    public long getIndex()
+    public long index()
     {
         return mIndex;
     }
 
-    public void setIndex(long index)
+    public void index(long index)
     {
         this.mIndex = index;
     }
-
 
 }

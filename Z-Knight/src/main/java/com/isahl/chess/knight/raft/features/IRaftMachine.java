@@ -96,8 +96,6 @@ public interface IRaftMachine
 
     void leader(long leader);
 
-    void state(int state);
-
     void commit(long commit);
 
     void accept(long accept);
@@ -109,11 +107,36 @@ public interface IRaftMachine
 
     void commit(long index, IRaftMapper mapper);
 
-    void accept(IRaftMapper mapper);
-
     void rollBack(long index, long indexTerm, IRaftMapper mapper);
 
+    /**
+     * @param state elector,candidate,leader,client,follow(重置)
+     *              follow → follow(long term, long leader, IRaftMapper mapper)
+     */
+    void approve(RaftState state);
+
+    void outside();
+
+    void gate();
+
+    /**
+     * 确认集群变更完成
+     */
+    void confirm();
+
+    /**
+     * 进入集群变更状态
+     */
+    void modify();
+
+    void modify(RaftState state);
+
     default boolean isInState(RaftState state) {return (state() & state.getCode()) != 0;}
+
+    default boolean isGreaterThanState(RaftState state)
+    {
+        return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) > 0;
+    }
 
     @Override
     default int compareTo(IRaftMachine o)
@@ -122,4 +145,5 @@ public interface IRaftMachine
     }
 
     String toPrimary();
+
 }

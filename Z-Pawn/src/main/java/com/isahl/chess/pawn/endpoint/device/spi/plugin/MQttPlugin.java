@@ -42,13 +42,11 @@ import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -110,7 +108,7 @@ public class MQttPlugin
                 switch(x113.getLevel()) {
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
-                        x114.setMsgId(x113.getMsgId());
+                        x114.msgId(x113.msgId());
                         x114.with(session);
                         results.add(Triple.of(x114, session, session.getEncoder()));
                     case ALMOST_ONCE:
@@ -118,12 +116,12 @@ public class MQttPlugin
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
-                        x115.setMsgId(x113.getMsgId());
+                        x115.msgId(x113.msgId());
                         x115.with(session);
                         x115.target(session.getIndex());
                         results.add(Triple.of(x115, session, session.getEncoder()));
-                        register(x115.getMsgId(), x115);
-                        _StateService.store(session.getIndex(), x113.getMsgId(), x113);
+                        register(x115.msgId(), x115);
+                        _StateService.store(session.getIndex(), x113.msgId(), x113);
                         break;
                     default:
                         break;
@@ -132,30 +130,30 @@ public class MQttPlugin
             case 0x114:
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
-                ack(x114.getMsgId(), session.getIndex());
-                _StateService.drop(session.getIndex(), x114.getMsgId());
+                ack(x114.msgId(), session.getIndex());
+                _StateService.drop(session.getIndex(), x114.msgId());
                 break;
             case 0x115:
                 //x113.QoS2 → client → x115, 服务端恒定返回x116,Router无需操作。
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
-                x116.setMsgId(x115.getMsgId());
+                x116.msgId(x115.msgId());
                 x116.target(session.getIndex());
                 results = new LinkedList<>();
                 results.add(Triple.of(x116.with(session), session, session.getEncoder()));
-                register(x116.getMsgId(), x116);
+                register(x116.msgId(), x116);
                 //                _StateService.drop(session.getIndex(), x115.getMsgId());
                 break;
             case 0x116:
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
-                x117.setMsgId(x116.getMsgId());
+                x117.msgId(x116.msgId());
                 results = new LinkedList<>();
                 results.add(Triple.of(x117.with(session), session, session.getEncoder()));
-                if(ack(x116.getMsgId(), session.getIndex())) {
-                    if(_StateService.exists(session.getIndex(), x116.getMsgId())) {
-                        MsgStateEntity received = _StateService.extract(session.getIndex(), x116.getMsgId());
+                if(ack(x116.msgId(), session.getIndex())) {
+                    if(_StateService.exists(session.getIndex(), x116.msgId())) {
+                        MsgStateEntity received = _StateService.extract(session.getIndex(), x116.msgId());
                         if(received != null) {
                             X113_QttPublish n113 = new X113_QttPublish();
                             n113.with(session);
@@ -169,7 +167,7 @@ public class MQttPlugin
                 break;
             case 0x117:
                 x117 = (X117_QttPubcomp) content;
-                ack(x117.getMsgId(), session.getIndex());
+                ack(x117.msgId(), session.getIndex());
                 break;
             case 0x11C:
                 return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session),
@@ -263,7 +261,7 @@ public class MQttPlugin
                                         IConsistentResult backload,
                                                                                    IoSerial consensusBody)
     {
-        int code = backload.getCode();
+        int code = backload.code();
         long origin = backload.origin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
@@ -294,7 +292,7 @@ public class MQttPlugin
                 if(subscribes != null && code == SUCCESS) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.with(x118.session());
-                    x119.setMsgId(x118.getMsgId());
+                    x119.msgId(x118.msgId());
                     subscribes.forEach((topic, level)->{
                         Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
                         Subscribe subscribe = subscribe(t, origin);
@@ -320,7 +318,7 @@ public class MQttPlugin
                     topics.forEach(topic->unsubscribe(new Topic(_QttTopicToRegex(topic)), origin));
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.with(x11A.session());
-                    x11B.setMsgId(x11A.getMsgId());
+                    x11B.msgId(x11A.msgId());
                     _Logger.info("unsubscribe topic:%s", x11A.getTopics());
                     return Collections.singletonList(Triple.of(x11B,
                                                                x11B.session(),
@@ -461,8 +459,8 @@ public class MQttPlugin
                 if(mapped.level()
                          .getValue() > 0)
                 {
-                    n113.setMsgId(_MessageService.generateId(mapped.session()));
-                    register(n113.getMsgId(), n113);
+                    n113.msgId(_MessageService.generateId(mapped.session()));
+                    register(n113.msgId(), n113);
                 }
                 results.add(Triple.of(n113, session, session.getEncoder()));
             }

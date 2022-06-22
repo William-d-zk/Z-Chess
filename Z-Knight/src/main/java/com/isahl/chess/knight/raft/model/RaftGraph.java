@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static com.isahl.chess.knight.raft.model.RaftState.JOINT;
 import static java.lang.String.format;
 
 /**
@@ -69,6 +70,16 @@ public class RaftGraph
         }
     }
 
+    public void resetTo(RaftGraph other)
+    {
+        _Members.clear();
+        _Peers.clear();
+        _Members.putAll(other._Members);
+        _Peers.putAll(other._Peers);
+        other._Members.clear();
+        other._Peers.clear();
+    }
+
     public boolean isMajorAccept(long candidate, long term)
     {
         return _Members.values()
@@ -90,6 +101,14 @@ public class RaftGraph
         return _Members.values()
                        .stream()
                        .filter(machine->machine.accept() >= accept)
+                       .count() > _Members.size() / 2;
+    }
+
+    public boolean isMajorConfirm()
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.isInState(JOINT))
                        .count() > _Members.size() / 2;
     }
 
@@ -115,23 +134,25 @@ public class RaftGraph
      * self ∈ left && self ∈ right 返回并集
      * self ∈ left && self ∉ right 返回 left
      * self ∉ left && self ∈ right 返回 right
-     * self ∉ left && self ∉ right 返回 empty map
+     * self ∉ left && self ∉ right 返回 null
      */
     public static Map<Long, IRaftMachine> join(long self, RaftGraph left, RaftGraph right)
     {
-        Map<Long, IRaftMachine> union = new TreeMap<>();
-        if(left._Members.containsKey(self) && right._Members.containsKey(self)) {
-            left._Members.forEach(union::putIfAbsent);
-            right._Members.forEach(union::putIfAbsent);
-            return union;
+        if(!left._Members.isEmpty() && !right._Members.isEmpty()) {
+            if(left._Members.containsKey(self) && right._Members.containsKey(self)) {
+                Map<Long, IRaftMachine> union = new TreeMap<>();
+                left._Members.forEach(union::putIfAbsent);
+                right._Members.forEach(union::putIfAbsent);
+                return union;
+            }
         }
-        else if(left._Members.containsKey(self)) {
-            union.putAll(left._Members);
+        else if(left._Members.isEmpty() && !right._Members.isEmpty() && right._Members.containsKey(self)) {
+            return right._Members;
         }
-        else if(right._Members.containsKey(self)) {
-            union.putAll(right._Members);
+        else if(right._Members.isEmpty() && !left._Members.isEmpty() && left._Members.containsKey(self)) {
+            return left._Members;
         }
-        return union;
+        return null;
     }
 
 }

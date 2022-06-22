@@ -30,11 +30,13 @@ import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
+ * @see X73_RaftAccept,X74_RaftReject
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
                   serial = 0x72)
 public class X72_RaftAppend
         extends ZCommand
+        implements IRaftRecord
 {
 
     public X72_RaftAppend(long msgId)
@@ -101,62 +103,68 @@ public class X72_RaftAppend
                     .putLong(mFollower);
     }
 
-    public long getLeader()
+    @Override
+    public long leader()
     {
         return mLeader;
     }
 
-    public void setLeader(long peerId)
+    public void leader(long peerId)
     {
         this.mLeader = peerId;
     }
 
-    public long getTerm()
+    @Override
+    public long term()
     {
         return mTerm;
     }
 
-    public void setTerm(long term)
+    public void term(long term)
     {
         this.mTerm = term;
     }
 
-    public long getAccept()
+    @Override
+    public long accept()
     {
         return mAccept;
     }
 
-    public void setAccept(long accept)
+    public void accept(long accept)
     {
         mAccept = accept;
     }
 
-    public long getCommit()
+    @Override
+    public long commit()
     {
         return mCommit;
     }
 
-    public void setCommit(long commit)
+    public void commit(long commit)
     {
         this.mCommit = commit;
     }
 
-    public long getPreIndex()
+    @Override
+    public long index()
     {
         return mPreIndex;
     }
 
-    public void setPreIndex(long preIndex)
-    {
-        mPreIndex = preIndex;
-    }
-
-    public long getPreIndexTerm()
+    @Override
+    public long indexTerm()
     {
         return mPreIndexTerm;
     }
 
-    public void setPreIndexTerm(long preIndexTerm)
+    public void preIndex(long preIndex)
+    {
+        mPreIndex = preIndex;
+    }
+
+    public void preIndexTerm(long preIndexTerm)
     {
         mPreIndexTerm = preIndexTerm;
     }
@@ -166,9 +174,16 @@ public class X72_RaftAppend
         mFollower = follower;
     }
 
-    public long getFollower()
+    @Override
+    public long peer()
     {
         return mFollower;
+    }
+
+    @Override
+    public long candidate()
+    {
+        return leader();
     }
 
     @Override

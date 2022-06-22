@@ -48,7 +48,7 @@ public class X76_RaftResp
         super(msgId);
     }
 
-    private long mClientId;//8 byte
+    private long mClient;//8 byte
     private int  mCode;//4 byte
     private int  mState;//1 byte
 
@@ -67,16 +67,16 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { to-client[%#x],%d}", mClientId, mState);
+        return String.format("X76_RaftResp { to-client[%#x],%d}", mClient, mState);
     }
 
-    public void setCode(int code)
+    public void code(int code)
     {
         mCode = code;
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return mCode;
     }
@@ -85,7 +85,7 @@ public class X76_RaftResp
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mClientId)
+                    .putLong(mClient)
                     .put(mState)
                     .putInt(mCode);
     }
@@ -94,7 +94,7 @@ public class X76_RaftResp
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mClientId = input.getLong();
+        mClient = input.getLong();
         mState = input.get();
         mCode = input.getInt();
         return remain - 13;
@@ -106,14 +106,14 @@ public class X76_RaftResp
         return super.length() + 13;
     }
 
-    public long getClientId()
+    public long client()
     {
-        return mClientId;
+        return mClient;
     }
 
-    public void setClientId(long clientId)
+    public void client(long client)
     {
-        mClientId = clientId;
+        mClient = client;
     }
 
 }
