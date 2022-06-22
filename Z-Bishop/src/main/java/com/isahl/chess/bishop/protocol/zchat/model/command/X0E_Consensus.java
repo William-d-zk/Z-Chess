@@ -44,7 +44,7 @@ public class X0E_Consensus
     public X0E_Consensus(long msgId)
     {
         super();
-        setMsgId(msgId);
+        msgId(msgId);
     }
 
     @Override

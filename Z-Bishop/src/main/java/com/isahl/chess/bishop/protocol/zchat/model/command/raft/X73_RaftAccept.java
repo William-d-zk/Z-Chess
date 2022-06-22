@@ -35,6 +35,7 @@ import com.isahl.chess.king.base.content.ByteBuf;
                   serial = 0x73)
 public class X73_RaftAccept
         extends ZCommand
+        implements IRaftRecord
 {
     public X73_RaftAccept()
     {
@@ -46,12 +47,12 @@ public class X73_RaftAccept
         super(msgId);
     }
 
-    private long mFollowerId;
+    private long mFollower;
     private long mTerm;
     private long mCatchUp;
     private long mCatchUpTerm;
     private long mCommit;
-    private long mLeaderId;
+    private long mLeader;
 
     @Override
     public int priority()
@@ -75,12 +76,12 @@ public class X73_RaftAccept
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mFollowerId = input.getLong();
+        mFollower = input.getLong();
         mTerm = input.getLong();
         mCatchUp = input.getLong();
         mCatchUpTerm = input.getLong();
         mCommit = input.getLong();
-        mLeaderId = input.getLong();
+        mLeader = input.getLong();
         return remain - 48;
     }
 
@@ -88,79 +89,94 @@ public class X73_RaftAccept
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mFollowerId)
+                    .putLong(mFollower)
                     .putLong(mTerm)
                     .putLong(mCatchUp)
                     .putLong(mCatchUpTerm)
                     .putLong(mCommit)
-                    .putLong(mLeaderId);
+                    .putLong(mLeader);
     }
 
-    public long getTerm()
+    @Override
+    public long term()
     {
         return mTerm;
     }
 
-    public void setTerm(long term)
+    public void term(long term)
     {
         mTerm = term;
     }
 
-    public long getCatchUp()
+    @Override
+    public long index()
     {
         return mCatchUp;
     }
 
-    public void setCatchUp(long catchUp)
+    public void index(long catchUp)
     {
         mCatchUp = catchUp;
     }
 
-    public long getCatchUpTerm()
+    @Override
+    public long indexTerm()
     {
         return mCatchUpTerm;
     }
 
-    public void setCatchUpTerm(long catchUpTerm)
+    public void indexTerm(long catchUpTerm)
     {
         mCatchUpTerm = catchUpTerm;
     }
 
-    public void setCommit(long commit)
+    public void commit(long commit)
     {
         mCommit = commit;
     }
 
-    public long getCommit()
+    @Override
+    public long commit()
     {
         return mCommit;
     }
 
-    public long getFollower()
+    public long peer()
     {
-        return mFollowerId;
+        return mFollower;
     }
 
-    public void setFollower(long peerId)
+    public void peer(long peer)
     {
-        mFollowerId = peerId;
+        mFollower = peer;
     }
 
-    public void setLeader(long leaderId)
+    public void leader(long leader)
     {
-        mLeaderId = leaderId;
+        mLeader = leader;
     }
 
-    public long getLeader()
+    @Override
+    public long leader()
     {
-        return mLeaderId;
+        return mLeader;
+    }
+
+    public long candidate()
+    {
+        return mLeader;
+    }
+
+    public long accept()
+    {
+        return mCatchUp;
     }
 
     @Override
     public String toString()
     {
         return String.format("X73_RaftAccept{ follower:%#x@%d, catch_up:%d@%d }",
-                             mFollowerId,
+                             mFollower,
                              mTerm,
                              mCatchUp,
                              mCatchUpTerm);

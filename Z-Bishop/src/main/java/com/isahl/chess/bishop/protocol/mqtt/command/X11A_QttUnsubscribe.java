@@ -80,7 +80,7 @@ public class X11A_QttUnsubscribe
     @Override
     public int prefix(ByteBuf input)
     {
-        setMsgId(input.getUnsignedShort());
+        msgId(input.getUnsignedShort());
         while(input.isReadable()) {
             int topicLength = input.getUnsignedShort();
             String topic = input.readUTF(topicLength);
@@ -92,7 +92,7 @@ public class X11A_QttUnsubscribe
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) getMsgId());
+        output.putShort((short) msgId());
         for(String topic : _Topics) {
             byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
             output.putShort((short) topicBytes.length);
@@ -104,7 +104,7 @@ public class X11A_QttUnsubscribe
     @Override
     public String toString()
     {
-        return String.format("unsubscribe msg-id:%d topics:%s", getMsgId(), _Topics);
+        return String.format("unsubscribe msg-id:%d topics:%s", msgId(), _Topics);
     }
 
     @Override

@@ -30,25 +30,30 @@ import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
  * @author william.d.zk
- * @date 2019/12/10
- * @see X70_RaftVote
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x71)
-public class X71_RaftBallot
+                  serial = 0x79)
+public class X7C_RaftConfirm
         extends ZCommand
         implements IRaftRecord
 {
 
-    public X71_RaftBallot(long msgId)
+    public X7C_RaftConfirm()
+    {
+        super();
+    }
+
+    public X7C_RaftConfirm(long msgId)
     {
         super(msgId);
     }
 
-    public X71_RaftBallot()
-    {
-        super();
-    }
+    private long mFollower;
+    private long mTerm;
+    private long mCatchUp;
+    private long mCatchUpTerm;
+    private long mCommit;
+    private long mLeader;
 
     @Override
     public int priority()
@@ -62,56 +67,78 @@ public class X71_RaftBallot
         return Level.AT_LEAST_ONCE;
     }
 
-    private long mElector;
-    private long mTerm;
-    private long mIndex;
-    private long mIndexTerm;
-    private long mCommit;
-    private long mCandidate;
-    private long mAccept;
-
     @Override
-    public int length()
+    public String toString()
     {
-        return super.length() + 56;
+        return String.format("X7C_RaftConfirm { peer:%#x,[%d@%d;%d],commit:%d}",
+                             mFollower,
+                             mCatchUp,
+                             mCatchUpTerm,
+                             mTerm,
+                             mCommit);
     }
 
-    @Override
-    public int prefix(ByteBuf input)
+    public long peer()
     {
-        int remain = super.prefix(input);
-        mElector = input.getLong();
-        mTerm = input.getLong();
-        mIndex = input.getLong();
-        mIndexTerm = input.getLong();
-        mAccept = input.getLong();
-        mCommit = input.getLong();
-        mCandidate = input.getLong();
-        return remain - 56;
+        return mFollower;
+    }
+
+    public void peer(long peer)
+    {
+        mFollower = peer;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mElector)
+                    .putLong(mFollower)
                     .putLong(mTerm)
-                    .putLong(mIndex)
-                    .putLong(mIndexTerm)
-                    .putLong(mAccept)
+                    .putLong(mCatchUp)
+                    .putLong(mCatchUpTerm)
                     .putLong(mCommit)
-                    .putLong(mCandidate);
+                    .putLong(mLeader);
     }
 
     @Override
-    public long peer()
+    public int prefix(ByteBuf input)
     {
-        return mElector;
+        int remain = super.prefix(input);
+        mFollower = input.getLong();
+        mTerm = input.getLong();
+        mCatchUp = input.getLong();
+        mCatchUpTerm = input.getLong();
+        mCommit = input.getLong();
+        mLeader = input.getLong();
+        return remain - 48;
     }
 
-    public void peer(long electorId)
+    @Override
+    public int length()
     {
-        mElector = electorId;
+        return super.length() + 48;
+    }
+
+    @Override
+    public long index()
+    {
+        return mCatchUp;
+    }
+
+    public void index(long index)
+    {
+        mCatchUp = index;
+    }
+
+    @Override
+    public long indexTerm()
+    {
+        return mCatchUpTerm;
+    }
+
+    public void indexTerm(long term)
+    {
+        mCatchUpTerm = term;
     }
 
     @Override
@@ -126,36 +153,9 @@ public class X71_RaftBallot
     }
 
     @Override
-    public long candidate()
+    public long accept()
     {
-        return mCandidate;
-    }
-
-    public void candidate(long candidate)
-    {
-        mCandidate = candidate;
-    }
-
-    @Override
-    public long index()
-    {
-        return mIndex;
-    }
-
-    public void index(long index)
-    {
-        mIndex = index;
-    }
-
-    @Override
-    public long indexTerm()
-    {
-        return mIndexTerm;
-    }
-
-    public void indexTerm(long indexTerm)
-    {
-        mIndexTerm = indexTerm;
+        return mCatchUp;
     }
 
     @Override
@@ -169,34 +169,20 @@ public class X71_RaftBallot
         mCommit = commit;
     }
 
-    public void accept(long accept)
-    {
-        mAccept = accept;
-    }
-
     @Override
-    public long accept()
+    public long candidate()
     {
-        return mAccept;
+        return mLeader;
     }
 
     @Override
     public long leader()
     {
-        return 0;
+        return mLeader;
     }
 
-    @Override
-    public String toString()
+    public void leader(long leader)
     {
-        return String.format("X71_RaftBallot{ elector:%#x, term:%d, last:%d@%d,accept:%d, commit:%d, candidate:%#x }",
-                             mElector,
-                             mTerm,
-                             mIndex,
-                             mIndexTerm,
-                             mAccept,
-                             mCommit,
-                             mCandidate);
+        mLeader = leader;
     }
-
 }

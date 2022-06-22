@@ -140,7 +140,7 @@ public class X78_RaftModify
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return SUCCESS;
     }

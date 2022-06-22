@@ -48,14 +48,14 @@ public class X114_QttPuback
     @Override
     public int prefix(ByteBuf input)
     {
-        setMsgId(input.getUnsignedShort());
+        msgId(input.getUnsignedShort());
         return input.readableBytes();
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) getMsgId());
+        output.putShort((short) msgId());
         if(mPayload != null) {
             output.put(mPayload);
         }
@@ -71,6 +71,6 @@ public class X114_QttPuback
     @Override
     public String toString()
     {
-        return String.format("x114 puback:{msg-id:%d}", getMsgId());
+        return String.format("x114 puback:{msg-id:%d}", msgId());
     }
 }

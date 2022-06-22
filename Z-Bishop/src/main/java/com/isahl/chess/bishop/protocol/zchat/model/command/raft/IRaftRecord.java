@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,15 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.cluster;
+package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
-import com.isahl.chess.queen.db.model.IStorage;
-
-/**
- * @author william.d.zk
- * @date 2020/4/9
- */
-public interface IClusterTimer
+public interface IRaftRecord
 {
-    <T extends IStorage> void timeTrigger(T content);
+    long index();
+
+    long indexTerm();
+
+    long term();
+
+    long accept();
+
+    long commit();
+
+    long peer();
+
+    long candidate();
+
+    long leader();
 }

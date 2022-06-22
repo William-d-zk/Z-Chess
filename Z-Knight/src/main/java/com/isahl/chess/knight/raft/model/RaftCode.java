@@ -34,7 +34,9 @@ public enum RaftCode
     SPLIT_CLUSTER(4, "split cluster,reject"),
     ALREADY_VOTE(5, "already vote,reject"),
     OBSOLETE(6, "index obsolete,reject"),
-    WAL_FAILED(7, "log entry write failed");
+    WAL_FAILED(7, "log entry write failed"),
+
+    GRAPH_CONFIG(8, "graph config exclude self peer; check config ");
 
     private final int    _Code;
     private final String _Description;

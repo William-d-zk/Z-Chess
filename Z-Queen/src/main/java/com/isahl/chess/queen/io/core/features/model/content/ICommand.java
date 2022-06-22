@@ -33,8 +33,8 @@ public interface ICommand<C extends IPContext>
         extends IControl<C>
 {
 
-    long getMsgId();
+    long msgId();
 
-    void setMsgId(long msgId);
+    void msgId(long msgId);
 
 }

@@ -72,7 +72,7 @@ public class ConsumerController
     public ZResponse<?> zchat_x70()
     {
         X70_RaftVote x70 = new X70_RaftVote(System.currentTimeMillis());
-        x70.setCandidate(0x9231234234ADL);
+        x70.candidate(0x9231234234ADL);
         _ClientPool.sendLocal(_Client.getSession(), x70);
         return ZResponse.success("x70");
     }

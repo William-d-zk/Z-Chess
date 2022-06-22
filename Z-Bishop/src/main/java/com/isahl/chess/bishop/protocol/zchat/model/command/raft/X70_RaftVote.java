@@ -31,11 +31,13 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author william.d.zk
  * @date 2019/12/10
+ * @see X71_RaftBallot,X74_RaftReject
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
                   serial = 0x70)
 public class X70_RaftVote
         extends ZCommand
+        implements IRaftRecord
 {
 
     public X70_RaftVote(long msgId)
@@ -95,74 +97,87 @@ public class X70_RaftVote
                     .putLong(mCommit);
     }
 
-    public long getCandidate()
+    @Override
+    public long candidate()
     {
         return mCandidate;
     }
 
-    public void setCandidate(long peerId)
+    public void candidate(long peer)
     {
-        mCandidate = peerId;
+        mCandidate = peer;
     }
 
-    public long getTerm()
+    @Override
+    public long term()
     {
         return mTerm;
     }
 
-    public void setTerm(long term)
+    public void term(long term)
     {
         mTerm = term;
     }
 
-    public long getIndex()
+    @Override
+    public long index()
     {
         return mIndex;
     }
 
-    public void setIndex(long index)
+    public void index(long index)
     {
         mIndex = index;
     }
 
-    public long getIndexTerm()
+    @Override
+    public long indexTerm()
     {
         return mIndexTerm;
     }
 
-    public void setIndexTerm(long term)
+    public void indexTerm(long term)
     {
         mIndexTerm = term;
     }
 
-    public long getElector()
+    @Override
+    public long peer()
     {
         return mElector;
     }
 
-    public void setElector(long elector)
+    public void peer(long elector)
     {
         mElector = elector;
     }
 
-    public void setAccept(long accept)
+    public void accept(long accept)
     {
         mAccept = accept;
     }
 
-    public long getAccept()
+    @Override
+    public long accept()
     {
         return mAccept;
     }
 
-    public long getCommit()
+    @Override
+    public long commit()
     {
         return mCommit;
     }
 
-    public void setCommit(long commit)
+    public void commit(long commit)
     {
         mCommit = commit;
+    }
+
+    @Override
+    public long leader()
+    {
+        return 0;
     }
 
     @Override

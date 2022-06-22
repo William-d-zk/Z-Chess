@@ -33,8 +33,7 @@ import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.Serial;
 
-import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
-import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
+import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static java.lang.String.format;
 
 /**
@@ -219,18 +218,51 @@ public class RaftMachine
     public void candidate(long candidate)
     {
         mCandidate = candidate;
+        if(candidate == peer()) {approve(CANDIDATE);}
     }
 
     @Override
     public void leader(long leader)
     {
         mLeader = leader;
+        if(leader == peer()) {approve(LEADER);}
+        // else 保持不变即可
     }
 
     @Override
-    public void state(int state)
+    public void approve(RaftState state)
     {
-        mState = state;
+        mState &= ~MASK.getCode();
+        mState |= state.getCode();
+    }
+
+    @Override
+    public void outside()
+    {
+        mState = OUTSIDE.getCode();
+    }
+
+    public void gate()
+    {
+        mState |= GATE.getCode();
+    }
+
+    @Override
+    public void confirm()
+    {
+        mState &= ~JOINT.getCode();
+    }
+
+    public void modify(RaftState state)
+    {
+        approve(state);
+        modify();
+    }
+
+    @Override
+    public void modify()
+    {
+        mState |= JOINT.getCode();
     }
 
     @Override
@@ -314,18 +346,11 @@ public class RaftMachine
     @Override
     public void follow(long term, long leader, IRaftMapper mapper)
     {
-        state(FOLLOWER.getCode());
+        approve(FOLLOWER);
         mTerm = term;
         mLeader = leader;
         mCandidate = leader;
         mapper.updateTerm(mTerm);
-    }
-
-    @Override
-    public void accept(IRaftMapper mapper)
-    {
-        mapper.updateAccept(mAccept = mIndex);
-        _Logger.debug("accept : [%d] ", mAccept);
     }
 
     @Override
@@ -342,6 +367,7 @@ public class RaftMachine
     {
         mIndex = index;
         mTerm = mIndexTerm = indexTerm;
+        mapper.updateAccept(mAccept = index);
         mapper.updateIndexAtTerm(mIndex, mIndexTerm);
         mapper.updateTerm(mTerm);
     }
@@ -350,7 +376,6 @@ public class RaftMachine
     public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
         append(index, indexTerm, mapper);
-        accept(mapper);
         commit(index, mapper);
     }
 

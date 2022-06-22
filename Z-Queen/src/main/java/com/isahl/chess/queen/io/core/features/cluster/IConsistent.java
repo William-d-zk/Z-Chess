@@ -31,5 +31,5 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 public interface IConsistent
         extends  IoSerial
 {
-    int getCode();
+    int code();
 }

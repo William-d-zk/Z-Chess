@@ -52,14 +52,14 @@ public class X115_QttPubrec
     @Override
     public int prefix(ByteBuf input)
     {
-        setMsgId(input.getUnsignedShort());
+        msgId(input.getUnsignedShort());
         return input.readableBytes();
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) getMsgId());
+        output.putShort((short) msgId());
         if(mPayload != null) {
             output.put(mPayload);
         }
@@ -75,7 +75,7 @@ public class X115_QttPubrec
     @Override
     public String toString()
     {
-        return String.format("x115 pubrec:{msg-id:%d}", getMsgId());
+        return String.format("x115 pubrec:{msg-id:%d}", msgId());
     }
 
     @Override

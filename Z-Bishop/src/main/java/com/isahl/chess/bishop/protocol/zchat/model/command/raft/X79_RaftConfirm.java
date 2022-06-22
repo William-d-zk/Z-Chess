@@ -72,32 +72,32 @@ public class X79_RaftConfirm
     }
 
     @Override
-    public int getCode()
+    public int code()
     {
         return mCode;
     }
 
-    public void setCode(int code)
+    public void code(int code)
     {
         mCode = code;
     }
 
-    public int getState()
+    public int state()
     {
         return mState;
     }
 
-    public void setState(int state)
+    public void state(int state)
     {
         this.mState = state;
     }
 
-    public long getPeer()
+    public long peer()
     {
         return mPeer;
     }
 
-    public void setPeer(long peer)
+    public void peer(long peer)
     {
         mPeer = peer;
     }
