@@ -59,8 +59,12 @@ public class ClusterController
                     ClusterDo peer)
     {
         Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
+
+
+
+
         try {
-            return ZResponse.success(_RaftService.getTopology());
+            return ZResponse.success(_RaftService.topology());
         }
         catch(ZException e) {
             return ZResponse.error(e.getMessage());

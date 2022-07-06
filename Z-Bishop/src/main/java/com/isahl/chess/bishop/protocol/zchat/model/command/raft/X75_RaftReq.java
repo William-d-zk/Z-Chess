@@ -62,7 +62,7 @@ public class X75_RaftReq
         return Level.AT_LEAST_ONCE;
     }
 
-    private long mClientId;
+    private long mClient;
     private long mOrigin;
 
     public transient boolean tCached;
@@ -82,7 +82,7 @@ public class X75_RaftReq
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mClientId)
+                    .putLong(mClient)
                     .putLong(mOrigin);
     }
 
@@ -90,7 +90,7 @@ public class X75_RaftReq
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mClientId = input.getLong();
+        mClient = input.getLong();
         mOrigin = input.getLong();
         return remain - 16;
     }
@@ -101,20 +101,20 @@ public class X75_RaftReq
         return super.length() + 16;
     }
 
-    public long getClientId()
+    public long getClient()
     {
-        return mClientId;
+        return mClient;
     }
 
-    public void setClientId(long clientId)
+    public void setClient(long client)
     {
-        mClientId = clientId;
+        mClient = client;
     }
 
     @Override
     public String toString()
     {
-        return String.format("X75_RaftReq { client:%#x, origin:%#x }", mClientId, mOrigin);
+        return String.format("X75_RaftReq { client:%#x, origin:%#x }", mClient, mOrigin);
     }
 
 }

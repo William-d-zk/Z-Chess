@@ -55,17 +55,28 @@ public class RaftNode
     private int    mGatePort;
     private int    mState;
 
-    public RaftNode()
+    public RaftNode(String host)
     {
-        super(Operation.OP_MODIFY, Strategy.RETAIN);
+        super(Operation.OP_REMOVE, Strategy.RETAIN);
+        mHost = host;
     }
 
-    public RaftNode(String host, int port, RaftState state)
+    public RaftNode(String host, int port)
     {
-        this();
+        super(Operation.OP_APPEND, Strategy.RETAIN);
         mHost = host;
         mPort = port;
-        mState = state.getCode();
+        mState = RaftState.FOLLOWER.getCode();
+    }
+
+    public RaftNode(String host, String gate, int gPort)
+    {
+        super(Operation.OP_MODIFY, Strategy.RETAIN);
+        mHost = host;
+        mPort = -1;
+        mGateHost = gate;
+        mGatePort = gPort;
+        mState = RaftState.GATE.getCode();
     }
 
     public RaftNode(ByteBuf input)
@@ -194,12 +205,6 @@ public class RaftNode
     @Override
     public String toString()
     {
-        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }",
-                             primaryKey(),
-                             mHost,
-                             mPort,
-                             mState,
-                             mGateHost,
-                             mGatePort);
+        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }", primaryKey(), mHost, mPort, mState, mGateHost, mGatePort);
     }
 }

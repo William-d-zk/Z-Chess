@@ -59,9 +59,9 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> changeTopology(IManager manager, IoSerial topology)
+    public List<ITriple> change(IManager manager, IoSerial topology)
     {
-        return _Then != null ? _Then.changeTopology(manager, topology) : null;
+        return _Then != null ? _Then.change(manager, topology) : null;
     }
 
     @Override

@@ -67,6 +67,6 @@ public interface IOperator<T, U, R>
         CLUSTER_TOPOLOGY,
         CLUSTER_TIMER,
         DISPATCH,
-        IGNORE;
+        IGNORE
     }
 }

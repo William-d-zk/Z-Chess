@@ -32,8 +32,8 @@ class RaftNodeTest
     @Test
     public void testSerialization()
     {
-        RaftNode node = new RaftNode("raft0", 5443, RaftState.LEADER);
-        RaftNode gate = new RaftNode("raft0", -1, RaftState.GATE);
+        RaftNode node = new RaftNode("raft0", 5228);
+        RaftNode gate = new RaftNode("raft0", "gate0", 5300);
         gate.setGateHost("gate0");
         gate.setGatePort(6553);
 
@@ -49,7 +49,7 @@ class RaftNodeTest
     @Test
     void testNoHost()
     {
-        RaftNode node = new RaftNode();
+        RaftNode node = new RaftNode("raft00");
         System.out.println(node);
     }
 }

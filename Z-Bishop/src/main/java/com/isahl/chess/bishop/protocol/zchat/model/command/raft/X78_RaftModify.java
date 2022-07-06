@@ -31,7 +31,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
@@ -122,21 +122,21 @@ public class X78_RaftModify
         return mPeers;
     }
 
-    public void newGraph(long leader, List<Long> peers)
+    public void newGraph(long leader, Collection<Long> peers)
     {
         mLeader = leader;
         mCount = peers.size();
         mPeers = new long[mCount];
-        Arrays.setAll(mPeers, peers::get);
+        int i = 0;
+        for(long peer : peers) {
+            mPeers[i++] = peer;
+        }
     }
 
     @Override
     public String toString()
     {
-        return String.format("X78_RaftModify { leader:[%#x] peers-%d:%s }",
-                             mLeader,
-                             mCount,
-                             IoUtil.longArrayToHex(mPeers));
+        return String.format("X78_RaftModify { leader:[%#x] peers-%d:%s }", mLeader, mCount, IoUtil.longArrayToHex(mPeers));
     }
 
     @Override

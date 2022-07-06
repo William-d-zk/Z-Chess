@@ -27,7 +27,6 @@ import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author william.d.zk
@@ -49,6 +48,6 @@ public interface IRaftService
      *
      * @return peers
      */
-    Collection<RaftNode> getTopology();
+    Collection<RaftNode> topology();
 
 }

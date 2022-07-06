@@ -72,4 +72,9 @@ public interface IConsistencyService
     }
 
     ICode submit(String content);
+
+    ICode modify(String host, int port);
+
+    ICode modify(String host, String gate, int gatePort);
+
 }

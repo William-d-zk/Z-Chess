@@ -29,18 +29,22 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
-    CLIENT(0),
-    FOLLOWER(1),
-    ELECTOR(1 << 1),
-    CANDIDATE(1 << 2),
-    LEADER(1 << 3),
 
-    JOINT(1 << 4),
-    MASK(JOINT.getCode() - 1),
+    OUTSIDE(0),
+    CLIENT(1),
 
+    FOLLOWER(1 << 1),
+    ELECTOR(1 << 2),
+    CANDIDATE(1 << 3),
+    LEADER(1 << 4),
     GATE(1 << 5),
-    BOUNDARY(1 << 6),
-    OUTSIDE(1 << 7);
+
+    JOINT(1 << 6),
+
+    BOUNDARY(1 << 7),
+
+    MASK(GATE.getCode() - 1 - CLIENT.getCode()),
+    ;
 
     private final int _Code;
 
@@ -54,20 +58,43 @@ public enum RaftState
         return _Code;
     }
 
+    public static boolean isInCongress(int code)
+    {
+        return (code & MASK.getCode()) != 0;
+    }
+
     public static RaftState valueOf(int code)
     {
         return switch(code & MASK.getCode()) {
-            case 0 -> CLIENT;
-            case 1 -> FOLLOWER;
-            case 2 -> ELECTOR;
-            case 3 -> CANDIDATE;
-            case 4 -> LEADER;
-            default -> switch(code & ~MASK.getCode()) {
-                case 8 -> JOINT;
-                case 16 -> GATE;
-                case 128 -> OUTSIDE;
-                default -> throw new IllegalArgumentException();
-            };
+            case 1 << 1 -> FOLLOWER;
+            case 1 << 2 -> ELECTOR;
+            case 1 << 3 -> CANDIDATE;
+            case 1 << 4 -> LEADER;
+            default -> noCongressOf(code);
+        };
+    }
+
+    public static String roleOf(int code)
+    {
+        String role = "R:";
+        switch(code & MASK.getCode()) {
+            case 1 << 1 -> role += FOLLOWER.name();
+            case 1 << 2 -> role += ELECTOR.name();
+            case 1 << 3 -> role += CANDIDATE.name();
+            case 1 << 4 -> role += LEADER.name();
+            default -> role += "|" + noCongressOf(code);
+        }
+        return role;
+    }
+
+    private static RaftState noCongressOf(int code)
+    {
+        return switch(code & ~MASK.getCode()) {
+            case 0 -> OUTSIDE;
+            case 1 -> CLIENT;
+            case 1 << 5 -> GATE;
+            case 1 << 6 -> JOINT;
+            default -> throw new IllegalArgumentException();
         };
     }
 }
