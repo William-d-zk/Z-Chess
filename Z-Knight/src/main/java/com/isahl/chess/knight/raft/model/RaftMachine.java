@@ -58,7 +58,7 @@ public class RaftMachine
     private long mLeader;                   // leader
     private long mCommit;                   // 集群中已知的最大 commit-index
     private long mAccept;                   // 本地已被应用的 applied-index
-    private int  mState = CLIENT.getCode(); // 集群节点状态 默认从 CLIENT 开始
+    private int  mState = OUTSIDE.getCode(); // 集群节点状态 默认从 OUTSIDE 开始
 
     @Override
     public int length()

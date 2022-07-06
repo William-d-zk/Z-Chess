@@ -30,6 +30,7 @@ import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentText;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -64,5 +65,39 @@ public class ConsistencyOpenService
             _Logger.debug("consistency submit ok:[ %s ]", content);
         }
         return result;
+    }
+
+    @Override
+    public ICode modify(String host, int port)
+    {
+
+        if(_RaftPeer.topology()
+                    .stream()
+                    .anyMatch(node->node.getHost()
+                                        .equals(host)))
+        {
+            _RaftPeer.topology(new RaftNode(host));
+        }
+        else {
+            _RaftPeer.topology(new RaftNode(host, port));
+        }
+        return CodeKing.SUCCESS;
+    }
+
+    @Override
+    public ICode modify(String host, String gate, int gatePort)
+    {
+        if(_RaftPeer.topology()
+                    .stream()
+                    .anyMatch(node->node.getHost()
+                                        .equals(host) && node.getGateHost()
+                                                             .equals(gate) && node.getGatePort() == gatePort))
+        {
+            _RaftPeer.topology(new RaftNode(host));
+        }
+        else {
+            _RaftPeer.topology(new RaftNode(host, gate, gatePort));
+        }
+        return CodeKing.SUCCESS;
     }
 }

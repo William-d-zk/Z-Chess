@@ -24,13 +24,10 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.knight.raft.model.RaftState;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 class LogMetaTest
 {
@@ -38,10 +35,6 @@ class LogMetaTest
     void test()
     {
         LogMeta meta = new LogMeta();
-        RaftNode node = new RaftNode("raft0", 5228, RaftState.FOLLOWER);
-        RaftNode node1 = new RaftNode("raft1", 5228, RaftState.FOLLOWER);
-        RaftNode gate = new RaftNode("gate0", 5666, RaftState.GATE);
-        RaftNode gate1 = new RaftNode("gate1", 5666, RaftState.GATE);
         ByteBuf buffer = meta.encode();
 
         LogMeta meta2 = new LogMeta();
@@ -52,10 +45,6 @@ class LogMetaTest
     void testFileLoad() throws IOException
     {
         LogMeta meta = new LogMeta();
-        RaftNode node = new RaftNode("raft0", 5228, RaftState.FOLLOWER);
-        RaftNode node1 = new RaftNode("raft1", 5228, RaftState.FOLLOWER);
-        RaftNode gate = new RaftNode("gate0", 5666, RaftState.GATE);
-        RaftNode gate1 = new RaftNode("gate1", 5666, RaftState.GATE);
 
         RandomAccessFile raf = new RandomAccessFile("z-meta", "rw");
         meta.with(raf);

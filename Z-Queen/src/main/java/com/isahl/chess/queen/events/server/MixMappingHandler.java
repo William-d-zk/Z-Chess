@@ -132,10 +132,7 @@ public class MixMappingHandler<T extends IStorage>
                         if(result != null) {
                             IOperator.Type type = result.getThird();
                             switch(type) {
-                                case SINGLE -> publish(_Writer,
-                                                       WRITE,
-                                                       new Pair<>(result.getFirst(), session),
-                                                       session.getEncoder());
+                                case SINGLE -> publish(_Writer, WRITE, new Pair<>(result.getFirst(), session), session.getEncoder());
                                 case BATCH -> publish(_Writer, result.getFirst());
                             }
                         }
@@ -165,10 +162,7 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else if(result != null) {
-                                publish(_Writer,
-                                        _LinkCustom.notify(_SessionManager,
-                                                           result.getSecond(),
-                                                           _ClusterCustom.skipConsistency(result.getSecond())));
+                                publish(_Writer, _LinkCustom.notify(_SessionManager, result.getSecond(), _ClusterCustom.skipConsistency(result.getSecond())));
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);
@@ -196,10 +190,7 @@ public class MixMappingHandler<T extends IStorage>
                              * doCustom 执行结果 snd 是需要反向投递到linker的内容
                              */
                             if(result != null && result.getSecond() instanceof IConsistent backload) {
-                                publish(_Transfer,
-                                        LINK_CONSISTENT_RESULT,
-                                        Pair.of(backload, _SessionManager),
-                                        _LinkCustom.getUnbox());
+                                publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                             }
                             else {
                                 _Logger.debug("cluster received ignore :%s", received);
@@ -249,9 +240,9 @@ public class MixMappingHandler<T extends IStorage>
                      */
                     try {
                         publish(_Writer,
-                                _ClusterCustom.changeTopology(_SessionManager,
-                                                              event.getContent()
-                                                                   .getFirst()));
+                                _ClusterCustom.change(_SessionManager,
+                                                      event.getContent()
+                                                                   .getSecond()));
                     }
                     catch(Exception e) {
                         _Logger.warning("cluster inner service api ");
@@ -269,10 +260,7 @@ public class MixMappingHandler<T extends IStorage>
                     IOperator<IConsistent, IManager, IProtocol> unbox = event.getEventOp();
                     if(consistency != null) {
                         try {
-                            publish(_Writer,
-                                    _LinkCustom.notify(_SessionManager,
-                                                       unbox.handle(consistency, manager),
-                                                       consistency));
+                            publish(_Writer, _LinkCustom.notify(_SessionManager, unbox.handle(consistency, manager), consistency));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);

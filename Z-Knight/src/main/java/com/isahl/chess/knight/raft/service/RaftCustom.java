@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
@@ -58,9 +59,9 @@ public class RaftCustom
      * @param session  来源 session
      * @param received 需要 raft custom 处理的内容
      * @return ITriple
-     * fst : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
-     * snd : command implements 'IControl/IConsistent', 需要传递给LINK的内容，
-     * trd : operator-type [SINGLE|BATCH]
+     * fst  [response → cluster] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
+     * snd  [response → raft client] : command implements 'IControl/IConsistent', 需要传递给LINK的内容，
+     * trd  [operator-type] : operator-type [SINGLE|BATCH]
      */
     @Override
     public ITriple handle(IManager manager, ISession session, IProtocol received)
@@ -82,7 +83,7 @@ public class RaftCustom
             }
             // leader → follower
             case 0x72 -> {
-                return _RaftPeer.onAppend((X72_RaftAppend) received, manager, session);
+                return _RaftPeer.onAppend((X72_RaftAppend) received, session);
             }
             // follower → leader
             case 0x73 -> {
@@ -142,17 +143,15 @@ public class RaftCustom
     public List<ITriple> consistent(IManager manager, IoSerial request, long origin)
     {
         _Logger.debug("cluster consistent %s", request);
-        return _RaftPeer.onSubmit(request.encode()
-                                         .array(), manager, origin);
+        return _RaftPeer.onSubmit(request, manager, origin);
     }
 
     @Override
-    public List<ITriple> changeTopology(IManager manager, IoSerial topology)
+    public List<ITriple> change(IManager manager, IoSerial topology)
     {
         _Logger.debug("cluster new topology %s", topology);
         //Accept Machine State
-        return _RaftPeer.onSubmit(topology.encode()
-                                          .array(), manager, _RaftPeer.peerId());
+        return topology instanceof RaftNode ? _RaftPeer.onModify((RaftNode) topology, manager) : null;
     }
 
     @Override

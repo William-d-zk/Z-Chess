@@ -65,7 +65,7 @@ public class RaftGraph
     public void append(IRaftMachine machine)
     {
         _Peers.putIfAbsent(machine.peer(), machine);
-        if(!machine.isInState(CLIENT)) {
+        if(machine.isGreaterThanState(CLIENT)) {
             _Members.putIfAbsent(machine.peer(), machine);
         }
     }

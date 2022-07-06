@@ -68,10 +68,10 @@ public interface IClusterCustom<T extends IStorage>
      * consensus-api-publisher → cluster.change(new-topology)
      *
      * @param manager  session-manager
-     * @param topology
-     * @return
+     * @param topology 节点信息
+     * @return list of triple → publish (write,list)
      */
-    List<ITriple> changeTopology(IManager manager, IoSerial topology);
+    List<ITriple> change(IManager manager, IoSerial topology);
 
     /**
      * 用于验证是否需要执行集群commit

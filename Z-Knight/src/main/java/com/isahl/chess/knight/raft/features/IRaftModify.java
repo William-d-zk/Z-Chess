@@ -33,12 +33,12 @@ public interface IRaftModify
      * 调整拓扑结构
      *
      * @param delta 变化的节点
-     *              state == GATE，进行 网关节点操作，
-     *              state.code < GATE.code 进行节点操作，一般使用 FOLLOWER
+     *              state == GATE，网关节点操作，
+     *              state == FOLLOW 节点操作
      *              OP_APPEND,增加节点
      *              OP_REMOVE,减少节点
-     *              OP_MODIFY,变更listen的端口
+     *              变更作业需要先删除节点，再添加，不能原地变更
      */
-    void changeTopology(RaftNode delta);
+    void topology(RaftNode delta);
 
 }

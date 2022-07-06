@@ -45,6 +45,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
+import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
+
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
@@ -110,7 +113,7 @@ public class ZRaftConfig
             for(Iterator<Map.Entry<Integer, String>> nIt = nodes.entrySet()
                                                                 .iterator(); nIt.hasNext(); ) {
                 Map.Entry<Integer, String> entry = nIt.next();
-                RaftNode node = toPeer(entry.getValue());
+                RaftNode node = toNode(entry.getValue());
                 if(hostname.equalsIgnoreCase(node.getHost())) {
                     if(nodeId < 0) {
                         getUid().setNodeId(nodeId = entry.getKey());
@@ -132,14 +135,14 @@ public class ZRaftConfig
                 getUid().setNodeId(nodeId);
             }
             ZUID zuid = getZUID();
-            nodes.forEach((k, v)->_NodeMap.put(zuid.getPeerIdByNode(k), toPeer(v)));
+            nodes.forEach((k, v)->_NodeMap.put(zuid.getPeerIdByNode(k), toNode(v)));
         }
         // define self - peer bind & load peers graph
         Map<Integer, String> peersIn = mConfig.getPeers();
         if(peersIn != null && !peersIn.isEmpty()) {
             peersIn.forEach((i, s)->{
-                RaftNode peer = toPeer(s);
-                peer.setState(RaftState.FOLLOWER.getCode());
+                RaftNode peer = toNode(s);
+                peer.setState(FOLLOWER.getCode() | CLIENT.getCode());
                 if(hostname.equalsIgnoreCase(peer.getHost())) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
@@ -175,10 +178,7 @@ public class ZRaftConfig
                 _GateMap.put(gate.getId(), gate);
             });
         }
-        _Logger.info("the local bind [ %s ]  \\npeers:\\n %s \\ngates:\\n %s ",
-                     mPeerBind,
-                     _PeerMap.values(),
-                     _GateMap.values());
+        _Logger.info("the local bind [ %s ]  \\npeers:\\n %s \\ngates:\\n %s ", mPeerBind, _PeerMap.values(), _GateMap.values());
     }
 
     public void setConfig(RaftConfig config)
@@ -204,10 +204,7 @@ public class ZRaftConfig
     @Override
     public ZUID getZUID()
     {
-        return mZUid == null ? mZUid = new ZUID(getUid().getIdcId(),
-                                                getUid().getClusterId(),
-                                                getUid().getNodeId(),
-                                                getUid().getType()) : mZUid;
+        return mZUid == null ? mZUid = new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType()) : mZUid;
     }
 
     @Override
@@ -221,8 +218,7 @@ public class ZRaftConfig
     {
         Objects.requireNonNull(delta);
         if(delta.getId() == -1) {
-            throw new IllegalArgumentException(String.format("change topology : delta's id is wrong %#x",
-                                                             delta.getId()));
+            throw new IllegalArgumentException(String.format("change topology : delta's id is wrong %#x", delta.getId()));
         }
         Operation operation = delta.operation();
         /*
@@ -264,16 +260,14 @@ public class ZRaftConfig
                    .clear();
             _PeerMap.values()
                     .forEach(n->mConfig.getPeers()
-                                       .put(ZUID.getNodeId(n.getId()),
-                                            String.format("%s:%d", n.getHost(), n.getPort())));
+                                       .put(ZUID.getNodeId(n.getId()), String.format("%s:%d", n.getHost(), n.getPort())));
         }
         if(mConfig.getGates() != null) {
             mConfig.getGates()
                    .clear();
             _GateMap.values()
                     .forEach(g->mConfig.getGates()
-                                       .put(g.getId(),
-                                            String.format("%s/%s:%d", g.getHost(), g.getGateHost(), g.getGatePort())));
+                                       .put(g.getId(), String.format("%s/%s:%d", g.getHost(), g.getGateHost(), g.getGatePort())));
         }
     }
 
@@ -316,12 +310,12 @@ public class ZRaftConfig
         return mPeerBind;
     }
 
-    private RaftNode toPeer(String content)
+    private RaftNode toNode(String content)
     {
         String[] split = content.split(":", 2);
         String host = split[0];
         int port = Integer.parseInt(split[1]);
-        return new RaftNode(host, port, RaftState.OUTSIDE);
+        return new RaftNode(host, port);
     }
 
     private RaftNode toGateNode(String content)
@@ -332,10 +326,7 @@ public class ZRaftConfig
         String[] split1 = gate.split(":", 2);
         String gateHost = split1[0];
         int gatePort = Integer.parseInt(split1[1]);
-        RaftNode node = new RaftNode(host, -1, RaftState.GATE);
-        node.setGateHost(gateHost);
-        node.setGatePort(gatePort);
-        return node;
+        return new RaftNode(host, gateHost, gatePort);
     }
 
     public Duration getElectInSecond()
