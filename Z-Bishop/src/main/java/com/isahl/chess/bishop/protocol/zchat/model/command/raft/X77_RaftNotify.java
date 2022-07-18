@@ -26,7 +26,8 @@ package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
@@ -38,8 +39,31 @@ import static com.isahl.chess.king.config.KingCode.SUCCESS;
                   serial = 0x77)
 public class X77_RaftNotify
         extends ZCommand
-        implements IConsistent
+        implements IConsistentResult
 {
+
+    private long mOrigin;
+
+    @Override
+    public int length()
+    {
+        return super.length() + 8;
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mOrigin = input.getLong();
+        return remain - 8;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(mOrigin);
+    }
 
     public X77_RaftNotify()
     {
@@ -73,5 +97,11 @@ public class X77_RaftNotify
     public String toString()
     {
         return String.format("X77_RaftNotify { sub:%s }", subContent());
+    }
+
+    @Override
+    public long origin()
+    {
+        return mOrigin;
     }
 }

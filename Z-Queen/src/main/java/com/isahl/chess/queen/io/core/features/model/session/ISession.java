@@ -86,7 +86,7 @@ public interface ISession
 
     default String summary()
     {
-        return String.format("%s->%s,closed:%s", getLocalAddress(), getReadTimeOutSeconds(), isClosed());
+        return String.format("%s->%s,closed:%s", getLocalAddress(), getRemoteAddress(), isClosed());
     }
 
     boolean isClosed();

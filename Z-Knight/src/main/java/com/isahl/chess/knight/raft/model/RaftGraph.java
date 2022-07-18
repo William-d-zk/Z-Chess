@@ -45,11 +45,13 @@ public class RaftGraph
 {
     private final NavigableMap<Long, IRaftMachine> _Peers;
     private final NavigableMap<Long, IRaftMachine> _Members;
+    private final String                           _Name;
 
-    private RaftGraph()
+    private RaftGraph(String name)
     {
         _Peers = new ConcurrentSkipListMap<>();
         _Members = new ConcurrentSkipListMap<>();
+        _Name = name;
     }
 
     public IRaftMachine get(long peerId)
@@ -115,15 +117,20 @@ public class RaftGraph
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder("{");
-        _Members.forEach((k, v)->sb.append(format("#%x->%s\\n", k, v.toPrimary())));
+        StringBuilder sb = new StringBuilder(_Name + "{");
+        _Members.forEach((k, v)->sb.append(format("#%x->%s\n", k, v.toPrimary())));
         return sb.append('}')
                  .toString();
     }
 
-    public static RaftGraph create()
+    public String name()
     {
-        return new RaftGraph();
+        return _Name;
+    }
+
+    public static RaftGraph create(String name)
+    {
+        return new RaftGraph(name);
     }
 
     /**

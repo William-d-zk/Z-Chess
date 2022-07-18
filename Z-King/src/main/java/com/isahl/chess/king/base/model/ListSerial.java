@@ -69,4 +69,9 @@ public class ListSerial<T extends IoSerial>
         return _Factory;
     }
 
+    @Override
+    public boolean add(T t)
+    {
+        return t != null && super.add(t);
+    }
 }

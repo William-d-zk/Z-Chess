@@ -43,7 +43,7 @@ public enum RaftState
 
     BOUNDARY(1 << 7),
 
-    MASK(GATE.getCode() - 1 - CLIENT.getCode()),
+    MASK(GATE.getCode() - 1 - CLIENT.getCode()), // 30 [00011110]
     ;
 
     private final int _Code;

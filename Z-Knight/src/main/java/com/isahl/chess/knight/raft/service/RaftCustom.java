@@ -32,9 +32,8 @@ import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -59,8 +58,8 @@ public class RaftCustom
      * @param session  来源 session
      * @param received 需要 raft custom 处理的内容
      * @return ITriple
-     * fst  [response → cluster] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
-     * snd  [response → raft client] : command implements 'IControl/IConsistent', 需要传递给LINK的内容，
+     * fst  [response → cluster peer session] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
+     * snd  [response → link handler] : command implements 'IConsistentResult', 需要传递给LINK的内容，
      * trd  [operator-type] : operator-type [SINGLE|BATCH]
      */
     @Override
@@ -117,7 +116,7 @@ public class RaftCustom
                 X08_Identity x08 = (X08_Identity) received;
                 long peerId = x08.getIdentity();
                 long newIdx = x08.getSessionIdx();
-                _Logger.debug("===> map peerId:%#x @ %#x", peerId, newIdx);
+                _Logger.info("map peer[ %#x ] session[ %#x ]", peerId, newIdx);
                 manager.mapSession(newIdx, session, peerId);
             }
             default -> throw new IllegalStateException("Unexpected value: " + received.serial());
@@ -161,12 +160,12 @@ public class RaftCustom
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <B extends IConsistent & ITraceable> B skipConsistency(IoSerial request)
+    public IConsistentResult skipConsistency(IoSerial request, long origin)
     {
         X76_RaftResp x76 = new X76_RaftResp();
         x76.code(SUCCESS);
         x76.withSub(request);
-        return (B) x76;
+        x76.origin(origin);
+        return x76;
     }
 }

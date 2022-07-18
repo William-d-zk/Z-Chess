@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 
 /**
  * @author william.d.zk
@@ -36,7 +36,7 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
                   serial = 0x76)
 public class X76_RaftResp
         extends ZCommand
-        implements IConsistent
+        implements IConsistentResult
 {
     public X76_RaftResp()
     {
@@ -51,6 +51,8 @@ public class X76_RaftResp
     private long mClient;//8 byte
     private int  mCode;//4 byte
     private int  mState;//1 byte
+
+    private long mOrigin;//8byte
 
     @Override
     public int priority()
@@ -87,7 +89,8 @@ public class X76_RaftResp
         return super.suffix(output)
                     .putLong(mClient)
                     .put(mState)
-                    .putInt(mCode);
+                    .putInt(mCode)
+                    .putLong(mOrigin);
     }
 
     @Override
@@ -97,13 +100,14 @@ public class X76_RaftResp
         mClient = input.getLong();
         mState = input.get();
         mCode = input.getInt();
-        return remain - 13;
+        mOrigin = input.getLong();
+        return remain - 21;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 13;
+        return super.length() + 21;
     }
 
     public long client()
@@ -114,6 +118,16 @@ public class X76_RaftResp
     public void client(long client)
     {
         mClient = client;
+    }
+
+    public void origin(long origin)
+    {
+        mOrigin = origin;
+    }
+
+    public long origin()
+    {
+        return mOrigin;
     }
 
 }

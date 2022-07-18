@@ -144,7 +144,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>1.6.13</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>oss</serverId>
@@ -155,6 +155,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven-javadoc-plugin.version}</version>
                     </plugin>
                 </plugins>
             </build>
@@ -181,18 +182,18 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>1.7.32</slf4j.version>
-        <logback.version>1.2.8</logback.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.6.2</spring-boot.version>
+        <spring-boot.version>2.7.1</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.11.0</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
         <!--DB-->
         <sqlite.driver.version>3.36.0.3</sqlite.driver.version>
         <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
-        <postgresql.driver.version>42.3.1</postgresql.driver.version>
-        <hibernate-types-52.version>2.14.0</hibernate-types-52.version>
+        <postgresql.driver.version>42.4.0</postgresql.driver.version>
+        <hibernate-types-52.version>2.16.3</hibernate-types-52.version>
 
         <!--PIPELINE-->
         <disruptor.version>3.4.4</disruptor.version>
@@ -201,28 +202,28 @@
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <junit.platform.verssion>1.8.2</junit.platform.verssion>
-        <mockito.version>3.12.4</mockito.version>
+        <mockito.version>4.6.1</mockito.version>
         <!--CACHE-->
-        <ehcache.version>3.9.9</ehcache.version>
+        <ehcache.version>3.10.0</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.13.1</jackson.version>
-        <json-schema-validator.version>1.0.67</json-schema-validator.version>
+        <jackson.version>2.13.3</jackson.version>
+        <json-schema-validator.version>1.0.71</json-schema-validator.version>
         <!--SECURITY-->
-        <jjwt.version>0.11.2</jjwt.version>
+        <jjwt.version>0.11.5</jjwt.version>
         <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
-        <spring-security-oauth2-autoconfigure.version>2.6.1</spring-security-oauth2-autoconfigure.version>
-        <spring-security-oauth2.version>2.5.1.RELEASE</spring-security-oauth2.version>
+        <spring-security-oauth2-autoconfigure.version>2.6.8</spring-security-oauth2-autoconfigure.version>
+        <spring-security-oauth2.version>2.5.2.RELEASE</spring-security-oauth2.version>
         <!--PLUGINS-->
-        <maven-compiler-plugin.version>3.10.0</maven-compiler-plugin.version>
-        <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
         <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <maven-javadoc-plugin.version>3.3.1</maven-javadoc-plugin.version>
-        <hibernate-enhance-maven-plugin.version>5.6.3.Final</hibernate-enhance-maven-plugin.version>
+        <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
+        <hibernate-enhance-maven-plugin.version>6.1.1.Final</hibernate-enhance-maven-plugin.version>
         <maven.compiler.debug>true</maven.compiler.debug>
     </properties>
     <dependencies>

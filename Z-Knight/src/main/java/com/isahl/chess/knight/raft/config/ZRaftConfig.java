@@ -178,7 +178,7 @@ public class ZRaftConfig
                 _GateMap.put(gate.getId(), gate);
             });
         }
-        _Logger.info("the local bind [ %s ]  \\npeers:\\n %s \\ngates:\\n %s ", mPeerBind, _PeerMap.values(), _GateMap.values());
+        _Logger.info("the local bind [ %s ]  \npeers:\n %s \ngates:\n %s ", mPeerBind, _PeerMap.values(), _GateMap.values());
     }
 
     public void setConfig(RaftConfig config)
