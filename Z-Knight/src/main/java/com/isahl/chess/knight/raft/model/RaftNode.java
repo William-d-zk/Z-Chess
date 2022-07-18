@@ -88,8 +88,8 @@ public class RaftNode
     public ByteBuf suffix(ByteBuf output)
     {
         output = super.suffix(output)
-                      .putShort((short) getPort())
-                      .putShort((short) getGatePort())
+                      .putShort(getPort())
+                      .putShort(getGatePort())
                       .put(mState);
         output.vPut(hostBytes())
               .vPut(gateHostBytes());

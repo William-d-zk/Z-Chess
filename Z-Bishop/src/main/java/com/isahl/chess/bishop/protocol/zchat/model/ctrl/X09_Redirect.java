@@ -86,7 +86,7 @@ public class X09_Redirect
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putShort((short) mPort);
+                    .putShort(mPort);
     }
 
     @Override

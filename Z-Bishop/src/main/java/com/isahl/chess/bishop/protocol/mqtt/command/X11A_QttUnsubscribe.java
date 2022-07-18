@@ -92,10 +92,10 @@ public class X11A_QttUnsubscribe
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         for(String topic : _Topics) {
             byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
-            output.putShort((short) topicBytes.length);
+            output.putShort(topicBytes.length);
             output.put(topicBytes);
         }
         return output;

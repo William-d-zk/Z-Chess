@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -50,7 +49,7 @@ public class ZLinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistentResult backload)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent  backload)
     {
         return _Then != null ? _Then.notify(manager, request, backload) : null;
     }

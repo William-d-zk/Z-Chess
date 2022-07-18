@@ -34,9 +34,9 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
 public interface IRaftControl
         extends IControl<ZContext>
 {
-    long getPeerId();
+    long peer();
 
-    long getTerm();
+    long term();
 
-    RaftState getState();
+    RaftState state();
 }

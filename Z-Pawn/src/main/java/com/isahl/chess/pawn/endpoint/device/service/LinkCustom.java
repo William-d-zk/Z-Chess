@@ -32,7 +32,6 @@ import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -56,7 +55,7 @@ public class LinkCustom
     }
 
     /**
-     * @param manager session 管理器f
+     * @param manager session 管理器
      * @param session 当前处理的 session
      * @param input   收到的消息
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
@@ -73,7 +72,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol response, IConsistentResult backload)
+    public List<ITriple> notify(IManager manager, IProtocol response, IConsistent backload)
     {
         if(response != null) {
             for(IAccessService service : _AccessServices) {

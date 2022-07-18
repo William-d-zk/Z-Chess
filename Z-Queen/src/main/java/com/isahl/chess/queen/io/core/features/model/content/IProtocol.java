@@ -25,13 +25,15 @@ package com.isahl.chess.queen.io.core.features.model.content;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 /**
  * @author William.d.zk
  */
 public interface IProtocol
-        extends IoSerial
+        extends IoSerial,
+                ITraceable
 {
     default boolean inIdempotent(int bitIdempotent)
     {
@@ -52,6 +54,8 @@ public interface IProtocol
     {
         return null;
     }
+
+    default long origin() {return session() == null ? 0 : session().getIndex();}
 
     default void transfer() {}
 

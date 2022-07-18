@@ -32,14 +32,12 @@ import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
-
-import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 public class RaftCustom
         implements IClusterCustom<IRaftMachine>
@@ -160,12 +158,10 @@ public class RaftCustom
     }
 
     @Override
-    public IConsistentResult skipConsistency(IoSerial request, long origin)
+    public IConsistent skipConsistency(IoSerial request)
     {
-        X76_RaftResp x76 = new X76_RaftResp();
-        x76.code(SUCCESS);
-        x76.withSub(request);
-        x76.origin(origin);
-        return x76;
+        X77_RaftNotify x77 = new X77_RaftNotify();
+        x77.withSub(request);
+        return x77;
     }
 }

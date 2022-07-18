@@ -49,6 +49,7 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default int prefix(ByteBuf input)
     {
+        int serial = input.getUnsignedShort();
         int length = input.getInt();
         int size = input.getInt();
         for(int i = 0; i < size; i++) {
@@ -62,7 +63,7 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default ByteBuf suffix(ByteBuf output)
     {
-        output = output.putShort((short) serial())
+        output = output.putShort(serial())
                        .putInt(length())
                        .putInt(size());
         for(IoSerial t : this) {
@@ -74,7 +75,7 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default int length()
     {
-        int length = 4;  //collection.size
+        int length = 0;
         for(IoSerial t : this) {
             length += t.sizeOf();
         }
@@ -84,7 +85,10 @@ public interface ICollectionSerial<T extends IoSerial>
     @Override
     default int sizeOf()
     {
-        return length() + 4 + 2;
+        return 2 + // serial
+               4 + // length
+               4 + // size
+               length();
     }
 
     @Override

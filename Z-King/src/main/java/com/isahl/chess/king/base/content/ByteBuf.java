@@ -531,12 +531,17 @@ public class ByteBuf
         return this;
     }
 
-    public ByteBuf putShort(short v)
+    public ByteBuf putShort(int v)
     {
         checkCapacity(2);
-        mBuffer.putShort(mWriterIdx, v);
+        mBuffer.putShort(mWriterIdx, (short) v);
         mWriterIdx += 2;
         return this;
+    }
+
+    public ByteBuf putShort(long v)
+    {
+        return putShort((int) v);
     }
 
     public ByteBuf putInt(int v)

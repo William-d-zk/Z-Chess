@@ -99,7 +99,7 @@ public class BinarySerial
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        return output.putShort((short) serial())
+        return output.putShort(serial())
                      .vPutLength(length())
                      .vPut(mPayload);
     }

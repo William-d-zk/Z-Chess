@@ -63,7 +63,7 @@ public class X05_EncryptStart
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putShort((short) mSymmetricKeyId)
+                    .putShort(mSymmetricKeyId)
                     .put(mSalt)
                     .put(mSalt >> 8)
                     .put(mSalt >> 16);

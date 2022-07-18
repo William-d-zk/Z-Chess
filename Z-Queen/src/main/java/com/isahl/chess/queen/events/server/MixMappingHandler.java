@@ -37,7 +37,6 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
@@ -167,7 +166,7 @@ public class MixMappingHandler<T extends IStorage>
                             else if(result != null) {
                                 IProtocol request = result.getSecond();
                                 if(request != null) {
-                                    publish(_Writer, _LinkCustom.notify(_SessionManager, request, _ClusterCustom.skipConsistency(request, session.getIndex())));
+                                    publish(_Writer, _LinkCustom.notify(_SessionManager, request, _ClusterCustom.skipConsistency(request)));
                                 }
                                 else {
                                     _Logger.warning("no consistency to do");
@@ -198,7 +197,7 @@ public class MixMappingHandler<T extends IStorage>
                             /*
                              * doCustom 执行结果 snd 是需要反向投递到linker的内容
                              */
-                            if(result != null && result.getSecond() instanceof IConsistentResult backload) {
+                            if(result != null && result.getSecond() instanceof IConsistent backload) {
                                 publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                             }
                             else {
@@ -262,8 +261,8 @@ public class MixMappingHandler<T extends IStorage>
                  *  cluster（cluster-client） → Linker ｜ Linker notify → device.session
                  */
                 case LINK_CONSISTENT_RESULT -> {
-                    IConsistentResult consistency = event.getContent()
-                                                         .getFirst();
+                    IConsistent consistency = event.getContent()
+                                                   .getFirst();
                     IManager manager = event.getContent()
                                             .getSecond();
                     IOperator<IConsistent, IManager, IProtocol> unbox = event.getEventOp();

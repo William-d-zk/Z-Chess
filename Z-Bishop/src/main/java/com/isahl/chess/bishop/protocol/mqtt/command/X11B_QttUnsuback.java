@@ -54,7 +54,7 @@ public class X11B_QttUnsuback
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         if(mPayload != null) {
             output.put(mPayload);
         }

@@ -50,7 +50,7 @@ public class X03_Cipher
     {
         return super.suffix(output)
                     .putInt(mPubKeyId)
-                    .putShort((short) mSymmetricKeyId);
+                    .putShort(mSymmetricKeyId);
     }
 
     @Override
@@ -85,11 +85,7 @@ public class X03_Cipher
     @Override
     public String toString()
     {
-        return String.format("%s\npublic-key: %d | rc4-key: %d [%s]",
-                             super.toString(),
-                             mPubKeyId,
-                             mSymmetricKeyId,
-                             IoUtil.bin2Hex(mPayload));
+        return String.format("%s\npublic-key: %d | rc4-key: %d [%s]", super.toString(), mPubKeyId, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
     }
 
     public void setCipher(byte[] cipher)

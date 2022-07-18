@@ -323,22 +323,20 @@ public class X111_QttConnect
         if(hasUserName()) {
             int userNameLength = input.getShort() & 0xFFFF;
             if(userNameLength < 1 || userNameLength > MAX_USER_NAME_LENGTH) {
-                throw new IndexOutOfBoundsException(String.format(
-                        "client:[%s] { user name length within [0 < length ≤ %d], error:[%d] }",
-                        mClientId,
-                        MAX_USER_NAME_LENGTH,
-                        userNameLength));
+                throw new IndexOutOfBoundsException(String.format("client:[%s] { user name length within [0 < length ≤ %d], error:[%d] }",
+                                                                  mClientId,
+                                                                  MAX_USER_NAME_LENGTH,
+                                                                  userNameLength));
             }
             mUserName = input.readUTF(userNameLength);
         }
         if(hasPassword()) {
             int passwordLength = input.getShort() & 0xFFFF;
             if(passwordLength < 1 || passwordLength > MAX_PASSWORD_LENGTH) {
-                throw new IndexOutOfBoundsException(String.format(
-                        "client:[%s] { password length within [0 < length ≤ %d], error:[%d] }",
-                        mClientId,
-                        MAX_PASSWORD_LENGTH,
-                        passwordLength));
+                throw new IndexOutOfBoundsException(String.format("client:[%s] { password length within [0 < length ≤ %d], error:[%d] }",
+                                                                  mClientId,
+                                                                  MAX_PASSWORD_LENGTH,
+                                                                  passwordLength));
             }
             mPassword = input.readUTF(passwordLength);
         }
@@ -347,11 +345,11 @@ public class X111_QttConnect
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) 4)
+        output.putShort(4)
               .putInt(_MQTT)
               .put(mVersion)
               .put(mAttr)
-              .putShort((short) TimeUnit.MILLISECONDS.toSeconds(getKeepAlive()));
+              .putShort(TimeUnit.MILLISECONDS.toSeconds(getKeepAlive()));
         if(mPayload != null) {output.put(mPayload);}
         return output;
     }
