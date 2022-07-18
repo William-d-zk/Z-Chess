@@ -86,10 +86,7 @@ public class IoDispatcher
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity connectActive = connectFailedContent.getSecond();
-                error(getNextPipe(connectActive.getMode()),
-                      errorType,
-                      new Pair<>(throwable, connectActive),
-                      event.getEventOp());
+                error(getNextPipe(connectActive.getMode()), errorType, new Pair<>(throwable, connectActive), event.getEventOp());
                 break;
             case CONSISTENCY_REJECT:
                 IPair consistencyRejected = event.getContent();
@@ -99,10 +96,7 @@ public class IoDispatcher
                 IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
                 if(!session.isClosed()) {
                     IPair result = errorOperator.handle(null, session);
-                    error(getNextPipe(session.getMode()),
-                          INITIATIVE_CLOSE,
-                          new Pair<>(QueenCode.ERROR_CLOSE, session),
-                          result.getSecond());
+                    error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), result.getSecond());
                 }
                 break;
             case NO_ERROR:
@@ -113,19 +107,13 @@ public class IoDispatcher
                         connectActive = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
-                        publish(getNextPipe(connectActive.getMode()),
-                                event.getEventType(),
-                                new Pair<>(connectActive, channel),
-                                connectOperator);
+                        publish(getNextPipe(connectActive.getMode()), event.getEventType(), Pair.of(connectActive, channel), connectOperator);
                     }
                     case READ -> {
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         session = readContent.getSecond();
-                        publish(dispatchWorker(session.hashCode()),
-                                IOperator.Type.DECODE,
-                                readContent,
-                                event.getEventOp());
+                        publish(dispatchWorker(session.hashCode()), IOperator.Type.DECODE, readContent, event.getEventOp());
                     }
                     case WROTE -> {
                         _Logger.trace("wrote");
@@ -137,10 +125,7 @@ public class IoDispatcher
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if(!session.isClosed()) {
-                            error(getNextPipe(session.getMode()),
-                                  INITIATIVE_CLOSE,
-                                  new Pair<>(QueenCode.LOCAL_CLOSE, session),
-                                  event.getEventOp());
+                            error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, new Pair<>(QueenCode.LOCAL_CLOSE, session), event.getEventOp());
                         }
                     }
                     default -> _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
@@ -152,16 +137,10 @@ public class IoDispatcher
                 IPair errorContent = event.getContent();
                 throwable = errorContent.getFirst();
                 session = errorContent.getSecond();
-                _Logger.warning("error %s @ %s, → mapping handler [close] \n",
-                                throwable,
-                                errorType.getMsg(),
-                                session.summary());
+                _Logger.warning("error %s @ %s, → mapping handler [close] \n", throwable, errorType.getMsg(), session.summary());
                 if(!session.isClosed()) {
                     IPair result = errorOperator.handle(throwable, session);
-                    error(getNextPipe(session.getMode()),
-                          PASSIVE_CLOSE,
-                          new Pair<>(QueenCode.ERROR_CLOSE, session),
-                          result.getSecond());
+                    error(getNextPipe(session.getMode()), PASSIVE_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), result.getSecond());
                 }
                 break;
         }

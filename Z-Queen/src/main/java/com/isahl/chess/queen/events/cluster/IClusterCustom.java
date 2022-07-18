@@ -27,8 +27,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
@@ -80,5 +79,5 @@ public interface IClusterCustom<T extends IStorage>
      */
     boolean waitForCommit();
 
-    <B extends IConsistent & ITraceable> B skipConsistency(IoSerial request);
+    IConsistentResult skipConsistency(IoSerial request, long origin);
 }

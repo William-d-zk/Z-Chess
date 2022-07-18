@@ -51,7 +51,7 @@ public class SocketConnected
             connection.onCreated(session);
             session.ready();
             session.readNext(_AioReader);
-            return new Triple<>(true, session, connection.afterConnected(session));
+            return Triple.of(true, session, connection.afterConnected(session));
         }
         catch(IOException e) {
             try {
@@ -60,11 +60,11 @@ public class SocketConnected
             catch(IOException ex) {
                 ex.printStackTrace();
             }
-            return new Triple<>(false, channel, e);
+            return Triple.of(false, channel, e);
         }
         catch(Exception e) {
             // 此时session!=null
-            return session != null ? new Triple<>(false, session, e) : new Triple<>(false, channel, e);
+            return session != null ? Triple.of(false, session, e) : Triple.of(false, channel, e);
         }
     }
 

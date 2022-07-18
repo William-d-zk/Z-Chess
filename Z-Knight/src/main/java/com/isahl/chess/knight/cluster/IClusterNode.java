@@ -84,8 +84,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession create(AsynchronousSocketChannel socketChannel,
-                                   IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
             }
@@ -101,12 +100,9 @@ public interface IClusterNode
             @Override
             public ITriple afterConnected(ISession session)
             {
-                if(_ZSortHolder.getSort()
-                               .getMode() == ISort.Mode.CLUSTER)
-                {
-                    return new Triple<>(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()),
-                                        session,
-                                        SINGLE);
+
+                if(session.getMode() == ISort.Mode.CLUSTER) {
+                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
                 }
                 return null;
             }
@@ -140,8 +136,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession create(AsynchronousSocketChannel socketChannel,
-                                   IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
             }
@@ -166,9 +161,7 @@ public interface IClusterNode
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()),
-                                        session,
-                                        SINGLE);
+                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
                 }
                 return null;
             }

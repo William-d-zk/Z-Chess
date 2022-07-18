@@ -48,7 +48,7 @@ public class RaftMachine
     @Serial
     private static final long serialVersionUID = -3632621828854975482L;
 
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     private long mTerm;                     // 触发选举时 term > index-term
     private long mIndex;                    // 本地日志 index，leader-index >= commit-index 其他状态：follower-index <= commit-index
@@ -395,28 +395,18 @@ public class RaftMachine
     {
         return format("""
                               {
-                              \t\tpeerId:%#x
+                              \t\tpeer:%#x
                               \t\tstate:%s
                               \t\tterm:%d
                               \t\tindex:%d
                               \t\tindex_term:%d
                               \t\tmatch_index:%d
                               \t\tcommit:%d
-                              \t\tapplied:%d
+                              \t\taccept:%d
                               \t\tleader:%#x
                               \t\tcandidate:%#x
                               }
-                              """,
-                      peer(),
-                      state(),
-                      term(),
-                      index(),
-                      indexTerm(),
-                      matchIndex(),
-                      commit(),
-                      accept(),
-                      leader(),
-                      candidate());
+                              """, peer(), RaftState.roleOf(state()), term(), index(), indexTerm(), matchIndex(), commit(), accept(), leader(), candidate());
     }
 
     @Override

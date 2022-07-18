@@ -160,9 +160,18 @@ public class MixMappingHandler<T extends IStorage>
                                 if(request != null) {
                                     publish(_Transfer, CONSISTENCY, Pair.of(request, session.getIndex()), null);
                                 }
+                                else {
+                                    _Logger.warning("no consistency to do");
+                                }
                             }
                             else if(result != null) {
-                                publish(_Writer, _LinkCustom.notify(_SessionManager, result.getSecond(), _ClusterCustom.skipConsistency(result.getSecond())));
+                                IProtocol request = result.getSecond();
+                                if(request != null) {
+                                    publish(_Writer, _LinkCustom.notify(_SessionManager, request, _ClusterCustom.skipConsistency(request, session.getIndex())));
+                                }
+                                else {
+                                    _Logger.warning("no consistency to do");
+                                }
                             }
                             else {
                                 _Logger.debug("link received ignore:%s", received);
@@ -189,7 +198,7 @@ public class MixMappingHandler<T extends IStorage>
                             /*
                              * doCustom 执行结果 snd 是需要反向投递到linker的内容
                              */
-                            if(result != null && result.getSecond() instanceof IConsistent backload) {
+                            if(result != null && result.getSecond() instanceof IConsistentResult backload) {
                                 publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                             }
                             else {
@@ -242,7 +251,7 @@ public class MixMappingHandler<T extends IStorage>
                         publish(_Writer,
                                 _ClusterCustom.change(_SessionManager,
                                                       event.getContent()
-                                                                   .getSecond()));
+                                                           .getSecond()));
                     }
                     catch(Exception e) {
                         _Logger.warning("cluster inner service api ");
@@ -273,7 +282,7 @@ public class MixMappingHandler<T extends IStorage>
                  */
                 case CLUSTER_TIMER -> {
                     T content = event.getContent()
-                                     .getFirst();
+                                     .getSecond();
                     publish(_Writer, _ClusterCustom.onTimer(_SessionManager, content));
 
                 }
@@ -293,7 +302,12 @@ public class MixMappingHandler<T extends IStorage>
     private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IProtocol received)
     {
         ITriple result = custom.handle(manager, session, received);
-        _Logger.debug("receive:[ %s ],resp:[ %s ]", received, result);
+        /*
+         * fst  [response → cluster peer session] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
+         * snd  [response → link handler] : command implements 'IConsistentResult', 需要传递给LINK的内容，
+         * trd  [operator-type] : operator-type [SINGLE|BATCH]
+         */
+        _Logger.debug("handled:[ %s ] → [ %s ]", received, result);
         if(result != null) {
             IOperator.Type type = result.getThird();
             switch(type) {

@@ -37,10 +37,10 @@ public class SocketConnectFailed
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
-    public Void handle(Throwable throwable, IAioConnection aioConnector)
+    public Void handle(Throwable throwable, IAioConnection connector)
     {
-        _Logger.warning("handler connect failed!", throwable);
-        aioConnector.error();
+        _Logger.warning("handler connect failed!@[ %s ]", throwable, connector.getRemoteAddress());
+        connector.error();
         return null;
     }
 

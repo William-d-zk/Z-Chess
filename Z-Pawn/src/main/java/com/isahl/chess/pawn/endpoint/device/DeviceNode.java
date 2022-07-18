@@ -97,7 +97,7 @@ public class DeviceNode
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
             final int _PeerBindPort = peerBind.getPort();
-            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            hosts.add(Triple.of(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
             _PeerPing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _PeerBindHost, _PeerBindPort));
         }
         else {
@@ -107,7 +107,7 @@ public class DeviceNode
             RaftNode gateBind = raftConfig.getPeerBind();
             final String _GateBindHost = gateBind.getGateHost();
             final int _GateBindPort = gateBind.getGatePort();
-            hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            hosts.add(Triple.of(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
             _GatePing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _GateBindHost, _GateBindPort));
         }
         else {
@@ -128,7 +128,7 @@ public class DeviceNode
                                                   _ClusterPeer);
                            })
                            .collect(Collectors.toList());
-        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
+        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup(), "GateClient")
         {
             @Override
             public void onCreated(ISession session)
@@ -145,7 +145,7 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
+        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup(), "PeerClient")
         {
 
             @Override
@@ -163,12 +163,10 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _Logger.debug("Device Node Bean Load");
+        _Logger.info("Device Node Bean Load");
     }
 
-    public void start(ILogicHandler.factory logicFactory,
-                      ILinkCustom linkCustom,
-                      IClusterCustom<IRaftMachine> clusterCustom)
+    public void start(ILogicHandler.factory logicFactory, ILinkCustom linkCustom, IClusterCustom<IRaftMachine> clusterCustom)
     {
         build(logicFactory, linkCustom, clusterCustom, Encryptor::new);
         for(IAioServer server : _AioServers) {
@@ -179,10 +177,7 @@ public class DeviceNode
                 _Logger.warning("server bind error %s", e, server.getLocalAddress());
             }
             server.pendingAccept();
-            _Logger.info(String.format("device node start %s %s @ %s",
-                                       server.getLocalAddress(),
-                                       server.getMode(),
-                                       server.getProtocol()));
+            _Logger.info(String.format("device node start %s %s @ %s", server.getLocalAddress(), server.getMode(), server.getProtocol()));
         }
     }
 
@@ -191,13 +186,7 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _PeerClient.connect(buildConnector(host,
-                                           port,
-                                           socketConfig,
-                                           _PeerClient,
-                                           DeviceNode.this,
-                                           _Holder,
-                                           _ClusterPeer));
+        _PeerClient.connect(buildConnector(host, port, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
     @Override
@@ -205,13 +194,7 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _GateClient.connect(buildConnector(host,
-                                           port,
-                                           socketConfig,
-                                           _GateClient,
-                                           DeviceNode.this,
-                                           _Holder,
-                                           _ClusterPeer));
+        _GateClient.connect(buildConnector(host, port, socketConfig, _GateClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
     private void peerHeartbeat(ISession session)
