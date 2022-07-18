@@ -105,10 +105,10 @@ public class X113_QttPublish
     public ByteBuf suffix(ByteBuf output)
     {
         byte[] topicBytes = mTopic.getBytes(StandardCharsets.UTF_8);
-        output.putShort((short) topicBytes.length);
+        output.putShort(topicBytes.length);
         output.put(topicBytes);
         if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
-            output.putShort((short) msgId());
+            output.putShort(msgId());
         }
         if(mPayload != null) {
             output.put(mPayload);

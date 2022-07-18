@@ -218,7 +218,7 @@ public class WsFrame
             }
             else if(mPayload.length > 0x7D) {
                 attr |= 0x7E;
-                output.putShort((short) mPayload.length);
+                output.putShort(mPayload.length);
             }
             else {
                 attr |= mPayload.length;

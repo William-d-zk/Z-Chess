@@ -55,7 +55,7 @@ public class X114_QttPuback
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         if(mPayload != null) {
             output.put(mPayload);
         }

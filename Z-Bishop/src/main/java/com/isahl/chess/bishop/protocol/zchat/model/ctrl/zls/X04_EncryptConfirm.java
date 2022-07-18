@@ -87,17 +87,13 @@ public class X04_EncryptConfirm
     {
         return super.suffix(output)
                     .putInt(mCode)
-                    .putShort((short) mSymmetricKeyId);
+                    .putShort(mSymmetricKeyId);
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s\ncode:%s,rc4-key: %d ,sign: %s",
-                             super.toString(),
-                             mCode,
-                             mSymmetricKeyId,
-                             IoUtil.bin2Hex(mPayload));
+        return String.format("%s\ncode:%s,rc4-key: %d ,sign: %s", super.toString(), mCode, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
     }
 
     public int getCode()

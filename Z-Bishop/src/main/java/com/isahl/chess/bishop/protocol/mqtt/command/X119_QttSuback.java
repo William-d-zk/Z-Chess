@@ -84,7 +84,7 @@ public class X119_QttSuback
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         if(mResultList != null) {
             for(Level qosLevel : mResultList) {
                 output.put(qosLevel.getValue());

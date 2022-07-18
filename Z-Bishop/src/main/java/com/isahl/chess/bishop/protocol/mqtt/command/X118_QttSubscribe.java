@@ -100,13 +100,13 @@ public class X118_QttSubscribe
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         if(mSubscribes != null) {
             for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
                 byte[] topic = entry.getKey()
                                     .getBytes(StandardCharsets.UTF_8);
                 Level level = entry.getValue();
-                output.putShort((short) topic.length);
+                output.putShort(topic.length);
                 output.put(topic);
                 output.put(level.getValue());
             }
@@ -117,10 +117,9 @@ public class X118_QttSubscribe
     @Override
     public String toString()
     {
-        return String.format("subscribe msg-id:%d topics:%s",
-                             msgId(),
-                             mSubscribes != null ? mSubscribes.toString() : null);
+        return String.format("subscribe msg-id:%d topics:%s", msgId(), mSubscribes != null ? mSubscribes.toString() : null);
     }
+
     @Override
     public boolean isMapping()
     {

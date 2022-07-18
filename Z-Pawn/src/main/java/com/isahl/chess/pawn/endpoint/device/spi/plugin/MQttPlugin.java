@@ -42,11 +42,12 @@ import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -170,9 +171,7 @@ public class MQttPlugin
                 ack(x117.msgId(), session.getIndex());
                 break;
             case 0x11C:
-                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session),
-                                                           session,
-                                                           session.getEncoder()));
+                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session), session, session.getEncoder()));
         }
         return results;
     }
@@ -257,12 +256,10 @@ public class MQttPlugin
     }
 
     @Override
-    public  List<ITriple> onConsistency(IManager manager,
-                                        IConsistentResult backload,
-                                                                                   IoSerial consensusBody)
+    public <T extends IoSerial & ITraceable> List<ITriple> onConsistency(IManager manager, IConsistent backload, T consensusBody)
     {
         int code = backload.code();
-        long origin = backload.origin();
+        long origin = consensusBody.origin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
@@ -444,10 +441,7 @@ public class MQttPlugin
         return Pattern.compile(topic);
     }
 
-    private void brokerTopic(IManager manager,
-                             X113_QttPublish x113,
-                             List<Subscribe.Mapped> routes,
-                             List<ITriple> results)
+    private void brokerTopic(IManager manager, X113_QttPublish x113, List<Subscribe.Mapped> routes, List<ITriple> results)
     {
         routes.forEach(mapped->{
             ISession session = manager.findSessionByIndex(mapped.session());

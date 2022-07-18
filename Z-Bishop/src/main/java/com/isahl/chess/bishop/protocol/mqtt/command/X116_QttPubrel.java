@@ -59,7 +59,7 @@ public class X116_QttPubrel
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.putShort((short) msgId());
+        output.putShort(msgId());
         if(mPayload != null) {
             output.put(mPayload);
         }

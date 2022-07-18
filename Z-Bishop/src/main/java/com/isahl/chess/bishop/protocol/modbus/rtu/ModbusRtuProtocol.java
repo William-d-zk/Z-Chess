@@ -48,10 +48,10 @@ public abstract class ModbusRtuProtocol
     {
     }
 
-    protected byte   mAddress;
-    protected byte   mCtrl;
+    protected byte mAddress;
+    protected byte mCtrl;
     protected byte[] mPayload;
-    protected int    mCrc;
+    protected int mCrc;
 
     @Override
     public ByteBuf suffix(ByteBuf output)
@@ -60,9 +60,7 @@ public abstract class ModbusRtuProtocol
         output.put(mAddress)
               .put(mCtrl)
               .put(mPayload)
-              .putShort((short) (mCrc = CryptoUtil.crc16_modbus(output.array(),
-                                                                output.writerMark(),
-                                                                output.writerIdx() - output.writerMark())));
+              .putShort(mCrc = CryptoUtil.crc16_modbus(output.array(), output.writerMark(), output.writerIdx() - output.writerMark()));
         return output;
     }
 
@@ -82,9 +80,9 @@ public abstract class ModbusRtuProtocol
             mPayload = new byte[remain - 2];
             input.get(mPayload);
             mCrc = input.getUnsignedShort();
-            if(CryptoUtil.crc16_modbus(input.array(), input.readerMark(), input.readerIdx() - input.readerMark()) !=
-               mCrc)
-            {throw new ZException("modbus crc error");}
+            if(CryptoUtil.crc16_modbus(input.array(), input.readerMark(), input.readerIdx() - input.readerMark()) != mCrc) {
+                throw new ZException("modbus crc error");
+            }
 
         }
     }

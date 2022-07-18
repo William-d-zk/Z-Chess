@@ -31,8 +31,9 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistentResult;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
@@ -72,13 +73,12 @@ public class WebSocketPlugin
                 return Collections.singletonList(Triple.of(content, session, session.getEncoder()));
             }
             case 0x103 -> {
-                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session),
-                                                           session,
-                                                           session.getEncoder()));
+                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session), session, session.getEncoder()));
             }
             case 0x105 -> {
-                return Collections.singletonList(Triple.of(new X105_Text<>(
-                        ((X105_Text<?>) content).getText() + "OK\n").with(session), session, session.getEncoder()));
+                return Collections.singletonList(Triple.of(new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session),
+                                                           session,
+                                                           session.getEncoder()));
             }
         }
         return null;
@@ -97,7 +97,7 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistentResult backload, IoSerial consensusBody)
+    public <T extends IoSerial & ITraceable> List<ITriple> onConsistency(IManager manager, IConsistent backload, T consensusBody)
     {
         return null;
     }
