@@ -210,7 +210,7 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                             }
                             else {
-                                _Logger.warning("cluster received ignore :%s", received);
+                                _Logger.debug("cluster received ignore :%s", received);
                             }
                         }
                         catch(Exception e) {
