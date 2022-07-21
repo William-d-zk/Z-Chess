@@ -204,7 +204,6 @@ public class MixMappingHandler<T extends IStorage>
                             else if(result != null && result.getSecond() instanceof Collection<?> collection) {
                                 for(Object item : collection) {
                                     if(item instanceof IConsistent backload) {
-                                        _Logger.info("cluster transfer backload %s", backload);
                                         publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                                     }
                                 }

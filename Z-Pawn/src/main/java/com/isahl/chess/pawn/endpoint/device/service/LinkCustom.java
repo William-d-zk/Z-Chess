@@ -76,7 +76,6 @@ public class LinkCustom
     public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
     {
         if(request != null) {
-            _Logger.info("link notify:[%s]→{%s}", request, backload);
             for(IAccessService service : _AccessServices) {
                 if(service.isSupported(request)) {
                     return service.onConsistency(manager, backload, request);
