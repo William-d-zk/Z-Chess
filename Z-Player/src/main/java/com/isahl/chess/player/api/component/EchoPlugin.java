@@ -66,8 +66,7 @@ public class EchoPlugin
     {
     }
 
-    @Override
-    public <T extends IoSerial & ITraceable> List<ITriple> onConsistency(IManager manager, IConsistent backload, T consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
         throw new UnsupportedOperationException();
     }

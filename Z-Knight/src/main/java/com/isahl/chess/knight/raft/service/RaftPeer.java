@@ -654,6 +654,7 @@ public class RaftPeer
     private void stepDown(long term)
     {
         if(_SelfMachine.isGreaterThanState(FOLLOWER)) {
+            _Logger.debug("step down:%s → FOLLOWER", RaftState.roleOf(_SelfMachine.state()));
             beatCancel();
             electCancel();
             updateTerm(term);
@@ -661,6 +662,7 @@ public class RaftPeer
             _SelfMachine.candidate(INVALID_PEER_ID);
             _SelfMachine.approve(FOLLOWER);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
+
         }
         else {_Logger.warning("step down [ignore],state now[%s]", RaftState.roleOf(_SelfMachine.state()));}
     }
@@ -685,9 +687,9 @@ public class RaftPeer
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if(catchUp(preIndex, preIndexTerm)) {
             IProtocol notify = null;
-            if(preIndex <= commit) {
+            if(_SelfMachine.commit() < commit) {
                 ListSerial<LogEntry> sub = new ListSerial<>(LogEntry::new);
-                for(long i = preIndex, size = min(_SelfMachine.accept(), commit); i <= size && i > 0; i++) {
+                for(long i = _SelfMachine.commit(), size = min(_SelfMachine.accept(), commit); i <= size && i > 0; i++) {
                     _SelfMachine.commit(i, _RaftMapper);
                     sub.add(_RaftMapper.getEntry(i));
                 }
@@ -804,6 +806,7 @@ public class RaftPeer
     private boolean rollback(final Queue<LogEntry> _LogQueue, long preIndex)
     {
         if(preIndex < 1) {
+            _Logger.debug("rollback leader empty");
             //preIndex ==0
             _SelfMachine.reset();
             _RaftMapper.reset();
@@ -824,6 +827,7 @@ public class RaftPeer
             return true;
         }
         else {
+            _Logger.debug("rollback → leader [%d]", preIndex);
             // preIndex >= MIN_START(1)
             LogEntry rollback = _RaftMapper.truncateSuffix(preIndex);
             if(rollback != null) {
@@ -888,7 +892,7 @@ public class RaftPeer
     {
         switch(RaftState.valueOf(_SelfMachine.state())) {
             case LEADER -> {
-                List<ITriple> responses = leaderAppend(request, _SelfMachine.peer(), origin, manager);
+                List<ITriple> responses = leaderAppend(request.encoded(), _SelfMachine.peer(), origin, manager);
                 if(responses == null) {
                     stepDown(_SelfMachine.term());
                     return null;
@@ -925,7 +929,7 @@ public class RaftPeer
     public ITriple onRequest(X75_RaftReq x75, IManager manager, ISession session)
     {
         if(_SelfMachine.isInState(LEADER)) {
-            List<ITriple> appends = leaderAppend(x75, x75.getClient(), x75.origin(), manager);
+            List<ITriple> appends = leaderAppend(x75.payload(), x75.getClient(), x75.origin(), manager);
             if(appends != null && !appends.isEmpty()) {
                 return Triple.of(appends, response(SUCCESS, x75.getClient(), x75.msgId()).with(session), BATCH);
             }
@@ -946,8 +950,17 @@ public class RaftPeer
 
     public ITriple onNotify(X77_RaftNotify x77)
     {
-        LogEntry entry = x77.deserializeSub(LogEntry::new);
-        return entry != null ? Triple.of(null, x77.withSub(entry.payload()), NULL) : null;
+        _Logger.debug("client[%#x] onNotify", _SelfMachine.peer());
+        return Triple.of(null,
+                         x77.deserializeSub(input->new ListSerial<>(input, LogEntry::new))
+                            .stream()
+                            .map(log->{
+                                X77_RaftNotify n77 = new X77_RaftNotify();
+                                n77.withSub(log);
+                                return n77;
+                            })
+                            .collect(Collectors.toList()),
+                         NULL);
     }
 
     public List<ITriple> onModify(RaftNode delta, IManager manager)
@@ -1116,10 +1129,10 @@ public class RaftPeer
         return x76;
     }
 
-    private List<ITriple> leaderAppend(IoSerial payload, long client, long origin, IManager manager)
+    private List<ITriple> leaderAppend(byte[] payload, long client, long origin, IManager manager)
     {
         _Logger.debug("leader append new log");
-        LogEntry newEntry = new LogEntry(_SelfMachine.index() + 1, _SelfMachine.term(), client, origin, payload.encoded());
+        LogEntry newEntry = new LogEntry(_SelfMachine.index() + 1, _SelfMachine.term(), client, origin, payload);
         if(_RaftMapper.append(newEntry)) {
             _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
@@ -1150,7 +1163,6 @@ public class RaftPeer
 
     private X72_RaftAppend createAppend(IRaftMachine acceptor, int limit)
     {
-        _Logger.debug("leader → follower [ %#x ]", acceptor.peer());
         X72_RaftAppend x72 = new X72_RaftAppend(_ZUid.getId());
         x72.leader(_SelfMachine.peer());
         x72.term(_SelfMachine.term());
@@ -1198,6 +1210,7 @@ public class RaftPeer
                 x72.preIndex(0);
                 x72.preIndexTerm(0);
             }
+            _Logger.debug("leader → acceptor[ %#x ] %d@%d", x72.peer(), x72.index(), x72.indexTerm());
             for(long end = _SelfMachine.index(), payloadSize = 0; next <= end && payloadSize < _SnapshotFragmentMaxSize; next++) {
                 if(limit > 0 && entryList.size() >= limit) {
                     break;

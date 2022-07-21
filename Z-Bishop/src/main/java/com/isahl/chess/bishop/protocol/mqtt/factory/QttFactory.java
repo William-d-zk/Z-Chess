@@ -41,7 +41,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 public class QttFactory
         implements IProtocolFactory<QttFrame, QttContext>
 {
-    private final Logger logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
     public static final QttFactory _Instance = new QttFactory();
 

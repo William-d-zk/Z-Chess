@@ -30,7 +30,6 @@ import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEnti
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
@@ -68,8 +67,7 @@ public class HttpPlugin
 
     }
 
-    @Override
-    public <T extends IoSerial & ITraceable> List<ITriple> onConsistency(IManager manager, IConsistent backload, T consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
         return null;
     }

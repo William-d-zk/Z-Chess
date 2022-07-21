@@ -65,8 +65,6 @@ public class X75_RaftReq
     private long mClient;
     private long mOrigin;
 
-    public transient boolean tCached;
-
     public void setOrigin(long origin)
     {
         mOrigin = origin;

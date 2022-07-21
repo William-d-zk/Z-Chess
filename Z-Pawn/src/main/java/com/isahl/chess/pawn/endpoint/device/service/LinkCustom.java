@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -72,12 +73,13 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol response, IConsistent backload)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
     {
-        if(response != null) {
+        if(request != null) {
+            _Logger.info("link notify:[%s]→{%s}", request, backload);
             for(IAccessService service : _AccessServices) {
-                if(service.isSupported(response)) {
-                    return service.onConsistency(manager, backload, response);
+                if(service.isSupported(request)) {
+                    return service.onConsistency(manager, backload, request);
                 }
             }
         }
@@ -106,7 +108,11 @@ public class LinkCustom
     {
         _Logger.debug("link unbox %s", input);
         switch(input.serial()) {
-            case 0x76, 0x77 -> {
+            case 0x76 -> {
+                X76_RaftResp x76 = (X76_RaftResp) input;
+                _Logger.debug("unbox x76 code %d,client [%#x]", x76.code(), x76.client());
+            }
+            case 0x77 -> {
                 /*
                  * leader → follower → client: x77_notify
                  * leader → follower: x76_response
@@ -123,10 +129,8 @@ public class LinkCustom
                 }
                 return null;
             }
-            default -> {
-                _Logger.warning("link custom %s no handle", input);
-                return null;
-            }
+            default -> _Logger.warning("link custom %s no handle", input);
         }
+        return null;
     }
 }
