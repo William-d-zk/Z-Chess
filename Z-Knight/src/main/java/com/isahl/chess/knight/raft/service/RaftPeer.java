@@ -763,7 +763,6 @@ public class RaftPeer
     {
         CHECK:
         {
-            _Logger.debug("catch up %d@%d → %d@%d", preIndex, preIndexTerm, _SelfMachine.index(), _SelfMachine.indexTerm());
             if(_SelfMachine.index() == preIndex && _SelfMachine.indexTerm() == preIndexTerm) {
                 /*
                    follower 与 Leader 依据 index@term 进行对齐
@@ -815,6 +814,8 @@ public class RaftPeer
                 // preIndex == 1 && queue.empty → reject
             }
             else {
+                _Logger.debug("follower empty,accept leader's at all");
+
                 //刚好follow是空的, leader投过来的数据就接收了
                 LogEntry entry;
                 // mapper.append false的状态包含了, _LogQueue.empty的情况
