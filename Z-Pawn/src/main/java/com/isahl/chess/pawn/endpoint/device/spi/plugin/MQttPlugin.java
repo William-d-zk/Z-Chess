@@ -47,7 +47,6 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -220,11 +219,11 @@ public class MQttPlugin
                 if(x112.isOk()) {
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
-                        _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
+                        _Logger.info("re-login ok, wait for consistent notify;client[%s]", x111.getClientId());
                         return Triple.of(new X0A_Shutdown().with(old), x111, SINGLE);
                     }
                     else {
-                        _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
+                        _Logger.info("login check ok,wait for consistent notify;client[%s]", x111.getClientId());
                         return Triple.of(null, x111, NULL);
                     }
                 }
@@ -256,40 +255,45 @@ public class MQttPlugin
     }
 
     @Override
-    public <T extends IoSerial & ITraceable> List<ITriple> onConsistency(IManager manager, IConsistent backload, T consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
     {
         int code = backload.code();
-        long origin = consensusBody.origin();
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
-                x112.with(x111.session());
-                if(code == SUCCESS) {
-                    _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
-                    if(x111.isClean()) {
-                        clean(origin);
+                ISession session = x111.session();
+                if(session != null) {
+                    x112.with(x111.session());
+                    long origin = session.getIndex();
+                    if(code == SUCCESS) {
+                        _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
+                        if(x111.isClean()) {
+                            clean(origin);
+                        }
+                        x112.responseOk();
+                        if(_StateService.onLogin(origin, x111.isClean(), x111.getKeepAlive())) {
+                            x112.setPresent();
+                        }
                     }
-                    x112.responseOk();
-                    if(_StateService.onLogin(origin, x111.isClean(), x111.getKeepAlive())) {
-                        x112.setPresent();
+                    else {
+                        x112.rejectServerUnavailable();
                     }
+                    return Collections.singletonList(Triple.of(x112,
+                                                               x112.session(),
+                                                               x112.session()
+                                                                   .getEncoder()));
                 }
-                else {
-                    x112.rejectServerUnavailable();
-                }
-                return Collections.singletonList(Triple.of(x112,
-                                                           x112.session(),
-                                                           x112.session()
-                                                               .getEncoder()));
             }
             case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                if(subscribes != null && code == SUCCESS) {
+                ISession session = x118.session();
+                if(subscribes != null && code == SUCCESS && session != null) {
                     X119_QttSuback x119 = new X119_QttSuback();
-                    x119.with(x118.session());
+                    x119.with(session);
                     x119.msgId(x118.msgId());
+                    long origin = session.getIndex();
                     subscribes.forEach((topic, level)->{
                         Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
                         Subscribe subscribe = subscribe(t, origin);
@@ -311,7 +315,9 @@ public class MQttPlugin
             case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                if(topics != null && code == SUCCESS) {
+                ISession session = x11A.session();
+                if(topics != null && code == SUCCESS && session != null) {
+                    long origin = session.getIndex();
                     topics.forEach(topic->unsubscribe(new Topic(_QttTopicToRegex(topic)), origin));
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.with(x11A.session());
@@ -325,11 +331,14 @@ public class MQttPlugin
             }
             case 0x11E -> {
                 X11E_QttDisconnect x11E = (X11E_QttDisconnect) consensusBody;
-                clean(origin);
-                x11E.session()
-                    .innerClose();
-                _Logger.debug("device %#x → offline", origin);
-
+                ISession session = x11E.session();
+                if(session != null) {
+                    long origin = session.getIndex();
+                    clean(origin);
+                    x11E.session()
+                        .innerClose();
+                    _Logger.debug("device %#x → offline", origin);
+                }
             }
             case 0x11F -> {
 

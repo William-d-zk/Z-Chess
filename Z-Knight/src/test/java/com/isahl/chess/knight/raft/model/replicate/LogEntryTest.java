@@ -33,8 +33,8 @@ class LogEntryTest
     {
         LogEntry entry = new LogEntry(1,
                                       2,
-                                      9981234,
-                                      9124,
+                                      0x12334,
+                                      0x932321,
                                       new byte[]{ 1,
                                                   2,
                                                   3,

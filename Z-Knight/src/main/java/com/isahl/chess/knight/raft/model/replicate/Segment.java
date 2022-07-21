@@ -57,10 +57,11 @@ public class Segment
 
     public LogEntry getEntry(long index)
     {
-        if(_StartIndex == 0 || mEndIndex == 0 || index < _StartIndex || index > mEndIndex) {
+        int listIndex = (int) (index - _StartIndex);
+        if(_StartIndex == 0 || mEndIndex == 0 || index < _StartIndex || index > mEndIndex || listIndex < 0 || listIndex >= _Records.size()) {
+            _Logger.warning("get entry failed@%d;start:%d,end:%d,size:%d", index, _StartIndex, mEndIndex, _Records.size());
             return null;
         }
-        int listIndex = (int) (index - _StartIndex);
         LogEntry logEntry = _Records.get(listIndex);
         if(logEntry.getIndex() != index) {
             _Logger.warning("segment get(%d) log entry [%s]", index, logEntry);
@@ -84,10 +85,7 @@ public class Segment
 
     public static String fileNameFormatter(boolean readonly)
     {
-        return String.format("%s_%s_%s",
-                             SEGMENT_PREFIX,
-                             SEGMENT_DATE_FORMATTER,
-                             readonly ? SEGMENT_SUFFIX_READONLY : SEGMENT_SUFFIX_WRITE);
+        return String.format("%s_%s_%s", SEGMENT_PREFIX, SEGMENT_DATE_FORMATTER, readonly ? SEGMENT_SUFFIX_READONLY : SEGMENT_SUFFIX_WRITE);
     }
 
     public long getStartIndex()
@@ -168,9 +166,7 @@ public class Segment
                                                          .map(FileChannel.MapMode.READ_WRITE, mFileSize, output.length);
                     mapped.put(output);
                     mapped = mRandomAccessFile.getChannel()
-                                              .map(FileChannel.MapMode.READ_WRITE,
-                                                   _Records.SERIAL_POS,
-                                                   _Records.SIZE_POS + Integer.BYTES);
+                                              .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
                     int oldLength = mapped.getInt(_Records.LENGTH_POS);
                     mapped.putInt(_Records.LENGTH_POS, oldLength + output.length);
                     mapped.putInt(_Records.SIZE_POS, _Records.size());
@@ -213,9 +209,7 @@ public class Segment
         long newFileSize = _Records.sizeOf();
         long dropSize = mFileSize - newFileSize;
         ByteBuffer mapped = mRandomAccessFile.getChannel()
-                                             .map(FileChannel.MapMode.READ_WRITE,
-                                                  _Records.SERIAL_POS,
-                                                  _Records.SIZE_POS + Integer.BYTES);
+                                             .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
         mapped.putInt(_Records.LENGTH_POS, _Records.length());
         mapped.putInt(_Records.SIZE_POS, _Records.size());
         mRandomAccessFile.setLength(mFileSize = newFileSize);

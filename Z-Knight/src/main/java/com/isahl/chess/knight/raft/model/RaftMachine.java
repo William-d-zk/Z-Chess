@@ -375,6 +375,7 @@ public class RaftMachine
     @Override
     public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
+        _Logger.debug("rollback to [ %d@%d ]", index, indexTerm);
         append(index, indexTerm, mapper);
         commit(index, mapper);
     }

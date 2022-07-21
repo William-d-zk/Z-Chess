@@ -25,6 +25,7 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
@@ -120,13 +121,14 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, sub[%#x](%d) }",
+        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, sub[%#x](%d) %s }",
                              getIndex(),
                              getTerm(),
                              getClient(),
                              getOrigin(),
                              _sub(),
-                             pLength());
+                             pLength(),
+                             IoUtil.bin2Hex(payload(),","));
     }
 
 }

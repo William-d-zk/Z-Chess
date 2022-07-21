@@ -46,6 +46,7 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.lmax.disruptor.RingBuffer;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Collection;
 import java.util.List;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
@@ -200,8 +201,16 @@ public class MixMappingHandler<T extends IStorage>
                             if(result != null && result.getSecond() instanceof IConsistent backload) {
                                 publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                             }
+                            else if(result != null && result.getSecond() instanceof Collection<?> collection) {
+                                for(Object item : collection) {
+                                    if(item instanceof IConsistent backload) {
+                                        _Logger.info("cluster transfer backload %s", backload);
+                                        publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
+                                    }
+                                }
+                            }
                             else {
-                                _Logger.debug("cluster received ignore :%s", received);
+                                _Logger.warning("cluster received ignore :%s", received);
                             }
                         }
                         catch(Exception e) {
@@ -274,7 +283,6 @@ public class MixMappingHandler<T extends IStorage>
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
                         }
                     }
-
                 }
                 /*
                  *  ClusterConsumer Timeout->start_vote,heartbeat-cycle,step down->follower

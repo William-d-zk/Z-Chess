@@ -59,7 +59,6 @@ public class BaseJpaConfig
     @PostConstruct
     private void initialize()
     {
-        System.out.println("init cache!");
         _CacheConfig.defaultDefine();
     }
 

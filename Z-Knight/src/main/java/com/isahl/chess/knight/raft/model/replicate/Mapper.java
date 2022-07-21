@@ -381,7 +381,7 @@ public class Mapper
             if(segment != null) {
                 segment.add(entry);
                 vTotalSize += size;
-                _Logger.debug("append ok: %d", newEndIndex);
+                _Logger.debug("append ok [%d]", newEndIndex);
                 return true;
             }
         }
