@@ -48,6 +48,7 @@ import com.isahl.chess.knight.raft.model.replicate.LogMeta;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -686,16 +687,15 @@ public class RaftPeer
         _SelfMachine.follow(term, leader, _RaftMapper);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if(catchUp(preIndex, preIndexTerm)) {
-            IProtocol notify = null;
+            List<IConsistent> collection = new LinkedList<>();
             if(_SelfMachine.commit() < commit) {
-                ListSerial<LogEntry> sub = new ListSerial<>(LogEntry::new);
                 for(long i = _SelfMachine.commit(), size = min(_SelfMachine.accept(), commit); i <= size && i > 0; i++) {
                     _SelfMachine.commit(i, _RaftMapper);
-                    sub.add(_RaftMapper.getEntry(i));
+                    IConsistent notify = createNotify(_RaftMapper.getEntry(i));
+                    if(notify != null) collection.add(notify);
                 }
-                notify = createNotify(sub);
             }
-            return Triple.of(accept(msgId).with(session), notify, SINGLE);
+            return Triple.of(accept(msgId).with(session), collection, SINGLE);
         }
         else {
             _Logger.debug("catch up failed reject → %#x ", leader);
@@ -952,16 +952,7 @@ public class RaftPeer
     public ITriple onNotify(X77_RaftNotify x77)
     {
         _Logger.debug("client[%#x] onNotify", _SelfMachine.peer());
-        return Triple.of(null,
-                         x77.deserializeSub(input->new ListSerial<>(input, LogEntry::new))
-                            .stream()
-                            .map(log->{
-                                X77_RaftNotify n77 = new X77_RaftNotify();
-                                n77.withSub(log);
-                                return n77;
-                            })
-                            .collect(Collectors.toList()),
-                         NULL);
+        return Triple.of(null, x77, NULL);
     }
 
     public List<ITriple> onModify(RaftNode delta, IManager manager)
@@ -1301,20 +1292,13 @@ public class RaftPeer
                           .values();
     }
 
-    private X77_RaftNotify createNotify(LogEntry... raftLog)
+    private X77_RaftNotify createNotify(LogEntry raftLog)
     {
-        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        ListSerial<LogEntry> logs = new ListSerial<>(LogEntry::new);
-        logs.addAll(List.of(raftLog));
-        x77.withSub(logs);
-        return x77;
+        if(raftLog != null) {
+            X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
+            x77.withSub(raftLog);
+            return x77;
+        }
+        return null;
     }
-
-    private X77_RaftNotify createNotify(ListSerial<LogEntry> logs)
-    {
-        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        x77.withSub(logs);
-        return x77;
-    }
-
 }

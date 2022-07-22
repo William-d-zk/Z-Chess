@@ -26,7 +26,6 @@ package com.isahl.chess.pawn.endpoint.device.service;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -116,15 +115,17 @@ public class LinkCustom
                  * leader → follower → client: x77_notify
                  * leader → follower: x76_response
                  */
-                IoSerial sub = input.subContent();
-                if(sub instanceof LogEntry entry) {
-                    ISession session = manager.findSessionByIndex(entry.origin());
-                    if(session != null && session.getFactory() != null && entry.payload() != null) {
-                        IProtocol response = session.getFactory()
-                                                    .create(ByteBuf.wrap(entry.payload()));
-                        response.with(session);
-                        return response;
-                    }
+                LogEntry entry;
+                if(input.subContent() instanceof LogEntry sub) {
+                    entry = sub;
+                }
+                else {entry = input.deserializeSub(LogEntry::new);}
+                ISession session = manager.findSessionByIndex(entry.origin());
+                if(session != null && session.getFactory() != null && entry.payload() != null) {
+                    IProtocol response = session.getFactory()
+                                                .create(ByteBuf.wrap(entry.payload()));
+                    response.with(session);
+                    return response;
                 }
                 return null;
             }
