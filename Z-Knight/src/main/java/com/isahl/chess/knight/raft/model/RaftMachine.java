@@ -359,7 +359,7 @@ public class RaftMachine
         mCommit = index;
         mapper.updateCommit(mCommit);
         mapper.flush();
-        _Logger.debug("commit: [%d] ", mCommit);
+        _Logger.debug("commit: [%d@%d]", mCommit, mTerm);
     }
 
     @Override

@@ -41,6 +41,14 @@ public class ListSerial<T extends IoSerial>
         extends LinkedList<T>
         implements ICollectionSerial<T>
 {
+    public static <E extends IoSerial> IoFactory<ListSerial<E>> _Factory(IoFactory<E> factory)
+    {
+        return input->{
+            ListSerial<E> list = new ListSerial<>(factory);
+            list.decode(input);
+            return list;
+        };
+    }
 
     private final IoFactory<T> _Factory;
 
@@ -74,4 +82,5 @@ public class ListSerial<T extends IoSerial>
     {
         return t != null && super.add(t);
     }
+
 }

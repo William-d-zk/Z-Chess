@@ -48,7 +48,6 @@ import com.isahl.chess.knight.raft.model.replicate.LogMeta;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -150,10 +149,10 @@ public class RaftPeer
         LogMeta meta = _RaftMapper.getLogMeta();
         _SelfMachine.term(meta.getTerm());
         _SelfMachine.commit(meta.getCommit());
-        _SelfMachine.accept(meta.getApplied());
+        _SelfMachine.accept(meta.getAccept());
         _SelfMachine.index(meta.getIndex());
         _SelfMachine.indexTerm(meta.getIndexTerm());
-        _SelfMachine.matchIndex(meta.getApplied());
+        _SelfMachine.matchIndex(meta.getAccept());
         mClusterNode = _Node;
         if(_RaftConfig.isClusterMode()) {
             // 启动集群连接
@@ -351,6 +350,7 @@ public class RaftPeer
             machine.indexTerm(record.indexTerm());
             machine.commit(record.commit());
             machine.accept(record.accept());
+            machine.matchIndex(record.index());
             machine.candidate(record.candidate());
         }
     }
@@ -465,9 +465,7 @@ public class RaftPeer
             }
             case FOLLOWER, ELECTOR -> {
                 if(x72.payload() != null) {
-                    ListSerial<LogEntry> logs = new ListSerial<>(LogEntry::new);
-                    logs.decode(x72.subEncoded());
-                    _RecvLogQueue.addAll(logs);
+                    _RecvLogQueue.addAll(x72.deserializeSub(ListSerial._Factory(LogEntry::new)));
                 }
                 fromRecord(x72, _SelfGraph, x72.leader());
                 if(_SelfMachine.isInState(JOINT)) {fromRecord(x72, _JointGraph, x72.leader());}
@@ -567,7 +565,6 @@ public class RaftPeer
         boolean joint = _SelfMachine.isInState(JOINT) && _JointGraph.isMajorAccept(next);
         if(x73.accept() >= next && condition && (joint || !_SelfMachine.isInState(JOINT))) {
             _SelfMachine.commit(next, _RaftMapper);
-            _Logger.debug("leader commit: %d@%d", next, _SelfMachine.term());
             LogEntry logEntry = _RaftMapper.getEntry(next);
             if(logEntry.getClient() != _SelfMachine.peer()) {
                 // leader → client → device
@@ -687,15 +684,10 @@ public class RaftPeer
         _SelfMachine.follow(term, leader, _RaftMapper);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if(catchUp(preIndex, preIndexTerm)) {
-            List<IConsistent> collection = new LinkedList<>();
             if(_SelfMachine.commit() < commit) {
-                for(long i = _SelfMachine.commit(), size = min(_SelfMachine.accept(), commit); i <= size && i > 0; i++) {
-                    _SelfMachine.commit(i, _RaftMapper);
-                    IConsistent notify = createNotify(_RaftMapper.getEntry(i));
-                    if(notify != null) collection.add(notify);
-                }
+                _SelfMachine.commit(min(_SelfMachine.accept(), commit), _RaftMapper);
             }
-            return Triple.of(accept(msgId).with(session), collection, SINGLE);
+            return Triple.of(accept(msgId).with(session), null, SINGLE);
         }
         else {
             _Logger.debug("catch up failed reject → %#x ", leader);
@@ -1188,6 +1180,12 @@ public class RaftPeer
                     if(matched.getIndex() == preIndex && matched.getTerm() == preIndexTerm) {
                         x72.preIndex(preIndex);
                         x72.preIndexTerm(preIndexTerm);
+                        _Logger.debug("follow[%#x] %d@%d,leader %d@%d",
+                                      acceptor.peer(),
+                                      preIndex,
+                                      preIndexTerm,
+                                      _SelfMachine.index(),
+                                      _SelfMachine.indexTerm());
                     }
                     else {
                         _Logger.warning("matched %#x vs %#x no consistency;%d@%d", peerId(), acceptor.peer(), preIndex, preIndexTerm);
@@ -1202,7 +1200,6 @@ public class RaftPeer
                 x72.preIndex(0);
                 x72.preIndexTerm(0);
             }
-            _Logger.debug("leader → acceptor[ %#x ] %d@%d", x72.peer(), x72.index(), x72.indexTerm());
             for(long end = _SelfMachine.index(), payloadSize = 0; next <= end && payloadSize < _SnapshotFragmentMaxSize; next++) {
                 if(limit > 0 && entryList.size() >= limit) {
                     break;
@@ -1213,6 +1210,7 @@ public class RaftPeer
                 payloadSize += nextLog.sizeOf();
             }
             x72.withSub(entryList);
+            _Logger.debug("leader → acceptor[ %#x ] %d@%d with %d", x72.peer(), x72.index(), x72.indexTerm(), entryList.size());
         }
         return x72;
     }

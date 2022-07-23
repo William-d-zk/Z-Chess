@@ -260,7 +260,7 @@ public class Mapper
     @Override
     public void updateAccept(long applied)
     {
-        mLogMeta.setApplied(applied);
+        mLogMeta.setAccept(applied);
     }
 
     @Override
