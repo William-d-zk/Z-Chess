@@ -155,7 +155,7 @@ public class RaftPeer
         _SelfMachine.matchIndex(meta.getAccept());
         mClusterNode = _Node;
         if(_RaftConfig.isClusterMode()) {
-            // 启动集群连接
+            // 初始化集群角色
             graphInit(_SelfGraph,
                       // _RaftConfig.getPeers().keySet() 是议会的成员
                       _RaftConfig.getPeers()
@@ -163,16 +163,16 @@ public class RaftPeer
                       // _RaftConfig.getNodes().keySet() 是集群节点成员，包括议会成员
                       _RaftConfig.getNodes()
                                  .keySet());
+            // 启动集群连接
+            graphUp(_SelfGraph.getPeers(), _RaftConfig.getNodes());
             if(_RaftConfig.isInCongress()) {
                 _SelfMachine.approve(FOLLOWER);
-                // 周期性检查 leader 是否存在
+                // 延迟一个'投票周期'，等待议会完成连接。
                 mTickTask = _TimeWheel.acquire(RaftPeer.this, new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::start));
             }
             else {
                 _SelfMachine.approve(CLIENT);
             }
-            // 如果 self 是 client 此时是全连接 proposer, 如果是议员则直接执行全连接
-            graphUp(_SelfGraph.getPeers(), _RaftConfig.getNodes());
             _Logger.debug("raft node init -> %s", _SelfMachine);
         }
         else {
@@ -195,7 +195,7 @@ public class RaftPeer
     private void graphUp(Map<Long, IRaftMachine> peers, Map<Long, RaftNode> nodes)
     {
         peers.forEach((peer, machine)->{
-            // 仅连接peer<自身的节点
+            // 仅连接 peer < self.peer 的节点
             if(peer < _SelfMachine.peer()) {
                 RaftNode remote = nodes.get(peer);
                 try {
