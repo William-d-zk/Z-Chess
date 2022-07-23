@@ -107,7 +107,7 @@ public class RaftPeer
         _RaftMapper = raftMapper;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::stepDown);
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
-                                                         .multipliedBy(2), RaftPeer::restart);
+                                                         .multipliedBy(2), RaftPeer::start);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftPeer::heartbeat);
         _SelfGraph = RaftGraph.create("_Self_");
         _JointGraph = RaftGraph.create("_Joint_");
@@ -166,7 +166,7 @@ public class RaftPeer
             if(_RaftConfig.isInCongress()) {
                 _SelfMachine.approve(FOLLOWER);
                 // 周期性检查 leader 是否存在
-                mTickTask = _TimeWheel.acquire(RaftPeer.this, _TickSchedule);
+                mTickTask = _TimeWheel.acquire(RaftPeer.this, new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::start));
             }
             else {
                 _SelfMachine.approve(CLIENT);
@@ -239,7 +239,7 @@ public class RaftPeer
 
     }
 
-    private void restart()
+    private void start()
     {
         /*
          * 关闭TickTask,此时执行容器可能为ElectTask 或 TickTask自身
@@ -247,11 +247,11 @@ public class RaftPeer
          * 关闭的，或关闭异常。同时cancel 配置了lock 防止意外出现。
          */
         tickCancel();
-        _Logger.debug("peer[ %#x ], restart", _SelfMachine.peer());
         if(_SelfMachine.isLessThanState(FOLLOWER)) {
             _Logger.debug("peer[%#] → CLIENT/OUTSIDE, don't join congress", _SelfMachine.peer());
         }
         else {
+            _Logger.debug("peer[ %#x ], start vote", _SelfMachine.peer());
             startVote();
         }
     }
