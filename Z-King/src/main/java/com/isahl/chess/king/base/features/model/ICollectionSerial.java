@@ -120,5 +120,4 @@ public interface ICollectionSerial<T extends IoSerial>
     {
         throw new UnsupportedOperationException();
     }
-
 }

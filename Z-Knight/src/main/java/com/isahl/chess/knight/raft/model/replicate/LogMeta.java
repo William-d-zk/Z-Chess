@@ -71,7 +71,7 @@ public class LogMeta
     /**
      * 已被应用到状态机日志index
      */
-    private long mApplied;
+    private long mAccept;
 
     @Override
     public int length()
@@ -94,7 +94,7 @@ public class LogMeta
                     .putLong(getIndex())
                     .putLong(getIndexTerm())
                     .putLong(getCommit())
-                    .putLong(getApplied());
+                    .putLong(getAccept());
     }
 
     @Override
@@ -106,7 +106,7 @@ public class LogMeta
         setIndex(input.getLong());
         setIndexTerm(input.getLong());
         setCommit(input.getLong());
-        setApplied(input.getLong());
+        setAccept(input.getLong());
         remain -= 48;
         return remain;
     }
@@ -119,24 +119,24 @@ public class LogMeta
         mIndexTerm = 0;
         mTerm = 0;
         mCommit = 0;
-        mApplied = 0;
+        mAccept = 0;
         flush();
     }
 
     @JsonCreator
     public LogMeta(
             @JsonProperty("start")
-                    long start,
+            long start,
             @JsonProperty("term")
-                    long term,
+            long term,
             @JsonProperty("index")
-                    long index,
+            long index,
             @JsonProperty("index_term")
-                    long indexTerm,
+            long indexTerm,
             @JsonProperty("commit")
-                    long commit,
-            @JsonProperty("applied")
-                    long applied)
+            long commit,
+            @JsonProperty("accept")
+            long accept)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mStart = start;
@@ -144,7 +144,7 @@ public class LogMeta
         mIndex = index;
         mIndexTerm = indexTerm;
         mCommit = commit;
-        mApplied = applied;
+        mAccept = accept;
     }
 
     public LogMeta()
@@ -188,14 +188,14 @@ public class LogMeta
         mCommit = commit;
     }
 
-    public long getApplied()
+    public long getAccept()
     {
-        return mApplied;
+        return mAccept;
     }
 
-    public void setApplied(long applied)
+    public void setAccept(long accept)
     {
-        mApplied = applied;
+        mAccept = accept;
     }
 
     public long getIndex()
