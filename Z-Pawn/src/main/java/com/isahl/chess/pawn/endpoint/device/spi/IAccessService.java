@@ -68,5 +68,8 @@ public interface IAccessService
 
     }
 
-    List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager);
+    default List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager)
+    {
+        return null;
+    }
 }
