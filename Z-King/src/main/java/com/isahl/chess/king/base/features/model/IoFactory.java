@@ -23,6 +23,7 @@
 
 package com.isahl.chess.king.base.features.model;
 
+import com.isahl.chess.board.base.IFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
@@ -30,6 +31,7 @@ import com.isahl.chess.king.base.content.ByteBuf;
  */
 @FunctionalInterface
 public interface IoFactory<T extends IoSerial>
+        extends IFactory
 {
     T create(ByteBuf input);
 }

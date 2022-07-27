@@ -60,7 +60,7 @@ public class X01_EncryptRequest
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

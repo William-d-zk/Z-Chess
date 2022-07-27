@@ -61,7 +61,7 @@ public class X7B_RaftExchange
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

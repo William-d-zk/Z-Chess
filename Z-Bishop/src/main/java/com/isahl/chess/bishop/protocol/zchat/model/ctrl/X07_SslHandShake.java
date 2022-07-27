@@ -96,7 +96,7 @@ public class X07_SslHandShake
                              mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "NULL");
     }
 
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

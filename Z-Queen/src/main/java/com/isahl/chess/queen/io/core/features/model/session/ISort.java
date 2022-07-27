@@ -77,5 +77,5 @@ public interface ISort
 
     IoFactory<IProtocol> getFactory();
 
-    IoFactory<IProtocol> _SelectFactory(Mode mode, Type type);
+    IoFactory<IProtocol> _SelectFactory();
 }

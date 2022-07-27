@@ -136,7 +136,7 @@ public class MsgStateEntity
     @Column(length = 511,
             nullable = false,
             updatable = false)
-    public String getTopic()
+    public String topic()
     {
         return mTopic;
     }

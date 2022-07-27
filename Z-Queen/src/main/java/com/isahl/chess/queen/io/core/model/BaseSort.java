@@ -52,7 +52,7 @@ public abstract class BaseSort<C extends IPContext>
         _Mode = mode;
         _Type = type;
         _Protocol = protocol;
-        _Factory = _SelectFactory(_Mode, _Type);
+        _Factory = _SelectFactory();
     }
 
     protected BaseSort(Mode mode, Type type, String protocol, IoFactory<IProtocol> factory)

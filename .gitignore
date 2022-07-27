@@ -2,6 +2,7 @@
 .gradle
 .idea
 .jpb
+.erupt
 build
 target
 gradle

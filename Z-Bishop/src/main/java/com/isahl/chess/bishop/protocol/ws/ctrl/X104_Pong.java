@@ -56,7 +56,7 @@ public class X104_Pong<T extends WsContext>
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return ALMOST_ONCE;
     }

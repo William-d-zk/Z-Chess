@@ -23,10 +23,6 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -40,7 +36,6 @@ import java.io.Serializable;
  * @author william.d.zk
  * @date 2020/7/13
  */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 public class SnapshotEntry
         extends InnerProtocol
@@ -54,7 +49,7 @@ public class SnapshotEntry
     private long mEnd;
     private long mTerm;
     private long mCommit;
-    private long mApplied;
+    private long mAccept;
 
     @Override
     public int length()
@@ -63,26 +58,11 @@ public class SnapshotEntry
                8 + // end
                8 + // term
                8 + // commit
-               8 + // applied
+               8 + // accept
                super.length();
     }
 
-    @JsonCreator
-    public SnapshotEntry(
-            @JsonProperty("origin")
-                    long origin,
-            @JsonProperty("start")
-                    long start,
-            @JsonProperty("end")
-                    long end,
-            @JsonProperty("term")
-                    long term,
-            @JsonProperty("commit")
-                    long commit,
-            @JsonProperty("applied")
-                    long applied,
-            @JsonProperty("content")
-                    byte[] content)
+    public SnapshotEntry(long origin, long start, long end, long term, long commit, long accept, byte[] content)
     {
         super(Operation.OP_INSERT, Strategy.RETAIN);
         mOrigin = origin;
@@ -90,7 +70,7 @@ public class SnapshotEntry
         mEnd = end;
         mTerm = term;
         mCommit = commit;
-        mApplied = applied;
+        mAccept = accept;
         withSub(content);
     }
 
@@ -103,28 +83,26 @@ public class SnapshotEntry
     @Override
     public long origin() {return mOrigin;}
 
-    public long getOrigin() {return origin();}
+    public long start() {return primaryKey();}
 
-    public long getStart() {return primaryKey();}
+    public long end() {return mEnd;}
 
-    public long getEnd() {return mEnd;}
+    public long term() {return mTerm;}
 
-    public long getTerm() {return mTerm;}
+    public long commit() {return mCommit;}
 
-    public long getCommit() {return mCommit;}
+    public long accept() {return mAccept;}
 
-    public long getApplied() {return mApplied;}
-
-    public byte[] getContent() {return payload();}
+    public byte[] content() {return payload();}
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(getEnd())
-                    .putLong(getTerm())
-                    .putLong(getCommit())
-                    .putLong(getApplied())
+                    .putLong(end())
+                    .putLong(term())
+                    .putLong(commit())
+                    .putLong(accept())
                     .putLong(origin());
     }
 
@@ -135,7 +113,7 @@ public class SnapshotEntry
         mEnd = input.getLong();
         mTerm = input.getLong();
         mCommit = input.getLong();
-        mApplied = input.getLong();
+        mAccept = input.getLong();
         mOrigin = input.getLong();
         return remain - 40;
     }
@@ -151,14 +129,6 @@ public class SnapshotEntry
                                      \t\tterm[%d],
                                      \t\tcommit[%d],
                                      \t\tsub[%#x](%d),
-                                     }""",
-                             serial(),
-                             origin(),
-                             getStart(),
-                             getEnd(),
-                             getTerm(),
-                             getCommit(),
-                             _sub(),
-                             pLength());
+                                     }""", serial(), origin(), start(), end(), term(), commit(), _sub(), pLength());
     }
 }

@@ -54,7 +54,7 @@ public class X0E_Consensus
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

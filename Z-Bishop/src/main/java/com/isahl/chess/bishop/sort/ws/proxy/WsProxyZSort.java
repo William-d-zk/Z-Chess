@@ -66,8 +66,8 @@ public class WsProxyZSort<A extends IPContext>
     }
 
     @Override
-    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory()
     {
-        throw new UnsupportedOperationException();
+        return _ActingSort._SelectFactory();
     }
 }

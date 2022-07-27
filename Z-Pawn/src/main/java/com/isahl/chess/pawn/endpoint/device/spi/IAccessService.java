@@ -23,9 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -60,10 +61,12 @@ public interface IAccessService
 
     void onOffline(ISession session);
 
-    List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody);
+    List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody);
 
     default void consume(IoSerial request)
     {
 
     }
+
+    List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager);
 }

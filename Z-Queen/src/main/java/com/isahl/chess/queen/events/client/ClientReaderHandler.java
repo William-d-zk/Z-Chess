@@ -92,7 +92,7 @@ public class ClientReaderHandler
                             switch(type) {
                                 case SINGLE -> event.produce(WRITE,
                                                              new Pair<>(result.getFirst(), session),
-                                                             session.getEncoder());
+                                                             session.encoder());
                                 case BATCH -> event.produce(DISPATCH, result.getFirst());
                             }
                             return;

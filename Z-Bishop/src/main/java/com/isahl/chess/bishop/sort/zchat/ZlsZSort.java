@@ -62,11 +62,11 @@ public class ZlsZSort
     }
 
     @Override
-    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory()
     {
-        return switch(mode) {
+        return switch(getMode()) {
             case CLUSTER -> ZClusterFactory._Instance;
-            case LINK -> switch(type) {
+            case LINK -> switch(getType()) {
                 case SERVER -> ZServerFactory._Instance;
                 case SYMMETRY -> ZSymmetryFactory._Instance;
                 case CLIENT -> ZConsumerFactory._Instance;

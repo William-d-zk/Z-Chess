@@ -95,7 +95,7 @@ public class ZFrame
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.valueOf((mFrameHeader & frame_op_code_qos_mask) >> frame_op_code_qos_bit_left);
     }

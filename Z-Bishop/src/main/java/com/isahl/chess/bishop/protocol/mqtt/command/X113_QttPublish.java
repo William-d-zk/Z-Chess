@@ -58,7 +58,7 @@ public class X113_QttPublish
     public int length()
     {
         int length = 2 + (mTopic != null ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0); // topic
-        length += (getLevel().getValue() > ALMOST_ONCE.getValue() ? 0 : -2);//msg-id
+        length += (level().getValue() > ALMOST_ONCE.getValue() ? 0 : -2);//msg-id
         return super.length() + length; //payload
     }
 
@@ -68,14 +68,14 @@ public class X113_QttPublish
         return QOS_PRIORITY_07_ROUTE_MESSAGE;
     }
 
-    public X113_QttPublish setTopic(String topic)
+    public X113_QttPublish withTopic(String topic)
     {
         mTopic = Objects.requireNonNull(topic);
         return this;
     }
 
     @Override
-    public String getTopic()
+    public String topic()
     {
         return mTopic;
     }
@@ -95,7 +95,7 @@ public class X113_QttPublish
     public int prefix(ByteBuf input)
     {
         mTopic = input.readUTF(input.getUnsignedShort());
-        if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
+        if(level().getValue() > ALMOST_ONCE.getValue()) {
             msgId(input.getUnsignedShort());
         }
         return input.readableBytes();
@@ -107,7 +107,7 @@ public class X113_QttPublish
         byte[] topicBytes = mTopic.getBytes(StandardCharsets.UTF_8);
         output.putShort(topicBytes.length);
         output.put(topicBytes);
-        if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
+        if(level().getValue() > ALMOST_ONCE.getValue()) {
             output.putShort(msgId());
         }
         if(mPayload != null) {
@@ -122,9 +122,9 @@ public class X113_QttPublish
         return String.format("X113 publish | dup:%s,retain:%s,qos:%s | msg-id:%d topic:\"%s\" \npayload: \"%s\" \n",
                              isDuplicate(),
                              isRetain(),
-                             getLevel(),
+                             level(),
                              msgId(),
-                             getTopic(),
+                             topic(),
                              mPayload == null ? "NULL" : new String(mPayload, StandardCharsets.UTF_8));
     }
 
@@ -132,8 +132,8 @@ public class X113_QttPublish
     public X113_QttPublish copy()
     {
         X113_QttPublish n113 = new X113_QttPublish();
-        n113.setTopic(getTopic());
-        n113.setLevel(getLevel());
+        n113.withTopic(topic());
+        n113.setLevel(level());
         n113.mPayload = new byte[mPayload.length];
         IoUtil.addArray(mPayload, n113.mPayload);
         return n113;

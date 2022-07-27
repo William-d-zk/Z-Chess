@@ -43,7 +43,7 @@ public class X0A_Shutdown
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

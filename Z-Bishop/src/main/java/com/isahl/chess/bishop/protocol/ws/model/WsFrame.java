@@ -272,7 +272,7 @@ public class WsFrame
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

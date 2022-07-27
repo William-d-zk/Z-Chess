@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.events.server.ILinkCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -49,7 +49,7 @@ public class ZLinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistency backload)
     {
         return _Then != null ? _Then.notify(manager, request, backload) : null;
     }
@@ -63,13 +63,13 @@ public class ZLinkCustom
     }
 
     @Override
-    public IOperator<IConsistent, IManager, IProtocol> getUnbox()
+    public IOperator<IConsistency, IManager, IProtocol> getUnbox()
     {
         return this::unbox;
     }
 
     @Override
-    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistent input, IManager manager)
+    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistency input, IManager manager)
     {
         return _Then != null ? _Then.unbox(input, manager) : null;
     }

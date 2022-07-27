@@ -23,18 +23,14 @@
 
 package com.isahl.chess.board.processor;
 
-import com.isahl.chess.board.processor.model.Child;
-import com.sun.source.tree.CaseTree;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
-import com.sun.tools.javac.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.sun.tools.javac.code.TypeTag.INT;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Names;
 
 /**
  * @author william.d.zk
@@ -42,15 +38,15 @@ import static com.sun.tools.javac.code.TypeTag.INT;
 public class FactoryTranslator
         extends TreeTranslator
 {
-    private final Context               _Context;
-    private final java.util.List<Child> _ChildList;
-    private final Logger                _Logger = LoggerFactory.getLogger("base.board." + getClass().getSimpleName());
+    private final Context          _Context;
+    private final int              _Serial;
+    private final FactoryProcessor _Processor;
 
-    public FactoryTranslator(Context context, java.util.List<Child> childList)
+    public FactoryTranslator(FactoryProcessor processor, Context context, int serial)
     {
+        _Processor = processor;
         _Context = context;
-        _ChildList = childList;
-        _Logger.info(childList.toString());
+        _Serial = serial;
     }
 
     @Override
@@ -59,47 +55,39 @@ public class FactoryTranslator
         super.visitClassDef(clazz);
         final TreeMaker _Maker = TreeMaker.instance(_Context);
         final Names _Names = Names.instance(_Context);
-        ListBuffer<JCTree.JCCase> jcCases = new ListBuffer<>();
-        for(Child serialClass : _ChildList) {
-            String canonicalName = serialClass.name();
-            int lp = canonicalName.lastIndexOf(".");
-            String pkgName = canonicalName.substring(0, lp);
-            String className = canonicalName.substring(lp + 1);
-            int serial = serialClass.serial();
-            //@formatter:off
-            JCTree.JCCase _case = _Maker.Case(CaseTree.CaseKind.STATEMENT,
-                                              List.of(_Maker.Literal(serial)),
-                                              List.of(_Maker.Return(_Maker.NewClass(null,
-                                                                                    List.nil(),
-                                                                                    _Maker.Select(_Maker.Ident(_Names.fromString(pkgName)),
-                                                                                                  _Names.fromString(className)),
-                                                                                    List.nil(),
-                                                                                    null))),
-                                              null);
-            //@formatter:on
-            jcCases.append(_case);
+        final Symtab _Symtab = Symtab.instance(_Context);
+        if(!_Processor.existMethodSerial()) {
+            final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
+            final JCTree.JCBlock _Block = _Maker.Block(0, List.of(_Maker.Return(_SerialValue)));
+            clazz.defs = clazz.defs.append(_Maker.MethodDef(_Maker.Modifiers(Flags.PUBLIC),
+                                                            _Names.fromString("serial"),
+                                                            _Maker.Type(_Symtab.intType),
+                                                            List.nil(),
+                                                            List.nil(),
+                                                            List.nil(),
+                                                            _Block,
+                                                            null));
         }
 
-        jcCases.append(_Maker.Case(CaseTree.CaseKind.STATEMENT,
-                                   List.of(_Maker.DefaultCaseLabel()),
-                                   List.of(_Maker.Return(_Maker.Literal(TypeTag.BOT, null))),
-                                   null));
+        /*
+        if(_Processor.existFieldSerial()) {
+            for(JCTree tree : clazz.defs) {
+                if(tree.getKind() == Tree.Kind.VARIABLE && tree.toString()
+                                                               .contains("_SERIAL"))
+                {
+                    JCTree.JCVariableDecl x = (JCTree.JCVariableDecl) tree;
+                    x.init = _Maker.Literal(_Serial);
+                }
+            }
+        }
+        else {
+            final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
+            clazz.defs = clazz.defs.append(_Maker.VarDef(_Maker.Modifiers(Flags.PUBLIC | Flags.STATIC | Flags.FINAL),
+                                                         _Names.fromString("_SERIAL"),
+                                                         _Maker.Type(_Symtab.intType),
+                                                         _SerialValue));
+        }
 
-        Name buildParam = _Names.fromString("serial");
-        JCTree.JCSwitch jcSwitch = _Maker.Switch(_Maker.Ident(buildParam), jcCases.toList());
-        final JCTree.JCBlock _Block = _Maker.Block(0, List.of(jcSwitch));
-        JCTree.JCMethodDecl buildMethod = _Maker.MethodDef(_Maker.Modifiers(Flags.PUBLIC),
-                                                           _Names.fromString("build"),
-                                                           _Maker.Ident(_Names.fromString("ISerial")),
-                                                           List.nil(),
-                                                           List.of(_Maker.VarDef(_Maker.Modifiers(Flags.PARAMETER),
-                                                                                 _Names.fromString("serial"),
-                                                                                 _Maker.TypeIdent(INT),
-                                                                                 null)),
-                                                           List.nil(),
-                                                           _Block,
-                                                           null);
-        clazz.defs = clazz.defs.append(buildMethod);
+         */
     }
-
 }

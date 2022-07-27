@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device;
 
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0B_Ping;
 import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.bishop.sort.ZSortHolder;
@@ -30,9 +31,12 @@ import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
+import com.isahl.chess.knight.cluster.features.IExchangeService;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
@@ -45,6 +49,7 @@ import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioClient;
@@ -55,7 +60,9 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -66,7 +73,8 @@ import java.util.stream.Collectors;
 public class DeviceNode
         extends MixManager
         implements IDismiss,
-                   IClusterNode
+                   IClusterNode,
+                   IExchangeService
 {
     private final IClusterPeer     _ClusterPeer;
     private final List<IAioServer> _AioServers;
@@ -74,6 +82,7 @@ public class DeviceNode
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
     private final X0B_Ping         _PeerPing, _GatePing;
+    private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     @Override
     public void onDismiss(ISession session)
@@ -93,6 +102,7 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
         _ClusterPeer = clusterPeer;
+        _FactoryMap = new HashMap<>();
         if(raftConfig.isInCongress()) {
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
@@ -118,6 +128,10 @@ public class DeviceNode
                                final String _Host = triple.getFirst();
                                final int _Port = triple.getSecond();
                                final ZSortHolder _Holder = triple.getThird();
+                               IoFactory<IProtocol> factory = _Holder.getSort()
+                                                                     .getFactory();
+                               // null point 提示 编解码链条设计错误
+                               _FactoryMap.putIfAbsent(factory.serial(), factory);
                                return buildServer(_Host,
                                                   _Port,
                                                   getSocketConfig(_Holder.getSlot()),
@@ -216,26 +230,52 @@ public class DeviceNode
     }
 
     @Override
-    public IClusterPeer getPeer()
+    public IClusterPeer clusterPeer()
     {
         return _ClusterPeer;
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
     {
-        return getLocalPublisher().getPublisher(type);
+        return getLocalPublisher().selectPublisher(type);
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
     {
-        return getLocalPublisher().getCloser(type);
+        return getLocalPublisher().selectCloser(type);
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock selectLock(IOperator.Type type)
     {
-        return getLocalPublisher().getLock(type);
+        return getLocalPublisher().selectLock(type);
+    }
+
+    @Override
+    public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
+    {
+        return _FactoryMap.get(factorySerial);
+    }
+
+    @Override
+    public void exchange(IoSerial body, long origin, int factory, List<ITriple> load)
+    {
+        if(load == null || body == null || origin == INVALID_INDEX) {
+            _Logger.warning("exchange failed{ load:%s body:%s origin:%#x }", load, body, origin);
+            return;
+        }
+        ISession session = findSessionOverIndex(origin);
+        if(session == null) {
+            _Logger.warning("exchange failed, no session routing");
+            return;
+        }
+        X0F_Exchange x0F = new X0F_Exchange(clusterPeer().generateId());
+        x0F.withSub(body);
+        x0F.origin(origin);
+        x0F.factory(factory);
+        x0F.client(clusterPeer().peerId());
+        load.add(Triple.of(x0F, session, session.encoder()));
     }
 }

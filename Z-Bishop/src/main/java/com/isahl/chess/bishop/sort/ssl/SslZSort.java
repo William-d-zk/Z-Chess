@@ -72,8 +72,8 @@ public class SslZSort<T extends IPContext>
     }
 
     @Override
-    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory()
     {
-        throw new UnsupportedOperationException();
+        return _ActingSort._SelectFactory();
     }
 }

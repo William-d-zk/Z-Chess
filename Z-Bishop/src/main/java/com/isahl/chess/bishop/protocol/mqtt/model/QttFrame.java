@@ -71,7 +71,7 @@ public class QttFrame
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.valueOf((mFrameHeader & QOS_MASK) >> 1);
     }

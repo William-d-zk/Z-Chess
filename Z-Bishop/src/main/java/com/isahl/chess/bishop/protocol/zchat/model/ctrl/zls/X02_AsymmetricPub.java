@@ -93,7 +93,7 @@ public class X02_AsymmetricPub
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

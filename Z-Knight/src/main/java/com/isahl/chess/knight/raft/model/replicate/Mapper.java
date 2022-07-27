@@ -227,7 +227,7 @@ public class Mapper
     public long getEntryTerm(long index)
     {
         LogEntry entry = getEntry(index);
-        return entry == null ? TERM_NAN : entry.getTerm();
+        return entry == null ? TERM_NAN : entry.term();
     }
 
     @Override
@@ -337,7 +337,7 @@ public class Mapper
         _Logger.debug("wait to append %s", entry);
         if(entry == null) {return false;}
         long newEndIndex = getEndIndex() + 1;
-        if(entry.getIndex() == newEndIndex) {
+        if(entry.index() == newEndIndex) {
             int size = entry.sizeOf();
             boolean needNewFile = false;
             if(_Index2SegmentMap.isEmpty()) {
@@ -385,7 +385,7 @@ public class Mapper
                 return true;
             }
         }
-        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
+        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.index());
         return false;
     }
 
@@ -439,7 +439,7 @@ public class Mapper
                 if(newEndIndex == segment.getEndIndex()) {
                     LogEntry newEndEntry = getEntry(newEndIndex);
                     // 此时entry 不会为null, 无需此处直接操作log meta.由上层逻辑负责更新
-                    _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.getIndex(), newEndEntry.getTerm());
+                    _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.index(), newEndEntry.term());
                     return newEndEntry;
                 }
                 else if(newEndIndex < segment.getStartIndex()) {

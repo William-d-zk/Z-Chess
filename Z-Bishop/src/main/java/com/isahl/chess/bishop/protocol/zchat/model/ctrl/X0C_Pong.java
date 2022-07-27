@@ -36,7 +36,7 @@ public class X0C_Pong
         extends ZControl
 {
     @Override
-    public IQoS.Level getLevel()
+    public IQoS.Level level()
     {
         return IQoS.Level.ALMOST_ONCE;
     }

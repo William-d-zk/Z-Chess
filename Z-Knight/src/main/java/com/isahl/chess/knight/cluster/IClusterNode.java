@@ -174,14 +174,14 @@ public interface IClusterNode
 
     boolean isOwnedBy(long origin);
 
-    IClusterPeer getPeer();
+    IClusterPeer clusterPeer();
 
     @Override
     default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
     {
         if(session == null || outputs == null || outputs.length == 0) {return false;}
         return publish(type,
-                       session.getEncoder(),
+                       session.encoder(),
                        Stream.of(outputs)
                              .map(pro->Pair.of(pro, session))
                              .toArray(IPair[]::new));

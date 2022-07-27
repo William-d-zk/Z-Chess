@@ -27,8 +27,9 @@ import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
+import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0A_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -36,13 +37,14 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.cluster.features.IExchangeService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
@@ -80,18 +82,44 @@ public class MQttPlugin
     private final IMessageService _MessageService;
     private final IStateService   _StateService;
 
+    private final IExchangeService _ExchangeService;
+
     @Autowired
-    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService)
+    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService, IExchangeService exchangeService)
     {
         _DeviceService = deviceService;
         _MessageService = messageService;
         _StateService = stateService;
+        _ExchangeService = exchangeService;
     }
 
     @Override
     public boolean isSupported(IoSerial input)
     {
         return input.serial() >= 0x111 && input.serial() <= 0x11F;
+    }
+
+    @Override
+    public List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager)
+    {
+        List<ITriple> results = null;
+        IProtocol body = x0F.deserializeSub(manager.findIoFactoryBySerial(factory));
+        switch(body.serial()) {
+            case 0x113 -> {
+                X113_QttPublish x113 = (X113_QttPublish) body;
+                ISession session = manager.findSessionByIndex(target);
+                if(session != null) {
+                    x113.with(session);
+                    if(x113.level()
+                           .getValue() > 0)
+                    {
+                        register(x113.msgId(), x113);
+                    }
+                    results.add(Triple.of(x113, session, session.encoder()));
+                }
+            }
+        }
+        return results;
     }
 
     @Override
@@ -102,26 +130,26 @@ public class MQttPlugin
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(x113.isRetain()) {
-                    retain(x113.getTopic(), x113);
+                    retain(x113.topic(), x113);
                 }
                 results = new LinkedList<>();
-                switch(x113.getLevel()) {
+                switch(x113.level()) {
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.msgId(x113.msgId());
                         x114.with(session);
-                        results.add(Triple.of(x114, session, session.getEncoder()));
+                        results.add(Triple.of(x114, session, session.encoder()));
                     case ALMOST_ONCE:
-                        brokerTopic(manager, x113, broker(x113.getTopic()), results);
+                        brokerTopic(manager, x113, broker(x113.topic()), results);
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.msgId(x113.msgId());
                         x115.with(session);
-                        x115.target(session.getIndex());
-                        results.add(Triple.of(x115, session, session.getEncoder()));
+                        x115.target(session.index());
+                        results.add(Triple.of(x115, session, session.encoder()));
                         register(x115.msgId(), x115);
-                        _StateService.store(session.getIndex(), x113.msgId(), x113);
+                        _StateService.store(session.index(), x113.msgId(), x113);
                         break;
                     default:
                         break;
@@ -130,19 +158,17 @@ public class MQttPlugin
             case 0x114:
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
-                ack(x114.msgId(), session.getIndex());
-                _StateService.drop(session.getIndex(), x114.msgId());
+                ack(x114.msgId(), session.index());
                 break;
             case 0x115:
                 //x113.QoS2 → client → x115, 服务端恒定返回x116,Router无需操作。
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.msgId(x115.msgId());
-                x116.target(session.getIndex());
+                x116.target(session.index());
                 results = new LinkedList<>();
-                results.add(Triple.of(x116.with(session), session, session.getEncoder()));
+                results.add(Triple.of(x116.with(session), session, session.encoder()));
                 register(x116.msgId(), x116);
-                //                _StateService.drop(session.getIndex(), x115.getMsgId());
                 break;
             case 0x116:
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
@@ -150,27 +176,27 @@ public class MQttPlugin
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.msgId(x116.msgId());
                 results = new LinkedList<>();
-                results.add(Triple.of(x117.with(session), session, session.getEncoder()));
-                if(ack(x116.msgId(), session.getIndex())) {
-                    if(_StateService.exists(session.getIndex(), x116.msgId())) {
-                        MsgStateEntity received = _StateService.extract(session.getIndex(), x116.msgId());
+                results.add(Triple.of(x117.with(session), session, session.encoder()));
+                if(ack(x116.msgId(), session.index())) {
+                    if(_StateService.exists(session.index(), x116.msgId())) {
+                        MsgStateEntity received = _StateService.extract(session.index(), x116.msgId());
                         if(received != null) {
                             X113_QttPublish n113 = new X113_QttPublish();
                             n113.with(session);
-                            n113.setTopic(received.getTopic());
+                            n113.withTopic(received.topic());
                             n113.withSub(received.payload());
                             n113.setLevel(IQoS.Level.EXACTLY_ONCE);
-                            brokerTopic(manager, n113, broker(n113.getTopic()), results);
+                            brokerTopic(manager, n113, broker(n113.topic()), results);
                         }
                     }
                 }
                 break;
             case 0x117:
                 x117 = (X117_QttPubcomp) content;
-                ack(x117.msgId(), session.getIndex());
+                ack(x117.msgId(), session.index());
                 break;
             case 0x11C:
-                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session), session, session.getEncoder()));
+                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
         }
         return results;
     }
@@ -255,19 +281,30 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
     {
         int code = backload.code();
+        long origin = backload.origin();
+        long client = backload.client();
+        ISession os = manager.findSessionByIndex(origin);
+        ISession cs = manager.findSessionByPrefix(client);
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
-                ISession session = x111.session();
-                if(session != null) {
-                    x112.with(x111.session());
-                    long origin = session.getIndex();
+                if(os != null && cs != null) {
+                    manager.mapSession(origin, cs);
+                    _Logger.debug("origin[%#x] login @[%#x], shutdown old", origin, client);
+                    return Collections.singletonList(Triple.of(new X0A_Shutdown().with(os), os, os.encoder()));
+                }
+                else if(os == null && cs != null) {
+                    manager.mapSession(origin, cs);
+                    _Logger.debug("origin[%#x] login @[%#x]", origin, client);
+                }
+                else if(os != null) { // cs == null 请求发生在本节点
+                    x112.with(os);
                     if(code == SUCCESS) {
-                        _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
+                        _Logger.info("%s → %#x login @[%#x]", x111.getClientId(), origin, client);
                         if(x111.isClean()) {
                             clean(origin);
                         }
@@ -279,65 +316,66 @@ public class MQttPlugin
                     else {
                         x112.rejectServerUnavailable();
                     }
-                    return Collections.singletonList(Triple.of(x112,
-                                                               x112.session(),
-                                                               x112.session()
-                                                                   .getEncoder()));
+                    return Collections.singletonList(Triple.of(x112, os, os.encoder()));
                 }
             }
             case 0x118 -> {
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                ISession session = x118.session();
-                if(subscribes != null && code == SUCCESS && session != null) {
+                if(code == SUCCESS) {
                     X119_QttSuback x119 = new X119_QttSuback();
-                    x119.with(session);
                     x119.msgId(x118.msgId());
-                    long origin = session.getIndex();
-                    subscribes.forEach((topic, level)->{
-                        Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
-                        Subscribe subscribe = subscribe(t, origin);
-                        if(subscribe != null) {
-                            //TODO 统计单指令多个Subscribe的情况
-                            x119.addResult(subscribe.level(origin));
+                    if(os != null) {
+                        if(subscribes != null) {
+                            _Logger.info("subscribe topic:%s", x118.getSubscribes());
+                            _Logger.debug(" → origin[%#x] subscribe @[%#x], ack ", origin, client);
+                            subscribes.forEach((topic, level)->{
+                                Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
+                                Subscribe subscribe = subscribe(t, origin);
+                                if(subscribe != null) {
+                                    //TODO 统计单指令多个Subscribe的情况
+                                    x119.addResult(subscribe.level(origin));
+                                }
+                                else {
+                                    x119.addResult(level);
+                                }
+                            });
                         }
-                        else {
-                            x119.addResult(level);
-                        }
-                    });
-                    _Logger.info("subscribe topic:%s", x118.getSubscribes());
-                    return Collections.singletonList(Triple.of(x119,
-                                                               x119.session(),
-                                                               x119.session()
-                                                                   .getEncoder()));
+                        return Collections.singletonList(Triple.of(x119.with(os), os, os.encoder()));
+                    }
+                    else if(subscribes != null) {
+                        _Logger.info("subscribe topic:%s", x118.getSubscribes());
+                        _Logger.debug("origin[%#x] subscribe @[%#x]", origin, client);
+                        subscribes.forEach((topic, level)->{
+                            Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
+                            subscribe(t, origin);
+                        });
+                    }
                 }
             }
             case 0x11A -> {
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                ISession session = x11A.session();
-                if(topics != null && code == SUCCESS && session != null) {
-                    long origin = session.getIndex();
-                    topics.forEach(topic->unsubscribe(new Topic(_QttTopicToRegex(topic)), origin));
+                if(code == SUCCESS) {
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                    x11B.with(x11A.session());
                     x11B.msgId(x11A.msgId());
-                    _Logger.info("unsubscribe topic:%s", x11A.getTopics());
-                    return Collections.singletonList(Triple.of(x11B,
-                                                               x11B.session(),
-                                                               x11B.session()
-                                                                   .getEncoder()));
+                    if(topics != null) {
+                        _Logger.info("unsubscribe topic:%s", x11A.getTopics());
+                        topics.forEach(topic->unsubscribe(new Topic(_QttTopicToRegex(topic)), origin));
+                        _Logger.debug("origin[%#x] unsubscribe @[%#x]", origin, client);
+                    }
+                    if(os != null) {
+                        return Collections.singletonList(Triple.of(x11B.with(os), os, os.encoder()));
+                    }
                 }
             }
             case 0x11E -> {
-                X11E_QttDisconnect x11E = (X11E_QttDisconnect) consensusBody;
-                ISession session = x11E.session();
-                if(session != null) {
-                    long origin = session.getIndex();
+                if(code == SUCCESS) {
                     clean(origin);
-                    x11E.session()
-                        .innerClose();
-                    _Logger.debug("device %#x → offline", origin);
+                    _Logger.debug("origin[%#x]@[%#x] → offline", origin, client);
+                    if(os != null) {
+                        os.innerClose();
+                    }
                 }
             }
             case 0x11F -> {
@@ -450,28 +488,35 @@ public class MQttPlugin
         return Pattern.compile(topic);
     }
 
-    private void brokerTopic(IManager manager, X113_QttPublish x113, List<Subscribe.Mapped> routes, List<ITriple> results)
+    private void brokerTopic(IManager manager, X113_QttPublish x113, List<Subscribe.Mapped> mappeds, List<ITriple> results)
     {
-        routes.forEach(mapped->{
-            ISession session = manager.findSessionByIndex(mapped.session());
+        mappeds.forEach(mapped->{
+            long target = mapped.session();
+            X113_QttPublish n113 = x113.copy();
+            n113.target(target);
+            n113.setLevel(mapped.level());
+            if(mapped.level()
+                     .getValue() > 0)
+            {
+                n113.msgId(_MessageService.generateId(target));
+            }
+            ISession session = manager.findSessionByIndex(target);
             if(session != null) {
-                X113_QttPublish n113 = x113.copy();
+                _Logger.debug("topic % → session %#x ", session.index());
                 n113.with(session);
-                n113.target(session.getIndex());
-                n113.setLevel(mapped.level());
                 if(mapped.level()
                          .getValue() > 0)
                 {
-                    n113.msgId(_MessageService.generateId(mapped.session()));
                     register(n113.msgId(), n113);
                 }
-                results.add(Triple.of(n113, session, session.getEncoder()));
+                results.add(Triple.of(n113, session, session.encoder()));
             }
             else {
-                _Logger.warning("no target session id[ %#x ] found ,ignore publish", mapped.session());
+                _ExchangeService.exchange(n113, target, QttFactory._Instance.serial(), results);
+                _Logger.debug("no local routing,cluster exchange %#x", mapped.session());
             }
         });
-        _Logger.debug("broker[%s]→%s | %s", x113.getTopic(), routes, x113.toString());
+        _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
     }
 
 }

@@ -65,7 +65,7 @@ public class X72_RaftAppend
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

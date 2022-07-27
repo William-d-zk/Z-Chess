@@ -53,7 +53,7 @@ public class X105_Text<T extends WsContext>
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

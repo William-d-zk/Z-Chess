@@ -100,7 +100,6 @@ public interface IRaftMachine
 
     void accept(long accept);
 
-    /*==*/
     void append(long index, long indexTerm, IRaftMapper mapper);
 
     void follow(long term, long leader, IRaftMapper mapper);
@@ -138,7 +137,8 @@ public interface IRaftMachine
         return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) > 0;
     }
 
-    default boolean isLessThanState(RaftState state){return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) < 0;}
+    default boolean isLessThanState(RaftState state) {return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) < 0;}
+
     @Override
     default int compareTo(IRaftMachine o)
     {

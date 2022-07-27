@@ -57,7 +57,7 @@ public class X103_Ping<T extends WsContext>
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return AT_LEAST_ONCE;
     }

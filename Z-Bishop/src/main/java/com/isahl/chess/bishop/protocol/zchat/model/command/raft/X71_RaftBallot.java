@@ -57,7 +57,7 @@ public class X71_RaftBallot
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

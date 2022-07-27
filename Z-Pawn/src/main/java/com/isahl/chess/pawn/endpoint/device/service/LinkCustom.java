@@ -24,14 +24,14 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
-import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -72,7 +72,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistent backload)
+    public List<ITriple> notify(IManager manager, IProtocol request, IConsistency backload)
     {
         if(request != null) {
             for(IAccessService service : _AccessServices) {
@@ -87,7 +87,7 @@ public class LinkCustom
     @Override
     public void close(ISession session)
     {
-        if((ZUID.TYPE_MASK & session.getIndex()) == ZUID.TYPE_CONSUMER) {
+        if((ZUID.TYPE_MASK & session.index()) == ZUID.TYPE_CONSUMER) {
             for(IAccessService service : _AccessServices) {
                 service.onOffline(session);
             }
@@ -96,13 +96,13 @@ public class LinkCustom
             session.close();
         }
         catch(Throwable e) {
-            _Logger.warning("session[ %#x ] close", session.getIndex(), e);
+            _Logger.warning("session[ %#x ] close", session.index(), e);
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IProtocol unbox(IConsistent input, IManager manager)
+    public IProtocol unbox(IConsistency input, IManager manager)
     {
         _Logger.debug("link unbox %s", input);
         switch(input.serial()) {
@@ -120,12 +120,9 @@ public class LinkCustom
                     entry = sub;
                 }
                 else {entry = input.deserializeSub(LogEntry::new);}
-                ISession session = manager.findSessionByIndex(entry.origin());
-                if(session != null && session.getFactory() != null && entry.payload() != null) {
-                    IProtocol response = session.getFactory()
-                                                .create(ByteBuf.wrap(entry.payload()));
-                    response.with(session);
-                    return response;
+                if(entry.payload() != null) {
+                    IoFactory<IProtocol> factory = manager.findIoFactoryBySerial(entry.factory());
+                    return factory.create(entry.subEncoded());
                 }
                 return null;
             }

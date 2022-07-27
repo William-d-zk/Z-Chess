@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -59,10 +59,10 @@ public class ClusterPlugin
     {
         switch(content.serial()) {
             case 0x0B -> {
-                _Logger.debug("pawn handle zchat-ping");
+                _Logger.debug("pawn handle z-chat-ping");
                 X0C_Pong x0C = new X0C_Pong();
                 x0C.with(session);
-                return Collections.singletonList(Triple.of(x0C, session, session.getEncoder()));
+                return Collections.singletonList(Triple.of(x0C, session, session.encoder()));
             }
         }
         return null;
@@ -80,7 +80,7 @@ public class ClusterPlugin
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
     {
         throw new UnsupportedOperationException();
     }

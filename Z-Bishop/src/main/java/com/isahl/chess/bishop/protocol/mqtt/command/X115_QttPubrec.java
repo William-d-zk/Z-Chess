@@ -90,7 +90,7 @@ public class X115_QttPubrec
     }
 
     @Override
-    public String getTopic()
+    public String topic()
     {
         return null;
     }

@@ -71,7 +71,7 @@ public class X06_EncryptComp
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

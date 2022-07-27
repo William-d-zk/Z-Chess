@@ -35,6 +35,7 @@ class LogEntryTest
                                       2,
                                       0x12334,
                                       0x932321,
+                                      0x11341134,
                                       new byte[]{ 1,
                                                   2,
                                                   3,

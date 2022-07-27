@@ -57,13 +57,16 @@ public class LogEntry
      */
     private long mOrigin;
 
-    public LogEntry(long index, long term, long client, long origin, byte[] content)
+    private int mFactory;
+
+    public LogEntry(long index, long term, long client, long origin, int factory, byte[] content)
     {
         super(content);
         pKey = index;
         mTerm = term;
         mClient = client;
         mOrigin = origin;
+        mFactory = factory;
     }
 
     public LogEntry(ByteBuf input)
@@ -71,13 +74,13 @@ public class LogEntry
         super(input);
     }
 
-    public long getTerm() {return mTerm;}
+    public long term() {return mTerm;}
 
-    public long getIndex() {return primaryKey();}
+    public long index() {return primaryKey();}
 
-    public byte[] getContent() {return payload();}
+    public byte[] content() {return payload();}
 
-    public long getClient()
+    public long client()
     {
         return mClient;
     }
@@ -88,7 +91,10 @@ public class LogEntry
         return mOrigin;
     }
 
-    public long getOrigin() {return origin();}
+    public int factory()
+    {
+        return mFactory;
+    }
 
     @Override
     public int length()
@@ -96,6 +102,7 @@ public class LogEntry
         return 8 + //term
                8 + //client
                8 + //origin
+               4 + //factory
                super.length(); //pKey == index
     }
 
@@ -103,9 +110,10 @@ public class LogEntry
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(getTerm())
-                    .putLong(getClient())
-                    .putLong(getOrigin());
+                    .putLong(term())
+                    .putLong(client())
+                    .putLong(origin())
+                    .putInt(mFactory);
     }
 
     @Override
@@ -115,20 +123,22 @@ public class LogEntry
         mTerm = input.getLong();
         mClient = input.getLong();
         mOrigin = input.getLong();
-        return remain - 24;
+        mFactory = input.getInt();
+        return remain - 28;
     }
 
     @Override
     public String toString()
     {
-        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, sub[%#x](%d) %s }",
-                             getIndex(),
-                             getTerm(),
-                             getClient(),
-                             getOrigin(),
+        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, %s → sub[%#x](%d) %s }",
+                             index(),
+                             term(),
+                             client(),
+                             origin(),
+                             IoUtil.intToChars(factory()),
                              _sub(),
                              pLength(),
-                             IoUtil.bin2Hex(payload(),","));
+                             IoUtil.bin2Hex(payload(), ","));
     }
 
 }

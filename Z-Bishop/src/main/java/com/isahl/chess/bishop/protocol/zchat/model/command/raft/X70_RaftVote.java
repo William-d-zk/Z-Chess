@@ -194,7 +194,7 @@ public class X70_RaftVote
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

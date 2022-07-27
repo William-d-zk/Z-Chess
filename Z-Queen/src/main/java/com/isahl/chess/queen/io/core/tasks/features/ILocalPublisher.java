@@ -36,19 +36,19 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public interface ILocalPublisher
 {
-    RingBuffer<QEvent> getPublisher(IOperator.Type type);
+    RingBuffer<QEvent> selectPublisher(IOperator.Type type);
 
-    RingBuffer<QEvent> getCloser(IOperator.Type type);
+    RingBuffer<QEvent> selectCloser(IOperator.Type type);
 
-    ReentrantLock getLock(IOperator.Type type);
+    ReentrantLock selectLock(IOperator.Type type);
 
     default <T, U, R> boolean publish(IOperator.Type type, IOperator<T, U, R> next, IPair... contents)
     {
         if(contents == null || contents.length == 0 || type == null) {
             return false;
         }
-        RingBuffer<QEvent> producer = getPublisher(type);
-        ReentrantLock lock = getLock(type);
+        RingBuffer<QEvent> producer = selectPublisher(type);
+        ReentrantLock lock = selectLock(type);
         if(lock.tryLock()) {
             try {
                 /*
@@ -80,8 +80,8 @@ public interface ILocalPublisher
         if(content == null || content.isEmpty() || type == null) {
             return;
         }
-        RingBuffer<QEvent> producer = getPublisher(type);
-        ReentrantLock lock = getLock(type);
+        RingBuffer<QEvent> producer = selectPublisher(type);
+        ReentrantLock lock = selectLock(type);
         lock.lock();
         try {
             long sequence = producer.next();

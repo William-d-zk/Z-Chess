@@ -59,7 +59,7 @@ public class WsTextZSort
     }
 
     @Override
-    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory()
     {
         return ZServerFactory._Instance;
     }

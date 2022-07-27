@@ -68,7 +68,7 @@ public interface ISession
 
     void unbindIndex(long index);
 
-    long getIndex();
+    long index();
 
     void setIndex(long index);
 
@@ -111,7 +111,7 @@ public interface ISession
     @Override
     default int compareTo(ISession o)
     {
-        return Long.compare(getIndex(), o.getIndex());
+        return Long.compare(index(), o.index());
     }
 
     long PREFIX_MAX  = 0xFFFFL << 48;
@@ -164,7 +164,7 @@ public interface ISession
 
     ICloser getCloser();
 
-    IPipeEncoder getEncoder();
+    IPipeEncoder encoder();
 
     IPipeDecoder getDecoder();
 

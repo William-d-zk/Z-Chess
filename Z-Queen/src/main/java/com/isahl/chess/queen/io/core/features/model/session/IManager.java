@@ -22,7 +22,9 @@
  */
 package com.isahl.chess.queen.io.core.features.model.session;
 
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.util.Collection;
 
@@ -40,46 +42,59 @@ public interface IManager
      * 凡是带有登录功能的都必须使用此方法进行管理。
      * prefix 近似 PortChannel 的结构
      *
-     * @param sessionIdx  session.index
+     * @param index       session.index
      * @param session     mapping session
      * @param prefixArray session prefix array
      *                    prefix 必须满足从H→L的匹配原则
      * @return old mapping session
      */
-    ISession mapSession(long sessionIdx, ISession session, long... prefixArray);
+    ISession mapSession(long index, ISession session, long... prefixArray);
+
+    void route(long index, long prefix);
 
     /**
-     * @param prefix
-     * @return
+     * 集群节点变更的时候必然会执行此动作
+     *
+     * @param prefix 注销 prefix
+     *               这东西不能轻易使用，清理内存的代价非常高。
+     */
+    void dropPrefix(long prefix);
+
+    /**
+     * @param prefix session 聚合标签，使用前缀进行匹配。
+     * @return session 从符合prefix 标签的集合中返回一个可用的 session
      */
     ISession findSessionByPrefix(long prefix);
 
+    ISession findSessionOverIndex(long index);
+
     /**
-     * @param prefix
-     * @return
+     * @param prefix 前缀标签
+     * @return collection 所有符合前缀标签的session
      */
     Collection<ISession> findAllByPrefix(long prefix);
 
     /**
-     * @param index
-     * @return
+     * @param index session 的 index，获取指定的 session
+     *              在multi-bind的场景下需要注意多个index 可以关联相同的session
+     * @return session index[1:1]的session
      */
     ISession findSessionByIndex(long index);
 
     /**
      * 获取当前前缀归属下所有session的数量
      *
-     * @param prefix
-     * @return count
+     * @param prefix 前缀标签
+     * @return count 符合前缀标签的session-count
      */
     int getSessionCountByPrefix(long prefix);
 
     /**
      * 删除index→session 映射关系
      *
-     * @param index
+     * @param index session-index
      */
-    ISession clearSession(long index);
+    ISession clearIndex(long index);
 
     /**
      * 删除所有 prefix→sessions的关系
@@ -89,13 +104,15 @@ public interface IManager
      */
     Collection<ISession> clearAllSessionByPrefix(long prefix);
 
-    default void clearSession(ISession session)
+    default void clearIndex(ISession session)
     {
-        clearSession(session.getIndex());
+        clearIndex(session.index());
     }
 
     void addSession(ISession session);
 
     void rmSession(ISession session);
+
+    IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial);
 
 }

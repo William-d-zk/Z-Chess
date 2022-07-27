@@ -48,8 +48,8 @@ public class HookOpenService
 
     public ICode hookLogic(EchoDo request)
     {
-        final RingBuffer<QEvent> _Publisher = _DeviceNode.getPublisher(IOperator.Type.SERVICE);
-        final ReentrantLock _Lock = _DeviceNode.getLock(IOperator.Type.SERVICE);
+        final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(IOperator.Type.SERVICE);
+        final ReentrantLock _Lock = _DeviceNode.selectLock(IOperator.Type.SERVICE);
         if(_Lock.tryLock()) {
             try {
                 long sequence = _Publisher.next();

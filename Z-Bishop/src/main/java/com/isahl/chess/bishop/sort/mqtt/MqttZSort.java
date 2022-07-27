@@ -62,7 +62,7 @@ public class MqttZSort
     }
 
     @Override
-    public IoFactory<IProtocol> _SelectFactory(Mode mode, Type type)
+    public IoFactory<IProtocol> _SelectFactory()
     {
         return QttFactory._Instance;
     }

@@ -56,7 +56,7 @@ public class X102_Close<T extends WsContext>
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return ALMOST_ONCE;
     }

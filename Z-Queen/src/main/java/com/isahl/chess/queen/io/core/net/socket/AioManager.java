@@ -52,6 +52,8 @@ public abstract class AioManager
     private final Set<ISession>[]            _SessionsSets;
     private final IAioConfig                 _AioConfig;
 
+    private final Map<Long, Long> _Index2PrefixMap;
+
     public ISocketConfig getSocketConfig(int type)
     {
         return _AioConfig.getSocketConfig(type);
@@ -65,11 +67,29 @@ public abstract class AioManager
         _Index2SessionMaps = new Map[_TYPE_COUNT];
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
-        Arrays.setAll(_SessionsSets,
-                      slot->_AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)) : null);
-        Arrays.setAll(_Index2SessionMaps,
-                      slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)) : null);
+        _Index2PrefixMap = new HashMap<>(23);
+        Arrays.setAll(_SessionsSets, slot->_AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)) : null);
+        Arrays.setAll(_Index2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)) : null);
         Arrays.setAll(_Prefix2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(23) : null);
+    }
+
+    @Override
+    public void route(long index, long prefix)
+    {
+        Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
+        Set<ISession> sessions = prefix2SessionMap.get(prefix);
+        if(sessions != null) {
+            _Index2PrefixMap.putIfAbsent(index, prefix);
+        }
+    }
+
+    @Override
+    public void dropPrefix(long prefix)
+    {
+        Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
+        prefix2SessionMap.remove(prefix);
+        _Index2PrefixMap.entrySet()
+                        .removeIf(entry->entry.getValue() == prefix);
     }
 
     protected int getConfigPower(int slot)
@@ -83,11 +103,10 @@ public abstract class AioManager
         return (int) ((index & ZUID.TYPE_MASK) >>> ZUID.TYPE_SHIFT);
     }
 
-
     @Override
     public void addSession(ISession session)
     {
-        int slot = getSlot(session.getIndex());
+        int slot = getSlot(session.index());
         _SessionsSets[slot].add(session);
         if(!_Logger.isEnable(Level.DEBUG)) {return;}
         _Logger.debug(String.format("%s add session -> set slot:%s", getClass().getSimpleName(), switch(slot) {
@@ -102,7 +121,7 @@ public abstract class AioManager
     @Override
     public void rmSession(ISession session)
     {
-        int slot = getSlot(session.getIndex());
+        int slot = getSlot(session.index());
         _SessionsSets[slot].remove(session);
         long[] prefixArray = session.getPrefixArray();
         if(prefixArray != null) {
@@ -111,7 +130,7 @@ public abstract class AioManager
                                          .remove(session);
             }
         }
-        _Index2SessionMaps[slot].remove(session.getIndex(), session);
+        _Index2SessionMaps[slot].remove(session.index(), session);
         if(session.isMultiBind() && session.getBindIndex() != null) {
             for(long i : session.getBindIndex()) {
                 _Index2SessionMaps[slot].remove(i, session);
@@ -134,7 +153,7 @@ public abstract class AioManager
          * 2:相同 _Index 在不同的 Session 上登录，产生覆盖
          * Session 的情况。
          */
-        long sessionIdx = session.getIndex();
+        long sessionIdx = session.index();
         if((sessionIdx & INVALID_INDEX) != NULL_INDEX && sessionIdx != _NewIdx && !session.isMultiBind()) {
             // session 已经 mapping 过了 且 不允许多绑定结构
             _Index2SessionMaps[getSlot(sessionIdx)].remove(sessionIdx);
@@ -152,7 +171,7 @@ public abstract class AioManager
         }
         if(oldSession != null) {
             // 已经发生覆盖
-            long oldIndex = oldSession.getIndex();
+            long oldIndex = oldSession.index();
             if(oldIndex == _NewIdx) {
                 if(oldSession != session) {
                     // 相同 _Index 登录在不同 Session 上登录
@@ -177,9 +196,7 @@ public abstract class AioManager
                     oldSession.unbindIndex(_NewIdx);
                 }
                 else {
-                    _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d",
-                                  _NewIdx,
-                                  oldIndex);
+                    _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d", _NewIdx, oldIndex);
                     ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
                     /*
                      * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
@@ -207,9 +224,7 @@ public abstract class AioManager
             Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for(long prefix : prefixArray) {
                 if(getSlot(prefix) != slot) {
-                    throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error",
-                                                                     _NewIdx,
-                                                                     prefix));
+                    throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error", _NewIdx, prefix));
                 }
                 prefix2SessionMap.computeIfAbsent(prefix, k->new TreeSet<>())
                                  .add(session);
@@ -224,13 +239,15 @@ public abstract class AioManager
     {
         Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
         Set<ISession> sessions = prefix2SessionMap.get(prefix);
-        sessions.forEach(this::clearSession);
+        if(sessions != null) {
+            sessions.forEach(this::clearIndex);
+        }
         return sessions;
 
     }
 
     @Override
-    public ISession clearSession(long index)
+    public ISession clearIndex(long index)
     {
         return _Index2SessionMaps[getSlot(index)].remove(index);
     }
@@ -239,6 +256,13 @@ public abstract class AioManager
     public ISession findSessionByIndex(long index)
     {
         return _Index2SessionMaps[getSlot(index)].get(index);
+    }
+
+    @Override
+    public ISession findSessionOverIndex(long index)
+    {
+        Long prefix = _Index2PrefixMap.get(index);
+        return prefix != null ? findSessionByPrefix(prefix) : null;
     }
 
     @Override

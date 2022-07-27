@@ -455,7 +455,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalCloseEvent;
@@ -465,7 +465,7 @@ public class ServerCore
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock selectLock(IOperator.Type type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _LocalLock;
@@ -478,7 +478,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalSendEvent;

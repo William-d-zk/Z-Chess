@@ -293,8 +293,7 @@ public interface IoUtil
                           0xb,
                           0xc,
                           0x5,
-                          0x2
-    };
+                          0x2 };
 
     static byte crc4itu(byte[] data)
     {
@@ -309,8 +308,22 @@ public interface IoUtil
         return crc;
     }
 
-    char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-    };
+    char[] HEX_DIGITS = { '0',
+                          '1',
+                          '2',
+                          '3',
+                          '4',
+                          '5',
+                          '6',
+                          '7',
+                          '8',
+                          '9',
+                          'A',
+                          'B',
+                          'C',
+                          'D',
+                          'E',
+                          'F' };
 
     static String bin2Hex(byte[] b, String... split)
     {
@@ -378,9 +391,18 @@ public interface IoUtil
 
     static String longToMacStr(long mac)
     {
-        return Long.toHexString((mac >> 40) & 0xFF) + ":" + Long.toHexString((mac >> 32) & 0xFF) + ":" +
-               Long.toHexString((mac >> 24) & 0xFF) + ":" + Long.toHexString((mac >> 16) & 0xFF) + ":" +
-               Long.toHexString((mac >> 8) & 0xFF) + ":" + Long.toHexString(mac & 0xFF) + ":";
+        return Long.toHexString((mac >> 40) & 0xFF) + ":" + Long.toHexString((mac >> 32) & 0xFF) + ":" + Long.toHexString((mac >> 24) & 0xFF) + ":" +
+               Long.toHexString((mac >> 16) & 0xFF) + ":" + Long.toHexString((mac >> 8) & 0xFF) + ":" + Long.toHexString(mac & 0xFF) + ":";
+    }
+
+    static String intToChars(int num)
+    {
+        char[] cs = new char[4];
+        cs[0] = (char) (num >>> 24);
+        cs[1] = (char) (num >>> 16);
+        cs[2] = (char) (num >>> 8);
+        cs[3] = (char) num;
+        return new String(cs);
     }
 
     static int writeIp(String ipAddr)
@@ -458,21 +480,19 @@ public interface IoUtil
             return new byte[]{ (byte) length };
         }
         else if(length < 16384) {
-            return new byte[]{ (byte) (0x80 | (length & 0x7F)), (byte) (length >>> 7)
-            };
+            return new byte[]{ (byte) (0x80 | (length & 0x7F)),
+                               (byte) (length >>> 7) };
         }
         else if(length < 2097152) {
             return new byte[]{ (byte) (0x80 | (length & 0x7F)),
                                (byte) (0x80 | (length & 0x7F80) >>> 7),
-                               (byte) (length >>> 14)
-            };
+                               (byte) (length >>> 14) };
         }
         else if(length < 268435456) {
             return new byte[]{ (byte) (0x80 | (length & 0x7F)),
                                (byte) (0x80 | (length & 0x7F80) >>> 7),
                                (byte) (0x80 | (length & 0x3FC000) >>> 14),
-                               (byte) (length >>> 21)
-            };
+                               (byte) (length >>> 21) };
         }
         throw new ArrayIndexOutOfBoundsException("malformed length");
     }
@@ -603,8 +623,7 @@ public interface IoUtil
                            (byte) (0xFF & (v >>> 24)),
                            (byte) (0xFF & (v >>> 16)),
                            (byte) (0xFF & (v >>> 8)),
-                           (byte) (0xFF & v)
-        };
+                           (byte) (0xFF & v) };
     }
 
     static byte[] writeLongArray(long... v)
@@ -746,15 +765,13 @@ public interface IoUtil
 
     static int readInt(byte[] src, int off)
     {
-        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 |
-               (src[off + 3] & 0xFF);
+        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 | (src[off + 3] & 0xFF);
     }
 
     static long readLong(byte[] src, int off)
     {
-        return (src[off] & 0xFFL) << 56 | (src[off + 1] & 0xFFL) << 48 | (src[off + 2] & 0xFFL) << 40 |
-               (src[off + 3] & 0xFFL) << 32 | (src[off + 4] & 0xFFL) << 24 | (src[off + 5] & 0xFFL) << 16 |
-               (src[off + 6] & 0xFFL) << 8 | (src[off + 7] & 0xFFL);
+        return (src[off] & 0xFFL) << 56 | (src[off + 1] & 0xFFL) << 48 | (src[off + 2] & 0xFFL) << 40 | (src[off + 3] & 0xFFL) << 32 |
+               (src[off + 4] & 0xFFL) << 24 | (src[off + 5] & 0xFFL) << 16 | (src[off + 6] & 0xFFL) << 8 | (src[off + 7] & 0xFFL);
     }
 
     static int readLongArray(byte[] src, int src_off, long[] dst)
@@ -783,8 +800,8 @@ public interface IoUtil
 
     static long read6BLong(byte[] src, int off)
     {
-        return (src[off] & 0xFFL) << 40 | (src[off + 1] & 0xFFL) << 32 | (src[off + 2] & 0xFFL) << 24 |
-               (src[off + 3] & 0xFFL) << 16 | (src[off + 4] & 0xFFL) << 8 | (src[off + 5] & 0xFFL);
+        return (src[off] & 0xFFL) << 40 | (src[off + 1] & 0xFFL) << 32 | (src[off + 2] & 0xFFL) << 24 | (src[off + 3] & 0xFFL) << 16 |
+               (src[off + 4] & 0xFFL) << 8 | (src[off + 5] & 0xFFL);
 
     }
 

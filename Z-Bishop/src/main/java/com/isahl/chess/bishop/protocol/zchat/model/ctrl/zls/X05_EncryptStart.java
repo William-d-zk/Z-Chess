@@ -111,7 +111,7 @@ public class X05_EncryptStart
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

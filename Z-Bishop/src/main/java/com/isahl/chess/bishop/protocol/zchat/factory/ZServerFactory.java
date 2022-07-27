@@ -24,11 +24,13 @@
 package com.isahl.chess.bishop.protocol.zchat.factory;
 
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
+import com.isahl.chess.board.annotation.ISerialFactory;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
+@ISerialFactory(serial = ('S' << 24) + ('E' << 16) + ('R' << 8) + 'V')
 public class ZServerFactory
         extends ZChatFactory
 {

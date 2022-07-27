@@ -117,7 +117,7 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.EXACTLY_ONCE;
     }
