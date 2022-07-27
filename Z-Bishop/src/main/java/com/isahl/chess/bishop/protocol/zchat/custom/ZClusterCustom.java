@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
@@ -52,9 +52,9 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> consistent(IManager manager, IoSerial request, long origin)
+    public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory)
     {
-        return _Then != null ? _Then.consistent(manager, request, origin) : null;
+        return _Then != null ? _Then.consistent(manager, request, origin, factory) : null;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public IConsistent skipConsistency(IoSerial request)
+    public IConsistency skipConsistency(IoSerial request)
     {
         return _Then != null ? _Then.skipConsistency(request) : null;
     }

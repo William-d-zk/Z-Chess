@@ -35,7 +35,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
                                             "com.isahl.chess.rook.storage",
                                             "com.isahl.chess.pawn.endpoint",
                                             "com.isahl.chess.player.api",
-                                            "com.isahl.chess.referee.security",
+                                            "com.isahl.chess.referee.admin",
                                             "com.isahl.chess.arena.gateway" })
 public class ApplicationArena
 {

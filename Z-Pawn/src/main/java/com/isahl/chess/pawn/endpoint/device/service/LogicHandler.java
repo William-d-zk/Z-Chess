@@ -85,7 +85,6 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
         for(IAccessService service : _AccessService) {
             if(!service.isSupported(content)) continue;
             try {
-
                 if(results == null) {
                     results = service.onLogic(getManager(), session, content);
                 }

@@ -43,13 +43,13 @@ public interface IConsistencyService
         if(request == null || node == null) {
             return CodeKing.MISS;
         }
-        if(!node.getPeer()
+        if(!node.clusterPeer()
                 .isInCongress())
         {
             return CodeKnight.CLUSTER_NO_IN_CONGRESS;
         }
-        final ReentrantLock _Lock = node.getLock(CONSISTENCY_SERVICE);
-        final RingBuffer<QEvent> _Publish = node.getPublisher(CONSISTENCY_SERVICE);
+        final ReentrantLock _Lock = node.selectLock(CONSISTENCY_SERVICE);
+        final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENCY_SERVICE);
         _Lock.lock();
         try {
             long sequence = _Publish.next();
@@ -57,7 +57,7 @@ public interface IConsistencyService
                 QEvent event = _Publish.get(sequence);
                 event.produce(CONSISTENCY_SERVICE,
                               new Pair<>(request,
-                                         node.getPeer()
+                                         node.clusterPeer()
                                              .peerId()),
                               null);
             }

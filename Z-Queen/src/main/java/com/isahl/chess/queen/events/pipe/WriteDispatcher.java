@@ -104,7 +104,7 @@ public class WriteDispatcher
                             publish(dispatchEncoder(session.hashCode()),
                                     IOperator.Type.WRITE,
                                     new Pair<>(cmd, session),
-                                    session.getEncoder());
+                                    session.encoder());
 
                         }
                         catch(ZException e) {

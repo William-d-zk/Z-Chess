@@ -182,7 +182,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final long getIndex()
+    public final long index()
     {
         return mIndex;
     }
@@ -472,7 +472,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public IPipeEncoder getEncoder()
+    public IPipeEncoder encoder()
     {
         return _Sort.getEncoder();
     }

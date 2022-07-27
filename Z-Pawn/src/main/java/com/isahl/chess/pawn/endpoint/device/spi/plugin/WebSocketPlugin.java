@@ -31,7 +31,7 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -66,18 +66,18 @@ public class WebSocketPlugin
                 X101_HandShake<?> request = (X101_HandShake<?>) content;
                 return Collections.singletonList(Triple.of(request.context()
                                                                   .getHandshake()
-                                                                  .with(session), session, session.getEncoder()));
+                                                                  .with(session), session, session.encoder()));
             }
             case 0x102 -> {
-                return Collections.singletonList(Triple.of(content, session, session.getEncoder()));
+                return Collections.singletonList(Triple.of(content, session, session.encoder()));
             }
             case 0x103 -> {
-                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session), session, session.getEncoder()));
+                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session), session, session.encoder()));
             }
             case 0x105 -> {
                 return Collections.singletonList(Triple.of(new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session),
                                                            session,
-                                                           session.getEncoder()));
+                                                           session.encoder()));
             }
         }
         return null;
@@ -95,7 +95,7 @@ public class WebSocketPlugin
 
     }
 
-    public List<ITriple> onConsistency(IManager manager, IConsistent backload, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
     {
         return null;
     }

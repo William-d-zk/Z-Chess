@@ -209,19 +209,19 @@ public class ClientCore
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
     {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
     {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock selectLock(IOperator.Type type)
     {
         return _LocalLock;
     }

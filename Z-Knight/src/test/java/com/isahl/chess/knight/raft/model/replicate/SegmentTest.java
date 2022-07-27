@@ -39,6 +39,7 @@ class SegmentTest
                                       segment.getEndIndex() + 1,
                                       9981234,
                                       9123,
+                                      0x99123,
                                       new byte[]{ 1,
                                                   2,
                                                   3,

@@ -67,7 +67,7 @@ public class X0D_PlainText
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

@@ -38,6 +38,7 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
@@ -85,16 +86,17 @@ public class ClientPool
 {
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
-    private final ClientConfig             _ClientConfig;
-    private final AsynchronousChannelGroup _ChannelGroup;
-    private final ClientCore               _ClientCore;
-    private final TimeWheel                _TimeWheel;
-    private final Map<Long, Client>        _ZClientMap;
+    private final ClientConfig                       _ClientConfig;
+    private final AsynchronousChannelGroup           _ChannelGroup;
+    private final ClientCore                         _ClientCore;
+    private final TimeWheel                          _TimeWheel;
+    private final Map<Long, Client>                  _ZClientMap;
+    private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     @Autowired
     public ClientPool(
             @Qualifier("io_consumer_config")
-                    IAioConfig bizIoConfig, ClientConfig clientConfig) throws IOException
+            IAioConfig bizIoConfig, ClientConfig clientConfig) throws IOException
     {
         super(bizIoConfig);
         _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_CONSUMER)));
@@ -102,6 +104,7 @@ public class ClientPool
         int ioCount = _ClientConfig.getIoCount();
         _ClientCore = new ClientCore(ioCount);
         _TimeWheel = _ClientCore.getTimeWheel();
+        _FactoryMap = new HashMap<>();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
         _ClientCore.build(slot->new ClientHandler(new Health(slot), ClientPool.this), Encryptor::new);
         _Logger.debug("device consumer created");
@@ -152,10 +155,7 @@ public class ClientPool
             }
             default -> throw new UnsupportedOperationException();
         }
-        BaseAioConnector connector = new BaseAioConnector(host,
-                                                          port,
-                                                          getSocketConfig(ZUID.TYPE_CONSUMER_SLOT),
-                                                          ClientPool.this)
+        BaseAioConnector connector = new BaseAioConnector(host, port, getSocketConfig(ZUID.TYPE_CONSUMER_SLOT), ClientPool.this)
         {
             @Override
             public String getProtocol()
@@ -181,8 +181,7 @@ public class ClientPool
             }
 
             @Override
-            public ISession create(AsynchronousSocketChannel socketChannel,
-                                   IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, zsort.getSort(), activity, ClientPool.this, false);
             }
@@ -201,10 +200,7 @@ public class ClientPool
                         x111.setPassword("Yh6@Y3*5teP~#y67n_j0L4");
                         x111.setClean();
                         x111.setKeepAlive(60);
-                        mHeartbeatTask = _TimeWheel.acquire(session,
-                                                            new ScheduleHandler<>(Duration.ofSeconds(60),
-                                                                                  true,
-                                                                                  ClientPool.this::qttHeartbeat));
+                        mHeartbeatTask = _TimeWheel.acquire(session, new ScheduleHandler<>(Duration.ofSeconds(60), true, ClientPool.this::qttHeartbeat));
                         return new Triple<>(x111, session, SINGLE);
                     }
                     case WS_PLAIN_TEXT_CONSUMER -> {
@@ -214,6 +210,9 @@ public class ClientPool
                 }
             }
         };
+        IoFactory<IProtocol> factory = zsort.getSort()
+                                            .getFactory();
+        _FactoryMap.putIfAbsent(factory.serial(), factory);
         connect(connector);
     }
 
@@ -298,7 +297,7 @@ public class ClientPool
     {
         if(session == null || outputs == null || outputs.length == 0) {return false;}
         return _ClientCore.publish(type,
-                                   session.getEncoder(),
+                                   session.encoder(),
                                    Stream.of(outputs)
                                          .map(pro->Pair.of(pro, session))
                                          .toArray(IPair[]::new));
@@ -309,6 +308,12 @@ public class ClientPool
     {
         if(session == null) {return;}
         _ClientCore.close(type, Pair.of(null, session), session.getCloser());
+    }
+
+    @Override
+    public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
+    {
+        return _FactoryMap.get(factorySerial);
     }
 }
 

@@ -132,7 +132,7 @@ public abstract class QttControl
     }
 
     @Override
-    public IQoS.Level getLevel()
+    public IQoS.Level level()
     {
         return IQoS.Level.valueOf((mFrameHeader & QOS_MASK) >> 1);
     }
@@ -170,7 +170,7 @@ public abstract class QttControl
 
     private void checkOpCode()
     {
-        if(getLevel() == IQoS.Level.ALMOST_ONCE && isDuplicate()) {
+        if(level() == IQoS.Level.ALMOST_ONCE && isDuplicate()) {
             throw new IllegalStateException("level == 0 && duplicate");
         }
     }

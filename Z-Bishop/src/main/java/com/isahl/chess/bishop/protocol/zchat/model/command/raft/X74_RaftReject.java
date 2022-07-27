@@ -58,7 +58,7 @@ public class X74_RaftReject
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }
@@ -201,12 +201,12 @@ public class X74_RaftReject
         mCode = code;
     }
 
-    public int getState()
+    public int state()
     {
         return mState;
     }
 
-    public void setState(int state)
+    public void state(int state)
     {
         mState = state;
     }

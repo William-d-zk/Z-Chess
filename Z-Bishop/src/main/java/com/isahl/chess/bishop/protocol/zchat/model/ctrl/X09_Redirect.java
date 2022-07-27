@@ -90,7 +90,7 @@ public class X09_Redirect
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

@@ -95,7 +95,7 @@ public class X08_Identity
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

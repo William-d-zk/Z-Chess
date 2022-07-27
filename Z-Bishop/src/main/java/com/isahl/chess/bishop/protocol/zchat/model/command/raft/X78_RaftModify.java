@@ -62,7 +62,7 @@ public class X78_RaftModify
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.ALMOST_ONCE;
     }

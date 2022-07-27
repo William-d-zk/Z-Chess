@@ -78,7 +78,7 @@ public class ClientWriteDispatcher
                     IProtocol output = content.getFirst();
                     ISession session = content.getSecond();
                     if(session.isValid() && output != null) {
-                        publish(_Encoder, WRITE, content, session.getEncoder());
+                        publish(_Encoder, WRITE, content, session.encoder());
                     }
                 }
                 case DISPATCH -> {

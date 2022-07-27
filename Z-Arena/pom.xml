@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.14-SNAPSHOT</version>
+        <version>1.0.15-SNAPSHOT</version>
     </parent>
     <name>Z-Arena</name>
     <artifactId>gateway.z-arena</artifactId>
@@ -37,11 +37,6 @@
         <dependency>
             <groupId>com.isahl.chess</groupId>
             <artifactId>biz.z-player</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.isahl.chess</groupId>
-            <artifactId>security.z-referee</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

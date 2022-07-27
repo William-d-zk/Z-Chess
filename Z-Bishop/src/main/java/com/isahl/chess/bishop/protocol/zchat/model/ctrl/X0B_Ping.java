@@ -49,7 +49,7 @@ public class X0B_Ping
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }

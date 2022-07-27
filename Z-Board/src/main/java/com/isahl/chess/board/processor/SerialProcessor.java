@@ -81,9 +81,10 @@ public class SerialProcessor
                                 }
                             }
                             if(enclosed.getKind() == ElementKind.FIELD) {
-                                switch(enclosed.getSimpleName()
-                                               .toString()) {
-                                    case "_SERIAL" -> mHasFieldSerial = true;
+                                if("_SERIAL".equals(enclosed.getSimpleName()
+                                                            .toString()))
+                                {
+                                    mHasFieldSerial = true;
                                 }
                             }
                         }
@@ -95,12 +96,7 @@ public class SerialProcessor
                         _ProcessorContext.parentIncrementCount(parent);
 
                         JCTree tree = (JCTree) _Trees.getTree(element);
-                        tree.accept(new SerialTranslator(this,
-                                                         _Context,
-                                                         generator.parent(),
-                                                         _ProcessorContext.onSerialAnnotation(className,
-                                                                                              serial,
-                                                                                              parent)));
+                        tree.accept(new SerialTranslator(this, _Context, generator.parent(), _ProcessorContext.onSerialAnnotation(className, serial, parent)));
                     });
             try {
                 _ProcessorContext.update();

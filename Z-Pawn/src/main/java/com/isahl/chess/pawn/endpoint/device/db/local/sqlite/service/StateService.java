@@ -281,11 +281,11 @@ public class StateService
                                    }) != null)
         {
             _Logger.debug("store received message :%s", body);
-            if(body.getLevel()
+            if(body.level()
                    .getValue() > IQoS.Level.ALMOST_ONCE.getValue())
             {
                 MsgStateEntity message = new MsgStateEntity();
-                message.setTopic(body.getTopic());
+                message.setTopic(body.topic());
                 message.setOrigin(origin);
                 message.setMsgId(msgId);
                 message.setTarget(_ZUID.getPeerId());
@@ -329,11 +329,11 @@ public class StateService
                                    .putIfAbsent(msgId, body) == body)
         {
             _Logger.debug("add: %s", body);
-            if(body.getLevel()
+            if(body.level()
                    .getValue() > IQoS.Level.ALMOST_ONCE.getValue())
             {
                 MsgStateEntity message = new MsgStateEntity();
-                message.setTopic(body.getTopic());
+                message.setTopic(body.topic());
                 message.setOrigin(_ZUID.getPeerId());
                 message.setMsgId(msgId);
                 message.setTarget(body.target());

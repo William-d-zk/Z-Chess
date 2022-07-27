@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.bishop.protocol.mqtt.v5.ctrl.X11F_QttAuth;
+import com.isahl.chess.board.annotation.ISerialFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
@@ -38,6 +39,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
  * @author william.d.zk
  * @date 2020/4/11
  */
+@ISerialFactory(serial = ('M' << 24) + ('Q' << 16) + ('T' << 8) + 'T')
 public class QttFactory
         implements IProtocolFactory<QttFrame, QttContext>
 {

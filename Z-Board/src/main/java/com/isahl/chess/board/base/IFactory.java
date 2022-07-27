@@ -2,8 +2,10 @@ package com.isahl.chess.board.base;
 
 public interface IFactory
 {
-    default ISerial build(int serial)
+    default int serial() {return -1;}
+
+    default boolean isSupport(int serial)
     {
-        return null;
+        return false;
     }
 }

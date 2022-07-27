@@ -56,7 +56,7 @@ public interface IQoS
         return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode() : (seqDiff > 0 ? 1 : -1)) : priorityDiff;
     }
 
-    Level getLevel();
+    Level level();
 
     /**
      * 数据传输质量等级

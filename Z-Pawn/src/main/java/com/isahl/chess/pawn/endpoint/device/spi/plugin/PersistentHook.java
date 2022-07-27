@@ -77,14 +77,14 @@ public class PersistentHook
             case 0x113 -> {
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(!x113.isDuplicate()) {
-                    String topic = x113.getTopic();
+                    String topic = x113.topic();
                     byte[] contents = x113.payload();
                     MessageEntity msgEntity = new MessageEntity();
                     msgEntity.setContent(contents);
                     msgEntity.setTopic(topic);
                     msgEntity.setNetAt(LocalDateTime.now());
                     msgEntity.setOrigin(x113.session()
-                                            .getIndex());
+                                            .index());
                     _MainQueue.offer(msgEntity);
                 }
             }

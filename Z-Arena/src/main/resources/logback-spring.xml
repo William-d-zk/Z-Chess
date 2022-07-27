@@ -73,7 +73,7 @@
     <logger name="storage.rook">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="endpoint.pawn">
+    <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="biz.player">

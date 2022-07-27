@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
 /**
@@ -57,15 +58,16 @@ public class X75_RaftReq
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return Level.AT_LEAST_ONCE;
     }
 
     private long mClient;
     private long mOrigin;
+    private int  mFactory;
 
-    public void setOrigin(long origin)
+    public void origin(long origin)
     {
         mOrigin = origin;
     }
@@ -81,7 +83,8 @@ public class X75_RaftReq
     {
         return super.suffix(output)
                     .putLong(mClient)
-                    .putLong(mOrigin);
+                    .putLong(mOrigin)
+                    .putInt(mFactory);
     }
 
     @Override
@@ -90,7 +93,8 @@ public class X75_RaftReq
         int remain = super.prefix(input);
         mClient = input.getLong();
         mOrigin = input.getLong();
-        return remain - 16;
+        mFactory = input.getInt();
+        return remain - 20;
     }
 
     @Override
@@ -99,20 +103,30 @@ public class X75_RaftReq
         return super.length() + 16;
     }
 
-    public long getClient()
+    public long client()
     {
         return mClient;
     }
 
-    public void setClient(long client)
+    public void client(long client)
     {
         mClient = client;
+    }
+
+    public void factory(int factory)
+    {
+        mFactory = factory;
+    }
+
+    public int factory()
+    {
+        return mFactory;
     }
 
     @Override
     public String toString()
     {
-        return String.format("X75_RaftReq { client:%#x, origin:%#x }", mClient, mOrigin);
+        return String.format("X75_RaftReq { client:%#x, origin:%#x, factory:%s}", mClient, mOrigin, IoUtil.intToChars(mFactory));
     }
 
 }

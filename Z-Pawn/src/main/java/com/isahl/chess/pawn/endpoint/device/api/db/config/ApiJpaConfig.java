@@ -32,7 +32,10 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.sql.init.DatabaseInitializationSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,15 +53,16 @@ public class ApiJpaConfig
     public ApiJpaConfig(EhcacheConfig cacheConfig) {super(cacheConfig);}
 
     @Bean("api-entity-manager")
+    @Primary
     public LocalContainerEntityManagerFactoryBean createRemoteEntityManager(
             @Qualifier("primary-data-source")
-                    DataSource dataSource,
+            DataSource dataSource,
             @Qualifier("primary-jpa-properties")
-                    JpaProperties jpaProperties,
+            JpaProperties jpaProperties,
             @Qualifier("primary-jpa-hibernate-properties")
-                    HibernateProperties hibernateProperties,
+            HibernateProperties hibernateProperties,
             @Qualifier("primary-sql-init-settings")
-                    DatabaseInitializationSettings initializationSettings)
+            DatabaseInitializationSettings initializationSettings)
     {
         return getEntityManager(dataSource,
                                 jpaProperties,
@@ -69,12 +73,31 @@ public class ApiJpaConfig
     }
 
     @Bean("api-transaction-manager")
+    @Primary
     public PlatformTransactionManager createRemoteTransactionManager(
             @Qualifier("api-entity-manager")
-                    LocalContainerEntityManagerFactoryBean factory)
+            LocalContainerEntityManagerFactoryBean factory)
     {
         JpaTransactionManager tm = new JpaTransactionManager();
         tm.setEntityManagerFactory(factory.getObject());
         return tm;
+    }
+
+    @Bean("api-jdbc-template")
+    @Primary
+    public JdbcTemplate createJdbcTemplate(
+            @Qualifier("primary-data-source")
+            DataSource dataSource)
+    {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean("api-name-parameter-jdbc-template")
+    @Primary
+    public NamedParameterJdbcTemplate createNamedParameterJdbcTemplate(
+            @Qualifier("primary-data-source")
+            DataSource dataSource)
+    {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

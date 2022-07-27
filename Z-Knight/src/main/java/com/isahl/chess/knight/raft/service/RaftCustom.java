@@ -32,7 +32,7 @@ import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -137,10 +137,10 @@ public class RaftCustom
     }
 
     @Override
-    public List<ITriple> consistent(IManager manager, IoSerial request, long origin)
+    public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory)
     {
         _Logger.debug("cluster consistent %s", request);
-        return _RaftPeer.onSubmit(request, manager, origin);
+        return _RaftPeer.onSubmit(request, manager, origin, factory);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class RaftCustom
     }
 
     @Override
-    public IConsistent skipConsistency(IoSerial request)
+    public IConsistency skipConsistency(IoSerial request)
     {
         X77_RaftNotify x77 = new X77_RaftNotify();
         x77.withSub(request);

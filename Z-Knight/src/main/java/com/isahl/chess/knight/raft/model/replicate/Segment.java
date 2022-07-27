@@ -63,7 +63,7 @@ public class Segment
             return null;
         }
         LogEntry logEntry = _Records.get(listIndex);
-        if(logEntry.getIndex() != index) {
+        if(logEntry.index() != index) {
             _Logger.warning("segment get(%d) log entry [%s]", index, logEntry);
         }
         return logEntry;
@@ -130,12 +130,12 @@ public class Segment
         _Records.decode(ByteBuf.wrap(mRandomAccessFile.getChannel()
                                                       .map(FileChannel.MapMode.READ_ONLY, 0, mFileSize)));
         long startIndex = _Records.get(0)
-                                  .getIndex();
+                                  .index();
         if(startIndex != _StartIndex) {
             throw new ZException("first entry index %d isn't equal segment's start_index %d", startIndex, _StartIndex);
         }
         mEndIndex = _Records.get(_Records.size() - 1)
-                            .getIndex();
+                            .index();
     }
 
     public void freeze()
@@ -179,7 +179,7 @@ public class Segment
                 }
                 mFileSize += output.length;
             }
-            mEndIndex = entry.getIndex();
+            mEndIndex = entry.index();
 
         }
         catch(IOException e) {

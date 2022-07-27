@@ -76,7 +76,7 @@ public class X101_HandShake<T extends WsContext>
     }
 
     @Override
-    public Level getLevel()
+    public Level level()
     {
         return ALMOST_ONCE;
     }

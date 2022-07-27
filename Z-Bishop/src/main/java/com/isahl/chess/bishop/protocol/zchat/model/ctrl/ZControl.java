@@ -36,7 +36,7 @@ public abstract class ZControl
     {
         setVersion();
         withId(false);
-        mFrameHeader |= ZFrame.frame_op_code_ctrl | (getLevel().getValue() << ZFrame.frame_op_code_qos_bit_left);
+        mFrameHeader |= ZFrame.frame_op_code_ctrl | (level().getValue() << ZFrame.frame_op_code_qos_bit_left);
     }
 
     @Override
