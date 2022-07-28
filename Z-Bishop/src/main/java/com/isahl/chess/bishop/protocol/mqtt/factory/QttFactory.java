@@ -39,7 +39,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
  * @author william.d.zk
  * @date 2020/4/11
  */
-@ISerialFactory(serial = ('M' << 24) + ('Q' << 16) + ('T' << 8) + 'T')
+@ISerialFactory(serial = ('M' << 24) | ('Q' << 16) | ('T' << 8) | 'T')
 public class QttFactory
         implements IProtocolFactory<QttFrame, QttContext>
 {
