@@ -50,7 +50,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     }
 
     @Override
-    public ITriple handle(IManager manager, ISession session, IProtocol content)
+    public ITriple inject(IManager manager, ISession session, IProtocol content)
     {
         _Logger.debug("mapping receive %s", content);
         switch(content.serial()) {
@@ -67,7 +67,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
                 return new Triple<>(content, null, WRITE);
             default:
                 if(_Then == null) {return null;}
-                return _Then.handle(manager, session, content);
+                return _Then.inject(manager, session, content);
         }
     }
 }

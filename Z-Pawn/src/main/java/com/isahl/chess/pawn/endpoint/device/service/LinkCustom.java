@@ -61,7 +61,7 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IProtocol input)
+    public ITriple inject(IManager manager, ISession session, IProtocol input)
     {
         for(IAccessService service : _AccessServices) {
             if(service.isSupported(input)) {
@@ -72,7 +72,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistency backload)
+    public List<ITriple> onConsistency(IManager manager, IProtocol request, IConsistency backload)
     {
         if(request != null) {
             for(IAccessService service : _AccessServices) {

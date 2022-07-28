@@ -31,12 +31,9 @@ import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
-import com.isahl.chess.knight.cluster.features.IExchangeService;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
@@ -60,9 +57,7 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -73,8 +68,7 @@ import java.util.stream.Collectors;
 public class DeviceNode
         extends MixManager
         implements IDismiss,
-                   IClusterNode,
-                   IExchangeService
+                   IClusterNode
 {
     private final IClusterPeer     _ClusterPeer;
     private final List<IAioServer> _AioServers;
@@ -82,7 +76,6 @@ public class DeviceNode
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
     private final X0B_Ping         _PeerPing, _GatePing;
-    private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     @Override
     public void onDismiss(ISession session)
@@ -102,7 +95,7 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
         _ClusterPeer = clusterPeer;
-        _FactoryMap = new HashMap<>();
+
         if(raftConfig.isInCongress()) {
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
@@ -128,10 +121,8 @@ public class DeviceNode
                                final String _Host = triple.getFirst();
                                final int _Port = triple.getSecond();
                                final ZSortHolder _Holder = triple.getThird();
-                               IoFactory<IProtocol> factory = _Holder.getSort()
-                                                                     .getFactory();
-                               // null point 提示 编解码链条设计错误
-                               _FactoryMap.putIfAbsent(factory.serial(), factory);
+                               registerFactory(_Holder.getSort()
+                                                      .getFactory());
                                return buildServer(_Host,
                                                   _Port,
                                                   getSocketConfig(_Holder.getSlot()),
@@ -200,6 +191,8 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
+        registerFactory(_Holder.getSort()
+                               .getFactory());
         _PeerClient.connect(buildConnector(host, port, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
@@ -208,6 +201,8 @@ public class DeviceNode
     {
         final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
+        registerFactory(_Holder.getSort()
+                               .getFactory());
         _GateClient.connect(buildConnector(host, port, socketConfig, _GateClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
@@ -254,26 +249,20 @@ public class DeviceNode
     }
 
     @Override
-    public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
+    public void exchange(IProtocol body, long target, int factory, List<ITriple> load)
     {
-        return _FactoryMap.get(factorySerial);
-    }
-
-    @Override
-    public void exchange(IoSerial body, long origin, int factory, List<ITriple> load)
-    {
-        if(load == null || body == null || origin == INVALID_INDEX) {
-            _Logger.warning("exchange failed{ load:%s body:%s origin:%#x }", load, body, origin);
+        if(load == null || body == null || target == INVALID_INDEX) {
+            _Logger.warning("exchange failed{ load:%s body:%s origin:%#x }", load, body, target);
             return;
         }
-        ISession session = findSessionOverIndex(origin);
+        ISession session = findSessionOverIndex(target);
         if(session == null) {
             _Logger.warning("exchange failed, no session routing");
             return;
         }
         X0F_Exchange x0F = new X0F_Exchange(clusterPeer().generateId());
         x0F.withSub(body);
-        x0F.origin(origin);
+        x0F.origin(target);
         x0F.factory(factory);
         x0F.client(clusterPeer().peerId());
         load.add(Triple.of(x0F, session, session.encoder()));

@@ -43,5 +43,5 @@ public interface IMappingCustom
      * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
      * third: operator-type
      */
-    ITriple handle(IManager manager, ISession session, IProtocol content);
+    ITriple inject(IManager manager, ISession session, IProtocol content);
 }

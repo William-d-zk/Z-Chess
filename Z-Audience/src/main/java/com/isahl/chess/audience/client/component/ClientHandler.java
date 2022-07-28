@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
@@ -37,14 +37,14 @@ import java.util.List;
 public class ClientHandler
         implements ILogicHandler
 {
-    private final Logger   _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
-    private final IHealth  _Health;
-    private final IManager _Manager;
+    private final Logger     _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
+    private final IHealth    _Health;
+    private final IExchanger _Exchanger;
 
-    public ClientHandler(IHealth health, IManager manager)
+    public ClientHandler(IHealth health, IExchanger exchanger)
     {
         _Health = health;
-        _Manager = manager;
+        _Exchanger = exchanger;
     }
 
     @Override
@@ -60,9 +60,9 @@ public class ClientHandler
     }
 
     @Override
-    public IManager getManager()
+    public IExchanger getExchanger()
     {
-        return _Manager;
+        return _Exchanger;
     }
 
     @Override

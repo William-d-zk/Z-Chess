@@ -65,10 +65,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
@@ -314,6 +311,12 @@ public class ClientPool
     public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
     {
         return _FactoryMap.get(factorySerial);
+    }
+
+    @Override
+    public void exchange(IProtocol body, long target, int factory, List<ITriple> load)
+    {
+        throw new UnsupportedOperationException("client unsupported exchange,no routing");
     }
 }
 

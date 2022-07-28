@@ -34,7 +34,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public interface ILogicHandler
 {
     Logger getLogger();
 
-    IManager getManager();
+    IExchanger getExchanger();
 
     @Override
     default void onEvent(QEvent event, long sequence)

@@ -37,7 +37,6 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.cluster.features.IExchangeService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
@@ -49,6 +48,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 import com.isahl.chess.queen.io.core.features.model.routes.IRouter;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -82,15 +82,12 @@ public class MQttPlugin
     private final IMessageService _MessageService;
     private final IStateService   _StateService;
 
-    private final IExchangeService _ExchangeService;
-
     @Autowired
-    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService, IExchangeService exchangeService)
+    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService)
     {
         _DeviceService = deviceService;
         _MessageService = messageService;
         _StateService = stateService;
-        _ExchangeService = exchangeService;
     }
 
     @Override
@@ -123,7 +120,7 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IManager manager, ISession session, IProtocol content)
+    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
     {
         List<ITriple> results = null;
         switch(content.serial()) {
@@ -140,7 +137,7 @@ public class MQttPlugin
                         x114.with(session);
                         results.add(Triple.of(x114, session, session.encoder()));
                     case ALMOST_ONCE:
-                        brokerTopic(manager, x113, broker(x113.topic()), results);
+                        brokerTopic(exchanger, x113, broker(x113.topic()), results);
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
@@ -186,7 +183,7 @@ public class MQttPlugin
                             n113.withTopic(received.topic());
                             n113.withSub(received.payload());
                             n113.setLevel(IQoS.Level.EXACTLY_ONCE);
-                            brokerTopic(manager, n113, broker(n113.topic()), results);
+                            brokerTopic(exchanger, n113, broker(n113.topic()), results);
                         }
                     }
                 }
@@ -488,7 +485,7 @@ public class MQttPlugin
         return Pattern.compile(topic);
     }
 
-    private void brokerTopic(IManager manager, X113_QttPublish x113, List<Subscribe.Mapped> mappeds, List<ITriple> results)
+    private void brokerTopic(IExchanger exchanger, X113_QttPublish x113, List<Subscribe.Mapped> mappeds, List<ITriple> results)
     {
         mappeds.forEach(mapped->{
             long target = mapped.session();
@@ -500,7 +497,7 @@ public class MQttPlugin
             {
                 n113.msgId(_MessageService.generateId(target));
             }
-            ISession session = manager.findSessionByIndex(target);
+            ISession session = exchanger.findSessionByIndex(target);
             if(session != null) {
                 _Logger.debug("topic % → session %#x ", session.index());
                 n113.with(session);
@@ -512,7 +509,7 @@ public class MQttPlugin
                 results.add(Triple.of(n113, session, session.encoder()));
             }
             else {
-                _ExchangeService.exchange(n113, target, QttFactory._Instance.serial(), results);
+                exchanger.exchange(n113, target, QttFactory._Instance.serial(), results);
                 _Logger.debug("no local routing,cluster exchange %#x", mapped.session());
             }
         });

@@ -174,7 +174,7 @@ public class MixMappingHandler<T extends IStorage>
                             else if(result != null) {
                                 IProtocol request = result.getSecond();
                                 if(request != null) {
-                                    publish(_Writer, _LinkCustom.notify(_SessionManager, request, _ClusterCustom.skipConsistency(request)));
+                                    publish(_Writer, _LinkCustom.onConsistency(_SessionManager, request, _ClusterCustom.skipConsistency(request)));
                                 }
                                 else {
                                     _Logger.warning("no consistency to do");
@@ -281,7 +281,7 @@ public class MixMappingHandler<T extends IStorage>
                     IOperator<IConsistency, IManager, IProtocol> unbox = event.getEventOp();
                     if(consistency != null) {
                         try {
-                            publish(_Writer, _LinkCustom.notify(_SessionManager, unbox.handle(consistency, manager), consistency));
+                            publish(_Writer, _LinkCustom.onConsistency(_SessionManager, unbox.handle(consistency, manager), consistency));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
@@ -312,7 +312,7 @@ public class MixMappingHandler<T extends IStorage>
 
     private ITriple doCustom(IMappingCustom custom, IManager manager, ISession session, IProtocol received)
     {
-        ITriple result = custom.handle(manager, session, received);
+        ITriple result = custom.inject(manager, session, received);
         /*
          * fst  [response → cluster peer session] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
          * snd  [response → link handler] : command implements 'IConsistentResult', 需要传递给LINK的内容，
