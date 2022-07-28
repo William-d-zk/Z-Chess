@@ -100,7 +100,7 @@ public class X75_RaftReq
     @Override
     public int length()
     {
-        return super.length() + 16;
+        return super.length() + 20;
     }
 
     public long client()

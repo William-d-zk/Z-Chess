@@ -113,7 +113,7 @@ public class LogEntry
                     .putLong(term())
                     .putLong(client())
                     .putLong(origin())
-                    .putInt(mFactory);
+                    .putInt(factory());
     }
 
     @Override
