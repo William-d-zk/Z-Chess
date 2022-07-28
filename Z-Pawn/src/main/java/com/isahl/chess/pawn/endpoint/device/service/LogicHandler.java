@@ -35,6 +35,7 @@ import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -43,7 +44,7 @@ import java.util.List;
 /**
  * @author william.d.zk
  */
-public class LogicHandler<T extends IActivity & IManager & IClusterNode>
+public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         implements ILogicHandler
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
@@ -68,7 +69,7 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
     }
 
     @Override
-    public IManager getManager()
+    public IExchanger getExchanger()
     {
         return _ClusterNode;
     }
@@ -86,10 +87,10 @@ public class LogicHandler<T extends IActivity & IManager & IClusterNode>
             if(!service.isSupported(content)) continue;
             try {
                 if(results == null) {
-                    results = service.onLogic(getManager(), session, content);
+                    results = service.onLogic(getExchanger(), session, content);
                 }
                 else {
-                    List<ITriple> appends = service.onLogic(getManager(), session, content);
+                    List<ITriple> appends = service.onLogic(getExchanger(), session, content);
                     if(appends != null && !appends.isEmpty()) results.addAll(appends);
                 }
             }

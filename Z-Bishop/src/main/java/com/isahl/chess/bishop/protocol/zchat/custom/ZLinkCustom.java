@@ -49,9 +49,9 @@ public class ZLinkCustom
     }
 
     @Override
-    public List<ITriple> notify(IManager manager, IProtocol request, IConsistency backload)
+    public List<ITriple> onConsistency(IManager manager, IProtocol request, IConsistency backload)
     {
-        return _Then != null ? _Then.notify(manager, request, backload) : null;
+        return _Then != null ? _Then.onConsistency(manager, request, backload) : null;
     }
 
     @Override

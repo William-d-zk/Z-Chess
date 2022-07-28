@@ -30,6 +30,7 @@ import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEnti
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
@@ -50,7 +51,7 @@ public class HttpPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IManager manager, ISession session, IProtocol content)
+    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
     {
         return null;
     }

@@ -28,6 +28,7 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -41,12 +42,12 @@ public interface IAccessService
     boolean isSupported(IoSerial input);
 
     /**
-     * @param manager session manager
-     * @param session by session
-     * @param content input IProtocol
+     * @param exchanger session manager
+     * @param session   by session
+     * @param content   input IProtocol
      * @return fst 「IControl」snd「ISession」trd「ISession.IEncoder」
      */
-    List<ITriple> onLogic(IManager manager, ISession session, IProtocol content);
+    List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content);
 
     /**
      * @param manager session manager
@@ -72,4 +73,5 @@ public interface IAccessService
     {
         return null;
     }
+
 }

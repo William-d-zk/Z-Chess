@@ -61,7 +61,7 @@ public class RaftCustom
      * trd  [operator-type] : operator-type [SINGLE|BATCH]
      */
     @Override
-    public ITriple handle(IManager manager, ISession session, IProtocol received)
+    public ITriple inject(IManager manager, ISession session, IProtocol received)
     {
         /*
          * leader -> follow, self::follow

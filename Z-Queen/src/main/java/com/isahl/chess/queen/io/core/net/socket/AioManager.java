@@ -22,11 +22,13 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.slf4j.event.Level;
 
@@ -43,16 +45,16 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.PREF
  * @author William.d.zk
  */
 public abstract class AioManager
-        implements IManager
+        implements IExchanger
 {
     protected final Logger _Logger = Logger.getLogger("io.queen." + getClass().getSimpleName());
 
-    private final Map<Long, ISession>[]      _Index2SessionMaps;
-    private final Map<Long, Set<ISession>>[] _Prefix2SessionMaps;
-    private final Set<ISession>[]            _SessionsSets;
-    private final IAioConfig                 _AioConfig;
-
-    private final Map<Long, Long> _Index2PrefixMap;
+    private final Map<Long, ISession>[]              _Index2SessionMaps;
+    private final Map<Long, Set<ISession>>[]         _Prefix2SessionMaps;
+    private final Set<ISession>[]                    _SessionsSets;
+    private final IAioConfig                         _AioConfig;
+    private final Map<Long, Long>                    _Index2PrefixMap;
+    private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     public ISocketConfig getSocketConfig(int type)
     {
@@ -68,6 +70,7 @@ public abstract class AioManager
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
         _Index2PrefixMap = new HashMap<>(23);
+        _FactoryMap = new HashMap<>();
         Arrays.setAll(_SessionsSets, slot->_AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)) : null);
         Arrays.setAll(_Index2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)) : null);
         Arrays.setAll(_Prefix2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(23) : null);
@@ -302,4 +305,14 @@ public abstract class AioManager
         return typeSlot > ZUID.MAX_TYPE ? null : _Index2SessionMaps[typeSlot].values();
     }
 
+    public void registerFactory(IoFactory<IProtocol> factory)
+    {
+        _FactoryMap.putIfAbsent(factory.serial(), factory);
+    }
+
+    @Override
+    public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
+    {
+        return _FactoryMap.get(factorySerial);
+    }
 }

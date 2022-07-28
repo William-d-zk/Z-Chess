@@ -71,7 +71,7 @@ public class NodeService
     @Autowired
     public NodeService(MixConfig deviceConfig,
                        @Qualifier("pawn_io_config")
-                               IAioConfig ioConfig,
+                       IAioConfig ioConfig,
                        TimeWheel timeWheel,
                        IMixConfig mixConfig,
                        IRaftConfig raftConfig,
@@ -82,18 +82,10 @@ public class NodeService
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
-                                          .map(listener->Triple.of(listener.getHost(),
-                                                                   listener.getPort(),
-                                                                   ZSortHolder._Mapping(listener.getScheme())))
+                                          .map(listener->Triple.of(listener.getHost(), listener.getPort(), ZSortHolder._Mapping(listener.getScheme())))
                                           .collect(Collectors.toList());
         _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
-        _DeviceNode = new DeviceNode(hosts,
-                                     deviceConfig.isMultiBind(),
-                                     ioConfig,
-                                     raftConfig,
-                                     mixConfig,
-                                     timeWheel,
-                                     _RaftPeer);
+        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel, _RaftPeer);
         _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
         _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters, hooks);
@@ -113,7 +105,7 @@ public class NodeService
      * → ConsistencyOpenService
      */
     @Bean
-    public DeviceNode getDeviceNode()
+    public DeviceNode _DeviceNodeBean()
     {
         return _DeviceNode;
     }
@@ -123,14 +115,14 @@ public class NodeService
      * → ConsistencyOpenService
      */
     @Bean
-    public RaftPeer getRaftPeer() {return _RaftPeer;}
+    public RaftPeer _RaftPeerBean() {return _RaftPeer;}
 
     /**
      * @return RaftCustom
      * → ConsistencyOpenService
      */
     @Bean
-    public RaftCustom getRaftCustom()
+    public RaftCustom _RaftCustomBean()
     {
         return _RaftCustom;
     }

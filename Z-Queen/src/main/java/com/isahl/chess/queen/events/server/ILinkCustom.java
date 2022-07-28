@@ -50,7 +50,7 @@ public interface ILinkCustom
      * @param backload cluster 处理请求的返回结果
      * @return first: response, second:session, third:operator
      */
-    List<ITriple> notify(IManager manager, IProtocol request, IConsistency backload);
+    List<ITriple> onConsistency(IManager manager, IProtocol request, IConsistency backload);
 
     /**
      * 当出现了关闭 session 的需要时

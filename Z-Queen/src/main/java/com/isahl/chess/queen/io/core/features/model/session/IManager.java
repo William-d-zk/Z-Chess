@@ -99,8 +99,8 @@ public interface IManager
     /**
      * 删除所有 prefix→sessions的关系
      *
-     * @param prefix
-     * @return
+     * @param prefix 前缀
+     * @return collection 被解除关系的 session 集合
      */
     Collection<ISession> clearAllSessionByPrefix(long prefix);
 
@@ -114,5 +114,8 @@ public interface IManager
     void rmSession(ISession session);
 
     IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial);
+
+
+
 
 }

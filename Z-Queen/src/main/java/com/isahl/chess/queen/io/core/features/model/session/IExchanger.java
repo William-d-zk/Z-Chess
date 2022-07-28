@@ -21,18 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.cluster.features;
+package com.isahl.chess.queen.io.core.features.model.session;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 import java.util.List;
 
-/**
- * 由cluster 提供的节点间消息转发服务
- */
-public interface IExchangeService
+public interface IExchanger
+        extends IManager
 {
-    void exchange(IoSerial body, long origin, int factory, IManager manager, List<ITriple> load);
+    void exchange(IProtocol body, long target, int factory, List<ITriple> load);
 }
