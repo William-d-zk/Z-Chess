@@ -38,7 +38,6 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,30 +57,27 @@ public class WebSocketPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
+    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         _Logger.info("web socket recv:[ %s ]", content);
 
         switch(content.serial()) {
             case 0x101 -> {
                 X101_HandShake<?> request = (X101_HandShake<?>) content;
-                return Collections.singletonList(Triple.of(request.context()
-                                                                  .getHandshake()
-                                                                  .with(session), session, session.encoder()));
+                load.add(Triple.of(request.context()
+                                          .getHandshake()
+                                          .with(session), session, session.encoder()));
             }
             case 0x102 -> {
-                return Collections.singletonList(Triple.of(content, session, session.encoder()));
+                load.add(Triple.of(content, session, session.encoder()));
             }
             case 0x103 -> {
-                return Collections.singletonList(Triple.of(new X104_Pong<>().with(session), session, session.encoder()));
+                load.add(Triple.of(new X104_Pong<>().with(session), session, session.encoder()));
             }
             case 0x105 -> {
-                return Collections.singletonList(Triple.of(new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session),
-                                                           session,
-                                                           session.encoder()));
+                load.add(Triple.of(new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session), session, session.encoder()));
             }
         }
-        return null;
     }
 
     @Override

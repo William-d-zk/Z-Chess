@@ -47,8 +47,14 @@ public class X0F_Exchange
         super(msgId);
     }
 
-    private long mClient;
-    private long mOrigin;
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
+
+    private long mPeer;
+    private long mTarget;
 
     private int mFactory;
 
@@ -68,20 +74,19 @@ public class X0F_Exchange
     public String toString()
     {
         return String.format("X0F_Exchange { node-client:%#x, origin:%#x, factory:%s sub-size[%d]}",
-                             mClient,
-                             mOrigin,
+                             mPeer, mTarget,
                              IoUtil.intToChars(mFactory),
                              payload() == null ? payload().length : 0);
     }
 
-    public void origin(long origin)
+    public void target(long target)
     {
-        mOrigin = origin;
+        mTarget = target;
     }
 
-    public long origin()
+    public long target()
     {
-        return mOrigin;
+        return mTarget;
     }
 
     public int factory()
@@ -98,8 +103,8 @@ public class X0F_Exchange
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mClient)
-                    .putLong(mOrigin)
+                    .putLong(mPeer)
+                    .putLong(mTarget)
                     .putInt(mFactory);
     }
 
@@ -107,8 +112,8 @@ public class X0F_Exchange
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mClient = input.getLong();
-        mOrigin = input.getLong();
+        mPeer = input.getLong();
+        mTarget = input.getLong();
         mFactory = input.getInt();
         return remain - 20;
     }
@@ -119,14 +124,14 @@ public class X0F_Exchange
         return super.length() + 20;
     }
 
-    public long client()
+    public long peer()
     {
-        return mClient;
+        return mPeer;
     }
 
-    public void client(long client)
+    public void peer(long peer)
     {
-        mClient = client;
+        mPeer = peer;
     }
 
 }

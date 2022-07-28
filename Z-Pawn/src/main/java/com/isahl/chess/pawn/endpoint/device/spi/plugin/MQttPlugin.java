@@ -27,6 +27,7 @@ import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
@@ -56,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -97,14 +97,14 @@ public class MQttPlugin
     }
 
     @Override
-    public List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager)
+    public void onExchange(X0F_Exchange x0F, IManager manager, List<ITriple> load)
     {
-        List<ITriple> results = null;
-        IProtocol body = x0F.deserializeSub(manager.findIoFactoryBySerial(factory));
+        IProtocol body = x0F.deserializeSub(manager.findIoFactoryBySerial(x0F.factory()));
+        _Logger.debug("onExchange:%s ");
         switch(body.serial()) {
             case 0x113 -> {
                 X113_QttPublish x113 = (X113_QttPublish) body;
-                ISession session = manager.findSessionByIndex(target);
+                ISession session = manager.findSessionByIndex(x0F.target());
                 if(session != null) {
                     x113.with(session);
                     if(x113.level()
@@ -112,39 +112,36 @@ public class MQttPlugin
                     {
                         register(x113.msgId(), x113);
                     }
-                    results.add(Triple.of(x113, session, session.encoder()));
+                    load.add(Triple.of(x113, session, session.encoder()));
                 }
             }
         }
-        return results;
     }
 
     @Override
-    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
+    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
-        List<ITriple> results = null;
         switch(content.serial()) {
             case 0x113:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(x113.isRetain()) {
                     retain(x113.topic(), x113);
                 }
-                results = new LinkedList<>();
                 switch(x113.level()) {
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.msgId(x113.msgId());
                         x114.with(session);
-                        results.add(Triple.of(x114, session, session.encoder()));
+                        load.add(Triple.of(x114, session, session.encoder()));
                     case ALMOST_ONCE:
-                        brokerTopic(exchanger, x113, broker(x113.topic()), results);
+                        brokerTopic(exchanger, x113, broker(x113.topic()), load);
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.msgId(x113.msgId());
                         x115.with(session);
                         x115.target(session.index());
-                        results.add(Triple.of(x115, session, session.encoder()));
+                        load.add(Triple.of(x115, session, session.encoder()));
                         register(x115.msgId(), x115);
                         _StateService.store(session.index(), x113.msgId(), x113);
                         break;
@@ -163,8 +160,7 @@ public class MQttPlugin
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.msgId(x115.msgId());
                 x116.target(session.index());
-                results = new LinkedList<>();
-                results.add(Triple.of(x116.with(session), session, session.encoder()));
+                load.add(Triple.of(x116.with(session), session, session.encoder()));
                 register(x116.msgId(), x116);
                 break;
             case 0x116:
@@ -172,8 +168,7 @@ public class MQttPlugin
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.msgId(x116.msgId());
-                results = new LinkedList<>();
-                results.add(Triple.of(x117.with(session), session, session.encoder()));
+                load.add(Triple.of(x117.with(session), session, session.encoder()));
                 if(ack(x116.msgId(), session.index())) {
                     if(_StateService.exists(session.index(), x116.msgId())) {
                         MsgStateEntity received = _StateService.extract(session.index(), x116.msgId());
@@ -183,7 +178,7 @@ public class MQttPlugin
                             n113.withTopic(received.topic());
                             n113.withSub(received.payload());
                             n113.setLevel(IQoS.Level.EXACTLY_ONCE);
-                            brokerTopic(exchanger, n113, broker(n113.topic()), results);
+                            brokerTopic(exchanger, n113, broker(n113.topic()), load);
                         }
                     }
                 }
@@ -193,9 +188,8 @@ public class MQttPlugin
                 ack(x117.msgId(), session.index());
                 break;
             case 0x11C:
-                return Collections.singletonList(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
+                load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
         }
-        return results;
     }
 
     @Override
@@ -243,7 +237,7 @@ public class MQttPlugin
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
                         _Logger.info("re-login ok, wait for consistent notify;client[%s]", x111.getClientId());
-                        return Triple.of(new X0A_Shutdown().with(old), x111, SINGLE);
+                        return Triple.of(new X11E_QttDisconnect().with(old), x111, SINGLE);
                     }
                     else {
                         _Logger.info("login check ok,wait for consistent notify;client[%s]", x111.getClientId());

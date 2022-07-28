@@ -51,9 +51,9 @@ public class HttpPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
+    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
-        return null;
+
     }
 
     @Override

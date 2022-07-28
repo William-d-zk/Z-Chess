@@ -36,7 +36,6 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -56,17 +55,16 @@ public class ClusterPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
+    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         switch(content.serial()) {
             case 0x0B -> {
-                _Logger.debug("pawn handle z-chat-ping");
+                //                _Logger.debug("pawn handle z-chat-ping");
                 X0C_Pong x0C = new X0C_Pong();
                 x0C.with(session);
-                return Collections.singletonList(Triple.of(x0C, session, session.encoder()));
+                load.add(Triple.of(x0C, session, session.encoder()));
             }
         }
-        return null;
     }
 
     @Override

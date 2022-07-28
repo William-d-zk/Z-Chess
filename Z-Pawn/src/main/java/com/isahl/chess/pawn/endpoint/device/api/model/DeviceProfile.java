@@ -44,6 +44,8 @@ public class DeviceProfile
     private String imei;
     private String imsi;
 
+    private boolean onlyWords;
+
     public String getWifiMac()
     {
         return wifiMac;
@@ -92,5 +94,15 @@ public class DeviceProfile
     public void setImsi(String imsi)
     {
         this.imsi = imsi;
+    }
+
+    public boolean isOnlyWords()
+    {
+        return onlyWords;
+    }
+
+    public void setOnlyWords(boolean onlyWords)
+    {
+        this.onlyWords = onlyWords;
     }
 }

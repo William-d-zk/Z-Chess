@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -36,9 +37,9 @@ import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
-import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -82,23 +83,30 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
 
     private List<ITriple> logicHandle(IProtocol content, ISession session)
     {
-        List<ITriple> results = null;
+        List<ITriple> results = new LinkedList<>();
         for(IAccessService service : _AccessService) {
-            if(!service.isSupported(content)) continue;
-            try {
-                if(results == null) {
-                    results = service.onLogic(getExchanger(), session, content);
+            if(service.isSupported(content)) {
+                try {
+                    service.onLogic(getExchanger(), session, content, results);
                 }
-                else {
-                    List<ITriple> appends = service.onLogic(getExchanger(), session, content);
-                    if(appends != null && !appends.isEmpty()) results.addAll(appends);
+                catch(Exception e) {
+                    _Logger.warning("logic handle:%s",
+                                    e,
+                                    service.getClass()
+                                           .getSimpleName());
                 }
             }
-            catch(Exception e) {
-                _Logger.warning("logic handle:%s",
-                                e,
-                                service.getClass()
-                                       .getSimpleName());
+            else if(content.serial() == 0x0F) {
+                try {
+                    service.onExchange((X0F_Exchange) content, getExchanger(), results);
+                }
+                catch(Exception e) {
+                    _Logger.warning("on exchange,%s <- %s",
+                                    e,
+                                    content,
+                                    service.getClass()
+                                           .getSimpleName());
+                }
             }
         }
         for(IHandleHook hook : _HandleHooks) {
@@ -112,7 +120,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
                                     .getSimpleName());
             }
         }
-        return results;
+        return results.isEmpty() ? null : results;
     }
 
     @Override

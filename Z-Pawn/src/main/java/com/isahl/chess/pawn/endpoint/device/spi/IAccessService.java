@@ -45,9 +45,9 @@ public interface IAccessService
      * @param exchanger session manager
      * @param session   by session
      * @param content   input IProtocol
-     * @return fst 「IControl」snd「ISession」trd「ISession.IEncoder」
+     * @param load      handle on 'load' element: fst 「IControl」snd「ISession」trd「ISession.IEncoder」
      */
-    List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content);
+    void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load);
 
     /**
      * @param manager session manager
@@ -69,9 +69,9 @@ public interface IAccessService
 
     }
 
-    default List<ITriple> onExchange(X0F_Exchange x0F, long target, int factory, IManager manager)
+    default void onExchange(X0F_Exchange x0F, IManager manager, List<ITriple> load)
     {
-        return null;
+
     }
 
 }

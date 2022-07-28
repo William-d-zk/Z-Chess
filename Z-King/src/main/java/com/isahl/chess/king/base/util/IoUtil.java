@@ -399,9 +399,9 @@ public interface IoUtil
     {
         char[] cs = new char[4];
         cs[0] = (char) (num >>> 24);
-        cs[1] = (char) (num >>> 16);
-        cs[2] = (char) (num >>> 8);
-        cs[3] = (char) num;
+        cs[1] = (char) ((num >> 16) & 0xFF);
+        cs[2] = (char) ((num >> 8) & 0xFF);
+        cs[3] = (char) (num & 0xFF);
         return new String(cs);
     }
 

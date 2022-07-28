@@ -218,8 +218,7 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix }
-                                                : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
+        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
     }
 
     @Override
@@ -228,9 +227,7 @@ public class AioSession<C extends IPContext>
         _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
         int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
         if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s",
-                                                             prefix,
-                                                             longArrayToHex(mSessionPrefix)));
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mSessionPrefix)));
         }
         return mSessionPrefix[pos] & 0xFFFFFFFFL;
     }
@@ -241,9 +238,7 @@ public class AioSession<C extends IPContext>
         _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
         int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
         if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s",
-                                                             prefix,
-                                                             longArrayToHex(mSessionPrefix)));
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mSessionPrefix)));
         }
         if((mSessionPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
             mSessionPrefix[pos] += 1;

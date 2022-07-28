@@ -50,7 +50,7 @@ public class EchoPlugin
     }
 
     @Override
-    public List<ITriple> onLogic(IExchanger exchanger, ISession session, IProtocol content)
+    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         throw new UnsupportedOperationException();
     }

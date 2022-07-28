@@ -66,4 +66,17 @@ public class IoUtilTest
         buffer.discard();
         buffer.get();
     }
+
+    @Test
+    void intToChars()
+    {
+        char[] chars = { 'M',
+                         'Q',
+                         'T',
+                         'T' };
+        System.out.println(new String(chars));
+        int a = 'M' << 24 | 'Q' << 16 | 'T' << 8 | 'T';
+        System.out.println(IoUtil.intToChars(a));
+
+    }
 }
