@@ -29,7 +29,7 @@ import com.isahl.chess.board.annotation.ISerialFactory;
  * @author william.d.zk
  * @date 2019-05-08
  */
-@ISerialFactory(serial = ('S' << 24) + ('Y' << 16) + ('M' << 8) + 'M')
+@ISerialFactory(serial = ('S' << 24) | ('Y' << 16) | ('M' << 8) | 'M')
 public class ZSymmetryFactory
         extends ZChatFactory
 {
