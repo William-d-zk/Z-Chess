@@ -119,7 +119,9 @@ public class LinkCustom
                 if(input.subContent() instanceof LogEntry sub) {
                     entry = sub;
                 }
-                else {entry = input.deserializeSub(LogEntry::new);}
+                else {
+                    entry = input.deserializeSub(LogEntry::new);
+                }
                 if(entry.payload() != null) {
                     IoFactory<IProtocol> factory = manager.findIoFactoryBySerial(entry.factory());
                     return factory.create(entry.subEncoded());

@@ -913,6 +913,7 @@ public class RaftPeer
                     X75_RaftReq x75 = new X75_RaftReq(generateId());
                     x75.withSub(request);
                     x75.origin(origin);
+                    x75.factory(factory);
                     x75.client(_SelfMachine.peer());
                     x75.with(session);
                     return Collections.singletonList(Triple.of(x75, session, session.encoder()));
@@ -934,14 +935,14 @@ public class RaftPeer
         if(_SelfMachine.isInState(LEADER)) {
             List<ITriple> appends = leaderAppend(x75.payload(), x75.client(), x75.origin(), x75.factory(), manager);
             if(appends != null && !appends.isEmpty()) {
-                return Triple.of(appends, response(SUCCESS, x75.client(), x75.msgId()).with(session), BATCH);
+                return Triple.of(appends, response(SUCCESS, x75.client(), x75.msgId(), x75.origin()).with(session), BATCH);
             }
             else {
-                return Triple.of(null, response(WAL_FAILED, x75.client(), x75.msgId()).with(session), NULL);
+                return Triple.of(null, response(WAL_FAILED, x75.client(), x75.msgId(), x75.origin()).with(session), NULL);
             }
         }
         else {
-            return Triple.of(null, response(ILLEGAL_STATE, x75.client(), x75.msgId()).with(session), NULL);
+            return Triple.of(null, response(ILLEGAL_STATE, x75.client(), x75.msgId(), x75.origin()).with(session), NULL);
         }
     }
 
@@ -1115,18 +1116,19 @@ public class RaftPeer
         }
     }
 
-    private X76_RaftResp response(RaftCode code, long client, long reqId)
+    private X76_RaftResp response(RaftCode code, long client, long reqId, long origin)
     {
         X76_RaftResp x76 = new X76_RaftResp(reqId);
         x76.client(client);
+        x76.origin(origin);
         x76.code(code.getCode());
         return x76;
     }
 
     private List<ITriple> leaderAppend(byte[] payload, long client, long origin, int factory, IManager manager)
     {
-        _Logger.debug("leader append new log");
         LogEntry newEntry = new LogEntry(_SelfMachine.index() + 1, _SelfMachine.term(), client, origin, factory, payload);
+        _Logger.debug("leader append new log {%s}", newEntry);
         if(_RaftMapper.append(newEntry)) {
             _SelfMachine.append(newEntry.index(), newEntry.term(), _RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.index(), newEntry.term());
@@ -1305,6 +1307,8 @@ public class RaftPeer
         if(raftLog != null) {
             X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
             x77.withSub(raftLog);
+            x77.client(raftLog.client());
+            x77.origin(raftLog.origin());
             return x77;
         }
         return null;

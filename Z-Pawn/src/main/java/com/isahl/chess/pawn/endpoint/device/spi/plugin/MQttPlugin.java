@@ -290,16 +290,16 @@ public class MQttPlugin
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
                 if(os != null && cs != null) {
-                    manager.mapSession(origin, cs);
+                    manager.route(origin, client);
                     _Logger.debug("origin[%#x] login @[%#x], shutdown old", origin, client);
                     return Collections.singletonList(Triple.of(new X0A_Shutdown().with(os), os, os.encoder()));
                 }
                 else if(os == null && cs != null) {
-                    manager.mapSession(origin, cs);
+                    manager.route(origin, client);
                     _Logger.debug("origin[%#x] login @[%#x]", origin, client);
                 }
                 else if(os != null) { // cs == null 请求发生在本节点
-                    x112.with(os);
+                    x112.with(os);//为 112 关联 QttContext, context 是绑定在session上
                     if(code == SUCCESS) {
                         _Logger.info("%s → %#x login @[%#x]", x111.getClientId(), origin, client);
                         if(x111.isClean()) {
@@ -324,7 +324,7 @@ public class MQttPlugin
                     x119.msgId(x118.msgId());
                     if(os != null) {
                         if(subscribes != null) {
-                            _Logger.info("subscribe topic:%s", x118.getSubscribes());
+                            _Logger.info("subscribe topic: %s", x118.getSubscribes());
                             _Logger.debug(" → origin[%#x] subscribe @[%#x], ack ", origin, client);
                             subscribes.forEach((topic, level)->{
                                 Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
@@ -487,6 +487,7 @@ public class MQttPlugin
 
     private void brokerTopic(IExchanger exchanger, X113_QttPublish x113, List<Subscribe.Mapped> mappeds, List<ITriple> results)
     {
+        _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
         mappeds.forEach(mapped->{
             long target = mapped.session();
             X113_QttPublish n113 = x113.copy();
@@ -499,7 +500,7 @@ public class MQttPlugin
             }
             ISession session = exchanger.findSessionByIndex(target);
             if(session != null) {
-                _Logger.debug("topic % → session %#x ", session.index());
+                _Logger.debug("broker topic → session [%#x,%s] ", session.index(), mapped.level());
                 n113.with(session);
                 if(mapped.level()
                          .getValue() > 0)
@@ -513,7 +514,7 @@ public class MQttPlugin
                 _Logger.debug("no local routing,cluster exchange %#x", mapped.session());
             }
         });
-        _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
+
     }
 
 }
