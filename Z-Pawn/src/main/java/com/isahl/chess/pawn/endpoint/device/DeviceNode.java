@@ -262,9 +262,9 @@ public class DeviceNode
         }
         X0F_Exchange x0F = new X0F_Exchange(clusterPeer().generateId());
         x0F.withSub(body);
-        x0F.origin(target);
+        x0F.target(target);
         x0F.factory(factory);
-        x0F.client(clusterPeer().peerId());
-        load.add(Triple.of(x0F, session, session.encoder()));
+        x0F.peer(clusterPeer().peerId());
+        load.add(Triple.of(x0F.with(session), session, session.encoder()));
     }
 }

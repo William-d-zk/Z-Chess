@@ -70,10 +70,7 @@ public class DeviceService
     private final MixConfig         _MixConfig;
 
     @Autowired
-    public DeviceService(IDeviceRepository deviceRepository,
-                         CacheManager cacheManager,
-                         MixConfig mixConfig,
-                         CacheChecker cacheChecker)
+    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig, CacheChecker cacheChecker)
     {
         _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;
@@ -83,16 +80,8 @@ public class DeviceService
     @PostConstruct
     public void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "device_token_cache",
-                                  String.class,
-                                  DeviceEntity.class,
-                                  Duration.of(20, MINUTES));
-        EhcacheConfig.createCache(_CacheManager,
-                                  "device_id_cache",
-                                  Long.class,
-                                  DeviceEntity.class,
-                                  Duration.of(15, MINUTES));
+        EhcacheConfig.createCache(_CacheManager, "device_token_cache", String.class, DeviceEntity.class, Duration.of(20, MINUTES));
+        EhcacheConfig.createCache(_CacheManager, "device_id_cache", Long.class, DeviceEntity.class, Duration.of(15, MINUTES));
     }
 
     @CachePut(value = "device_token_cache",
@@ -118,7 +107,10 @@ public class DeviceService
             if(exist.getInvalidAt()
                     .isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId())
             {
-                exist.setPassword(_CryptoUtil.randomPassword(17, 32));
+                exist.setPassword(_CryptoUtil.randomPassword(17,
+                                                             32,
+                                                             device.getProfile()
+                                                                   .isOnlyWords()));
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_MixConfig.getPasswordInvalidDays()));
@@ -149,7 +141,10 @@ public class DeviceService
             if(exist == null || exist.getInvalidAt()
                                      .isBefore(LocalDateTime.now()))
             {
-                entity.setPassword(_CryptoUtil.randomPassword(17, 32));
+                entity.setPassword(_CryptoUtil.randomPassword(17,
+                                                              32,
+                                                              device.getProfile()
+                                                                    .isOnlyWords()));
                 entity.increasePasswordId();
                 entity.setInvalidAt(LocalDateTime.now()
                                                  .plus(_MixConfig.getPasswordInvalidDays()));

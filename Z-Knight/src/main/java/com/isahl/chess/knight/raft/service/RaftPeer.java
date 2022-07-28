@@ -691,8 +691,11 @@ public class RaftPeer
                 for(long i = preIndex; i <= _SelfMachine.accept(); i++) {
                     if(notifies == null) notifies = new LinkedList<>();
                     LogEntry entry = _RaftMapper.getEntry(i);
-                    if(entry.client() != _SelfMachine.peer()) {
+                    if(entry != null && entry.client() != _SelfMachine.peer()) {
                         notifies.add(createNotify(entry));
+                    }
+                    else if(entry == null) {
+                        _Logger.warning("entry %d is null,self accept:%d; check segment", i, _SelfMachine.accept());
                     }
                 }
                 _SelfMachine.commit(min(_SelfMachine.accept(), commit), _RaftMapper);
