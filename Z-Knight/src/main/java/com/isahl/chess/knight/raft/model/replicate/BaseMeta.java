@@ -88,7 +88,7 @@ public abstract class BaseMeta
         }
     }
 
-    public void with(RandomAccessFile file)
+    public void ofFile(RandomAccessFile file)
     {
         mFile = file;
     }

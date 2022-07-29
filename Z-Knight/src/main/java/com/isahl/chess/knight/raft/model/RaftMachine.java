@@ -363,20 +363,17 @@ public class RaftMachine
     }
 
     @Override
-    public void append(long index, long indexTerm, IRaftMapper mapper)
+    public void accept(long index, long indexTerm)
     {
-        mIndex = index;
-        mTerm = mIndexTerm = indexTerm;
-        mapper.updateAccept(mAccept = index);
-        mapper.updateIndexAtTerm(mIndex, mIndexTerm);
-        mapper.updateTerm(mTerm);
+        mAccept = mIndex = index;
+        mIndexTerm = indexTerm;
     }
 
     @Override
     public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
         _Logger.debug("rollback to [ %d@%d ]", index, indexTerm);
-        append(index, indexTerm, mapper);
+        accept(index, indexTerm);
         commit(index, mapper);
     }
 

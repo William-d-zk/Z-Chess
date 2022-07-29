@@ -579,7 +579,7 @@ public class RaftPeer
             }
         }
         else if(x73.accept() < next) {// machine.accept < next → 已经执行过 self commit 过, 无须重复 commit
-            _Logger.debug("already commit %d, follow[ %#x ] accept: %d", _SelfMachine.commit(), x73.peer(), x73.accept());
+            _Logger.debug("already commit %d, follow[ %#x ] accept: %d commit: %d", _SelfMachine.commit(), x73.peer(), x73.accept(), x73.commit());
         }
         else {
             // !_SelfGraph.isMajorAccept(next) → 未满足 commit 条件, 不执行 commit
@@ -776,7 +776,7 @@ public class RaftPeer
                 for(Iterator<LogEntry> it = _RecvLogQueue.iterator(); it.hasNext(); ) {
                     LogEntry entry = it.next();
                     if(_RaftMapper.append(entry)) {
-                        _SelfMachine.append(entry.index(), entry.term(), _RaftMapper);
+                        _SelfMachine.accept(entry.index(), entry.term());
                         _Logger.debug("follower catch up %d@%d", entry.index(), entry.term());
                     }
                     it.remove();
@@ -826,7 +826,7 @@ public class RaftPeer
                 // mapper.append false的状态包含了, _LogQueue.empty的情况
                 while(_RaftMapper.append(entry = _LogQueue.poll())) {
                     assert entry != null;//其实没用,mapper.append的结果已经保障了entry != null
-                    _SelfMachine.append(entry.index(), entry.term(), _RaftMapper);
+                    _SelfMachine.accept(entry.index(), entry.term());
                     _Logger.debug("follower catch up %d@%d", entry.index(), entry.term());
                 }
             }
@@ -842,7 +842,7 @@ public class RaftPeer
                 LogEntry entry;
                 while(_RaftMapper.append(entry = _LogQueue.poll())) {
                     assert entry != null;
-                    _SelfMachine.append(entry.index(), entry.term(), _RaftMapper);
+                    _SelfMachine.accept(entry.index(), entry.term());
                     _Logger.debug("follower catch up %d@%d", entry.index(), entry.term());
                 }
                 return true;
@@ -1133,7 +1133,7 @@ public class RaftPeer
         LogEntry newEntry = new LogEntry(_SelfMachine.index() + 1, _SelfMachine.term(), client, origin, factory, payload);
         _Logger.debug("leader append new log {%s}", newEntry);
         if(_RaftMapper.append(newEntry)) {
-            _SelfMachine.append(newEntry.index(), newEntry.term(), _RaftMapper);
+            _SelfMachine.accept(newEntry.index(), newEntry.term());
             _Logger.debug("leader appended log %d@%d", newEntry.index(), newEntry.term());
             return followersAppend(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
         }
@@ -1315,5 +1315,10 @@ public class RaftPeer
             return x77;
         }
         return null;
+    }
+
+    public IRaftMapper mapper()
+    {
+        return _RaftMapper;
     }
 }

@@ -217,4 +217,11 @@ public class LogMeta
     {
         return mIndexTerm;
     }
+
+    public void accept(LogEntry end)
+    {
+        mAccept = mIndex = end.index();
+        mIndexTerm = end.term();
+    }
+
 }

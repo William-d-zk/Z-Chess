@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,35 +23,50 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
-import com.isahl.chess.king.base.content.ByteBuf;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import static org.junit.jupiter.api.Assertions.*;
 
-class LogMetaTest
+class MapperTest
 {
-    @Test
-    void test()
-    {
-        LogMeta meta = new LogMeta();
-        ByteBuf buffer = meta.encode();
 
-        LogMeta meta2 = new LogMeta();
-        meta2.decode(buffer);
+    @Test
+    void getEndIndex()
+    {
     }
 
     @Test
-    void testFileLoad() throws IOException
+    void getStartIndex()
     {
-        LogMeta meta = new LogMeta();
+    }
 
-        RandomAccessFile raf = new RandomAccessFile("z-meta", "rw");
-        meta.ofFile(raf);
-        meta.close();
+    @Test
+    void getEntry()
+    {
+    }
 
-        raf = new RandomAccessFile("z-meta", "r");
-        LogMeta load = BaseMeta.from(raf, LogMeta::new);
-        System.out.println(load);
+    @Test
+    void getEntryTerm()
+    {
+    }
+
+    @Test
+    void updateLogStart()
+    {
+    }
+
+    @Test
+    void append()
+    {
+    }
+
+    @Test
+    void truncatePrefix()
+    {
+    }
+
+    @Test
+    void truncateSuffix()
+    {
     }
 }

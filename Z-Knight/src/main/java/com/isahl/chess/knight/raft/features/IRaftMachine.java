@@ -100,7 +100,7 @@ public interface IRaftMachine
 
     void accept(long accept);
 
-    void append(long index, long indexTerm, IRaftMapper mapper);
+    void accept(long index, long indexTerm);
 
     void follow(long term, long leader, IRaftMapper mapper);
 
