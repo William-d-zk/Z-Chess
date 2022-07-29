@@ -31,7 +31,6 @@ import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0A_Shutdown;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -189,6 +188,7 @@ public class MQttPlugin
                 break;
             case 0x11C:
                 load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
+                break;
         }
     }
 
@@ -286,7 +286,7 @@ public class MQttPlugin
                 if(os != null && cs != null) {
                     manager.route(origin, client);
                     _Logger.debug("origin[%#x] login @[%#x], shutdown old", origin, client);
-                    return Collections.singletonList(Triple.of(new X0A_Shutdown().with(os), os, os.encoder()));
+                    return Collections.singletonList(Triple.of(new X11E_QttDisconnect().with(os), os, os.encoder()));
                 }
                 else if(os == null && cs != null) {
                     manager.route(origin, client);
