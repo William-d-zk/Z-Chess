@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
-import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
@@ -99,7 +98,7 @@ public class MQttPlugin
     public void onExchange(X0F_Exchange x0F, IManager manager, List<ITriple> load)
     {
         IProtocol body = x0F.deserializeSub(manager.findIoFactoryBySerial(x0F.factory()));
-        _Logger.debug("onExchange:%s ");
+        _Logger.debug("onExchange:%s ", body);
         switch(body.serial()) {
             case 0x113 -> {
                 X113_QttPublish x113 = (X113_QttPublish) body;
@@ -236,13 +235,13 @@ public class MQttPlugin
                 if(x112.isOk()) {
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
-                        _Logger.info("re-login ok, wait for consistent notify;client[%s]", x111.getClientId());
-                        return Triple.of(new X11E_QttDisconnect().with(old), x111, SINGLE);
+                        _Logger.info("re-login ok, wait for consistent notify; client[%s],close old", x111.getClientId());
+                        old.innerClose();
                     }
                     else {
-                        _Logger.info("login check ok,wait for consistent notify;client[%s]", x111.getClientId());
-                        return Triple.of(null, x111, NULL);
+                        _Logger.info("login check ok, wait for consistent notify; client[%s]", x111.getClientId());
                     }
+                    return Triple.of(null, x111, NULL);
                 }
                 else {
                     _Logger.info("reject %s",
@@ -284,9 +283,10 @@ public class MQttPlugin
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
                 if(os != null && cs != null) {
+                    clean(origin);
                     manager.route(origin, client);
                     _Logger.debug("origin[%#x] login @[%#x], shutdown old", origin, client);
-                    return Collections.singletonList(Triple.of(new X11E_QttDisconnect().with(os), os, os.encoder()));
+                    os.innerClose();
                 }
                 else if(os == null && cs != null) {
                     manager.route(origin, client);

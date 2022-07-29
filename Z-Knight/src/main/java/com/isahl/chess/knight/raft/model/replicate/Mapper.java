@@ -97,11 +97,7 @@ public class Mapper
     @PostConstruct
     private void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "raft_log_entry",
-                                  Long.class,
-                                  LogEntry.class,
-                                  Duration.of(30, SECONDS));
+        EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(30, SECONDS));
         File file = new File(_LogMetaDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
@@ -126,7 +122,7 @@ public class Mapper
             mLogMeta = BaseMeta.from(metaFile, LogMeta::new);
             if(mLogMeta == null) {
                 mLogMeta = new LogMeta();
-                mLogMeta.with(metaFile);
+                mLogMeta.ofFile(metaFile);
             }
         }
         catch(FileNotFoundException e) {
@@ -142,7 +138,7 @@ public class Mapper
             mSnapshotMeta = BaseMeta.from(metaFile, SnapshotMeta::new);
             if(mSnapshotMeta == null) {
                 mSnapshotMeta = new SnapshotMeta();
-                mSnapshotMeta.with(metaFile);
+                mSnapshotMeta.ofFile(metaFile);
             }
         }
         catch(FileNotFoundException e) {
@@ -298,7 +294,8 @@ public class Mapper
                                      return new Segment(subFile, start, canWrite);
                                  }
                              }
-                             catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+                             catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException |
+                                   IllegalAccessException e) {
                                  e.printStackTrace();
                              }
                              return null;
@@ -378,14 +375,14 @@ public class Mapper
                 segment = _Index2SegmentMap.lastEntry()
                                            .getValue();
             }
-            if(segment != null) {
-                segment.add(entry);
+            if(segment != null && segment.add(entry)) {
                 vTotalSize += size;
+                mLogMeta.accept(entry);
                 _Logger.debug("append ok [%d]", newEndIndex);
                 return true;
             }
         }
-        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.index());
+        _Logger.warning("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
         return false;
     }
 
@@ -421,9 +418,7 @@ public class Mapper
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
         updateLogStart(newActualFirstIndex);
-        _Logger.debug("Truncating log from old first index %d to new first index %d",
-                      oldFirstIndex,
-                      newActualFirstIndex);
+        _Logger.debug("Truncating log from old first index %d to new first index %d", oldFirstIndex, newActualFirstIndex);
     }
 
     @Override
@@ -438,8 +433,8 @@ public class Mapper
             try {
                 if(newEndIndex == segment.getEndIndex()) {
                     LogEntry newEndEntry = getEntry(newEndIndex);
-                    // 此时entry 不会为null, 无需此处直接操作log meta.由上层逻辑负责更新
                     _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.index(), newEndEntry.term());
+                    mLogMeta.accept(newEndEntry);
                     return newEndEntry;
                 }
                 else if(newEndIndex < segment.getStartIndex()) {

@@ -74,8 +74,8 @@ public class Segment
                    boolean canWrite) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
         _FileDirectory = file.getParent();
-        _StartIndex = startIndex;
         _Records = new ListSerial<>(LogEntry::new);
+        mEndIndex = _StartIndex = startIndex;
         mFileName = file.getAbsolutePath();
         mCanWrite = canWrite;
         mRandomAccessFile = new RandomAccessFile(file, isCanWrite() ? "rw" : "r");
@@ -155,7 +155,7 @@ public class Segment
         }
     }
 
-    public void add(LogEntry entry)
+    public boolean add(LogEntry entry)
     {
         try {
             if(_Records.add(entry)) {
@@ -180,11 +180,12 @@ public class Segment
                 mFileSize += output.length;
             }
             mEndIndex = entry.index();
-
+            return true;
         }
         catch(IOException e) {
-            throw new ZException("add record failed ", e);
+            _Logger.warning("add record failed ", e);
         }
+        return false;
     }
 
     public long drop() throws IOException
@@ -197,33 +198,34 @@ public class Segment
 
     public long truncate(long newEndIndex) throws IOException
     {
-        int newRecordSize = (int) (newEndIndex - _StartIndex);
-        if(newRecordSize <= 0) {
-            throw new ZException("new record size[%d],error input", newRecordSize);
+        int newRecordCount = (int) (newEndIndex - _StartIndex) + 1;
+        if(newRecordCount < 0) {
+            throw new ZException("new record size[%d],error input", newRecordCount);
         }
-        if(_Records.size() > newRecordSize) {
-            _Records.subList(newRecordSize, _Records.size())
+        if(_Records.size() > newRecordCount) {
+            _Records.subList(newRecordCount, _Records.size())
                     .clear();
+            mEndIndex = newEndIndex;
+            long newFileSize = _Records.sizeOf();
+            long dropSize = mFileSize - newFileSize;
+            ByteBuffer mapped = mRandomAccessFile.getChannel()
+                                                 .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
+            mapped.putInt(_Records.LENGTH_POS, _Records.length());
+            mapped.putInt(_Records.SIZE_POS, _Records.size());
+            mRandomAccessFile.setLength(mFileSize = newFileSize);
+            mRandomAccessFile.close();
+            // 缩减后一定处于可write状态
+            String newFileName = String.format(fileNameFormatter(false), _StartIndex, mEndIndex);
+            String newFullFileName = _FileDirectory + File.separator + newFileName;
+            if(new File(mFileName).renameTo(new File(newFullFileName))) {
+                mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
+                mFileName = newFullFileName;
+            }
+            else {
+                throw new ZException("file [%s] rename to [%s] failed", mFileName, newFileName);
+            }
+            return dropSize;
         }
-        mEndIndex = newEndIndex;
-        long newFileSize = _Records.sizeOf();
-        long dropSize = mFileSize - newFileSize;
-        ByteBuffer mapped = mRandomAccessFile.getChannel()
-                                             .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
-        mapped.putInt(_Records.LENGTH_POS, _Records.length());
-        mapped.putInt(_Records.SIZE_POS, _Records.size());
-        mRandomAccessFile.setLength(mFileSize = newFileSize);
-        mRandomAccessFile.close();
-        // 缩减后一定处于可write状态
-        String newFileName = String.format(fileNameFormatter(false), _StartIndex, mEndIndex);
-        String newFullFileName = _FileDirectory + File.separator + newFileName;
-        if(new File(mFileName).renameTo(new File(newFullFileName))) {
-            mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
-            mFileName = newFullFileName;
-        }
-        else {
-            throw new ZException("file [%s] rename to [%s] failed", mFileName, newFileName);
-        }
-        return dropSize;
+        return 0;
     }
 }
