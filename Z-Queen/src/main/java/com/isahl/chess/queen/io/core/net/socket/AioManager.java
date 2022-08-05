@@ -249,8 +249,10 @@ public abstract class AioManager
         ISession session = _Index2SessionMaps[getSlot(index)].remove(index);
         if(session != null) { // local manage
             long[] bindPrefix = session.getPrefixArray();
-            for(long prefix : bindPrefix) {
-                cleanSessionWithPrefix(session, prefix);
+            if(bindPrefix != null) {
+                for(long prefix : bindPrefix) {
+                    cleanSessionWithPrefix(session, prefix);
+                }
             }
         }
         else {

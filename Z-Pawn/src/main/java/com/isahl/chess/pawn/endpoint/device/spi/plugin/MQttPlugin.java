@@ -257,8 +257,6 @@ public class MQttPlugin
             }
             case 0x11E -> {
                 _Logger.debug("disconnect [%#x] ", session.index());
-                //TODO 清理 session 存档信息
-                clean(session.index());
                 return Triple.of(new X0D_Error(), input, SINGLE);
             }
             case 0x11F -> {
@@ -366,9 +364,9 @@ public class MQttPlugin
                 // 集群同步的 disconnection 事件
                 if(code == SUCCESS) {
                     _Logger.debug("origin [%#x]@[%#x] → offline", origin, client);
+                    clean(origin);
                     ISession session = clean(manager, origin);
                     if(session != null) {
-                        clean(origin);
                         return Collections.singletonList(Triple.of(new X0D_Error(), session, null));
                     }
                     // else '连接' 已经 被清理了
