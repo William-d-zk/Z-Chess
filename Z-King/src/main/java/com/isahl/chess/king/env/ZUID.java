@@ -32,9 +32,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * session port prefix max 2^16
+ * session port-prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
- * [02bit] cluster-type
+ * [02bit] peer-type
  * <p>
  * {00} Client manager service
  * {01} Internal message queue broker

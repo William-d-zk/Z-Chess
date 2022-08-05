@@ -389,13 +389,13 @@ public interface IoUtil
         return null;
     }
 
-    static String longToMacStr(long mac)
+    static String long2MacStr(long mac)
     {
         return Long.toHexString((mac >> 40) & 0xFF) + ":" + Long.toHexString((mac >> 32) & 0xFF) + ":" + Long.toHexString((mac >> 24) & 0xFF) + ":" +
                Long.toHexString((mac >> 16) & 0xFF) + ":" + Long.toHexString((mac >> 8) & 0xFF) + ":" + Long.toHexString(mac & 0xFF) + ":";
     }
 
-    static String intToChars(int num)
+    static String int2Chars(int num)
     {
         char[] cs = new char[4];
         cs[0] = (char) (num >>> 24);
@@ -403,6 +403,17 @@ public interface IoUtil
         cs[2] = (char) ((num >> 8) & 0xFF);
         cs[3] = (char) (num & 0xFF);
         return new String(cs);
+    }
+
+    static int chars2Int(char[] src)
+    {
+        if(src != null && src.length <= 4) {
+            int r = 0;
+            for(int i = 0; i < src.length; i++) {
+                r |= src[i] << (24 - 8 * i);
+            }
+        }
+        return 0;
     }
 
     static int writeIp(String ipAddr)

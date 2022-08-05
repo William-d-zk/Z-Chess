@@ -132,7 +132,8 @@ public class AioSession<C extends IPContext>
         _Context = sort.newContext(option);
         //------------------------------------------------------------
         option.configChannel(channel);
-        mIndex = INVALID_INDEX;
+        mIndex = sort.getType()
+                     .prefix();
         _Logger.debug("session:keepalive [%d]S", _ReadTimeOutInSecond);
     }
 
@@ -226,10 +227,13 @@ public class AioSession<C extends IPContext>
     {
         _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
         int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
-        if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mSessionPrefix)));
+        if(pos >= 0) {
+            return mSessionPrefix[pos] & SUFFIX_MASK;
         }
-        return mSessionPrefix[pos] & 0xFFFFFFFFL;
+        else {
+            _Logger.fetal("session not with prefix:%#x,check IManager.mapSession(index,session,prefix...)", prefix);
+            return Long.MAX_VALUE;
+        }
     }
 
     @Override
@@ -237,14 +241,13 @@ public class AioSession<C extends IPContext>
     {
         _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
         int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
-        if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mSessionPrefix)));
-        }
-        if((mSessionPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
-            mSessionPrefix[pos] += 1;
-        }
-        else {
-            mSessionPrefix[pos] &= PREFIX_MAX;
+        if(pos >= 0) {
+            if((mSessionPrefix[pos] & SUFFIX_MASK) < SUFFIX_MASK) {
+                mSessionPrefix[pos] += 1; // load + 1
+            }
+            else {
+                mSessionPrefix[pos] &= PREFIX_MAX;
+            }
         }
     }
 

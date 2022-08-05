@@ -66,7 +66,7 @@ public class DecodedDispatcher
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -143,7 +143,7 @@ public class DecodedDispatcher
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

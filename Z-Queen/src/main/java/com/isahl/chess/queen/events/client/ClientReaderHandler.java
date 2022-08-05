@@ -119,7 +119,7 @@ public class ClientReaderHandler
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

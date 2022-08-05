@@ -52,6 +52,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
@@ -295,7 +296,7 @@ public class RaftPeer
                                                         .stream()
                                                         .filter(peer->peer != _SelfMachine.peer())
                                                         .map(peer->{
-                                                            ISession session = manager.findSessionByPrefix(peer);
+                                                            ISession session = manager.fairLoadSessionByPrefix(peer);
                                                             if(session == null) {
                                                                 _Logger.warning("elector :%#x session has not found", peer);
                                                                 return null;
@@ -568,7 +569,7 @@ public class RaftPeer
             LogEntry entry = _RaftMapper.getEntry(next);
             if(entry.client() != _SelfMachine.peer()) {
                 // leader → client → device
-                ISession session = manager.findSessionByPrefix(entry.client());
+                ISession session = manager.fairLoadSessionByPrefix(entry.client());
                 if(session != null) {
                     return Triple.of(createNotify(entry).with(session), createNotify(entry), SINGLE);
                 }
@@ -906,7 +907,7 @@ public class RaftPeer
                 else {return responses;}
             }
             case CLIENT, FOLLOWER -> {
-                ISession session = manager.findSessionByPrefix(_SelfMachine.leader());
+                ISession session = manager.fairLoadSessionByPrefix(_SelfMachine.leader());
                 if(session != null) {
                     _Logger.debug(" [%#x][%s] → leader[%#x] x75, device[%#x] ",
                                   _SelfMachine.peer(),
@@ -980,7 +981,7 @@ public class RaftPeer
                 Map<Long, IRaftMachine> union = RaftGraph.join(leader, _SelfGraph, _JointGraph);
                 if(union != null && !union.isEmpty()) {
                     union.forEach((peer, machine)->{
-                        ISession session = manager.findSessionByPrefix(peer);
+                        ISession session = manager.fairLoadSessionByPrefix(peer);
                         if(session != null) {
                             X78_RaftModify copy = x78.copy();
                             copy.with(session);
@@ -992,7 +993,7 @@ public class RaftPeer
                 }
             }
             case CLIENT, FOLLOWER -> {
-                ISession session = manager.findSessionByPrefix(leader);
+                ISession session = manager.fairLoadSessionByPrefix(leader);
                 return List.of(Triple.of(x78, session, session.encoder()));
             }
             //ignore ELECTOR, CANDIDATE, GATE
@@ -1014,7 +1015,7 @@ public class RaftPeer
         x7a.code(SUCCESS.getCode());
         x7a.msgId(x78.msgId());
         x7a.peer(_SelfMachine.peer());
-        X7C_RaftConfirm x7c = new X7C_RaftConfirm();
+        X7B_RaftConfirm x7c = new X7B_RaftConfirm();
         x7c.peer(_SelfMachine.peer());
         x7c.term(_SelfMachine.term());
         x7c.commit(_SelfMachine.commit());
@@ -1031,7 +1032,7 @@ public class RaftPeer
                 Map<Long, IRaftMachine> union = RaftGraph.join(leader, _SelfGraph, _JointGraph);
                 if(union != null) {
                     union.forEach((peer, machine)->{
-                        ISession session = manager.findSessionByPrefix(peer);
+                        ISession session = manager.fairLoadSessionByPrefix(peer);
                         if(session != null) {
                             X78_RaftModify copy = x78.copy();
                             copy.with(session);
@@ -1074,7 +1075,7 @@ public class RaftPeer
         return null;
     }
 
-    public ITriple onConfirm(X7C_RaftConfirm x7c, IManager manager)
+    public ITriple onConfirm(X7B_RaftConfirm x7c, IManager manager)
     {
         if(_SelfMachine.isInState(JOINT)) {
             fromRecord(x7c, _SelfGraph, x7c.peer());
@@ -1092,7 +1093,7 @@ public class RaftPeer
                                               x79.code(SUCCESS.getCode());
                                               x79.state(entry.getValue()
                                                              .state());
-                                              ISession ps = manager.findSessionByPrefix(x79.peer());
+                                              ISession ps = manager.fairLoadSessionByPrefix(x79.peer());
                                               if(ps != null) {
                                                   return x79.with(ps);
                                               }
@@ -1147,7 +1148,7 @@ public class RaftPeer
                                                         .stream()
                                                         .filter(e->e.getKey() != _SelfMachine.peer())
                                                         .map(e->{
-                                                            ISession session = manager.findSessionByPrefix(e.getKey());
+                                                            ISession session = manager.fairLoadSessionByPrefix(e.getKey());
                                                             return session == null ? null : createAppend(e.getValue()).with(session);
                                                         })
                                                         .filter(Objects::nonNull)
@@ -1255,6 +1256,12 @@ public class RaftPeer
     public long generateId()
     {
         return _ZUid.getId();
+    }
+
+    @Override
+    public long generateIdWithType(ISort.Type type)
+    {
+        return _ZUid.getId(type.prefix());
     }
 
     @Override

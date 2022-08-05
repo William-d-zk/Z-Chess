@@ -25,7 +25,7 @@ package com.isahl.chess.audience.client.api;
 
 import com.isahl.chess.audience.client.component.ClientPool;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0D_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1D_PlainText;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X70_RaftVote;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ZResponse;
@@ -64,7 +64,7 @@ public class ConsumerController
             @RequestParam(name = "output")
                     String output)
     {
-        _ClientPool.sendLocal(_Client.getSession(), new X0D_PlainText().setText(output));
+        _ClientPool.sendLocal(_Client.getSession(), new X1D_PlainText().setText(output));
         return ZResponse.success("send");
     }
 

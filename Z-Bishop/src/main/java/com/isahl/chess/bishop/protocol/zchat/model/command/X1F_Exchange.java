@@ -21,38 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
+package com.isahl.chess.bishop.protocol.zchat.model.command;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
+import com.isahl.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x79)
-public class X7B_RaftExchange
+                  serial = 0x1F)
+public class X1F_Exchange
         extends ZCommand
-        implements IConsistent
 {
-
-    public X7B_RaftExchange()
+    public X1F_Exchange()
     {
         super();
     }
 
-    public X7B_RaftExchange(long msgId)
+    public X1F_Exchange(long msgId)
     {
         super(msgId);
     }
 
-    private long mIndex;
-    private long mClient;
-    private long mOrigin;
-    private int  mCode;
+    @Override
+    public boolean isMapping()
+    {
+        return false;
+    }
+
+    private long mPeer;
+    private long mTarget;
+
+    private int mFactory;
 
     @Override
     public int priority()
@@ -69,80 +72,66 @@ public class X7B_RaftExchange
     @Override
     public String toString()
     {
-        return String.format("X79_RaftAdjudge { log-entry-idx:%d, client:%#x, origin:%#x, code:%d}",
-                             mIndex,
-                             mClient,
-                             mOrigin,
-                             mCode);
+        return String.format("X0F_Exchange { node-client:%#x, origin:%#x, factory:%s sub-size[%d]}",
+                             mPeer,
+                             mTarget,
+                             IoUtil.int2Chars(mFactory),
+                             payload() == null ? payload().length : 0);
     }
 
-    public void setOrigin(long origin)
+    public void target(long target)
     {
-        mOrigin = origin;
+        mTarget = target;
     }
 
-    public long origin()
+    public long target()
     {
-        return mOrigin;
+        return mTarget;
     }
 
-    @Override
-    public int code()
+    public int factory()
     {
-        return mCode;
+        return mFactory;
     }
 
-    public void setCode(int code)
+    public void factory(int factory)
     {
-        mCode = code;
+        mFactory = factory;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mIndex)
-                    .putLong(mClient)
-                    .putLong(mOrigin)
-                    .putInt(mCode);
+                    .putLong(mPeer)
+                    .putLong(mTarget)
+                    .putInt(mFactory);
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mIndex = input.getLong();
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        mCode = input.getInt();
-        return remain - 28;
+        mPeer = input.getLong();
+        mTarget = input.getLong();
+        mFactory = input.getInt();
+        return remain - 20;
     }
 
     @Override
     public int length()
     {
-        return super.length() + 28;
+        return super.length() + 20;
     }
 
-    public long getClient()
+    public long peer()
     {
-        return mClient;
+        return mPeer;
     }
 
-    public void setClient(long client)
+    public void peer(long peer)
     {
-        mClient = client;
+        mPeer = peer;
     }
-
-    public long getIndex()
-    {
-        return mIndex;
-    }
-
-    public void setIndex(long index)
-    {
-        this.mIndex = index;
-    }
-
 
 }

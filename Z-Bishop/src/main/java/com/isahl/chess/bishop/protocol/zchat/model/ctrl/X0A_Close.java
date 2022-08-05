@@ -20,6 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -27,77 +28,55 @@ import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x08)
-public class X08_Identity
+                  serial = 0x0A)
+public class X0A_Close
         extends ZControl
 {
+    private long mSession;
 
-    private long mPeer, mSession;
+    @Override
+    public Level level()
+    {
+        return Level.ALMOST_ONCE;
+    }
 
-    public X08_Identity(long peer, long session)
+    public X0A_Close()
     {
         super();
-        mPeer = peer;
+    }
+
+    public X0A_Close(long session)
+    {
+        super();
         mSession = session;
-    }
-
-    @Override
-    public int length()
-    {
-        return super.length() + 16;
-    }
-
-    public X08_Identity()
-    {
-        super();
-    }
-
-    public long identity()
-    {
-        return mPeer;
-    }
-
-    public long idx()
-    {
-        return mSession;
-    }
-
-    @Override
-    public X08_Identity copy()
-    {
-        return new X08_Identity(mPeer, mSession);
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("%s [ %#x @ %#x ]", getClass().getSimpleName(), mPeer, mSession);
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        mPeer = input.getLong();
         mSession = input.getLong();
-        return remain - 16;
+        return remain - 8;
     }
 
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(mPeer)
                     .putLong(mSession);
     }
 
     @Override
-    public Level level()
+    public int length()
     {
-        return Level.AT_LEAST_ONCE;
+        return super.length() + 8;
     }
 
+    public long idx()
+    {
+        return mSession;
+    }
 }

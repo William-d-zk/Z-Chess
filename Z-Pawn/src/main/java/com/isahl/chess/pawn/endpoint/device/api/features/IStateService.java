@@ -60,10 +60,11 @@ public interface IStateService
      * 重新登录时，主动清除历史状态| 离线时也需根据 clean-flag 进行清除
      *
      * @param session session-idx
+     * @return will_message {will_topic & will_level}
      */
-    void onDismiss(long session);
+    IProtocol dismiss(long session);
 
-    List<Long> listSessions();
+    List<Long> listIndex();
 
     DeviceClient getClient(long session);
 

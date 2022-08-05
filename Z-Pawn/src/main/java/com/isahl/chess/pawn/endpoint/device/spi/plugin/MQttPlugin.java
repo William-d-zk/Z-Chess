@@ -27,9 +27,10 @@ import com.isahl.chess.bishop.protocol.mqtt.command.*;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0D_Error;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -94,24 +95,27 @@ public class MQttPlugin
         return input.serial() >= 0x111 && input.serial() <= 0x11F;
     }
 
-    @Override
-    public void onExchange(X0F_Exchange x0F, IManager manager, List<ITriple> load)
+    public boolean isSupported(ISession session)
     {
-        IProtocol body = x0F.deserializeSub(manager.findIoFactoryBySerial(x0F.factory()));
+        return session.getFactory() == QttFactory._Instance;
+    }
+
+    @Override
+    public void onExchange(IProtocol body, List<ITriple> load)
+    {
         _Logger.debug("onExchange:%s ", body);
         switch(body.serial()) {
             case 0x113 -> {
                 X113_QttPublish x113 = (X113_QttPublish) body;
-                ISession session = manager.findSessionByIndex(x0F.target());
-                if(session != null) {
-                    x113.with(session);
-                    if(x113.level()
-                           .getValue() > 0)
-                    {
-                        register(x113.msgId(), x113);
-                    }
-                    load.add(Triple.of(x113, session, session.encoder()));
+                if(x113.level()
+                       .getValue() > 0)
+                {
+                    register(x113.msgId(), x113);
                 }
+                load.add(Triple.of(x113,
+                                   x113.session(),
+                                   x113.session()
+                                       .encoder()));
             }
         }
     }
@@ -120,7 +124,7 @@ public class MQttPlugin
     public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         switch(content.serial()) {
-            case 0x113:
+            case 0x113 -> {
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(x113.isRetain()) {
                     retain(x113.topic(), x113);
@@ -146,13 +150,13 @@ public class MQttPlugin
                     default:
                         break;
                 }
-                break;
-            case 0x114:
+            }
+            case 0x114 -> {
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
                 ack(x114.msgId(), session.index());
-                break;
-            case 0x115:
+            }
+            case 0x115 -> {
                 //x113.QoS2 → client → x115, 服务端恒定返回x116,Router无需操作。
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
@@ -160,10 +164,10 @@ public class MQttPlugin
                 x116.target(session.index());
                 load.add(Triple.of(x116.with(session), session, session.encoder()));
                 register(x116.msgId(), x116);
-                break;
-            case 0x116:
+            }
+            case 0x116 -> {
                 //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
-                x116 = (X116_QttPubrel) content;
+                X116_QttPubrel x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.msgId(x116.msgId());
                 load.add(Triple.of(x117.with(session), session, session.encoder()));
@@ -180,14 +184,12 @@ public class MQttPlugin
                         }
                     }
                 }
-                break;
-            case 0x117:
-                x117 = (X117_QttPubcomp) content;
+            }
+            case 0x117 -> {
+                X117_QttPubcomp x117 = (X117_QttPubcomp) content;
                 ack(x117.msgId(), session.index());
-                break;
-            case 0x11C:
-                load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
-                break;
+            }
+            case 0x11C -> load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
         }
     }
 
@@ -195,7 +197,6 @@ public class MQttPlugin
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         switch(input.serial()) {
-            case 0x102 -> session.innerClose();
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) input;
                 X112_QttConnack x112 = new X112_QttConnack();
@@ -250,9 +251,15 @@ public class MQttPlugin
                     return Triple.of(x112, null, SINGLE);
                 }
             }
-            case 0x118, 0x11A, 0x11E -> {
+            case 0x118, 0x11A -> {
                 _Logger.info("link control [%s] ", input);
                 return Triple.of(null, input, NULL);
+            }
+            case 0x11E -> {
+                _Logger.debug("disconnect [%#x] ", session.index());
+                //TODO 清理 session 存档信息
+                clean(session.index());
+                return Triple.of(new X0D_Error(), input, SINGLE);
             }
             case 0x11F -> {
 
@@ -265,24 +272,19 @@ public class MQttPlugin
     }
 
     @Override
-    public void onOffline(ISession session)
-    {
-
-    }
-
-    @Override
     public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
     {
         int code = backload.code();
         long origin = backload.origin();
         long client = backload.client();
         ISession os = manager.findSessionByIndex(origin);
-        ISession cs = manager.findSessionByPrefix(client);
+        ISession cs = manager.fairLoadSessionByPrefix(client);
         switch(consensusBody.serial()) {
             case 0x111 -> {
                 X111_QttConnect x111 = (X111_QttConnect) consensusBody;
                 X112_QttConnack x112 = new X112_QttConnack();
                 if(os != null && cs != null) {
+                    // origin 在cs 上执行了登录
                     clean(origin);
                     manager.route(origin, client);
                     _Logger.debug("origin[%#x] login @[%#x], shutdown old", origin, client);
@@ -361,12 +363,15 @@ public class MQttPlugin
                 }
             }
             case 0x11E -> {
+                // 集群同步的 disconnection 事件
                 if(code == SUCCESS) {
-                    clean(origin);
-                    _Logger.debug("origin[%#x]@[%#x] → offline", origin, client);
-                    if(os != null) {
-                        os.innerClose();
+                    _Logger.debug("origin [%#x]@[%#x] → offline", origin, client);
+                    ISession session = clean(manager, origin);
+                    if(session != null) {
+                        clean(origin);
+                        return Collections.singletonList(Triple.of(new X0D_Error(), session, null));
                     }
+                    // else '连接' 已经 被清理了
                 }
             }
             case 0x11F -> {
@@ -391,7 +396,12 @@ public class MQttPlugin
     @Override
     public void clean(long session)
     {
-        _StateService.onDismiss(session);
+        _StateService.dismiss(session);
+    }
+
+    public IProtocol onClose(ISession session)
+    {
+        return new X11E_QttDisconnect();
     }
 
     @Override

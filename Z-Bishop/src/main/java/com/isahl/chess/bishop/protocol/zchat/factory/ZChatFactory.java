@@ -26,15 +26,17 @@ package com.isahl.chess.bishop.protocol.zchat.factory;
 
 import com.isahl.chess.bishop.protocol.zchat.ZContext;
 import com.isahl.chess.bishop.protocol.zchat.model.base.ZFrame;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0D_PlainText;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0E_Consensus;
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1D_PlainText;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1E_Consensus;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1F_Exchange;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.*;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.zls.*;
+import com.isahl.chess.board.annotation.ISerialFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
 
+@ISerialFactory(serial = ('C' << 24) | ('H' << 16) | ('A' << 8) | 'T')
 public class ZChatFactory
         implements IProtocolFactory<ZFrame, ZContext>
 {
@@ -60,6 +62,7 @@ public class ZChatFactory
     protected ZControl build(int serial)
     {
         return switch(serial) {
+            //control
             case 0x01 -> new X01_EncryptRequest();
             case 0x02 -> new X02_AsymmetricPub();
             case 0x03 -> new X03_Cipher();
@@ -69,12 +72,14 @@ public class ZChatFactory
             case 0x07 -> new X07_SslHandShake();
             case 0x08 -> new X08_Identity();
             case 0x09 -> new X09_Redirect();
-            case 0x0A -> new X0A_Shutdown();
+            case 0x0A -> new X0A_Close();
             case 0x0B -> new X0B_Ping();
             case 0x0C -> new X0C_Pong();
-            case 0x0D -> new X0D_PlainText();
-            case 0x0E -> new X0E_Consensus();
-            case 0x0F -> new X0F_Exchange();
+            case 0x0D -> new X0D_Error();
+            // command
+            case 0x1D -> new X1D_PlainText();
+            case 0x1E -> new X1E_Consensus();
+            case 0x1F -> new X1F_Exchange();
             default -> throw new ZException("unsupported serial %d", serial);
         };
     }

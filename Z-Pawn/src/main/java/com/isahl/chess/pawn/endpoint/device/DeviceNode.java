@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1F_Exchange;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0B_Ping;
 import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.bishop.sort.ZSortHolder;
@@ -260,11 +260,11 @@ public class DeviceNode
             _Logger.warning("exchange failed, no session routing");
             return;
         }
-        X0F_Exchange x0F = new X0F_Exchange(clusterPeer().generateId());
-        x0F.withSub(body);
-        x0F.target(target);
-        x0F.factory(factory);
-        x0F.peer(clusterPeer().peerId());
-        load.add(Triple.of(x0F.with(session), session, session.encoder()));
+        X1F_Exchange x1F = new X1F_Exchange(clusterPeer().generateId());
+        x1F.withSub(body);
+        x1F.target(target);
+        x1F.factory(factory);
+        x1F.peer(clusterPeer().peerId());
+        load.add(Triple.of(x1F.with(session), session, session.encoder()));
     }
 }

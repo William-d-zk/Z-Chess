@@ -80,5 +80,5 @@ public interface IClusterCustom<T extends IStorage>
      */
     boolean waitForCommit();
 
-    IConsistency skipConsistency(IoSerial request);
+    IConsistency skipConsistency(IoSerial request, long origin);
 }

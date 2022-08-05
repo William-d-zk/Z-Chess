@@ -39,16 +39,13 @@ public interface IPipeHandler<E extends IEvent>
         extends IBatchHandler<E>
 {
 
-    Logger getLogger();
+    Logger _Logger();
 
-    default <V, A, R> void publish(RingBuffer<E> publisher,
-                                   IOperator.Type type,
-                                   IPair content,
-                                   IOperator<V, A, R> operator)
+    default <V, A, R> void publish(RingBuffer<E> publisher, IOperator.Type type, IPair content, IOperator<V, A, R> operator)
     {
         if(publisher == null || type == null || content == null) {return;}
         if(publisher.remainingCapacity() == 0) {
-            getLogger().warning("publish block with %s", type.name());
+            _Logger().warning("publish block with %s", type.name());
         }
         long sequence = publisher.next();
         try {
@@ -64,7 +61,7 @@ public interface IPipeHandler<E extends IEvent>
     {
         if(publisher == null || contents == null || contents.isEmpty()) {return;}
         if(publisher.remainingCapacity() == 0) {
-            getLogger().warning("publish block with writer");
+            _Logger().warning("publish block with writer");
         }
         long sequence = publisher.next();
         try {
@@ -80,7 +77,7 @@ public interface IPipeHandler<E extends IEvent>
     {
         if(publisher == null || type == null || content == null) {return;}
         if(publisher.remainingCapacity() == 0) {
-            getLogger().warning("error block with %s", type.name());
+            _Logger().warning("error block with %s", type.name());
         }
         long sequence = publisher.next();
         try {

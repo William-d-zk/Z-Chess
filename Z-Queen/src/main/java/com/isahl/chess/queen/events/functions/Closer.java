@@ -48,7 +48,7 @@ public class Closer
     public Void handle(String msg, ISession session)
     {
         try {
-            _Logger.trace("msg %s → closed %s", msg, session);
+            _Logger.debug("msg %s → closed %s", msg, session);
             session.close();
         }
         catch(IOException e) {

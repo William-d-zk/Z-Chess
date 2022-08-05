@@ -64,7 +64,7 @@ public class MixDecodedDispatcher
         return super.getNextPipe(mode, input);
     }
 
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

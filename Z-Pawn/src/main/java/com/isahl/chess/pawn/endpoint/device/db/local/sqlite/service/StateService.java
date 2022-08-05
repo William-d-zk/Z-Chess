@@ -38,6 +38,7 @@ import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.ISessionR
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
+import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Subscribe;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Topic;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
@@ -102,16 +103,12 @@ public class StateService
     @PostConstruct
     void initCache() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "message_cache_msg_id",
-                                  Long.class,
-                                  Integer.class,
-                                  Duration.of(2, MINUTES));
-//        EhcacheConfig.createCache(_CacheManager,
-//                                  "raft_log_entry",
-//                                  Long.class,
-//                                  LogEntry.class,
-//                                  Duration.of(30, SECONDS));
+        EhcacheConfig.createCache(_CacheManager, "message_cache_msg_id", Long.class, Integer.class, Duration.of(2, MINUTES));
+        //        EhcacheConfig.createCache(_CacheManager,
+        //                                  "raft_log_entry",
+        //                                  Long.class,
+        //                                  LogEntry.class,
+        //                                  Duration.of(30, SECONDS));
         _TimeWheel.acquire(this, _StorageHourCleaner);
     }
 
@@ -221,7 +218,7 @@ public class StateService
     }
 
     @Override
-    public void onDismiss(long session)
+    public IProtocol dismiss(long session)
     {
         if(!_Topic2Subscribe.isEmpty()) {
             _Topic2Subscribe.values()
@@ -237,18 +234,22 @@ public class StateService
             }
             return v;
         });
-        Optional<SessionEntity> sOptional = _SessionRepository.findById(session);
-        if(sOptional.isPresent()) {
-            SessionEntity sessionEntity = sOptional.get();
-            DeviceClient client = sessionEntity.client();
+        IProtocol protocol = null;
+        Optional<SessionEntity> optional = _SessionRepository.findById(session);
+        if(optional.isPresent()) {
+            SessionEntity se = optional.get();
+            DeviceClient client = se.client();
             if(client != null && client.getWillContent() != null) {
-                //TODO 处理遗嘱
+                IThread.Topic will = client.getWillContent();
+                // TODO 从遗嘱存储中提取遗嘱信息。
+
             }
         }
+        return null;
     }
 
     @Override
-    public List<Long> listSessions()
+    public List<Long> listIndex()
     {
         return _ClientPool.keySet()
                           .stream()

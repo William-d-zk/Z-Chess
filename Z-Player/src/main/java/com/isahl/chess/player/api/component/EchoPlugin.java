@@ -46,7 +46,13 @@ public class EchoPlugin
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return input.serial() == 0x0D;
+        return input.serial() == 0x1D;
+    }
+
+    @Override
+    public boolean isSupported(ISession session)
+    {
+        return false;
     }
 
     @Override
@@ -59,11 +65,6 @@ public class EchoPlugin
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void onOffline(ISession session)
-    {
     }
 
     public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)

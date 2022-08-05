@@ -55,7 +55,7 @@ public class ClientDecodedHandler
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -85,7 +85,7 @@ public class ClientDecodedHandler
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

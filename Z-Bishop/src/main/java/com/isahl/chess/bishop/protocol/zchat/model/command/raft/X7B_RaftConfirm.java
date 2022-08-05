@@ -32,18 +32,18 @@ import com.isahl.chess.king.base.content.ByteBuf;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x79)
-public class X7C_RaftConfirm
+                  serial = 0x7B)
+public class X7B_RaftConfirm
         extends ZCommand
         implements IRaftRecord
 {
 
-    public X7C_RaftConfirm()
+    public X7B_RaftConfirm()
     {
         super();
     }
 
-    public X7C_RaftConfirm(long msgId)
+    public X7B_RaftConfirm(long msgId)
     {
         super(msgId);
     }

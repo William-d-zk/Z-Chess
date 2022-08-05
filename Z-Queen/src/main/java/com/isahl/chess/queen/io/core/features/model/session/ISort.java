@@ -24,6 +24,7 @@
 package com.isahl.chess.queen.io.core.features.model.session;
 
 import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.events.functions.SessionIgnore;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
@@ -45,10 +46,16 @@ public interface ISort
 
     enum Type
     {
-        CLIENT,
-        SERVER,
-        SYMMETRY,
-        INNER
+        CLIENT(ZUID.TYPE_CONSUMER),
+        SERVER(ZUID.TYPE_PROVIDER),
+        SYMMETRY(ZUID.TYPE_CLUSTER),
+        INNER(ZUID.TYPE_INTERNAL);
+
+        private final long _Prefix;
+
+        Type(long prefix) {_Prefix = prefix;}
+
+        public long prefix() {return _Prefix;}
     }
 
     /**

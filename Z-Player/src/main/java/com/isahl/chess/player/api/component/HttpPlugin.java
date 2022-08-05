@@ -51,6 +51,12 @@ public class HttpPlugin
     }
 
     @Override
+    public boolean isSupported(ISession session)
+    {
+        return false;
+    }
+
+    @Override
     public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
 
@@ -60,12 +66,6 @@ public class HttpPlugin
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         return null;
-    }
-
-    @Override
-    public void onOffline(ISession session)
-    {
-
     }
 
     public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)

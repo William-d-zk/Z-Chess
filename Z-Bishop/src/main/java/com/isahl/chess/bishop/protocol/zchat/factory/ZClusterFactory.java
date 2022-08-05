@@ -51,8 +51,7 @@ public class ZClusterFactory
             case 0x78 -> new X78_RaftModify();
             case 0x79 -> new X79_RaftConfirm();
             case 0x7A -> new X7A_RaftJoint();
-            case 0x7B -> new X7B_RaftExchange();
-            case 0x7C -> new X7C_RaftConfirm();
+            case 0x7B -> new X7B_RaftConfirm();
             default -> super.build(serial);
         };
     }

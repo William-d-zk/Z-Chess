@@ -88,7 +88,7 @@ public class NodeService
         _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel, _RaftPeer);
         _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
-        _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters, hooks);
+        _LogicFactory = threadId->new LogicHandler<>(_DeviceNode, threadId, accessAdapters, hooks);
     }
 
     @PostConstruct
@@ -116,15 +116,5 @@ public class NodeService
      */
     @Bean
     public RaftPeer _RaftPeerBean() {return _RaftPeer;}
-
-    /**
-     * @return RaftCustom
-     * → ConsistencyOpenService
-     */
-    @Bean
-    public RaftCustom _RaftCustomBean()
-    {
-        return _RaftCustom;
-    }
 
 }

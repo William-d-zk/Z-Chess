@@ -34,8 +34,6 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.PREFIX_MAX;
-
 /**
  * 所有io 管理器的父类，存在一定的存储空间的浪费。
  * 在简单场景中 client端存在大量的存储空间浪费。
@@ -53,7 +51,7 @@ public abstract class AioManager
     private final Map<Long, Set<ISession>>[]         _Prefix2SessionMaps;
     private final Set<ISession>[]                    _SessionsSets;
     private final IAioConfig                         _AioConfig;
-    private final Map<Long, Long>                    _Index2PrefixMap;
+    private final Map<Long, Long>                    _Index2RouteMap;
     private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     public ISocketConfig getSocketConfig(int type)
@@ -69,7 +67,7 @@ public abstract class AioManager
         _Index2SessionMaps = new Map[_TYPE_COUNT];
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
-        _Index2PrefixMap = new HashMap<>(23);
+        _Index2RouteMap = new HashMap<>(23);
         _FactoryMap = new HashMap<>();
         Arrays.setAll(_SessionsSets, slot->_AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)) : null);
         Arrays.setAll(_Index2SessionMaps, slot->_AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)) : null);
@@ -82,7 +80,7 @@ public abstract class AioManager
         Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
         Set<ISession> sessions = prefix2SessionMap.get(prefix);
         if(sessions != null) {
-            _Index2PrefixMap.putIfAbsent(index, prefix);
+            _Index2RouteMap.putIfAbsent(index, prefix);
         }
     }
 
@@ -90,9 +88,10 @@ public abstract class AioManager
     public void dropPrefix(long prefix)
     {
         Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
-        prefix2SessionMap.remove(prefix);
-        _Index2PrefixMap.entrySet()
-                        .removeIf(entry->entry.getValue() == prefix);
+        Optional.of(prefix2SessionMap.remove(prefix))
+                .ifPresent(Set::clear);
+        _Index2RouteMap.entrySet()
+                       .removeIf(entry->entry.getValue() == prefix);
     }
 
     protected int getConfigPower(int slot)
@@ -124,19 +123,18 @@ public abstract class AioManager
     @Override
     public void rmSession(ISession session)
     {
-        int slot = getSlot(session.index());
-        _SessionsSets[slot].remove(session);
-        long[] prefixArray = session.getPrefixArray();
-        if(prefixArray != null) {
-            for(long prefix : prefixArray) {
-                _Prefix2SessionMaps[slot].get(prefix & PREFIX_MAX)
-                                         .remove(session);
-            }
-        }
-        _Index2SessionMaps[slot].remove(session.index(), session);
-        if(session.isMultiBind() && session.getBindIndex() != null) {
-            for(long i : session.getBindIndex()) {
-                _Index2SessionMaps[slot].remove(i, session);
+        if(session != null) {
+            int slot = getSlot(session.index());
+            _SessionsSets[slot].remove(session);
+            long index = session.index();
+            cleanIndex(index);
+            //multi-bind 清理的时候 无需重复清理 prefix 映射
+            if(session.isMultiBind() && session.getBindIndex() != null) {
+                for(long i : session.getBindIndex()) {
+                    if(_Index2SessionMaps[slot].remove(i, session)) {
+                        _Index2RouteMap.remove(i);
+                    }
+                }
             }
         }
     }
@@ -226,33 +224,40 @@ public abstract class AioManager
             int slot = getSlot(_NewIdx);
             Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for(long prefix : prefixArray) {
-                if(getSlot(prefix) != slot) {
-                    throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error", _NewIdx, prefix));
+                if(getSlot(prefix) == slot) {
+                    prefix2SessionMap.computeIfAbsent(prefix, k->new TreeSet<>())
+                                     .add(session);
+                    session.bindPrefix(prefix);
                 }
-                prefix2SessionMap.computeIfAbsent(prefix, k->new TreeSet<>())
-                                 .add(session);
-                session.bindPrefix(prefix);
             }
         }
         return oldSession;
     }
 
     @Override
-    public Collection<ISession> clearAllSessionByPrefix(long prefix)
+    public void cleanSessionWithPrefix(ISession session, long prefix)
     {
         Map<Long, Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
-        Set<ISession> sessions = prefix2SessionMap.get(prefix);
-        if(sessions != null) {
-            sessions.forEach(this::clearIndex);
-        }
-        return sessions;
-
+        // prefix2SessionMap 一定非NULL
+        Optional.of(prefix2SessionMap.get(prefix))
+                .ifPresent(set->set.remove(session));
     }
 
     @Override
-    public ISession clearIndex(long index)
+    public ISession cleanIndex(long index)
     {
-        return _Index2SessionMaps[getSlot(index)].remove(index);
+        ISession session = _Index2SessionMaps[getSlot(index)].remove(index);
+        if(session != null) { // local manage
+            long[] bindPrefix = session.getPrefixArray();
+            for(long prefix : bindPrefix) {
+                cleanSessionWithPrefix(session, prefix);
+            }
+        }
+        else {
+            //remote peer manage
+            _Index2RouteMap.remove(index);
+        }
+        return session;
     }
 
     @Override
@@ -264,8 +269,8 @@ public abstract class AioManager
     @Override
     public ISession findSessionOverIndex(long index)
     {
-        Long prefix = _Index2PrefixMap.get(index);
-        return prefix != null ? findSessionByPrefix(prefix) : null;
+        Long prefix = _Index2RouteMap.get(index);
+        return prefix != null ? fairLoadSessionByPrefix(prefix) : null;
     }
 
     @Override
@@ -275,24 +280,23 @@ public abstract class AioManager
     }
 
     @Override
-    public ISession findSessionByPrefix(long prefix)
+    public ISession fairLoadSessionByPrefix(long prefix)
     {
         Set<ISession> sessions = _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
         if(sessions != null) {
-            Optional<ISession> optional = sessions.stream()
-                                                  .min(Comparator.comparing(session->session.prefixLoad(prefix)));
-            if(optional.isPresent()) {
-                ISession session = optional.get();
+            if(sessions.size() > 1) {
+                ISession session = sessions.stream()
+                                           .min(Comparator.comparing(s->s.prefixLoad(prefix)))
+                                           .get();
                 session.prefixHit(prefix);
                 return session;
             }
+            else if(sessions.size() == 1) {
+                return sessions.iterator()
+                               .next();
+            }
         }
         return null;
-    }
-
-    public Collection<ISession> findAllByPrefix(long prefix)
-    {
-        return _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
     }
 
     public Set<ISession> getSessionSetWithType(int typeSlot)

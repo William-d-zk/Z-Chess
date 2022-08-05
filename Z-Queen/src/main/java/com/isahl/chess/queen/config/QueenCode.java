@@ -64,7 +64,6 @@ public interface QueenCode
     int MQ_REGISTER_TOPIC_NULL           = 0x00603;
 
     String ERROR_CLOSE = "error close";
-    String LOCAL_CLOSE = "error close";
 
     static String codeOf(int code)
     {

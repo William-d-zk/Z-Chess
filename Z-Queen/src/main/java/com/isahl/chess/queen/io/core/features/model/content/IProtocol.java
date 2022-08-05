@@ -27,6 +27,8 @@ import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
+import java.io.IOException;
+
 /**
  * @author William.d.zk
  */
@@ -53,7 +55,7 @@ public interface IProtocol
         return null;
     }
 
-    default void transfer() {}
+    default void transfer() throws IOException {}
 
     default byte[] encoded() {return encode().array();}
 

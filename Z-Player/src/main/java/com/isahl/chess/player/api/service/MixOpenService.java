@@ -110,7 +110,7 @@ public class MixOpenService
 
     public List<DeviceDo> getOnlineDevice(Pageable pageable)
     {
-        List<Long> sessions = _StateService.listSessions();
+        List<Long> sessions = _StateService.listIndex();
         return sessions.subList((int) pageable.getOffset(),
                                 min(sessions.size(),
                                     (int) pageable.next()

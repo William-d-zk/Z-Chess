@@ -24,10 +24,11 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
@@ -72,7 +73,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IProtocol request, IConsistency backload)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request)
     {
         if(request != null) {
             for(IAccessService service : _AccessServices) {
@@ -85,19 +86,21 @@ public class LinkCustom
     }
 
     @Override
-    public void close(ISession session)
+    public IProtocol onClose(ISession session)
     {
-        if((ZUID.TYPE_MASK & session.index()) == ZUID.TYPE_CONSUMER) {
-            for(IAccessService service : _AccessServices) {
-                service.onOffline(session);
-            }
-        }
         try {
-            session.close();
+            session.innerClose();
+            _Logger.debug("session [ %#x ] closed", session.index());
         }
         catch(Throwable e) {
-            _Logger.warning("session[ %#x ] close", session.index(), e);
+            _Logger.warning("session [ %#x ] close", e, session.index());
         }
+        for(IAccessService service : _AccessServices) {
+            if(service.isSupported(session)) {
+                return service.onClose(session);
+            }
+        }
+        return null;
     }
 
     @Override
