@@ -136,7 +136,7 @@ public class MixMappingHandler<T extends IStorage>
                         ISession session = result.getSecond();
                         ITriple backload = result.getThird();
                         if(backload != null) {
-                            IOperator.Type type = result.getThird();
+                            IOperator.Type type = backload.getThird();
                             switch(type) {
                                 case SINGLE -> publish(_Writer, WRITE, Pair.of(backload.getFirst(), session), session.encoder());
                                 case BATCH -> publish(_Writer, backload.getFirst());

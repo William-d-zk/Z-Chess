@@ -23,7 +23,6 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
@@ -320,11 +319,11 @@ public class AioSession<C extends IPContext>
                     return (T) context;
                 }
             }
-            throw new ZException("not found context instanceof %s | %s",
-                                 clazz.getSimpleName(),
-                                 _Context.getClass()
-                                         .getSimpleName());
-
+            _Logger.warning("not found context instanceof %s | %s",
+                            clazz.getSimpleName(),
+                            _Context.getClass()
+                                    .getSimpleName());
+            return null;
         }
     }
 
