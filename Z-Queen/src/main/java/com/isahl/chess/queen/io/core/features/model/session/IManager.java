@@ -26,8 +26,6 @@ import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.util.Collection;
-
 /**
  * @author William.d.zk
  * @date 2018/4/8
@@ -64,15 +62,9 @@ public interface IManager
      * @param prefix session 聚合标签，使用前缀进行匹配。
      * @return session 从符合prefix 标签的集合中返回一个可用的 session
      */
-    ISession findSessionByPrefix(long prefix);
+    ISession fairLoadSessionByPrefix(long prefix);
 
     ISession findSessionOverIndex(long index);
-
-    /**
-     * @param prefix 前缀标签
-     * @return collection 所有符合前缀标签的session
-     */
-    Collection<ISession> findAllByPrefix(long prefix);
 
     /**
      * @param index session 的 index，获取指定的 session
@@ -94,28 +86,14 @@ public interface IManager
      *
      * @param index session-index
      */
-    ISession clearIndex(long index);
+    ISession cleanIndex(long index);
 
-    /**
-     * 删除所有 prefix→sessions的关系
-     *
-     * @param prefix 前缀
-     * @return collection 被解除关系的 session 集合
-     */
-    Collection<ISession> clearAllSessionByPrefix(long prefix);
-
-    default void clearIndex(ISession session)
-    {
-        clearIndex(session.index());
-    }
+    void cleanSessionWithPrefix(ISession session, long prefix);
 
     void addSession(ISession session);
 
     void rmSession(ISession session);
 
     IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial);
-
-
-
 
 }

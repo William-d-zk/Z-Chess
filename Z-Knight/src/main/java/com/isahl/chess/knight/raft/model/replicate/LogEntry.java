@@ -135,7 +135,7 @@ public class LogEntry
                              term(),
                              client(),
                              origin(),
-                             IoUtil.intToChars(factory()),
+                             IoUtil.int2Chars(factory()),
                              _sub(),
                              pLength(),
                              IoUtil.bin2Hex(payload(), ","));

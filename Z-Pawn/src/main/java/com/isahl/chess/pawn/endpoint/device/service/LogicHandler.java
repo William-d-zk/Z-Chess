@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1F_Exchange;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -37,6 +37,7 @@ import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 import java.util.LinkedList;
@@ -64,7 +65,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -96,9 +97,16 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
                                            .getSimpleName());
                 }
             }
-            else if(content.serial() == 0x0F) {
+            else if(content.serial() == 0x1F) {
                 try {
-                    service.onExchange((X0F_Exchange) content, getExchanger(), results);
+                    X1F_Exchange x1F = (X1F_Exchange) content;
+                    IManager manager = getExchanger();
+                    IProtocol body = x1F.deserializeSub(manager.findIoFactoryBySerial(x1F.factory()));
+                    ISession ts = manager.findSessionByIndex(x1F.target());
+                    if(ts != null) {
+                        body.with(ts);
+                        service.onExchange(body, results);
+                    }
                 }
                 catch(Exception e) {
                     _Logger.warning("on exchange,%s <- %s",

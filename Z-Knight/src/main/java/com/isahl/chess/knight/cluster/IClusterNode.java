@@ -144,6 +144,8 @@ public interface IClusterNode
             @Override
             public void onCreated(ISession session)
             {
+                session.setIndex(_ClusterPeer.generateIdWithType(_ZSortHolder.getSort()
+                                                                             .getType()));
                 _Manager.addSession(session);
                 session.ready();
             }

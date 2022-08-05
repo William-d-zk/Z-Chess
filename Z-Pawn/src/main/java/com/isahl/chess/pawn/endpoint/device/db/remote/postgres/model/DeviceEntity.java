@@ -75,7 +75,7 @@ public class DeviceEntity
     @Transient
     private String        mSn;
     @Transient
-    private String        password;
+    private String        mPassword;
     @Transient
     private String        mUsername;
     @Transient
@@ -110,12 +110,12 @@ public class DeviceEntity
     @NotBlank(message = "*Please provide your password")
     public String getPassword()
     {
-        return password;
+        return mPassword;
     }
 
     public void setPassword(String password)
     {
-        this.password = password;
+        mPassword = password;
     }
 
     public void increasePasswordId()
@@ -208,18 +208,17 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format(
-                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
-                getId(),
-                getToken(),
-                getUsername(),
-                getPasswordId(),
-                getPassword(),
-                getSn(),
-                getProfile(),
-                getCreatedAt(),
-                getUpdatedAt(),
-                getInvalidAt());
+        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
+                             getId(),
+                             getToken(),
+                             getUsername(),
+                             getPasswordId(),
+                             getPassword(),
+                             getSn(),
+                             getProfile(),
+                             getCreatedAt(),
+                             getUpdatedAt(),
+                             getInvalidAt());
     }
 
     public DeviceEntity()

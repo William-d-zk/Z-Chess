@@ -34,7 +34,7 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CONSISTENCY_SERVICE;
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CONSISTENT_SERVICE;
 
 public interface IConsistencyService
 {
@@ -48,14 +48,14 @@ public interface IConsistencyService
         {
             return CodeKnight.CLUSTER_NO_IN_CONGRESS;
         }
-        final ReentrantLock _Lock = node.selectLock(CONSISTENCY_SERVICE);
-        final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENCY_SERVICE);
+        final ReentrantLock _Lock = node.selectLock(CONSISTENT_SERVICE);
+        final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENT_SERVICE);
         _Lock.lock();
         try {
             long sequence = _Publish.next();
             try {
                 QEvent event = _Publish.get(sequence);
-                event.produce(CONSISTENCY_SERVICE,
+                event.produce(CONSISTENT_SERVICE,
                               new Pair<>(request,
                                          node.clusterPeer()
                                              .peerId()),

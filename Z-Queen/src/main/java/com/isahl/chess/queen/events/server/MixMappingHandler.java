@@ -41,7 +41,6 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
@@ -87,7 +86,7 @@ public class MixMappingHandler<T extends IStorage>
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -98,23 +97,28 @@ public class MixMappingHandler<T extends IStorage>
         if(event.hasError()) {
             switch(event.getErrorType()) {
                 case ACCEPT_FAILED, CONNECT_FAILED -> {
-                    IOperator<Throwable, IAioConnection, Void> failedOperator = event.getEventOp();
+                    IOperator<Throwable, IAioConnection, Void> fop = event.getEventOp();
                     IPair error = event.getContent();
-                    failedOperator.handle(error.getFirst(), error.getSecond());
+                    fop.handle(error.getFirst(), error.getSecond());
                 }
                 case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
                     _Logger.warning("mapping handle io error,%s",
                                     event.getErrorType()
                                          .getMsg());
-                    IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
                     IPair error = event.getContent();
                     ISession session = error.getSecond();
-                    IDismiss dismiss = session.getDismissCallback();
-                    boolean closed = session.isClosed();
-                    closeOperator.handle(null, session);
-                    if(!closed) {
-                        dismiss.onDismiss(session);
-                        _LinkCustom.close(session);
+                    IProtocol closed = _LinkCustom.onClose(session);
+                    if(_ClusterCustom.waitForCommit() && closed != null) {
+                        publish(_Transfer,
+                                CONSISTENT,
+                                Pair.of(closed,
+                                        Pair.of(session.index(),
+                                                session.getFactory()
+                                                       .serial())),
+                                null);
+                    }
+                    else if(closed != null) {
+                        publish(_Writer, _LinkCustom.onConsistency(_SessionManager, _ClusterCustom.skipConsistency(closed, session.index()), closed));
                     }
                 }
             }
@@ -125,24 +129,23 @@ public class MixMappingHandler<T extends IStorage>
                     IPair connected = event.getContent();
                     AsynchronousSocketChannel channel = connected.getSecond();
                     IAioConnection connection = connected.getFirst();
-                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
-                    ITriple handled = connectedOperator.handle(connection, channel);
-                    boolean success = handled.getFirst();
+                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> cop = event.getEventOp();
+                    ITriple result = cop.handle(connection, channel);
+                    boolean success = result.getFirst();
                     if(success) {
-                        ISession session = handled.getSecond();
-                        ITriple result = handled.getThird();
-                        if(result != null) {
+                        ISession session = result.getSecond();
+                        ITriple backload = result.getThird();
+                        if(backload != null) {
                             IOperator.Type type = result.getThird();
                             switch(type) {
-                                case SINGLE -> publish(_Writer, WRITE, new Pair<>(result.getFirst(), session), session.encoder());
-                                case BATCH -> publish(_Writer, result.getFirst());
+                                case SINGLE -> publish(_Writer, WRITE, Pair.of(backload.getFirst(), session), session.encoder());
+                                case BATCH -> publish(_Writer, backload.getFirst());
                             }
                         }
                     }
                     else {
-                        Throwable throwable = handled.getThird();
-                        if(handled.getSecond() instanceof ISession) {
-                            ISession session = handled.getSecond();
+                        Throwable throwable = result.getThird();
+                        if(result.getSecond() instanceof ISession session) {
                             session.innerClose();
                         }
                         connection.error();
@@ -157,11 +160,11 @@ public class MixMappingHandler<T extends IStorage>
                         try {
                             ITriple result = doCustom(_LinkCustom, _SessionManager, session, received);
                             if(result != null && _ClusterCustom.waitForCommit()) {
-                                IProtocol request = result.getSecond();
-                                if(request != null) {
+                                IProtocol consistent = result.getSecond();
+                                if(consistent != null) {
                                     publish(_Transfer,
-                                            CONSISTENCY,
-                                            Pair.of(request,
+                                            CONSISTENT,
+                                            Pair.of(consistent,
                                                     Pair.of(session.index(),
                                                             session.getFactory()
                                                                    .serial())),
@@ -174,7 +177,8 @@ public class MixMappingHandler<T extends IStorage>
                             else if(result != null) {
                                 IProtocol request = result.getSecond();
                                 if(request != null) {
-                                    publish(_Writer, _LinkCustom.onConsistency(_SessionManager, request, _ClusterCustom.skipConsistency(request)));
+                                    publish(_Writer,
+                                            _LinkCustom.onConsistency(_SessionManager, _ClusterCustom.skipConsistency(request, session.index()), request));
                                 }
                                 else {
                                     _Logger.warning("no consistency to do");
@@ -205,12 +209,12 @@ public class MixMappingHandler<T extends IStorage>
                              * doCustom 执行结果 snd 是需要反向投递到linker的内容
                              */
                             if(result != null && result.getSecond() instanceof IConsistent backload) {
-                                publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
+                                publish(_Transfer, CONSISTENCY, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                             }
                             else if(result != null && result.getSecond() instanceof Collection<?> collection) {
                                 for(Object item : collection) {
                                     if(item instanceof IConsistent backload) {
-                                        publish(_Transfer, LINK_CONSISTENT_RESULT, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
+                                        publish(_Transfer, CONSISTENCY, Pair.of(backload, _SessionManager), _LinkCustom.getUnbox());
                                     }
                                 }
                             }
@@ -234,12 +238,12 @@ public class MixMappingHandler<T extends IStorage>
                  *      api → open service → core.ClusterProcessor → _ClusterCustom
                  *  }
                  */
-                case CONSISTENCY, CONSISTENCY_SERVICE -> {
+                case CONSISTENT, CONSISTENT_SERVICE -> {
                     IPair content = event.getContent();
                     IProtocol request = content.getFirst();
-                    IPair point = content.getSecond();
+                    IPair routing = content.getSecond();
                     /*
-                     *  origin →
+                     *  origin 在不同状态下的来源
                      *  CONSISTENCY:{
                      *      link-session.index
                      *  }
@@ -247,8 +251,8 @@ public class MixMappingHandler<T extends IStorage>
                      *      consistent-service.node-id.http-session
                      *  }
                      */
-                    long origin = point.getFirst();
-                    int factory = point.getSecond();
+                    long origin = routing.getFirst();
+                    int factory = routing.getSecond();
                     try {
                         _Logger.debug("consistency request: %s", request);
                         publish(_Writer, _ClusterCustom.consistent(_SessionManager, request, origin, factory));
@@ -274,14 +278,14 @@ public class MixMappingHandler<T extends IStorage>
                  *  LINKER(linker) →  CONSISTENCY(cluster) → CLUSTER(cluster) → CONSISTENT_RESULT(linker)
                  *  cluster（cluster-client） → Linker ｜ Linker notify → device.session
                  */
-                case LINK_CONSISTENT_RESULT -> {
+                case CONSISTENCY -> {
                     IPair content = event.getContent();
                     IConsistency consistency = content.getFirst();
                     IManager manager = content.getSecond();
                     IOperator<IConsistency, IManager, IProtocol> unbox = event.getEventOp();
                     if(consistency != null) {
                         try {
-                            publish(_Writer, _LinkCustom.onConsistency(_SessionManager, unbox.handle(consistency, manager), consistency));
+                            publish(_Writer, _LinkCustom.onConsistency(_SessionManager, consistency, unbox.handle(consistency, manager)));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
@@ -305,7 +309,7 @@ public class MixMappingHandler<T extends IStorage>
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

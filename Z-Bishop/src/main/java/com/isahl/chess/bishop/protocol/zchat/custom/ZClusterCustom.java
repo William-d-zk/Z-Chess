@@ -70,9 +70,9 @@ public class ZClusterCustom<T extends IStorage>
     }
 
     @Override
-    public IConsistency skipConsistency(IoSerial request)
+    public IConsistency skipConsistency(IoSerial request, long origin)
     {
-        return _Then != null ? _Then.skipConsistency(request) : null;
+        return _Then != null ? _Then.skipConsistency(request, origin) : null;
     }
 
 }

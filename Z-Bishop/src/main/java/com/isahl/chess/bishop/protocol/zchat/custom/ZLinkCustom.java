@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.protocol.zchat.custom;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.events.server.ILinkCustom;
@@ -49,17 +50,15 @@ public class ZLinkCustom
     }
 
     @Override
-    public List<ITriple> onConsistency(IManager manager, IProtocol request, IConsistency backload)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request)
     {
-        return _Then != null ? _Then.onConsistency(manager, request, backload) : null;
+        return _Then != null ? _Then.onConsistency(manager, backload, request) : null;
     }
 
     @Override
-    public void close(ISession session)
+    public IProtocol onClose(ISession session)
     {
-        if(_Then != null) {
-            _Then.close(session);
-        }
+        return _Then != null ? _Then.onClose(session) : null;
     }
 
     @Override

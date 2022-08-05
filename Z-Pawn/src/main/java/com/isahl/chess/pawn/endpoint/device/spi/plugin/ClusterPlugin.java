@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
+import com.isahl.chess.bishop.protocol.zchat.factory.ZClusterFactory;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0C_Pong;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -55,11 +56,16 @@ public class ClusterPlugin
     }
 
     @Override
+    public boolean isSupported(ISession session)
+    {
+        return session.getFactory() == ZClusterFactory._Instance;
+    }
+
+    @Override
     public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         switch(content.serial()) {
             case 0x0B -> {
-                //                _Logger.debug("pawn handle z-chat-ping");
                 X0C_Pong x0C = new X0C_Pong();
                 x0C.with(session);
                 load.add(Triple.of(x0C, session, session.encoder()));
@@ -71,11 +77,6 @@ public class ClusterPlugin
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void onOffline(ISession session)
-    {
     }
 
     @Override

@@ -60,7 +60,7 @@ public class ClientWriteDispatcher
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -106,7 +106,7 @@ public class ClientWriteDispatcher
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

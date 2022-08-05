@@ -126,7 +126,7 @@ public class X75_RaftReq
     @Override
     public String toString()
     {
-        return String.format("X75_RaftReq { client:%#x, origin:%#x, factory:%s}", mClient, mOrigin, IoUtil.intToChars(mFactory));
+        return String.format("X75_RaftReq { client:%#x, origin:%#x, factory:%s}", mClient, mOrigin, IoUtil.int2Chars(mFactory));
     }
 
 }

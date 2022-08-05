@@ -76,7 +76,7 @@ public class IoUtilTest
                          'T' };
         System.out.println(new String(chars));
         int a = 'M' << 24 | 'Q' << 16 | 'T' << 8 | 'T';
-        System.out.println(IoUtil.intToChars(a));
+        System.out.println(IoUtil.int2Chars(a));
 
     }
 }

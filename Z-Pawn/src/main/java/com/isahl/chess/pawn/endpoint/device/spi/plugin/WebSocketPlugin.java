@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
+import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.command.X105_Text;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X101_HandShake;
 import com.isahl.chess.bishop.protocol.ws.ctrl.X104_Pong;
@@ -57,6 +58,12 @@ public class WebSocketPlugin
     }
 
     @Override
+    public boolean isSupported(ISession session)
+    {
+        return session.getContext(WsContext.class) != null;
+    }
+
+    @Override
     public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
     {
         _Logger.info("web socket recv:[ %s ]", content);
@@ -84,12 +91,6 @@ public class WebSocketPlugin
     public ITriple onLink(IManager manager, ISession session, IProtocol input)
     {
         return null;
-    }
-
-    @Override
-    public void onOffline(ISession session)
-    {
-
     }
 
     public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)

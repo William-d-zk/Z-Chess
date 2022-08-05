@@ -471,7 +471,7 @@ public class ServerCore
             case BIZ_LOCAL -> _LocalLock;
             case CLUSTER_LOCAL -> _ClusterLock;
             case SERVICE -> _LocalLogicLock;
-            case CLUSTER_TOPOLOGY, CONSISTENCY_SERVICE -> _ConsensusApiLock;
+            case CLUSTER_TOPOLOGY, CONSISTENT_SERVICE -> _ConsensusApiLock;
             case CLUSTER_TIMER -> _ConsensusLock;
             default -> throw new IllegalArgumentException(String.format("error type:%s", type));
         };
@@ -484,7 +484,7 @@ public class ServerCore
             case BIZ_LOCAL -> _BizLocalSendEvent;
             case CLUSTER_LOCAL -> _ClusterLocalSendEvent;
             case SERVICE -> _LocalLogicEvent;
-            case CLUSTER_TOPOLOGY, CONSISTENCY_SERVICE -> _ConsensusApiEvent;
+            case CLUSTER_TOPOLOGY, CONSISTENT_SERVICE -> _ConsensusApiEvent;
             case CLUSTER_TIMER -> _ConsensusEvent;
             default -> throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
         };

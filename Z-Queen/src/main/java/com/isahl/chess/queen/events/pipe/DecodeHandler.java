@@ -64,7 +64,7 @@ public class DecodeHandler
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }

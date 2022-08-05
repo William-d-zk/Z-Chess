@@ -37,6 +37,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.isahl.chess.king.base.features.IError.Type.HANDLE_DATA;
@@ -63,7 +64,7 @@ public class WriteDispatcher
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -94,34 +95,27 @@ public class WriteDispatcher
                 case NULL, IGNORE -> {
                 }
                 case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
-                    IPair writeContent = event.getContent();
-                    _Logger.debug("content:%s,%s", writeContent, event.getEventType());
-                    IProtocol cmd = writeContent.getFirst();
-                    ISession session = writeContent.getSecond();
+                    IPair content = event.getContent();
+                    _Logger.debug("content:%s,%s", content, event.getEventType());
+                    IProtocol cmd = content.getFirst();
+                    ISession session = content.getSecond();
                     if(session != null) {
                         try {
                             cmd.transfer();
-                            publish(dispatchEncoder(session.hashCode()),
-                                    IOperator.Type.WRITE,
-                                    new Pair<>(cmd, session),
-                                    session.encoder());
-
+                            publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), session.encoder());
                         }
-                        catch(ZException e) {
-                            error(_Error, INITIATIVE_CLOSE, new Pair<>(e, session), session.getError());
+                        catch(IOException | ZException e) {
+                            error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
                         }
                     }
                 }
                 // from io-wrote
                 case WROTE -> {
-                    IPair wroteContent = event.getContent();
-                    int wroteCount = wroteContent.getFirst();
-                    ISession session = wroteContent.getSecond();
+                    IPair content = event.getContent();
+                    int count = content.getFirst();
+                    ISession session = content.getSecond();
                     if(session != null) {
-                        publish(dispatchEncoder(session.hashCode()),
-                                IOperator.Type.WROTE,
-                                new Pair<>(wroteCount, session),
-                                event.getEventOp());
+                        publish(dispatchEncoder(session.hashCode()), IOperator.Type.WROTE, Pair.of(count, session), event.getEventOp());
                     }
                 }
                 /*
@@ -129,20 +123,18 @@ public class WriteDispatcher
                  * DISPATCH:logic->batch->dispatch
                  */
                 case LOGIC, DISPATCH -> {
-                    List<ITriple> writeContents = event.getContentList();
-                    for(ITriple content : writeContents) {
+                    List<ITriple> contents = event.getContentList();
+                    for(ITriple content : contents) {
                         IProtocol cmd = content.getFirst();
                         ISession session = content.getSecond();
                         _Logger.debug("→ %s", content);
                         if(session != null) {
                             try {
-                                publish(dispatchEncoder(session.hashCode()),
-                                        IOperator.Type.WRITE,
-                                        new Pair<>(cmd, session),
-                                        content.getThird());
+                                cmd.transfer();
+                                publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), content.getThird());
                             }
-                            catch(ZException e) {
-                                error(_Error, INITIATIVE_CLOSE, new Pair<>(e, session), session.getError());
+                            catch(IOException | ZException e) {
+                                error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
                             }
                         }
                     }
@@ -153,7 +145,7 @@ public class WriteDispatcher
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

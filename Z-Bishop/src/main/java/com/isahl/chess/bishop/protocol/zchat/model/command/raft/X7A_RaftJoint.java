@@ -33,7 +33,7 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x79)
+                  serial = 0x7A)
 public class X7A_RaftJoint
         extends ZCommand
         implements IConsistent

@@ -38,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class HookOpenService
-
 {
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 

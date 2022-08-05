@@ -48,7 +48,7 @@ public class ClientHandler
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }

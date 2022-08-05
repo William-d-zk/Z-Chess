@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.bishop.protocol.zchat.model.command.X0F_Exchange;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
@@ -40,6 +40,8 @@ import java.util.List;
 public interface IAccessService
 {
     boolean isSupported(IoSerial input);
+
+    boolean isSupported(ISession session);
 
     /**
      * @param exchanger session manager
@@ -60,7 +62,14 @@ public interface IAccessService
      */
     ITriple onLink(IManager manager, ISession session, IProtocol input);
 
-    void onOffline(ISession session);
+    /**
+     * @param session close session
+     * @return session , 如果非空返回，说明是当前节点管理的 session
+     */
+    default ISession clean(IManager manager, long session)
+    {
+        return manager.cleanIndex(session);
+    }
 
     List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody);
 
@@ -69,9 +78,13 @@ public interface IAccessService
 
     }
 
-    default void onExchange(X0F_Exchange x0F, IManager manager, List<ITriple> load)
+    default void onExchange(IProtocol request, List<ITriple> load)
     {
 
     }
 
+    default IProtocol onClose(ISession session)
+    {
+        return null;
+    }
 }

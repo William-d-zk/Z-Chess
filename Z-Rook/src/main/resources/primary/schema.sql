@@ -22,6 +22,6 @@
  */
 
 CREATE SCHEMA IF NOT EXISTS "z_chess_rook";
-CREATE SCHEMA IF NOT EXISTS "z_chess_security";
 CREATE SCHEMA IF NOT EXISTS "z_chess_pawn";
 CREATE SCHEMA IF NOT EXISTS "z_chess_default";
+CREATE SCHEMA IF NOT EXISTS "z_chess_referee";

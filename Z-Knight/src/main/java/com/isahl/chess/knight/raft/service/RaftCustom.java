@@ -107,13 +107,13 @@ public class RaftCustom
             }
             case 0x79 -> _RaftPeer.onConfirm((X79_RaftConfirm) received);
             case 0x7C -> {
-                return _RaftPeer.onConfirm((X7C_RaftConfirm) received, manager);
+                return _RaftPeer.onConfirm((X7B_RaftConfirm) received, manager);
             }
             // peer *, behind in config → previous in config
             case 0x08 -> {
                 X08_Identity x08 = (X08_Identity) received;
-                long peerId = x08.getIdentity();
-                long newIdx = x08.getSessionIdx();
+                long peerId = x08.identity();
+                long newIdx = x08.idx();
                 _Logger.info("map peer[ %#x ] session[ %#x ]", peerId, newIdx);
                 manager.mapSession(newIdx, session, peerId);
             }
@@ -158,9 +158,10 @@ public class RaftCustom
     }
 
     @Override
-    public IConsistency skipConsistency(IoSerial request)
+    public IConsistency skipConsistency(IoSerial request, long origin)
     {
         X77_RaftNotify x77 = new X77_RaftNotify();
+        x77.origin(origin);
         x77.withSub(request);
         return x77;
     }

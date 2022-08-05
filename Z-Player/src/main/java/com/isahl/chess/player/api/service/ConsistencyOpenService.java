@@ -31,7 +31,6 @@ import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentText;
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +47,7 @@ public class ConsistencyOpenService
     private final RaftPeer   _RaftPeer;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer, RaftCustom raftCustom)
+    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;

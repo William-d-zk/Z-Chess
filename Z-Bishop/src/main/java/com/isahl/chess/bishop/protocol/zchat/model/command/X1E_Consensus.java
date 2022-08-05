@@ -21,30 +21,46 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
+package com.isahl.chess.bishop.protocol.zchat.model.command;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-import com.isahl.chess.king.base.exception.ZException;
 
 /**
  * @author william.d.zk
+ * @date 2020/4/6
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x0A)
-public class X0A_Shutdown
-        extends ZControl
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
+                  serial = 0x1E)
+public class X1E_Consensus
+        extends ZCommand
 {
+    public X1E_Consensus()
+    {
+        super();
+    }
+
+    public X1E_Consensus(long msgId)
+    {
+        super();
+        msgId(msgId);
+    }
 
     @Override
-    public void transfer()
+    public int priority()
     {
-        throw new ZException("shutdown session");
+        return QOS_PRIORITY_07_ROUTE_MESSAGE;
     }
 
     @Override
     public Level level()
     {
         return Level.ALMOST_ONCE;
+    }
+
+    @Override
+    public boolean isMapping()
+    {
+        return false;
     }
 }
