@@ -62,7 +62,7 @@ public interface ISession
 {
     boolean isMultiBind();
 
-    long[] getBindIndex();
+    long[] bindIndex();
 
     void bindIndex(long index);
 
@@ -70,7 +70,7 @@ public interface ISession
 
     long index();
 
-    void setIndex(long index);
+    void index(long index);
 
     Channel getChannel();
 

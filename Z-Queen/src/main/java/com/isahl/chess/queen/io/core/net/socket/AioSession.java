@@ -79,7 +79,7 @@ public class AioSession<C extends IPContext>
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long                                 mIndex = INVALID_INDEX;
+    private long                                 mIndex;
     private long[]                               mBindIndex;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
@@ -188,13 +188,13 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public long[] getBindIndex()
+    public long[] bindIndex()
     {
         return mBindIndex;
     }
 
     @Override
-    public final void setIndex(long index)
+    public final void index(long index)
     {
         mIndex = index;
     }
