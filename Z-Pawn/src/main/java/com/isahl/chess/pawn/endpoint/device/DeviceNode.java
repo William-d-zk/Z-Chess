@@ -152,7 +152,6 @@ public class DeviceNode
         };
         _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup(), "PeerClient")
         {
-
             @Override
             public void onCreated(ISession session)
             {

@@ -234,7 +234,7 @@ public class MQttPlugin
                     }
                 }
                 if(x112.isOk()) {
-                    ISession old = manager.mapSession(deviceId, session);
+                    ISession old = manager.mapSession(session.prefix(deviceId), session);
                     if(old != null) {
                         _Logger.info("re-login ok, wait for consistent notify; client[%s],close old", x111.getClientId());
                         old.innerClose();

@@ -68,6 +68,8 @@ public interface ISession
 
     void unbindIndex(long index);
 
+    long prefix(long index);
+
     long index();
 
     void index(long index);

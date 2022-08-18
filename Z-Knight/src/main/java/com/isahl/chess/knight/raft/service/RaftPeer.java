@@ -620,6 +620,7 @@ public class RaftPeer
         accept.index(_SelfMachine.index());
         accept.indexTerm(_SelfMachine.indexTerm());
         accept.leader(_SelfMachine.leader());
+        accept.commit(_SelfMachine.commit());
         return accept;
     }
 
