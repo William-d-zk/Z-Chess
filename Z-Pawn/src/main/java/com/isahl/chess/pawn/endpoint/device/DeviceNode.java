@@ -80,7 +80,7 @@ public class DeviceNode
     @Override
     public void onDismiss(ISession session)
     {
-        _Logger.debug("dismiss %s", session);
+        _Logger.warning("dismiss %s", session);
         rmSession(session);
     }
 
