@@ -57,10 +57,9 @@ public class DeviceController
     }
 
     @PostMapping("register")
-    public @ResponseBody
-    ZResponse<?> registerDevice(
+    public @ResponseBody ZResponse<?> registerDevice(
             @RequestBody
-                    DeviceDo deviceDo)
+            DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
@@ -70,10 +69,9 @@ public class DeviceController
     }
 
     @GetMapping("open/query")
-    public @ResponseBody
-    ZResponse<?> queryDeviceByToken(
+    public @ResponseBody ZResponse<?> queryDeviceByToken(
             @RequestParam("token")
-                    String token)
+            String token)
     {
         if(!isBlank(token)) {
             DeviceEntity exist = _MixOpenService.findByToken(token);
@@ -83,10 +81,9 @@ public class DeviceController
     }
 
     @GetMapping("manager/query")
-    public @ResponseBody
-    ZResponse<?> queryDeviceBySn(
+    public @ResponseBody ZResponse<?> queryDeviceBySn(
             @RequestParam("sn")
-                    String sn)
+            String sn)
     {
         if(!isBlank(sn)) {
             DeviceEntity exist = _MixOpenService.findBySn(sn);
@@ -131,16 +128,15 @@ public class DeviceController
     */
 
     @GetMapping("online/all")
-    public @ResponseBody
-    ZResponse<?> listOnlineDevices(
+    public @ResponseBody ZResponse<?> listOnlineDevices(
             @RequestParam(value = "page",
                           defaultValue = "0",
                           required = false)
-                    Integer page,
+            Integer page,
             @RequestParam(value = "size",
                           defaultValue = "20",
                           required = false)
-                    Integer size)
+            Integer size)
     {
         size = size < 1 ? 10 : size > 50 ? 50 : size;
         page = page < 0 ? 0 : page;
@@ -148,16 +144,15 @@ public class DeviceController
     }
 
     @GetMapping("online/stored")
-    public @ResponseBody
-    ZResponse<?> listStored(
+    public @ResponseBody ZResponse<?> listStored(
             @RequestParam(value = "page",
                           required = false,
                           defaultValue = "0")
-                    Integer page,
+            Integer page,
             @RequestParam(value = "size",
                           defaultValue = "20",
                           required = false)
-                    Integer size)
+            Integer size)
     {
         size = size < 1 ? 10 : size > 50 ? 50 : size;
         page = page < 0 ? 0 : page;

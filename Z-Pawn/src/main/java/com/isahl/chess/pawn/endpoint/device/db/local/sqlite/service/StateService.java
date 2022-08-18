@@ -193,7 +193,8 @@ public class StateService
             _ClientPool.put(session, client);
         }
         client.setKeepAlive(duration);
-        client.of(_DeviceService.getOneDevice(session));
+        long device = session & ~ZUID.TYPE_MASK;
+        client.of(_DeviceService.getOneDevice(device));
         if(clean) {
             if(!_Topic2Subscribe.isEmpty()) {
                 _Topic2Subscribe.values()

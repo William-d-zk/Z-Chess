@@ -87,8 +87,7 @@ public class AioSession<C extends IPContext>
     private long[]                               mSessionPrefix;
     /* reader */
     private CompletionHandler<Integer, ISession> mReader;
-
-    private IPipeTransfer mTransfer;
+    private IPipeTransfer                        mTransfer;
 
     @Override
     public String toString()
@@ -179,6 +178,13 @@ public class AioSession<C extends IPContext>
     public final boolean isClosed()
     {
         return stateAtLeast(_State.get(), SESSION_CLOSE);
+    }
+
+    @Override
+    public long prefix(long index)
+    {
+        return index | _Sort.getType()
+                            .prefix();
     }
 
     @Override

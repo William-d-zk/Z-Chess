@@ -99,7 +99,7 @@ public class BaseAioClient
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector connector = _TargetManageMap.get(remoteAddress)
                                                   .getSecond();
-        _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
+        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
