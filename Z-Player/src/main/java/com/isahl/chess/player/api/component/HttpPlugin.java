@@ -26,7 +26,7 @@ package com.isahl.chess.player.api.component;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;

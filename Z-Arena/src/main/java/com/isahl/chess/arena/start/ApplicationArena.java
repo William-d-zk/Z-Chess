@@ -25,6 +25,9 @@ package com.isahl.chess.arena.start;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 
 /**
  * @author william.d.zk
@@ -35,8 +38,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
                                             "com.isahl.chess.rook.storage",
                                             "com.isahl.chess.pawn.endpoint",
                                             "com.isahl.chess.player.api",
-                                            "com.isahl.chess.referee.admin",
-                                            "com.isahl.chess.arena.gateway" })
+                                            "com.isahl.chess.arena.gateway" },
+                       exclude = { DataSourceAutoConfiguration.class,
+                                   DataSourceTransactionManagerAutoConfiguration.class,
+                                   HibernateJpaAutoConfiguration.class })
 public class ApplicationArena
 {
 

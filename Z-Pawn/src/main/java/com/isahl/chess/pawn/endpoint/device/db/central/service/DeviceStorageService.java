@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,25 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.rook.storage.cache.ehcache;
+package com.isahl.chess.pawn.endpoint.device.db.central.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-
-@Component
-public class CacheChecker
+/**
+ * @author william.d.zk
+ */
+public class DeviceStorageService
 {
-    private final CacheManager _CacheManager;
 
-    @Autowired
-    public CacheChecker(CacheManager cacheManager) {_CacheManager = cacheManager;}
 
-    public <K, V> V check(String cacheName, K key)
-    {
-        Cache<K, V> cache = _CacheManager.getCache(cacheName);
-        return cache.get(key);
-    }
+
 }

@@ -33,7 +33,7 @@ import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.model.BinarySerial;
 import com.isahl.chess.king.base.model.ListSerial;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 

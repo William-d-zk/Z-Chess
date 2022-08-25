@@ -21,41 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository;
+package com.isahl.chess.pawn.endpoint.device.db.central.repository;
 
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2020-1-20
  */
-@Repository("remote-message-jpa-repository")
-public interface IMessageRepository
-        extends BaseLongRepository<MessageEntity>
+@Repository
+public interface IDeviceRepository
+        extends BaseLongRepository<DeviceEntity>
 {
-   /*
-    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
+    DeviceEntity findByToken(String token);
 
-    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
-           nativeQuery = true)
-    List<MessageEntity> listByTopic(
-            @Param("p_topic")
-                    String topic,
-            @Param("p_limit")
-                    int limit);
+    DeviceEntity findBySn(String sn);
 
+    DeviceEntity findBySnOrToken(String sn, String token);
 
-    @Transactional
-    @Modifying
-    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
-           nativeQuery = true)
-    void deleteAllByDestination(
-            @Param("p_dest")
-                    long destination,
-            @Param("p_owner")
-                    String owner);
-
-     */
+    DeviceEntity findByIdAndUsername(long id, String username);
 }

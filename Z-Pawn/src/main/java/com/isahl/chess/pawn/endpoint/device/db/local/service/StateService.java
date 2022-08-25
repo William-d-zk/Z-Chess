@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.service;
+package com.isahl.chess.pawn.endpoint.device.db.local.service;
 
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
@@ -31,10 +31,10 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.api.features.IStateService;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.IMsgStateRepository;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository.ISessionRepository;
+import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
+import com.isahl.chess.pawn.endpoint.device.db.local.model.SessionEntity;
+import com.isahl.chess.pawn.endpoint.device.db.local.repository.IMsgStateRepository;
+import com.isahl.chess.pawn.endpoint.device.db.local.repository.ISessionRepository;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;

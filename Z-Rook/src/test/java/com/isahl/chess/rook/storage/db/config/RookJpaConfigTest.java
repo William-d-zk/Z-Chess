@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,14 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.service;
+package com.isahl.chess.rook.storage.db.config;
 
-/**
- * @author william.d.zk
- */
-public class DeviceStorageService
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+
+import javax.annotation.Resource;
+
+
+@SpringBootTest
+class RookJpaConfigTest
 {
 
+    @Resource
+    ApplicationContext context;
 
+    @Test
+    public void load()
+    {
+        Object dbs = context.getBean("z-rook-dbs");
+
+        System.out.println(dbs);
+    }
 
 }

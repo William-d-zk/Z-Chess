@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,25 +21,39 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository;
+package com.isahl.chess.pawn.endpoint.device.db.central.service;
 
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMessageRepository;
+import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2020-1-20
  */
-@Repository("remote-device-jpa-repository")
-public interface IDeviceRepository
-        extends BaseLongRepository<DeviceEntity>
+@Service
+public class MessageStorageService
+        implements PersistentHook.ISubscribe
 {
-    DeviceEntity findByToken(String token);
+    private final IMessageRepository _JpaRepository;
 
-    DeviceEntity findBySn(String sn);
+    @Autowired
+    public MessageStorageService(IMessageRepository repository)
+    {
+        _JpaRepository = repository;
+    }
 
-    DeviceEntity findBySnOrToken(String sn, String token);
-
-    DeviceEntity findByIdAndUsername(long id, String username);
+    @Override
+    public void onBatch(List<IoSerial> contents)
+    {
+        for(IoSerial content : contents) {
+            if(content instanceof MessageEntity msg) {
+                _JpaRepository.save(msg);
+            }
+        }
+    }
 }
