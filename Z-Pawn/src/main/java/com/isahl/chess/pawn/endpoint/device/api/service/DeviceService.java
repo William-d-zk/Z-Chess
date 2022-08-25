@@ -27,13 +27,11 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IDeviceRepository;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.repository.IDeviceRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
-import com.isahl.chess.rook.storage.cache.ehcache.CacheChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -71,7 +69,7 @@ public class DeviceService
     private final MixConfig         _MixConfig;
 
     @Autowired
-    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig, CacheChecker cacheChecker)
+    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig)
     {
         _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;

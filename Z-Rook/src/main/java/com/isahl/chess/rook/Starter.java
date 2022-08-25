@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,14 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.local.sqlite.repository;
+package com.isahl.chess.rook;
 
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
-import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * @author william.d.zk
- */
-public interface ISessionRepository
-        extends BaseLongRepository<SessionEntity>
-{}
+@SpringBootApplication(scanBasePackages = { "com.isahl.chess.rook" })
+public class Starter
+{
+    public static void main(String[] args)
+    {
+        SpringApplication.run(Starter.class, args);
+    }
+}

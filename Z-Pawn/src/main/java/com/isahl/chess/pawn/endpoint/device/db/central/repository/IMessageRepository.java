@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,31 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.features;
+package com.isahl.chess.pawn.endpoint.device.db.central.repository;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-
-import java.util.List;
-import java.util.Optional;
+import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk
- * @date 2020/2/21
+ * @date 2019-07-31
  */
-public interface IMessageService
+@Repository
+public interface IMessageRepository
+        extends BaseLongRepository<MessageEntity>
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
+   /*
+    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
 
-    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
+    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
+           nativeQuery = true)
+    List<MessageEntity> listByTopic(
+            @Param("p_topic")
+                    String topic,
+            @Param("p_limit")
+                    int limit);
 
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 
-    void submit(MessageEntity content);
+    @Transactional
+    @Modifying
+    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
+           nativeQuery = true)
+    void deleteAllByDestination(
+            @Param("p_dest")
+                    long destination,
+            @Param("p_owner")
+                    String owner);
 
-    long generateId(long session);
-
+     */
 }

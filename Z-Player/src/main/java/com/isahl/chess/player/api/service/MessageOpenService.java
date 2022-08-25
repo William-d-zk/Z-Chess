@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import org.springframework.beans.factory.annotation.Autowired;

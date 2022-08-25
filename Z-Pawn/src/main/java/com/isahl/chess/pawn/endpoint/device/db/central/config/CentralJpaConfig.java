@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,15 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.config;
+package com.isahl.chess.pawn.endpoint.device.db.central.config;
 
-import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
-import com.isahl.chess.rook.storage.db.config.BaseJpaConfig;
+import com.isahl.chess.rook.storage.db.service.RookProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
-import org.springframework.boot.sql.init.DatabaseInitializationSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -37,40 +33,28 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-
 @Configuration
-@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository",
-                       entityManagerFactoryRef = "remote-entity-manager",
-                       transactionManagerRef = "remote-transaction-manager")
-public class RemoteJpaConfig
-        extends BaseJpaConfig
-{
-    @Autowired
-    public RemoteJpaConfig(EhcacheConfig cacheConfig) {super(cacheConfig);}
+@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.db.central.repository",
+                       entityManagerFactoryRef = "central-entity-manager-factory",
+                       transactionManagerRef = "central-transaction-manager")
+public class CentralJpaConfig
 
-    @Bean("remote-entity-manager")
-    public LocalContainerEntityManagerFactoryBean createRemoteEntityManager(
-            @Qualifier("primary-data-source")
-                    DataSource dataSource,
-            @Qualifier("primary-jpa-properties")
-                    JpaProperties jpaProperties,
-            @Qualifier("primary-jpa-hibernate-properties")
-                    HibernateProperties hibernateProperties,
-            @Qualifier("primary-sql-init-settings")
-                    DatabaseInitializationSettings initializationSettings)
+{
+    private final RookProvider _RookProvider;
+
+    @Autowired
+    public CentralJpaConfig(RookProvider provider) {_RookProvider = provider;}
+
+    @Bean("central-entity-manager-factory")
+    public LocalContainerEntityManagerFactoryBean createMsgEntityManagerFactory()
     {
-        return getEntityManager(dataSource,
-                                jpaProperties,
-                                hibernateProperties,
-                                initializationSettings,
-                                "com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model");
+        return _RookProvider.buildEntityManager("0", "com.isahl.chess.pawn.endpoint.device.db.central.model");
     }
 
-    @Bean("remote-transaction-manager")
+    @Bean("central-transaction-manager")
     public PlatformTransactionManager createRemoteTransactionManager(
-            @Qualifier("remote-entity-manager")
-                    LocalContainerEntityManagerFactoryBean factory)
+            @Qualifier("central-entity-manager-factory")
+            LocalContainerEntityManagerFactoryBean factory)
     {
         JpaTransactionManager tm = new JpaTransactionManager();
         tm.setEntityManagerFactory(factory.getObject());

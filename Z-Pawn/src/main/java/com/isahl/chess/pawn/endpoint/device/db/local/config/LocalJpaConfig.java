@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.db.config;
+package com.isahl.chess.pawn.endpoint.device.db.local.config;
 
 import com.isahl.chess.rook.storage.db.service.RookProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,27 +34,25 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.api.db.repository",
-                       entityManagerFactoryRef = "api-entity-manager-factory",
-                       transactionManagerRef = "api-transaction-manager")
-public class ApiJpaConfig
+@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.db.local.repository",
+                       entityManagerFactoryRef = "state-entity-manager-factory",
+                       transactionManagerRef = "state-transaction-manager")
+public class LocalJpaConfig
 {
     private final RookProvider _RookProvider;
 
     @Autowired
-    public ApiJpaConfig(RookProvider rookProvider) {_RookProvider = rookProvider;}
+    public LocalJpaConfig(RookProvider rookProvider) {_RookProvider = rookProvider;}
 
-    @Bean("api-entity-manager-factory")
-    public LocalContainerEntityManagerFactoryBean createRemoteEntityManagerFactory()
+    @Bean("state-entity-manager-factory")
+    public LocalContainerEntityManagerFactoryBean createLocalEntityManagerFactory()
     {
-        return _RookProvider.buildEntityManager("0",
-                                                "com.isahl.chess.pawn.endpoint.device.db.central.model",
-                                                "com.isahl.chess.pawn.endpoint.device.api.db.model");
+        return _RookProvider.buildEntityManager("1", "com.isahl.chess.pawn.endpoint.device.db.local.model");
     }
 
-    @Bean("api-transaction-manager")
-    public PlatformTransactionManager createRemoteTransactionManager(
-            @Qualifier("api-entity-manager-factory")
+    @Bean("state-transaction-manager")
+    public PlatformTransactionManager createLocalTransactionManager(
+            @Qualifier("state-entity-manager-factory")
             LocalContainerEntityManagerFactoryBean factory)
     {
         JpaTransactionManager tm = new JpaTransactionManager();

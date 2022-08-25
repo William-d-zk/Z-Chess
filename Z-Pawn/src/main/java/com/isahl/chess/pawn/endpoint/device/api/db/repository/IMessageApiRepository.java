@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.db.repository;
 
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 

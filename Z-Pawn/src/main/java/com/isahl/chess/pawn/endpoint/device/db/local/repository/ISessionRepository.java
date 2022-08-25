@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,39 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.db.remote.postgres.service;
+package com.isahl.chess.pawn.endpoint.device.db.local.repository;
 
-import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.repository.IMessageRepository;
-import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+import com.isahl.chess.pawn.endpoint.device.db.local.model.SessionEntity;
+import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 
 /**
  * @author william.d.zk
  */
-@Service
-public class MessageStorageService
-        implements PersistentHook.ISubscribe
-{
-    private final IMessageRepository _JpaRepository;
-
-    @Autowired
-    public MessageStorageService(IMessageRepository repository)
-    {
-        _JpaRepository = repository;
-    }
-
-    @Override
-    public void onBatch(List<IoSerial> contents)
-    {
-        for(IoSerial content : contents) {
-            if(content instanceof MessageEntity msg) {
-                _JpaRepository.save(msg);
-            }
-        }
-    }
-}
+public interface ISessionRepository
+        extends BaseLongRepository<SessionEntity>
+{}

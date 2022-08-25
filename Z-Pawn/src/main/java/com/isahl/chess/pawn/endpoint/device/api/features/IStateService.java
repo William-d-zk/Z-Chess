@@ -23,8 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.api.features;
 
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.MsgStateEntity;
-import com.isahl.chess.pawn.endpoint.device.db.local.sqlite.model.SessionEntity;
+import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
+import com.isahl.chess.pawn.endpoint.device.db.local.model.SessionEntity;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
