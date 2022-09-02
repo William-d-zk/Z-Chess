@@ -21,22 +21,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.model;
+package com.isahl.chess.referee.secure.ngac.model;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
-import org.junit.jupiter.api.Test;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.rook.graphic.IScene;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Set;
 
-class MessageBodyTest
+/**
+ * 禁止条款
+ */
+public class Prohibition
 {
+    private String               name;
+    private String               subject;
+    private Map<String, Boolean> containers;
+    private Set<IScene>          attributes;
 
-    @Test
-    void testJson()
+    public Prohibition(String name, String subject, Map<String, Boolean> containers, Set<IScene> attributes)
     {
-        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
-
-        System.out.println(JsonUtil.writeValueAsString(body));
+        this.name = name;
+        this.subject = subject;
+        this.containers = containers;
+        this.attributes = attributes;
+        if(IoUtil.isBlank(name) || IoUtil.isBlank(subject)) {
+            throw new IllegalArgumentException("prohibition must has subject!");
+        }
     }
+
+
 }

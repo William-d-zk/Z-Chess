@@ -25,17 +25,13 @@ package com.isahl.chess.referee;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import xyz.erupt.core.annotation.EruptScan;
 
 import java.awt.*;
 import java.net.URI;
 
 @SpringBootApplication
-@EntityScan
-@EruptScan
 public class RefereeApplication
         extends SpringBootServletInitializer
 {

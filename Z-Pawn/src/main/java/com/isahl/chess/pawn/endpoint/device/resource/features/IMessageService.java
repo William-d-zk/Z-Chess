@@ -21,41 +21,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.db.repository;
+package com.isahl.chess.pawn.endpoint.device.resource.features;
 
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
-import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2020/2/21
  */
-@Repository("api-message-jpa-repository")
-public interface IMessageApiRepository
-        extends BaseLongRepository<MessageEntity>
+public interface IMessageService
 {
-   /*
-    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
-           nativeQuery = true)
-    List<MessageEntity> listByTopic(
-            @Param("p_topic")
-                    String topic,
-            @Param("p_limit")
-                    int limit);
+    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
 
+    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 
-    @Transactional
-    @Modifying
-    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
-           nativeQuery = true)
-    void deleteAllByDestination(
-            @Param("p_dest")
-                    long destination,
-            @Param("p_owner")
-                    String owner);
+    void submit(MessageEntity content);
 
-     */
+    long generateId(long session);
+
 }
