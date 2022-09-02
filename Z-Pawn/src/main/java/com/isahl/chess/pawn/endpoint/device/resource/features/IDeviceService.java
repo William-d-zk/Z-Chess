@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,22 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.model;
+package com.isahl.chess.pawn.endpoint.device.resource.features;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
-import org.junit.jupiter.api.Test;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
-class MessageBodyTest
+public interface IDeviceService
 {
 
-    @Test
-    void testJson()
-    {
-        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
+    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
-        System.out.println(JsonUtil.writeValueAsString(body));
-    }
+    DeviceEntity findByToken(String token) throws ZException;
+
+    DeviceEntity findBySn(String sn) throws ZException;
+
+    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
+
+    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
+
+    DeviceEntity getOneDevice(long id);
+
 }

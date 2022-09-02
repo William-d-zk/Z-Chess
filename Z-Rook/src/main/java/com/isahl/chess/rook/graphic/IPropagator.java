@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,31 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.features;
-
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-
-import java.util.List;
-import java.util.Optional;
+package com.isahl.chess.rook.graphic;
 
 /**
- * @author william.d.zk
- * @date 2020/2/21
+ * 传播器
  */
-public interface IMessageService
+public interface IPropagator
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
-
-    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
-
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
-
-    void submit(MessageEntity content);
-
-    long generateId(long session);
-
+    /**
+     * 传播过程是
+     * @param perspective
+     * @param target
+     * @return
+     */
+    IEdge propagate(long perspective, long target);
 }

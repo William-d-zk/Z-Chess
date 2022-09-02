@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.15-SNAPSHOT</version>
+    <version>1.0.15</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -66,11 +66,10 @@
         <commons-io.version>2.11.0</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
         <commons-compress.version>1.21</commons-compress.version>
-        <commons-collections4.version>4.4</commons-collections4.version>
         <!--DB-->
         <sqlite.driver.version>3.36.0.3</sqlite.driver.version>
         <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
-        <postgresql.driver.version>42.4.1</postgresql.driver.version>
+        <postgresql.driver.version>42.4.2</postgresql.driver.version>
         <hibernate-types-52.version>2.16.3</hibernate-types-52.version>
 
         <!--PIPELINE-->
@@ -87,8 +86,6 @@
         <!--JSON-->
         <jackson.version>2.13.3</jackson.version>
         <json-schema-validator.version>1.0.71</json-schema-validator.version>
-        <!--LOW_CODE_ERUPT-->
-        <erupt.version>1.10.12</erupt.version>
         <!--PLUGINS-->
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
@@ -305,33 +302,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>${commons-collections4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-text</artifactId>
-                <version>1.9</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils</artifactId>
-                <version>1.9.4</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!--SpringBoot-->
             <dependency>
@@ -568,38 +538,6 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${json-schema-validator.version}</version>
-            </dependency>
-            <!--apache SCA-->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>2.0.26</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.santuario</groupId>
-                <artifactId>xmlsec</artifactId>
-                <version>3.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>batik-svgbrowser</artifactId>
-                <version>1.14</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.xmlgraphics</groupId>
-                <artifactId>xmlgraphics-commons</artifactId>
-                <version>2.7</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.70</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -21,22 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.model;
+package com.isahl.chess.rook.graphic;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
-import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-
-class MessageBodyTest
+/**
+ * 场景是关联到某一个边, 且依附于视角节点
+ *
+ * @author william.d.zk
+ * @see INode
+ * @see IEdge
+ */
+public interface IScene
 {
 
-    @Test
-    void testJson()
-    {
-        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
-
-        System.out.println(JsonUtil.writeValueAsString(body));
-    }
 }

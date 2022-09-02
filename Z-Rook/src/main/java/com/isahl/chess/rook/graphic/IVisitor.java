@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,28 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.features;
+package com.isahl.chess.rook.graphic;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.rook.graphic.model.GNode;
 
-import java.util.List;
-
-public interface IDeviceService
+public interface IVisitor<V extends IoSerial>
 {
-
-    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
-
-    DeviceEntity findByToken(String token) throws ZException;
-
-    DeviceEntity findBySn(String sn) throws ZException;
-
-    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
-
-    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
-
-    DeviceEntity getOneDevice(long id);
-
+    void visit(GNode<V> Node);
 }

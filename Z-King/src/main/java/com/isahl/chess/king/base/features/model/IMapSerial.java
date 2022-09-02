@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022~2022. Z-Chess
+ * Copyright (c) 2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,24 +26,31 @@ package com.isahl.chess.king.base.features.model;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.NavigableMap;
 
-public interface ICollectionSerial<T extends IoSerial>
+public interface IMapSerial<K extends Comparable<K>, V extends IoSerial>
         extends IoSerial,
-                Collection<T>
+                NavigableMap<K, V>
 {
     int SERIAL_POS = 0;
     int LENGTH_POS = 2;
     int SIZE_POS   = 6;
 
-    IoFactory<T> factory();
+    IoFactory<V> factory();
 
     default void fold(ByteBuf input, int remain)
     {
         if(remain > 0) {
-            throw new ZException("collection serial fold error [remain %d]", remain);
+            throw new ZException("map serial fold error [remain %d]", remain);
         }
     }
+
+    int sizeOf(K k);
+
+    K nextKey(ByteBuf input);
+
+    void key(ByteBuf output, K k);
 
     @Override
     default int prefix(ByteBuf input)
@@ -52,9 +59,11 @@ public interface ICollectionSerial<T extends IoSerial>
         int length = input.getInt();
         int size = input.getInt();
         for(int i = 0; i < size; i++) {
-            T content = factory().create(input);
-            add(content);
-            length -= content.sizeOf();
+            K key = nextKey(input);
+            length -= sizeOf(key);
+            V value = factory().create(input);
+            put(key, value);
+            length -= value.sizeOf();
         }
         return length - 4;
     }
@@ -65,8 +74,10 @@ public interface ICollectionSerial<T extends IoSerial>
         output = output.putShort(serial())
                        .putInt(length())
                        .putInt(size());
-        for(IoSerial t : this) {
-            output.put(t.encode());
+        for(Map.Entry<K, V> e : entrySet()) {
+            key(output, e.getKey());
+            output.put(e.getValue()
+                        .encode());
         }
         return output;
     }
@@ -75,8 +86,10 @@ public interface ICollectionSerial<T extends IoSerial>
     default int length()
     {
         int length = 0;
-        for(IoSerial t : this) {
-            length += t.sizeOf();
+        for(Map.Entry<K, V> e : entrySet()) {
+            length += sizeOf(e.getKey());
+            length += e.getValue()
+                       .sizeOf();
         }
         return length;
     }
@@ -97,7 +110,7 @@ public interface ICollectionSerial<T extends IoSerial>
     }
 
     @Override
-    default ICollectionSerial<T> withSub(IoSerial sub)
+    default IMapSerial<K, V> withSub(IoSerial sub)
     {
         throw new UnsupportedOperationException();
     }
@@ -119,4 +132,45 @@ public interface ICollectionSerial<T extends IoSerial>
     {
         throw new UnsupportedOperationException();
     }
+
+    enum KeyType
+    {
+        _String(String.class.getTypeName(), (byte) 0),
+        _Long(Long.class.getTypeName(), (byte) 1),
+        _Integer(Integer.class.getTypeName(), (byte) 2),
+        _Byte(Byte.class.getTypeName(), (byte) 3);
+
+        private final String _Type;
+        private final byte   _Id;
+
+        KeyType(String type, byte id)
+        {
+            _Type = type;
+            _Id = id;
+        }
+
+        public String type() {return _Type;}
+
+        public byte id() {return _Id;}
+
+        public static KeyType typeOf(String type)
+        {
+            for(KeyType t : KeyType.values()) {
+                if(t._Type.equals(type)) {
+                    return t;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
+        public static KeyType idOf(byte id){
+            return  switch(id){
+                case 0->_String;
+                case 1->_Long;
+                case 2->_Integer;
+                case 3->_Byte;
+                default -> throw new IllegalArgumentException();
+            };
+        }
+    }
+
 }

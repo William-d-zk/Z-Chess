@@ -21,22 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.model;
+package com.isahl.chess.rook.graphic;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
-import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-
-class MessageBodyTest
+public interface INode
 {
+    long id();
 
-    @Test
-    void testJson()
+    enum Type
     {
-        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
 
-        System.out.println(JsonUtil.writeValueAsString(body));
     }
 }

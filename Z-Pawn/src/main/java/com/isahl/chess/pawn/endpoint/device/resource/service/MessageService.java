@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,13 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.api.service;
+package com.isahl.chess.pawn.endpoint.device.resource.service;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.api.features.IMessageService;
-import com.isahl.chess.pawn.endpoint.device.api.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
+import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMessageRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
