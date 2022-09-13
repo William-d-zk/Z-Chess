@@ -25,32 +25,30 @@ package com.isahl.chess.audience.client.component;
 
 import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
-import com.isahl.chess.bishop.io.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.bishop.io.ws.WsContext;
-import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.io.ws.features.IWsContext;
-import com.isahl.chess.bishop.io.ws.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11C_QttPingreq;
+import com.isahl.chess.bishop.protocol.ws.ctrl.X103_Ping;
+import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.components.Health;
-import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.events.server.ILogicHandler;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioManager;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
@@ -68,8 +66,8 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Stream;
 
-import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
 /**
@@ -80,21 +78,22 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
 public class ClientPool
         extends AioManager
         implements IAioClient,
-                   ISessionDismiss
+                   IDismiss,
+                   IActivity
 {
-    private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final ClientConfig             _ClientConfig;
-    private final AsynchronousChannelGroup _ChannelGroup;
-    private final ClientCore               _ClientCore;
-    private final TimeWheel                _TimeWheel;
-    private final ZUID                     _ZUid   = new ZUID();
-    private final Map<Long, Client>        _ZClientMap;
-    private final X103_Ping                _Ping   = new X103_Ping();
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+
+    private final ClientConfig                       _ClientConfig;
+    private final AsynchronousChannelGroup           _ChannelGroup;
+    private final ClientCore                         _ClientCore;
+    private final TimeWheel                          _TimeWheel;
+    private final Map<Long, Client>                  _ZClientMap;
+    private final Map<Integer, IoFactory<IProtocol>> _FactoryMap;
 
     @Autowired
     public ClientPool(
             @Qualifier("io_consumer_config")
-                    IAioConfig bizIoConfig, ClientConfig clientConfig) throws IOException
+            IAioConfig bizIoConfig, ClientConfig clientConfig) throws IOException
     {
         super(bizIoConfig);
         _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_CONSUMER)));
@@ -102,44 +101,9 @@ public class ClientPool
         int ioCount = _ClientConfig.getIoCount();
         _ClientCore = new ClientCore(ioCount);
         _TimeWheel = _ClientCore.getTimeWheel();
+        _FactoryMap = new HashMap<>();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
-        _ClientCore.build(slot->new ILogicHandler()
-        {
-            private final IHealth _Health = new Health(0);
-
-            @Override
-            public Logger getLogger()
-            {
-                return _Logger;
-            }
-
-            @Override
-            public ISessionManager getISessionManager()
-            {
-                return ClientPool.this;
-            }
-
-            @Override
-            public List<ITriple> logicHandle(ISessionManager manager,
-                                             ISession session,
-                                             IControl content) throws Exception
-            {
-                return null;
-            }
-
-            @Override
-            public void serviceHandle(IProtocol request) throws Exception
-            {
-
-            }
-
-            @Override
-            public IHealth getHealth()
-            {
-                return _Health;
-            }
-
-        }, Encryptor::new);
+        _ClientCore.build(slot->new ClientHandler(new Health(slot), ClientPool.this), Encryptor::new);
         _Logger.debug("device consumer created");
     }
 
@@ -163,41 +127,45 @@ public class ClientPool
 
     }
 
-    public void connect(ZSortHolder ZSortHolder, Client client) throws IOException
+    public void connect(ZSortHolder zsort, Client client) throws IOException
     {
         final String host;
         final int port;
-        switch(ZSortHolder) {
-            case WS_ZCHAT_CONSUMER -> {
-                host = _ClientConfig.getWs()
+        switch(zsort) {
+            case Z_CLUSTER_SYMMETRY -> {
+                host = _ClientConfig.getChat()
                                     .getHost();
-                port = _ClientConfig.getWs()
+                port = _ClientConfig.getChat()
                                     .getPort();
             }
-            case QTT_SYMMETRY -> {
+            case QTT_CONSUMER -> {
                 host = _ClientConfig.getQtt()
                                     .getHost();
                 port = _ClientConfig.getQtt()
                                     .getPort();
             }
+            case WS_PLAIN_TEXT_CONSUMER -> {
+                host = _ClientConfig.getWs()
+                                    .getHost();
+                port = _ClientConfig.getWs()
+                                    .getPort();
+            }
             default -> throw new UnsupportedOperationException();
         }
-        BaseAioConnector connector = new BaseAioConnector(host,
-                                                          port,
-                                                          getSocketConfig(ZUID.TYPE_CONSUMER_SLOT),
-                                                          ClientPool.this)
+        BaseAioConnector connector = new BaseAioConnector(host, port, getSocketConfig(ZUID.TYPE_CONSUMER_SLOT), ClientPool.this)
         {
             @Override
             public String getProtocol()
             {
-                return ZSortHolder.getSort()
-                                  .getProtocol();
+                return zsort.getSort()
+                            .getProtocol();
             }
 
             @Override
             public ISort.Mode getMode()
             {
-                return ISort.Mode.LINK;
+                return zsort.getSort()
+                            .getMode();
             }
 
             @Override
@@ -206,52 +174,43 @@ public class ClientPool
                 //这个地方省略了对session.setIndex(type)的操作，Consumer.type == 0
                 super.onCreated(session);
                 ClientPool.this.addSession(session);
-                _ZClientMap.put(client.getClientId(), client);
-                _Logger.debug("client %#x connected %s:%d", client.getClientId(), host, port);
+                client.setSession(session);
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
-
-                return new AioSession<>(socketChannel, this, ZSortHolder.getSort(), activity, ClientPool.this, false);
+                return new AioSession<>(socketChannel, this, zsort.getSort(), activity, ClientPool.this, false);
             }
 
             @Override
-            public ITriple response(ISession session)
+            public ITriple afterConnected(ISession session)
             {
-                switch(ZSortHolder) {
-                    case WS_ZCHAT_CONSUMER, WS_QTT_CONSUMER -> {
-                        IWsContext wsContext = session.getContext();
-                        return new Triple<>(wsContext.handshake(host), session, SINGLE);
+                switch(zsort) {
+                    case Z_CLUSTER_SYMMETRY -> {
+                        return null;
                     }
-                    case WS_ZCHAT_CONSUMER_SSL, WS_QTT_CONSUMER_SSL -> {
-                        SSLZContext<WsContext> sslContext = session.getContext();
-                        IWsContext wsContext = sslContext.getActingContext();
-                        return new Triple<>(wsContext.handshake(host), session, SINGLE);
+                    case QTT_CONSUMER -> {
+                        X111_QttConnect x111 = new X111_QttConnect();
+                        x111.setClientId("3FA073405AC0BF4B348BFBA7FAAE86B09A33643A88EF24AEBA69F8BB87D39B28");
+                        x111.setUserName("lab-meter");
+                        x111.setPassword("Yh6@Y3*5teP~#y67n_j0L4");
+                        x111.setClean();
+                        x111.setKeepAlive(60);
+                        mHeartbeatTask = _TimeWheel.acquire(session, new ScheduleHandler<>(Duration.ofSeconds(60), true, ClientPool.this::qttHeartbeat));
+                        return new Triple<>(x111, session, SINGLE);
                     }
-                    case QTT_SYMMETRY -> {
-                        try {
-                            X111_QttConnect x111 = new X111_QttConnect();
-                            x111.setClientId(client.getClientToken());
-                            x111.setUserName(client.getUsername());
-                            x111.setPassword(client.getPassword());
-                            x111.setClean();
-                            return new Triple<>(x111, session, SINGLE);
-                        }
-                        catch(Exception e) {
-                            _Logger.warning("create init commands fetal", e);
-                            return null;
-                        }
+                    case WS_PLAIN_TEXT_CONSUMER -> {
+                        return null;
                     }
-                    default -> throw new UnsupportedOperationException();
+                    default -> {return null;}
                 }
             }
         };
-
+        IoFactory<IProtocol> factory = zsort.getSort()
+                                            .getFactory();
+        _FactoryMap.putIfAbsent(factory.serial(), factory);
         connect(connector);
-
     }
 
     private ICancelable mHeartbeatTask;
@@ -260,35 +219,34 @@ public class ClientPool
     public void onCreated(ISession session)
     {
         Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-        mHeartbeatTask = _TimeWheel.acquire(session,
-                                            new ScheduleHandler<>(gap,
-                                                                  true,
-                                                                  ClientPool.this::heartbeat,
-                                                                  PRIORITY_NORMAL));
-
     }
 
     @Override
     public void onDismiss(ISession session)
     {
-        mHeartbeatTask.cancel();
+        if(mHeartbeatTask != null) {mHeartbeatTask.cancel();}
         rmSession(session);
         _Logger.warning("device consumer dismiss session %s", session);
     }
 
-    private void heartbeat(ISession session)
-    {
-        _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, _Ping);
-    }
-
-    public final void sendLocal(long sessionIndex, IControl... toSends)
+    public final void sendLocal(long sessionIndex, IProtocol... toSends)
     {
         ISession session = findSessionByIndex(sessionIndex);
-        if(Objects.nonNull(session)) {
-            _ClientCore.send(session, IOperator.Type.BIZ_LOCAL, toSends);
+        if(session != null) {
+            send(session, IOperator.Type.BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
+        }
+    }
+
+    public final void sendLocal(ISession session, IProtocol... request)
+    {
+        if(session != null) {
+            send(session, IOperator.Type.BIZ_LOCAL, request);
+        }
+        else {
+            throw new ZException("client offline");
         }
     }
 
@@ -296,17 +254,21 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(Objects.nonNull(session)) {
-            _ClientCore.close(session, IOperator.Type.BIZ_LOCAL);
+            close(session, IOperator.Type.BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");
         }
     }
 
-    public void wsHeartbeat(long sessionIndex, String msg)
+    public void qttHeartbeat(ISession session)
     {
-        Objects.requireNonNull(msg);
-        sendLocal(sessionIndex, new X103_Ping(msg.getBytes()));
+        send(session, IOperator.Type.BIZ_LOCAL, new X11C_QttPingreq());
+    }
+
+    public void wsHeartbeat(ISession session)
+    {
+        send(session, IOperator.Type.BIZ_LOCAL, new X103_Ping<>());
     }
 
     @Override
@@ -327,4 +289,34 @@ public class ClientPool
                            }));
     }
 
+    @Override
+    public boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    {
+        if(session == null || outputs == null || outputs.length == 0) {return false;}
+        return _ClientCore.publish(type,
+                                   session.encoder(),
+                                   Stream.of(outputs)
+                                         .map(pro->Pair.of(pro, session))
+                                         .toArray(IPair[]::new));
+    }
+
+    @Override
+    public void close(ISession session, IOperator.Type type)
+    {
+        if(session == null) {return;}
+        _ClientCore.close(type, Pair.of(null, session), session.getCloser());
+    }
+
+    @Override
+    public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
+    {
+        return _FactoryMap.get(factorySerial);
+    }
+
+    @Override
+    public void exchange(IProtocol body, long target, int factory, List<ITriple> load)
+    {
+        throw new UnsupportedOperationException("client unsupported exchange,no routing");
+    }
 }
+

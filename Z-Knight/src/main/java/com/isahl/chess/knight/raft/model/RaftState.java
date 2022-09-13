@@ -29,13 +29,22 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
-    FOLLOWER(1),
-    ELECTOR(2),
-    CANDIDATE(3),
-    LEADER(4),
-    GATE(7),
-    LEARNER(8),
-    CLIENT(16);
+
+    OUTSIDE(0),
+    CLIENT(1),
+
+    FOLLOWER(1 << 1),
+    ELECTOR(1 << 2),
+    CANDIDATE(1 << 3),
+    LEADER(1 << 4),
+    GATE(1 << 5),
+
+    JOINT(1 << 6),
+
+    BOUNDARY(1 << 7),
+
+    MASK(GATE.getCode() - 1 - CLIENT.getCode()), // 30 [00011110]
+    ;
 
     private final int _Code;
 
@@ -49,16 +58,42 @@ public enum RaftState
         return _Code;
     }
 
+    public static boolean isInCongress(int code)
+    {
+        return (code & MASK.getCode()) != 0;
+    }
+
     public static RaftState valueOf(int code)
     {
-        return switch(code) {
-            case 1 -> FOLLOWER;
-            case 2 -> ELECTOR;
-            case 3 -> CANDIDATE;
-            case 4 -> LEADER;
-            case 7 -> GATE;
-            case 8 -> LEARNER;
-            case 16 -> CLIENT;
+        return switch(code & MASK.getCode()) {
+            case 1 << 1 -> FOLLOWER;
+            case 1 << 2 -> ELECTOR;
+            case 1 << 3 -> CANDIDATE;
+            case 1 << 4 -> LEADER;
+            default -> noCongressOf(code);
+        };
+    }
+
+    public static String roleOf(int code)
+    {
+        String role = "R:";
+        switch(code & MASK.getCode()) {
+            case 1 << 1 -> role += FOLLOWER.name();
+            case 1 << 2 -> role += ELECTOR.name();
+            case 1 << 3 -> role += CANDIDATE.name();
+            case 1 << 4 -> role += LEADER.name();
+            default -> role += "|" + noCongressOf(code);
+        }
+        return role;
+    }
+
+    private static RaftState noCongressOf(int code)
+    {
+        return switch(code & ~MASK.getCode()) {
+            case 0 -> OUTSIDE;
+            case 1 -> CLIENT;
+            case 1 << 5 -> GATE;
+            case 1 << 6 -> JOINT;
             default -> throw new IllegalArgumentException();
         };
     }

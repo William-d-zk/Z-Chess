@@ -23,11 +23,24 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
+import com.isahl.chess.king.base.cron.ScheduleHandler;
+import com.isahl.chess.king.base.cron.TimeWheel;
+import com.isahl.chess.king.base.cron.features.ICancelable;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author william.d.zk
@@ -35,12 +48,78 @@ import java.util.List;
  */
 @Component
 public class PersistentHook
-        implements IHandleHook
+        implements IHandleHook,
+                   ICancelable
 {
 
+    private final TimeWheel        _TimeWheel;
+    private final Queue<IoSerial>  _MainQueue;
+    private final List<ISubscribe> _Subscribes;
+
+    @Autowired
+    public PersistentHook(TimeWheel timeWheel, List<ISubscribe> subscribes)
+    {
+        _TimeWheel = timeWheel;
+        _Subscribes = subscribes;
+        _MainQueue = new ConcurrentLinkedQueue<>();
+    }
+
+    @PostConstruct
+    void startTimer()
+    {
+        _TimeWheel.acquire(this, new ScheduleHandler<>(Duration.ofSeconds(5), true, this::batchPush));
+    }
+
     @Override
-    public void handle(IControl content, List<? extends IControl> pushList)
+    public void afterLogic(IoSerial content, List<ITriple> results)
+    {
+        switch(content.serial()) {
+            case 0x113 -> {
+                X113_QttPublish x113 = (X113_QttPublish) content;
+                if(!x113.isDuplicate()) {
+                    String topic = x113.topic();
+                    byte[] contents = x113.payload();
+                    MessageEntity msgEntity = new MessageEntity();
+                    msgEntity.setContent(contents);
+                    msgEntity.setTopic(topic);
+                    msgEntity.setNetAt(LocalDateTime.now());
+                    msgEntity.setOrigin(x113.session()
+                                            .index());
+                    _MainQueue.offer(msgEntity);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void afterConsume(IoSerial content)
+    {
+        if(content instanceof MessageEntity msg) {
+            _MainQueue.offer(msg);
+        }
+    }
+
+    private void batchPush(PersistentHook self)
+    {
+        int size = _MainQueue.size();
+        List<IoSerial> cached = new ArrayList<>(size);
+        for(int i = 0; i < size; i++) {
+            cached.add(_MainQueue.poll());
+        }
+        for(ISubscribe subscribe : _Subscribes) {
+            subscribe.onBatch(cached);
+        }
+    }
+
+    @Override
+    public void cancel()
     {
 
     }
+
+    public interface ISubscribe
+    {
+        void onBatch(List<IoSerial> contents);
+    }
+
 }

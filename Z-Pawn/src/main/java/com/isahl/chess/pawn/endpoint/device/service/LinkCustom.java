@@ -23,19 +23,19 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X76_RaftResp;
-import com.isahl.chess.bishop.io.ws.zchat.model.command.raft.X79_RaftAdjudge;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,10 +62,10 @@ public class LinkCustom
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      */
     @Override
-    public ITriple handle(ISessionManager manager, ISession session, IControl input)
+    public ITriple inject(IManager manager, ISession session, IProtocol input)
     {
         for(IAccessService service : _AccessServices) {
-            if(service.isHandleProtocol(input)) {
+            if(service.isSupported(input)) {
                 return service.onLink(manager, session, input);
             }
         }
@@ -73,46 +73,66 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request)
     {
-        for(IAccessService service : _AccessServices) {
-            if(service.isHandleProtocol(request)) {
-                return service.onConsistencyResult(manager, origin, request, isConsistency);
+        if(request != null) {
+            for(IAccessService service : _AccessServices) {
+                if(service.isSupported(request)) {
+                    return service.onConsistency(manager, backload, request);
+                }
             }
         }
         return null;
     }
 
     @Override
-    public void close(ISession session)
+    public IProtocol onClose(ISession session)
     {
-        if((ZUID.TYPE_MASK & session.getIndex()) == ZUID.TYPE_CONSUMER) {
-            for(IAccessService service : _AccessServices) {
-                service.onOffline(session);
-            }
-        }
         try {
-            session.close();
+            session.innerClose();
+            _Logger.debug("session [ %#x ] closed", session.index());
         }
         catch(Throwable e) {
-            _Logger.warning("session[ %#x ] close", session.getIndex(), e);
+            _Logger.warning("session [ %#x ] close", e, session.index());
         }
+        for(IAccessService service : _AccessServices) {
+            if(service.isSupported(session)) {
+                return service.onClose(session);
+            }
+        }
+        return null;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
+    public IProtocol unbox(IConsistency input, IManager manager)
     {
-        _Logger.debug("link custom by leader %s", consistency);
-        switch(consistency.serial()) {
-            case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
-                int cmd = consistency.subSerial();
-                IProtocol consensusBody = ZSortHolder.CREATE(cmd, consistency.payload());
-                return (T) consensusBody;
+        _Logger.debug("link unbox %s", input);
+        switch(input.serial()) {
+            case 0x76 -> {
+                X76_RaftResp x76 = (X76_RaftResp) input;
+                _Logger.debug("unbox x76 code %d,client [%#x]", x76.code(), x76.client());
             }
-            default -> {
+            case 0x77 -> {
+                /*
+                 * leader → follower → client: x77_notify
+                 * leader → follower: x76_response
+                 */
+                LogEntry entry;
+                if(input.subContent() instanceof LogEntry sub) {
+                    entry = sub;
+                }
+                else {
+                    entry = input.deserializeSub(LogEntry::new);
+                }
+                if(entry.payload() != null) {
+                    IoFactory<IProtocol> factory = manager.findIoFactoryBySerial(entry.factory());
+                    return factory.create(entry.subEncoded());
+                }
                 return null;
             }
+            default -> _Logger.warning("link custom %s no handle", input);
         }
+        return null;
     }
 }

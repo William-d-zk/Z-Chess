@@ -24,22 +24,26 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.Serial;
 
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SnapshotMeta
         extends BaseMeta
 {
-    private final static int  _SERIAL = INTERNAL_SERIAL + 3;
-    private              long mCommit;
-    private              long mTerm;
+    @Serial
+    private static final long serialVersionUID = -2598502090597254124L;
+
+    private long mCommit;
+    private long mTerm;
 
     @JsonCreator
     public SnapshotMeta(
@@ -48,12 +52,44 @@ public class SnapshotMeta
             @JsonProperty("commit")
                     long commit)
     {
+        super(Operation.OP_INSERT, Strategy.RETAIN);
         mTerm = term;
         mCommit = commit;
     }
 
-    private SnapshotMeta()
+    public SnapshotMeta()
     {
+        super();
+    }
+
+    public SnapshotMeta(ByteBuf input)
+    {
+        super(input);
+    }
+
+    @Override
+    public int length()
+    {
+        return 8 + // term
+               8 + // commit
+               super.length();
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(getTerm())
+                    .putLong(getCommit());
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        setTerm(input.getLong());
+        setCommit(input.getLong());
+        return remain - 16;
     }
 
     @Override
@@ -64,57 +100,14 @@ public class SnapshotMeta
         flush();
     }
 
-    public static SnapshotMeta loadFromFile(RandomAccessFile file)
-    {
-        try {
-            if(file.length() > 0) {
-                file.seek(0);
-                int length = file.readInt();
-                if(length > 0) {
-                    byte[] data = new byte[length];
-                    file.read(data);
-                    SnapshotMeta snapshotMeta = JsonUtil.readValue(data, SnapshotMeta.class);
-                    if(snapshotMeta != null) {
-                        snapshotMeta.setFile(file);
-                        snapshotMeta.decode(data);
-                        return snapshotMeta;
-                    }
-                }
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-        return new SnapshotMeta().setFile(file);
-    }
-
-    @JsonIgnore
-    public SnapshotMeta setFile(RandomAccessFile source)
-    {
-        mFile = source;
-        return this;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _SERIAL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return INTERNAL_SERIAL;
-    }
-
     public void setCommit(long commit)
     {
-        this.mCommit = commit;
+        mCommit = commit;
     }
 
     public void setTerm(long term)
     {
-        this.mTerm = term;
+        mTerm = term;
     }
 
     public long getCommit()

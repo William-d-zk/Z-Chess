@@ -74,5 +74,5 @@ DB-Hostname:db-pg endpoint-Hostname:raft10,raft11,raft12
 > 需要在局域网内配置 db-pg.isahl.com 域名解析 DB hostname:db-pg search: isahl.com
 
 ## scripts
-
+> init.sh → docker-build-{ABI}.sh → docker-compose-{ABI}.sh
 > update_version.sh 需要在 `${base.dir}` 中执行 

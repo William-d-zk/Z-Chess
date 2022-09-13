@@ -24,36 +24,60 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.queen.message.InnerProtocol;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 public abstract class BaseMeta
-        extends JsonProtocol
+        extends InnerProtocol
         implements IReset
 {
+    protected final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+
+    public BaseMeta(Operation operation, Strategy strategy)
+    {
+        super(operation, strategy);
+    }
+
+    public BaseMeta()
+    {
+        super();
+    }
+
+    public BaseMeta(ByteBuf input)
+    {
+        super(input);
+    }
 
     @JsonIgnore
     protected RandomAccessFile mFile;
 
-    void flush()
+    public void flush()
     {
         try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-            mFile.getFD()
-                 .sync();
+            byte[] toWrite = encoded();
+            ByteBuffer mapped = mFile.getChannel()
+                                     .map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
+            _Logger.info("write meta %s,size:%d,{%s}",
+                         getClass().getSimpleName(),
+                         toWrite.length,
+                         JsonUtil.writeValueAsString(this));
+            mapped.put(toWrite);
         }
         catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    void close()
+    public void close()
     {
         flush();
         try {
@@ -63,4 +87,20 @@ public abstract class BaseMeta
             e.printStackTrace();
         }
     }
+
+    public void ofFile(RandomAccessFile file)
+    {
+        mFile = file;
+    }
+
+    public static <T extends BaseMeta> T from(RandomAccessFile file, IoFactory<T> factory) throws IOException
+    {
+        if(factory == null || file.length() == 0) {return null;}
+        ByteBuffer mapped = file.getChannel()
+                                .map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+        T t = factory.create(ByteBuf.wrap(mapped));
+        t.mFile = file;
+        return t;
+    }
+
 }

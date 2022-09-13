@@ -28,13 +28,33 @@ package com.isahl.chess.king.base.features;
  */
 public interface IDuplicate
 {
-    default IDuplicate duplicate()
+    /**
+     * 获得副本
+     *
+     * @return
+     */
+    default IDuplicate copy()
     {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * 当前是否为副本
+     *
+     * @return
+     */
     default boolean isDuplicate()
     {
         return false;
+    }
+
+    /**
+     * 标记为副本
+     *
+     * @return self.this;
+     */
+    default IDuplicate duplicate()
+    {
+        return this;
     }
 }

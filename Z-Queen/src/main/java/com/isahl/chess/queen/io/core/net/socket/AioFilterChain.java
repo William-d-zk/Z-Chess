@@ -28,7 +28,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilter;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFilter;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * @author William.d.zk
@@ -162,21 +162,9 @@ public abstract class AioFilterChain<C extends IPContext, O extends IProtocol, I
         return current;
     }
 
-    @Override
-    public void dispose()
-    {
-        IFilterChain nextNext;
-        IFilterChain next = this.next;
-        while(next != null) {
-            nextNext = next.getNext();
-            next.setNext(null);
-            next = nextNext;
-        }
-    }
-
     protected boolean checkType(IProtocol protocol, int type_serial)
     {
-        return protocol.superSerial() == type_serial;
+        return protocol._super() == type_serial;
     }
 
     @Override

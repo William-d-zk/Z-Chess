@@ -32,11 +32,11 @@ import com.isahl.chess.king.base.disruptor.features.event.IEvent;
  */
 public interface IBatchHandler<T extends IEvent>
 {
-    IHealth getHealth();
+    IHealth _Health();
 
     default void onBatchStart(long start)
     {
-        IHealth health = getHealth();
+        IHealth health = _Health();
         if(health.isEnabled()) {
             health.collectOn(start);
         }
@@ -46,7 +46,7 @@ public interface IBatchHandler<T extends IEvent>
 
     default void onBatchComplete(long end)
     {
-        IHealth health = getHealth();
+        IHealth health = _Health();
         if(health.isEnabled()) {
             health.collectOff(end);
         }

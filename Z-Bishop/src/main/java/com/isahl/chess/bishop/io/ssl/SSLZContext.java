@@ -23,12 +23,12 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.bishop.protocol.ProtocolContext;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
+import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 
@@ -37,14 +37,11 @@ import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import static com.isahl.chess.king.base.cron.features.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.features.model.session.ISession.CAPACITY;
-
 /**
  * @author william.d.zk
  */
 public class SSLZContext<A extends IPContext>
-        extends ZContext
+        extends ProtocolContext<IPacket>
         implements IProxyContext<A>
 {
     private final SSLEngine  _SslEngine;
@@ -88,8 +85,7 @@ public class SSLZContext<A extends IPContext>
         return _SslContext;
     }
 
-    @Override
-    public void reset()
+    public void close()
     {
         try {
             _SslEngine.closeInbound();
@@ -98,16 +94,6 @@ public class SSLZContext<A extends IPContext>
         catch(SSLException e) {
             e.printStackTrace();
         }
-        finally {
-            super.reset();
-        }
-    }
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
-        reset();
     }
 
     @Override
@@ -119,8 +105,8 @@ public class SSLZContext<A extends IPContext>
     @Override
     public void ready()
     {
-        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
-        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
+        advanceOutState(ENCODE_PAYLOAD);
+        advanceInState(DECODE_FRAME);
         _ActingContext.ready();
         try {
             _SslEngine.beginHandshake();
@@ -144,16 +130,16 @@ public class SSLZContext<A extends IPContext>
         return _SslEngine.getHandshakeStatus();
     }
 
-    public ByteBuffer doWrap(ByteBuffer output)
+    public ByteBuf doWrap(ByteBuf output)
     {
         try {
-            ByteBuffer netOutBuffer = ByteBuffer.allocate(_SslSession.getPacketBufferSize());
-            SSLEngineResult result = _SslEngine.wrap(output, netOutBuffer);
+            ByteBuf netOutBuffer = ByteBuf.allocate(_SslSession.getPacketBufferSize());
+            SSLEngineResult result = _SslEngine.wrap(output.toReadBuffer(), netOutBuffer.toWriteBuffer());
             int produced = result.bytesProduced();
             switch(result.getStatus()) {
                 case OK, BUFFER_UNDERFLOW -> {
                     doTask();
-                    return netOutBuffer;
+                    return netOutBuffer.seek(produced);
                 }
                 case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl wrap error:%s", result.getStatus());
             }
@@ -164,50 +150,32 @@ public class SSLZContext<A extends IPContext>
         }
     }
 
-    public ByteBuffer doUnwrap(ByteBuffer netInBuffer)
+    public ByteBuf doUnwrap(ByteBuf netInBuffer)
     {
         try {
-            netInBuffer.mark();
-            ByteBuffer appInBuffer = ByteBuffer.allocate(_AppInBufferSize);
-            SSLEngineResult result = _SslEngine.unwrap(netInBuffer, appInBuffer);
+            ByteBuf appInBuffer = ByteBuf.allocate(_AppInBufferSize);
+            ByteBuffer inputBuffer = netInBuffer.toReadBuffer();
+            SSLEngineResult result = _SslEngine.unwrap(inputBuffer, appInBuffer.toWriteBuffer());
             int consumed = result.bytesConsumed();
             int produced = result.bytesProduced();
             switch(result.getStatus()) {
                 case OK -> doTask();
                 case BUFFER_UNDERFLOW -> {
-                    if(netInBuffer.hasRemaining()) {
+                    if(inputBuffer.hasRemaining()) {
                         throw new ZException(new IllegalStateException(),
                                              "state error,unwrap under flow & input has remain");
-                    }
-                    if(netInBuffer == getRvBuffer()) {
-                        netInBuffer.position(netInBuffer.limit());
-                        netInBuffer.limit(netInBuffer.capacity());
-                    }
-                    else {
-                        netInBuffer.reset();
-                        IoUtil.write(netInBuffer, getRvBuffer());
                     }
                     return null;
                 }
                 case CLOSED -> throw new ZException("ssl unwrap closed:%s", result.getStatus());
                 case BUFFER_OVERFLOW -> throw new ZException("ssl unwrap overflow");
             }
-            return produced > 0 ? appInBuffer : null;
+            netInBuffer.skip(consumed);
+            return produced > 0 ? appInBuffer.seek(produced) : null;
         }
         catch(SSLException e) {
             throw new ZException(e, "ssl unwrap error");
         }
     }
 
-    @Override
-    protected ByteBuffer allocateRcv(INetworkOption option)
-    {
-        return ByteBuffer.allocate(Math.max(option.getRcvByte(), ((ISslOption) option).getSslPacketSize()));
-    }
-
-    @Override
-    protected ByteBuffer allocateSnf(INetworkOption option)
-    {
-        return ByteBuffer.allocate(Math.max(option.getSnfByte(), ((ISslOption) option).getSslPacketSize()));
-    }
 }

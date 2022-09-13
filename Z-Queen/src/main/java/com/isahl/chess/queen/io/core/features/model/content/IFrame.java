@@ -23,39 +23,37 @@
 
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import com.isahl.chess.king.base.features.IReset;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 /**
  * @author william.d.zk
  */
 public interface IFrame
-        extends IReset,
-                IProtocol
+        extends IProtocol,
+                IQoS
 {
+    /**
+     * 虽然入参是 int ，但是仅写入单个字节，需要特别注意
+     *
+     * @param header frame-header
+     */
+    void header(int header);
 
-    void putCtrl(byte ctrl);
+    byte header();
 
-    void putPayload(byte[] payload);
+    int lack(ByteBuf input);
 
-    byte[] payload();
-
-    byte ctrl();
-
+    /**
+     * 当前指令是否为控制层指令
+     *
+     * @return yes/no
+     */
     boolean isCtrl();
 
-    default int command()
-    {
-        return serial();
-    }
-
-    default IPacket translate()
-    {
-        return null;
-    }
-
     @Override
-    default int superSerial()
+    default int priority()
     {
-        return FRAME_SERIAL;
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 }

@@ -23,70 +23,37 @@
 
 package com.isahl.chess.audience.client.model;
 
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
+import java.util.Queue;
 
+@Component
 public class Client
 {
-    private final        Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
-    private final        Map<IControl, Integer> _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
-    private final        ZUID                   _ZUID;
-    private final        Device                 _Device;
-    private final static AtomicInteger          DEVICE_ID     = new AtomicInteger(1);
+    private final Queue<IoSerial> _RecvMsgQueue = new LinkedList<>();
+    private final ZUID            _ZUID;
 
-    public Client(ZUID zuid)
+    private ISession mSession;
+
+    @Autowired
+    public Client(IRaftConfig raft)
     {
-        _ZUID = zuid;
-        _Device = new Device(String.format("audience.device-for-test.%d", DEVICE_ID.getAndIncrement()));
+        _ZUID = raft.getZUID();
     }
 
-    public void offer(IControl recv)
+    public ISession getSession()
     {
-        _RecvMsgQueue.offer(recv);
+        return mSession;
     }
 
-    public IControl packet(IControl content)
+    public void setSession(ISession session)
     {
-        content.setSequence(_ZUID.getId(ZUID.TYPE_CONSUMER));
-        IQoS.Level level = content.getLevel();
-        if(level.getValue() > IQoS.Level.ALMOST_ONCE.getValue()) {
-            _ConfirmMap.put(content, level.getValue());
-        }
-        return content;
-    }
-
-    public void confirm(IControl recv)
-    {
-
-    }
-
-    public void setToken(String token)
-    {
-        _Device.setToken(token);
-    }
-
-    public long getClientId()
-    {
-        return _Device.getId();
-    }
-
-    public String getClientToken()
-    {
-        return _Device.getToken();
-    }
-
-    public String getUsername()
-    {
-        return _Device.getUsername();
-
-    }
-
-    public String getPassword()
-    {
-        return _Device.getPassword();
+        this.mSession = session;
     }
 }

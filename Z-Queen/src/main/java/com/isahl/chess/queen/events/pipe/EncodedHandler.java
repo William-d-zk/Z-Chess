@@ -49,7 +49,7 @@ public class EncodedHandler
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -64,11 +64,10 @@ public class EncodedHandler
                 error(_Error, event.getErrorType(), errorContent, event.getEventOp());
             }
         }
-        event.reset();
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

@@ -61,12 +61,12 @@ public interface IOperator<T, U, R>
         CLUSTER,
         SERVICE,
         LOGIC,
-        CONSISTENCY_SERVICE,
+        CONSISTENT_SERVICE,
+        CONSISTENT,
         CONSISTENCY,
-        LINK_CONSISTENT_RESULT,
         CLUSTER_TOPOLOGY,
         CLUSTER_TIMER,
         DISPATCH,
-        IGNORE;
+        IGNORE
     }
 }

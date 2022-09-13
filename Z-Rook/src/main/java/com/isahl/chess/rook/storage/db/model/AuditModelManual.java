@@ -31,43 +31,43 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
  */
-@TypeDefs({
-        @TypeDef(name = "string-array",
-                 typeClass = StringArrayType.class),
-        @TypeDef(name = "int-array",
-                 typeClass = IntArrayType.class),
-        @TypeDef(name = "list-array",
-                 typeClass = ListArrayType.class)
-})
+@TypeDefs({ @TypeDef(name = "string-array",
+                     typeClass = StringArrayType.class),
+            @TypeDef(name = "int-array",
+                     typeClass = IntArrayType.class),
+            @TypeDef(name = "list-array",
+                     typeClass = ListArrayType.class) })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = {
-        "created_at",
-        "updated_at"
-},
+@JsonIgnoreProperties(value = { "created_at",
+                                "updated_at" },
                       allowGetters = true)
 public abstract class AuditModelManual
-        extends JsonProtocol
-        implements Serializable
+        extends InnerProtocol
 {
+    @Column(name = "net_at",
+            nullable = false,
+            updatable = false)
+    @CreatedDate
+    private LocalDateTime netAt;
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
@@ -76,6 +76,20 @@ public abstract class AuditModelManual
     @Column(name = "updated_at",
             nullable = false)
     private LocalDateTime updatedAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getNetAt()
+    {
+        return netAt;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setNetAt(LocalDateTime netAt)
+    {
+        this.netAt = netAt;
+    }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -108,14 +122,6 @@ public abstract class AuditModelManual
     @Override
     public String toString()
     {
-        return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+        return String.format("net@ %s create@ %s update@ %s", getNetAt(), getCreatedAt(), getUpdatedAt());
     }
-
-    @Override
-    public int superSerial()
-    {
-        return AUDIT_MODEL_SERIAL;
-    }
-
-    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 101;
 }

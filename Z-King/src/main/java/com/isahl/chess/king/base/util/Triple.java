@@ -90,6 +90,11 @@ public class Triple<FIRST, SECOND, THIRD>
         return new Triple<>(first, second, third);
     }
 
+    public static <F, S, T> Triple<F, S, T> of(F f, S s, T t)
+    {
+        return new Triple<>(f, s, t);
+    }
+
     @Override
     public boolean equals(Object obj)
     {

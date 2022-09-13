@@ -23,7 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
 import java.util.List;
 
@@ -33,5 +34,7 @@ import java.util.List;
  */
 public interface IHandleHook
 {
-    void handle(IControl content, List<? extends IControl> pushList);
+    void afterLogic(IoSerial content, List<ITriple> results);
+
+    void afterConsume(IoSerial content);
 }

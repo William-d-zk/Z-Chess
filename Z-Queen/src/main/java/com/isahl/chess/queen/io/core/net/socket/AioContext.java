@@ -22,31 +22,19 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.session.IContext;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionOption;
-
-import java.nio.ByteBuffer;
+import com.isahl.chess.queen.io.core.features.model.session.IOption;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioContext<O extends ISessionOption>
+public abstract class AioContext<O extends IOption>
         implements IContext
 {
 
-    /**
-     * 存在 一次性投递多个 IControl 的可能性
-     * AioPacket 中的 ByteBuffer 仅用于序列化Control 对象
-     * 创建时以SocketOption配置为基准进行设定，
-     */
-    private final ByteBuffer _WrBuf;
-
-    /*
-     * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以
-     * SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
-     * 内容的情况
-     */
-    private final ByteBuffer _RvBuf;
+    private final ByteBuf _WrBuffer;
+    private final ByteBuf _RvBuffer;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
@@ -55,33 +43,8 @@ public abstract class AioContext<O extends ISessionOption>
 
     protected AioContext(O option)
     {
-        _RvBuf = allocateRcv(option);
-        _WrBuf = allocateSnf(option);
-    }
-
-    @Override
-    public void reset()
-    {
-        _RvBuf.clear();
-        _WrBuf.clear();
-    }
-
-    @Override
-    public ByteBuffer getWrBuffer()
-    {
-        return _WrBuf;
-    }
-
-    @Override
-    public ByteBuffer getRvBuffer()
-    {
-        return _RvBuf;
-    }
-
-    @Override
-    public int getSendMaxSize()
-    {
-        return _WrBuf.capacity();
+        _RvBuffer = ByteBuf.allocate(option.getRcvByte());
+        _WrBuffer = ByteBuf.allocate(option.getSnfByte());
     }
 
     @Override
@@ -91,6 +54,18 @@ public abstract class AioContext<O extends ISessionOption>
         if(mServerArrivedTime != 0) {mServerArrivedTime = serverArrived;}
         if(mServerResponseTime != 0) {mServerResponseTime = serverResponse;}
         if(mClientArrivedTime != 0) {mClientArrivedTime = clientArrived;}
+    }
+
+    @Override
+    public ByteBuf getRvBuffer()
+    {
+        return _RvBuffer;
+    }
+
+    @Override
+    public ByteBuf getWrBuffer()
+    {
+        return _WrBuffer;
     }
 
     @Override
@@ -111,13 +86,4 @@ public abstract class AioContext<O extends ISessionOption>
         return mServerArrivedTime;
     }
 
-    protected ByteBuffer allocateRcv(O option)
-    {
-        return ByteBuffer.allocate(option.getRcvByte());
-    }
-
-    protected ByteBuffer allocateSnf(O option)
-    {
-        return ByteBuffer.allocate(option.getSnfByte());
-    }
 }

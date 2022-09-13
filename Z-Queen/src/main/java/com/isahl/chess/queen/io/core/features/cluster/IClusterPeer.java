@@ -23,15 +23,19 @@
 
 package com.isahl.chess.queen.io.core.features.cluster;
 
+import com.isahl.chess.queen.io.core.features.model.session.ISort;
+
 /**
  * @author william.d.zk
  * @date 2020/3/25
  */
 public interface IClusterPeer
 {
-    long getPeerId();
+    long peerId();
 
     long generateId();
+
+    long generateIdWithType(ISort.Type type);
 
     boolean isInCongress();
 }

@@ -27,6 +27,7 @@ import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.model.replicate.LogMeta;
+import com.isahl.chess.knight.raft.model.replicate.SnapshotEntry;
 import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 
 /**
@@ -50,15 +51,13 @@ public interface IRaftMapper
 
     void updateLogStart(long firstLogIndex);
 
-    void updateLogIndexAndTerm(long index, long indexTerm);
+    void updateIndexAtTerm(long index, long indexTerm);
 
-    void updateLogCommit(long commit);
+    void updateCommit(long commit);
 
     void updateTerm(long term);
 
-    void updateCandidate(long candidate);
-
-    void updateLogApplied(long applied);
+    void updateAccept(long applied);
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
@@ -72,7 +71,7 @@ public interface IRaftMapper
 
     SnapshotMeta getSnapshotMeta();
 
-    long getTotalSize();
+    SnapshotEntry getSnapshot();
 
-    void loadDefaultGraphSet();
+    long getTotalSize();
 }

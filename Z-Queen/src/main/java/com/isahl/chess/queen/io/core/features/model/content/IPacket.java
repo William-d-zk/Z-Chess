@@ -22,11 +22,14 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
 /**
  * @author William.d.zk
  */
+
 public interface IPacket
         extends IProtocol
 
@@ -47,17 +50,7 @@ public interface IPacket
 
     void setAbandon();
 
-    ByteBuffer getBuffer();
-
-    IPacket wrapper(ByteBuffer buffer);
-
-    IPacket flip();
-
-    void put(ByteBuffer src);
-
-    void replace(ByteBuffer src);
-
-    void expand(int size);
+    ByteBuf getBuffer();
 
     enum Status
     {
@@ -68,4 +61,26 @@ public interface IPacket
         Abandon;
     }
 
+    @Override
+    default IoSerial subContent()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    default IProtocol withSub(IoSerial sub)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    default IProtocol withSub(byte[] sub)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    default <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

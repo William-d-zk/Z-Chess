@@ -23,19 +23,17 @@
 
 package com.isahl.chess.player.api.service;
 
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.api.db.model.MessageEntity;
-import com.isahl.chess.player.api.model.MessageDo;
-import org.hibernate.LazyInitializationException;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
@@ -43,44 +41,26 @@ import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 @Service
 public class MessageOpenService
 {
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final ZUID   _ZUID;
+    private final Logger          _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final IClusterPeer    _ClusterPeer;
+    private final ILocalPublisher _Publisher;
 
     @Autowired
-    public MessageOpenService(IRaftConfig clusterConfig)
+    public MessageOpenService(IClusterPeer clusterPeer, ILocalPublisher publisher)
     {
-        _ZUID = clusterConfig.createZUID();
+        _ClusterPeer = clusterPeer;
+        _Publisher = publisher;
     }
 
-    public MessageEntity save(MessageDo message)
+    public void submit(long deviceId, MessageBody body)
     {
-        MessageEntity entity = null;
-        EXIST:
-        {
-            if(message.operation()
-                      .getValue() > OP_INSERT.getValue())
-            {
-                try {
-                    //                    entity = _JpaRepository.getById(message.getId());
-                    break EXIST;
-                }
-                catch(EntityNotFoundException | LazyInitializationException | JpaObjectRetrievalFailureException e) {
-                    _Logger.warning("update failed", e);
-                }
-            }
-            // 当数据库中存在多条记录而被查询出来时，程序会报错。
-
-            entity = new MessageEntity();
-            entity.setOrigin(message.getOrigin());
-            entity.setTopic(message.getTopic());
-        }
-        //        entity = _JpaRepository.save(entity);
-        return entity;
+        long msgId = _ClusterPeer.generateId();
+        MessageEntity entity = new MessageEntity();
+        entity.setId(msgId);
+        entity.setContent(body.getContent());
+        entity.setTopic(body.getTopic());
+        entity.setOrigin(deviceId);
+        entity.setNetAt(LocalDateTime.now());
+        _Publisher.publish(IOperator.Type.SERVICE, null, Pair.of(entity, null));
     }
-
-    public long generateId()
-    {
-        return _ZUID.getId();
-    }
-
 }

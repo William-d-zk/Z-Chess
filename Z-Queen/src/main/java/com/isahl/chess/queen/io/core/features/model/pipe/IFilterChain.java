@@ -23,13 +23,10 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.king.base.features.IDisposable;
-
 /**
  * @author William.d.zk
  */
 public interface IFilterChain
-        extends IDisposable
 {
     void idempotentLeftShift(int previous);
 

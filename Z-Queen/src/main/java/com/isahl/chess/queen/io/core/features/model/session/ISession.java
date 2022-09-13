@@ -23,19 +23,18 @@
 
 package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.features.IDisposable;
-import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.IAddress;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectMode;
 import com.isahl.chess.queen.io.core.features.model.channels.IReadable;
 import com.isahl.chess.queen.io.core.features.model.channels.IWritable;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 
 import java.io.Closeable;
 import java.nio.channels.Channel;
@@ -53,9 +52,7 @@ import java.util.Queue;
  */
 public interface ISession
         extends Queue<IPacket>,
-                IReset,
                 Closeable,
-                IDisposable,
                 IAddress,
                 IValid,
                 IConnectMode,
@@ -65,15 +62,17 @@ public interface ISession
 {
     boolean isMultiBind();
 
-    long[] getBindIndex();
+    long[] bindIndex();
 
     void bindIndex(long index);
 
     void unbindIndex(long index);
 
-    long getIndex();
+    long prefix(long index);
 
-    void setIndex(long index);
+    long index();
+
+    void index(long index);
 
     Channel getChannel();
 
@@ -81,7 +80,7 @@ public interface ISession
 
     <T extends IPContext> T getContext(Class<T> clazz);
 
-    ISessionDismiss getDismissCallback();
+    IDismiss getDismissCallback();
 
     long[] getPrefixArray();
 
@@ -89,7 +88,7 @@ public interface ISession
 
     default String summary()
     {
-        return String.format("%s->%s,closed:%s", getLocalAddress(), getReadTimeOutSeconds(), isClosed());
+        return String.format("%s->%s,closed:%s", getLocalAddress(), getRemoteAddress(), isClosed());
     }
 
     boolean isClosed();
@@ -114,7 +113,7 @@ public interface ISession
     @Override
     default int compareTo(ISession o)
     {
-        return Long.compare(getIndex(), o.getIndex());
+        return Long.compare(index(), o.index());
     }
 
     long PREFIX_MAX  = 0xFFFFL << 48;
@@ -122,21 +121,21 @@ public interface ISession
 
     default void innerClose()
     {
-        ISessionCloser closeOperator = getCloser();
+        ICloser closeOperator = getCloser();
         closeOperator.handle("inner-close", this);
         getDismissCallback().onDismiss(this);
     }
 
-    /* 最多支持8种状态 -3~4 */ int COUNT_BITS         = Integer.SIZE - 3;
-                        int CAPACITY           = (1 << COUNT_BITS) - 1;
-                        int SESSION_CREATED    = -3 << COUNT_BITS;
-                        int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
-                        int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
-                        int SESSION_PENDING    = 00 << COUNT_BITS;     /* 有待发数据，尚未完成编码 */
-                        int SESSION_SENDING    = 01 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
-                        int SESSION_FLUSHED    = 02 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
-                        int SESSION_CLOSE      = 03 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
-                        int SESSION_TERMINATED = 04 << COUNT_BITS;     /* 终态，清理结束 */
+    /* 最多支持8种状态 -3~4 */ int COUNT_BITS = Integer.SIZE - 3;
+    int CAPACITY           = (1 << COUNT_BITS) - 1;
+    int SESSION_CREATED    = -3 << COUNT_BITS;
+    int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
+    int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
+    int SESSION_PENDING    = 00 << COUNT_BITS;     /* 有待发数据，尚未完成编码 */
+    int SESSION_SENDING    = 01 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
+    int SESSION_FLUSHED    = 02 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
+    int SESSION_CLOSE      = 03 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
+    int SESSION_TERMINATED = 04 << COUNT_BITS;     /* 终态，清理结束 */
 
     default String getSessionStateStr(int c)
     {
@@ -163,11 +162,11 @@ public interface ISession
         return c >= SESSION_CLOSE;
     }
 
-    ISessionError getError();
+    IFailed getError();
 
-    ISessionCloser getCloser();
+    ICloser getCloser();
 
-    IPipeEncoder getEncoder();
+    IPipeEncoder encoder();
 
     IPipeDecoder getDecoder();
 
@@ -175,5 +174,12 @@ public interface ISession
 
     IFilterChain getFilterChain();
 
+    IoFactory<IProtocol> getFactory();
+
     void ready();
+
+    default ISession with(IPipeTransfer transfer)
+    {
+        return this;
+    }
 }

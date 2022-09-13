@@ -22,24 +22,24 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.*;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -49,8 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.isahl.chess.king.base.cron.features.ITask.*;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
-import static com.isahl.chess.queen.io.core.features.model.session.ISessionManager.INVALID_INDEX;
-import static com.isahl.chess.queen.io.core.features.model.session.ISessionManager.NULL_INDEX;
+import static com.isahl.chess.queen.io.core.features.model.session.IManager.INVALID_INDEX;
+import static com.isahl.chess.queen.io.core.features.model.session.IManager.NULL_INDEX;
 
 /**
  * @author William.d.zk
@@ -59,8 +59,8 @@ public class AioSession<C extends IPContext>
         extends LinkedList<IPacket>
         implements ISession
 {
-    private final Logger                    _Logger = Logger.getLogger(
-            "io.queen.session." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;
@@ -69,50 +69,47 @@ public class AioSession<C extends IPContext>
     /*
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
-    private final ByteBuffer      _RecvBuf;
-    private final C               _Context;
-    private final int             _HashCode;
-    private final ISessionDismiss _DismissCallback;
-    private final int             _QueueSizeMax;
-    private final IAioSort<C>     _Sort;
-    private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
-    private final boolean         _MultiBind;
+    private final C             _Context;
+    private final int           _HashCode;
+    private final IDismiss      _DismissCallback;
+    private final int           _QueueSizeMax;
+    private final IAioSort<C>   _Sort;
+    private final AtomicInteger _State = new AtomicInteger(SESSION_CREATED);
+    private final boolean       _MultiBind;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long                                 mIndex = INVALID_INDEX;
+    private long                                 mIndex;
     private long[]                               mBindIndex;
-    /*
-     * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
-     */
-    private ByteBuffer                           mSending;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[]                               mPrefix;
-    private int                                  mWroteExpect;
-    private int                                  mSendingBlank;
+    private long[]                               mSessionPrefix;
     /* reader */
     private CompletionHandler<Integer, ISession> mReader;
+    private IPipeTransfer                        mTransfer;
 
     @Override
     public String toString()
     {
-        return String.format("@%#x %s->%s index:%#x valid:%s wait_to_write %d queue_size %d",
+        return String.format("@%#x %s->%s index:%#x valid:%s wait_to_write[%d] queue_size[%d],wait_to_handle[%d]",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              mIndex,
                              isValid(),
-                             mSending.remaining(),
-                             size());
+                             _Context.getWrBuffer()
+                                     .readableBytes(),
+                             size(),
+                             _Context.getRvBuffer()
+                                     .readableBytes());
     }
 
     public AioSession(AsynchronousSocketChannel channel,
                       ISslOption option,
                       IAioSort<C> sort,
                       IConnectActivity activity,
-                      ISessionDismiss sessionDismiss,
+                      IDismiss sessionDismiss,
                       boolean multiBind) throws IOException
     {
         Objects.requireNonNull(option);
@@ -128,16 +125,14 @@ public class AioSession<C extends IPContext>
         _DismissCallback = sessionDismiss;
         _ReadTimeOutInSecond = option.getReadTimeOutInSecond();
         _WriteTimeOutInSecond = option.getWriteTimeOutInSecond();
-        _RecvBuf = ByteBuffer.allocate(option.getRcvByte());
         _QueueSizeMax = option.getSendQueueMax();
         _Sort = sort;
         _Context = sort.newContext(option);
         //------------------------------------------------------------
         option.configChannel(channel);
-        mIndex = INVALID_INDEX;
-        mSending = _Context.getWrBuffer();
-        mSending.flip();
-        mSendingBlank = mSending.capacity() - mSending.limit();
+        mIndex = sort.getType()
+                     .prefix();
+        _Logger.debug("session:keepalive [%d]S", _ReadTimeOutInSecond);
     }
 
     @Override
@@ -171,35 +166,12 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public void reset()
-    {
-        mIndex = INVALID_INDEX;
-    }
-
-    @Override
-    public final void dispose()
-    {
-        clear();
-        _Context.dispose();
-        mReader = null;
-        mSending = null;
-        mPrefix = null;
-        reset();
-    }
-
-    @Override
     public final void close() throws IOException
     {
+        clear();
         if(isClosed()) {return;}
         advanceState(_State, SESSION_CLOSE, CAPACITY);
-        try {
-            _Context.dispose();
-        }
-        finally {
-            if(_Channel != null) {
-                _Channel.close();
-            }
-        }
+        if(_Channel != null) {_Channel.close();}
     }
 
     @Override
@@ -209,19 +181,26 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final long getIndex()
+    public long prefix(long index)
+    {
+        return index | _Sort.getType()
+                            .prefix();
+    }
+
+    @Override
+    public final long index()
     {
         return mIndex;
     }
 
     @Override
-    public long[] getBindIndex()
+    public long[] bindIndex()
     {
         return mBindIndex;
     }
 
     @Override
-    public final void setIndex(long index)
+    public final void index(long index)
     {
         mIndex = index;
     }
@@ -245,40 +224,42 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
     }
 
     @Override
     public long prefixLoad(long prefix)
     {
-        _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
-        if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
+        _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
+        int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
+        if(pos >= 0) {
+            return mSessionPrefix[pos] & SUFFIX_MASK;
         }
-        return mPrefix[pos] & 0xFFFFFFFFL;
+        else {
+            _Logger.fetal("session not with prefix:%#x,check IManager.mapSession(index,session,prefix...)", prefix);
+            return Long.MAX_VALUE;
+        }
     }
 
     @Override
     public void prefixHit(long prefix)
     {
-        _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
-        if(pos < 0) {
-            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
-        }
-        if((mPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
-            mPrefix[pos] += 1;
-        }
-        else {
-            mPrefix[pos] &= PREFIX_MAX;
+        _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mSessionPrefix));
+        int pos = ArrayUtil.binarySearch0(mSessionPrefix, prefix, PREFIX_MAX);
+        if(pos >= 0) {
+            if((mSessionPrefix[pos] & SUFFIX_MASK) < SUFFIX_MASK) {
+                mSessionPrefix[pos] += 1; // load + 1
+            }
+            else {
+                mSessionPrefix[pos] &= PREFIX_MAX;
+            }
         }
     }
 
     @Override
     public final long[] getPrefixArray()
     {
-        return mPrefix;
+        return mSessionPrefix;
     }
 
     @Override
@@ -292,8 +273,9 @@ public class AioSession<C extends IPContext>
     {
         if(isClosed()) {return;}
         mReader = readHandler;
-        _RecvBuf.clear();
-        _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+        _Channel.read(_Context.getRvBuffer()
+                              .discardOnHalf()
+                              .toWriteBuffer(), _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
@@ -303,36 +285,51 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final ByteBuffer read(int length)
+    public final ByteBuf read(int length)
     {
-        if(length < 0) {throw new IllegalArgumentException();}
-        if(length != _RecvBuf.position()) {throw new ArrayIndexOutOfBoundsException();}
-        ByteBuffer read = ByteBuffer.allocate(length);
-        _RecvBuf.flip();
-        read.put(_RecvBuf);
-        read.flip();
-        return read;
+        return _Context.getRvBuffer()
+                       .seek(length);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public C getContext()
     {
         return _Context;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends IPContext> T getContext(Class<T> clazz)
     {
         if(_Context.getClass() == clazz) {
+            //session.context 就是需要的
+            return (T) _Context;
+        }
+        else if(_Context.isProxy() && _Context.getClass()
+                                              .getSuperclass() == clazz)
+        {
+            // session.context 携带proxy,需要在这一层进行处理，多见各种proxy-handshake阶段
+            // ws-proxy-context,处理ws-handshake时就需要获取这一层context进行处理
             return (T) _Context;
         }
         else {
+            //获取最内层通讯协议的context,ssl-ws-mqtt 就需要套2层
             IPContext context = _Context;
             while(context.isProxy()) {
                 context = ((IProxyContext<?>) context).getActingContext();
                 if(context.getClass() == clazz) {return (T) context;}
+                else if(context.getClass()
+                               .getSuperclass() == clazz)
+                {
+                    return (T) context;
+                }
             }
-            throw new ZException("not found context instanceof %s", clazz.getSimpleName());
+            _Logger.warning("not found context instanceof %s | %s",
+                            clazz.getSimpleName(),
+                            _Context.getClass()
+                                    .getSimpleName());
+            return null;
         }
     }
 
@@ -347,20 +344,15 @@ public class AioSession<C extends IPContext>
             // mSending 未托管给系统
             if(isEmpty()) {
                 switch(writePacket(ps)) {
-                    case IGNORE:
+                    case IGNORE -> {
                         return WRITE_STATUS.IGNORE;
-                    case UNFINISHED:
-                        // mSending 空间不足
-                        offer(ps);
-                    case IN_SENDING:
-                        ps.send();
+                    }
+                    case UNFINISHED -> offer(ps.send());// mSending 空间不足
+                    case IN_SENDING -> ps.sent();
                 }
             }
-            else {
-                offer(ps);
-                writeBuffed2Sending();
-            }
-            advanceState(_State, SESSION_SENDING, CAPACITY);
+            else {offer(ps);}
+            writeBuffed2Sending();
             flush(handler);
         }
         else {
@@ -375,10 +367,9 @@ public class AioSession<C extends IPContext>
                                   CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException
     {
         if(isClosed()) {return WRITE_STATUS.CLOSED;}
-        mWroteExpect -= wroteCnt;
-        if(mWroteExpect == 0) {
-            mSending.clear();
-            mSending.flip();
+        ByteBuf sending = _Context.getWrBuffer()
+                                  .skip(wroteCnt);
+        if(!sending.isReadable()) {
             if(isEmpty()) {
                 recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
@@ -386,7 +377,6 @@ public class AioSession<C extends IPContext>
             recedeState(_State, SESSION_PENDING, CAPACITY);
         }
         writeBuffed2Sending();
-        advanceState(_State, SESSION_SENDING, CAPACITY);
         flush(handler);
         return WRITE_STATUS.FLUSHED;
     }
@@ -405,35 +395,33 @@ public class AioSession<C extends IPContext>
             fps = peek();
             if(Objects.nonNull(fps)) {
                 switch(writePacket(fps)) {
-                    case IGNORE:
-                        continue;
-                    case UNFINISHED:
+                    case UNFINISHED -> {
                         fps.send();
                         break Loop;
-                    case IN_SENDING:
-                        fps.sent();
-                    default:
-                        break;
+                    }//mSending fill full
+                    case IN_SENDING -> fps.sent();
+                    default -> {}
                 }
             }
         }
         while(Objects.nonNull(fps));
+        //mSending 被填满，或者缓冲队列中没有待发数据
         _Logger.debug("session remain buffed %d", size());
+        if(_Context.getWrBuffer()
+                   .isReadable())
+        {advanceState(_State, SESSION_SENDING, CAPACITY);}
     }
 
     private WRITE_STATUS writePacket(IPacket ps)
     {
-        ByteBuffer buf = ps.getBuffer();
-        if(Objects.nonNull(buf) && buf.hasRemaining()) {
-            int pos = mSending.limit();
-            mSendingBlank = mSending.capacity() - pos;
-            int size = Math.min(mSendingBlank, buf.remaining());
-            mWroteExpect += size;
-            mSending.limit(pos + size);
-            for(int i = 0; i < size; i++, mSendingBlank--, pos++) {
-                mSending.put(pos, buf.get());
-            }
-            if(buf.hasRemaining()) {
+        Objects.requireNonNull(ps);
+        ByteBuf buf = ps.getBuffer();
+        if(buf != null && buf.isReadable()) {
+            _Context.getWrBuffer()
+                    .putExactly(buf);
+            if(buf.isReadable()) {
+                _Context.getWrBuffer()
+                        .discard();
                 return WRITE_STATUS.UNFINISHED;
             }
             else {
@@ -449,15 +437,21 @@ public class AioSession<C extends IPContext>
 
     private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException
     {
-        if(stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
-            _Logger.debug("flush %d | %s", mSending.remaining(), this);
-            _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
+        if(stateLessThan(_State.get(), SESSION_FLUSHED) && _Context.getWrBuffer()
+                                                                   .isReadable())
+        {
+            _Logger.debug("flush expect[%d] | %s",
+                          _Context.getWrBuffer()
+                                  .readableBytes(),
+                          this);
+            _Channel.write(_Context.getWrBuffer()
+                                   .toReadBuffer(), _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
             advanceState(_State, SESSION_FLUSHED, CAPACITY);
         }
     }
 
     @Override
-    public ISessionDismiss getDismissCallback()
+    public IDismiss getDismissCallback()
     {
         return _DismissCallback;
     }
@@ -469,19 +463,19 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public ISessionError getError()
+    public IFailed getError()
     {
         return _Sort.getError();
     }
 
     @Override
-    public ISessionCloser getCloser()
+    public ICloser getCloser()
     {
         return _Sort.getCloser();
     }
 
     @Override
-    public IPipeEncoder getEncoder()
+    public IPipeEncoder encoder()
     {
         return _Sort.getEncoder();
     }
@@ -495,7 +489,7 @@ public class AioSession<C extends IPContext>
     @Override
     public IPipeTransfer getTransfer()
     {
-        return _Sort.getTransfer();
+        return mTransfer;
     }
 
     @Override
@@ -527,5 +521,11 @@ public class AioSession<C extends IPContext>
     public int hashCode()
     {
         return _HashCode;
+    }
+
+    @Override
+    public IoFactory<IProtocol> getFactory()
+    {
+        return _Sort.getFactory();
     }
 }

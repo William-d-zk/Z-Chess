@@ -23,16 +23,21 @@
 
 package com.isahl.chess.knight.cluster;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.model.ctrl.X106_Identity;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
+import com.isahl.chess.bishop.sort.ZSortHolder;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
@@ -44,6 +49,7 @@ import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.stream.Stream;
 
 import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
 
@@ -52,13 +58,14 @@ import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.T
  * @date 2020/4/23
  */
 public interface IClusterNode
-        extends ILocalPublisher
+        extends ILocalPublisher,
+                IActivity
 {
     default IAioConnector buildConnector(final String _Host,
                                          final int _Port,
                                          final ISocketConfig _SocketConfig,
                                          final IAioClient _Client,
-                                         final ISessionManager _Manager,
+                                         final IManager _Manager,
                                          final ZSortHolder _ZSortHolder,
                                          final IClusterPeer _ClusterPeer)
     {
@@ -77,8 +84,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
             }
@@ -92,14 +98,11 @@ public interface IClusterNode
             }
 
             @Override
-            public ITriple response(ISession session)
+            public ITriple afterConnected(ISession session)
             {
-                if(_ZSortHolder.getSort()
-                               .getMode() == ISort.Mode.CLUSTER)
-                {
-                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
-                                        session,
-                                        SINGLE);
+
+                if(session.getMode() == ISort.Mode.CLUSTER) {
+                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
                 }
                 return null;
             }
@@ -117,8 +120,8 @@ public interface IClusterNode
                                    final int _Port,
                                    final ISocketConfig _SocketConfig,
                                    final ZSortHolder _ZSortHolder,
-                                   final ISessionManager _Manager,
-                                   final ISessionDismiss _Dismiss,
+                                   final IManager _Manager,
+                                   final IDismiss _Dismiss,
                                    final boolean _MultiBind,
                                    final IClusterPeer _ClusterPeer)
     {
@@ -133,8 +136,7 @@ public interface IClusterNode
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
+            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
             {
                 return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
             }
@@ -154,14 +156,12 @@ public interface IClusterNode
             }
 
             @Override
-            public ITriple response(ISession session)
+            public ITriple afterConnected(ISession session)
             {
                 if(_ZSortHolder.getSort()
                                .getMode() == ISort.Mode.CLUSTER)
                 {
-                    return new Triple<>(new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId()),
-                                        session,
-                                        SINGLE);
+                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
                 }
                 return null;
             }
@@ -174,5 +174,23 @@ public interface IClusterNode
 
     boolean isOwnedBy(long origin);
 
-    IClusterPeer getPeer();
+    IClusterPeer clusterPeer();
+
+    @Override
+    default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    {
+        if(session == null || outputs == null || outputs.length == 0) {return false;}
+        return publish(type,
+                       session.encoder(),
+                       Stream.of(outputs)
+                             .map(pro->Pair.of(pro, session))
+                             .toArray(IPair[]::new));
+    }
+
+    @Override
+    default void close(ISession session, IOperator.Type type)
+    {
+        if(session == null) {return;}
+        close(type, Pair.of(null, session), session.getCloser());
+    }
 }

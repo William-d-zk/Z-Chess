@@ -23,300 +23,269 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
-import com.isahl.chess.queen.db.model.IStorage;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.message.InnerProtocol;
 
-import java.util.*;
+import java.io.Serial;
 
-import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.*;
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
  * @date 2019/12/10
  */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
 public class RaftMachine
-        implements IRaftMachine,
-                   IStorage
+        extends InnerProtocol
+        implements IRaftMachine
 {
-    private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
+    @Serial
+    private static final long serialVersionUID = -3632621828854975482L;
 
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
-    private final long   _PeerId;
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private long          mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private long          mIndexTerm; // 本地日志对应的Term
-    private long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private long          mCandidate;
-    private long          mLeader;
-    private long          mCommit;    // 集群中已知的最大CommitIndex
-    private long          mApplied;   // 本地已被应用的Index
-    private int           mState     = FOLLOWER.getCode();
-    private Set<RaftNode> mPeerSet;
-    private Set<RaftNode> mGateSet;
-    @JsonIgnore
-    private Operation     mOperation = OP_NULL;
-    @JsonIgnore
-    private int           mLength;
-
-    @JsonIgnore
-    private transient byte[] tPayload;
+    private long mTerm;                     // 触发选举时 term > index-term
+    private long mIndex;                    // 本地日志 index，leader-index >= commit-index 其他状态：follower-index <= commit-index
+    private long mIndexTerm;                // 本地日志对应的 term
+    private long mMatchIndex;               // leader: 记录 follower 已经接收的记录
+    private long mCandidate;                // candidate
+    private long mLeader;                   // leader
+    private long mCommit;                   // 集群中已知的最大 commit-index
+    private long mAccept;                   // 本地已被应用的 applied-index
+    private int  mState = OUTSIDE.getCode(); // 集群节点状态 默认从 OUTSIDE 开始
 
     @Override
-    public int dataLength()
-    {
-        return mLength;
+    public int length()
+    {              // peer @ pKey
+        return 8 + // term
+               8 + // index
+               8 + // index-term
+               8 + // match-index
+               8 + // applied
+               8 + // commit
+               8 + // candidate
+               8 + // leader
+               1 + // state
+               super.length();
     }
 
-    @Override
-    public int decode(byte[] data)
+    private RaftMachine(long peerId)
     {
-        tPayload = data;
-        RaftMachine json = JsonUtil.readValue(data, getClass());
-        Objects.requireNonNull(json);
-        assert (_PeerId == json.getPeerId());
-        mTerm = json.getTerm();
-        mIndex = json.getIndex();
-        mIndexTerm = json.getIndexTerm();
-        mCandidate = json.getCandidate();
-        mLeader = json.getLeader();
-        mCommit = json.getCommit();
-        mApplied = json.getApplied();
-        mState = json.getState()
-                     .getCode();
-        mPeerSet = json.getPeerSet();
-        mGateSet = json.getGateSet();
-        mLength = data.length;
-        return mLength;
+        this(peerId, Operation.OP_MODIFY);
     }
 
-    @Override
-    public byte[] encode()
+    private RaftMachine(long peerId, Operation operation)
     {
-        tPayload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tPayload);
-        mLength = tPayload.length;
-        return tPayload;
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return tPayload;
-    }
-
-    @Override
-    public int serial()
-    {
-        return RAFT_MACHINE_SERIAL;
-    }
-
-    @Override
-    @JsonIgnore
-    public long primaryKey()
-    {
-        return _PeerId;
-    }
-
-    @JsonIgnore
-    public void setOperation(Operation op)
-    {
-        mOperation = op;
-    }
-
-    @Override
-    @JsonIgnore
-    public Operation operation()
-    {
-        return mOperation;
-    }
-
-    @Override
-    @JsonIgnore
-    public Strategy strategy()
-    {
-        return Strategy.RETAIN;
-    }
-
-    @JsonCreator
-    public RaftMachine(
-            @JsonProperty("peer_id")
-                    long peerId)
-    {
-        _PeerId = peerId;
+        super(operation, Strategy.RETAIN);
+        pKey = peerId;
         mMatchIndex = INDEX_NAN;
         mIndex = INDEX_NAN;
     }
 
+    public RaftMachine(ByteBuf input)
+    {
+        super(input);
+    }
+
+    public static RaftMachine createBy(long peer, Operation operation)
+    {
+        return new RaftMachine(peer, operation);
+    }
+
     @Override
-    public long getTerm()
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        mTerm = input.getLong();
+        mIndex = input.getLong();
+        mIndexTerm = input.getLong();
+        mMatchIndex = input.getLong();
+        mAccept = input.getLong();
+        mCommit = input.getLong();
+        mCandidate = input.getLong();
+        mLeader = input.getLong();
+        mState = input.get();
+        remain -= 65;// 8x8 +1;
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(mTerm)
+                    .putLong(mIndex)
+                    .putLong(mIndexTerm)
+                    .putLong(mMatchIndex)
+                    .putLong(mAccept)
+                    .putLong(mCommit)
+                    .putLong(mCandidate)
+                    .putLong(mLeader)
+                    .put(mState);
+    }
+
+    @Override
+    public long term()
     {
         return mTerm;
     }
 
     @Override
-    public long getIndex()
+    public long index()
     {
         return mIndex;
     }
 
     @Override
-    public long getIndexTerm()
+    public long indexTerm()
     {
         return mIndexTerm;
     }
 
     @Override
-    public long getCandidate()
+    public long candidate()
     {
         return mCandidate;
     }
 
     @Override
-    public long getLeader()
+    public long leader()
     {
         return mLeader;
     }
 
     @Override
-    public long getPeerId()
+    public long peer()
     {
-        return _PeerId;
+        return primaryKey();
     }
 
     @Override
-    public RaftState getState()
+    public int state()
     {
-        return RaftState.valueOf(mState);
+        return mState;
     }
 
     @Override
-    public long getCommit()
+    public long commit()
     {
         return mCommit;
     }
 
     @Override
-    public long getApplied()
+    public long accept()
     {
-        return mApplied;
+        return mAccept;
     }
 
     @Override
-    public long getMatchIndex()
+    public long matchIndex()
     {
         return mMatchIndex;
     }
 
     @Override
-    public Set<RaftNode> getPeerSet()
-    {
-        return mPeerSet;
-    }
-
-    @Override
-    public Set<RaftNode> getGateSet()
-    {
-        return mGateSet;
-    }
-
-    public void setTerm(long term)
+    public void term(long term)
     {
         mTerm = term;
     }
 
-    public void setIndex(long index)
+    @Override
+    public void index(long index)
     {
         mIndex = index;
     }
 
-    public void setIndexTerm(long term)
+    @Override
+    public void indexTerm(long term)
     {
         mIndexTerm = term;
     }
 
-    public void setMatchIndex(long matchIndex)
+    @Override
+    public void matchIndex(long matchIndex)
     {
         mMatchIndex = matchIndex;
     }
 
-    public void setCandidate(long candidate)
+    @Override
+    public void candidate(long candidate)
     {
         mCandidate = candidate;
+        if(candidate == peer()) {approve(CANDIDATE);}
     }
 
-    public void setLeader(long leader)
+    @Override
+    public void leader(long leader)
     {
         mLeader = leader;
+        if(leader == peer()) {approve(LEADER);}
+        // else 保持不变即可
     }
 
-    public void setState(RaftState state)
+    @Override
+    public void approve(RaftState state)
     {
-        mState = state.getCode();
+        mState &= ~MASK.getCode();
+        mState |= state.getCode();
     }
 
-    public void setCommit(long commit)
+    @Override
+    public void outside()
+    {
+        mState = OUTSIDE.getCode();
+    }
+
+    public void gate()
+    {
+        mState |= GATE.getCode();
+    }
+
+    @Override
+    public void confirm()
+    {
+        mState &= ~JOINT.getCode();
+    }
+
+    public void modify(RaftState state)
+    {
+        approve(state);
+        modify();
+    }
+
+    @Override
+    public void modify()
+    {
+        mState |= JOINT.getCode();
+    }
+
+    @Override
+    public void commit(long commit)
     {
         mCommit = commit;
     }
 
-    public void setApplied(long applied)
+    @Override
+    public void accept(long accept)
     {
-        mApplied = applied;
+        mAccept = accept;
     }
 
-    public void setPeerSet(Set<RaftNode> peerSet)
-    {
-        mPeerSet = peerSet;
-    }
-
-    public void setGateSet(Set<RaftNode> gateSet)
-    {
-        mGateSet = gateSet;
-    }
-
-    public final void appendPeer(RaftNode... peers)
-    {
-        if(mPeerSet == null) {
-            mPeerSet = new TreeSet<>();
-        }
-        appendGraph(mPeerSet, peers);
-    }
-
-    public final void appendGate(RaftNode... gates)
-    {
-        if(mGateSet == null) {
-            mGateSet = new TreeSet<>();
-        }
-        appendGraph(mGateSet, gates);
-    }
-
-    private void appendGraph(Set<RaftNode> set, RaftNode... a)
-    {
-        Objects.requireNonNull(set);
-        if(a == null || a.length == 0) {return;}
-        mPeerSet.addAll(Arrays.asList(a));
-    }
-
+    /*
     @Override
     public void beLeader(IRaftMapper mapper)
     {
         mState = LEADER.getCode();
-        mLeader = _PeerId;
-        mMatchIndex = mCommit;
-        mapper.updateTerm(mTerm);
-        mapper.updateCandidate(mCandidate = _PeerId);
+        mLeader = peer();
+        mMatchIndex = commit();
+        mapper.updateTerm(term());
+        mCandidate = peer();
     }
 
     @Override
@@ -325,7 +294,7 @@ public class RaftMachine
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(++mTerm);
-        mapper.updateCandidate(mCandidate = _PeerId);
+        mCandidate = peer();
     }
 
     @Override
@@ -334,7 +303,7 @@ public class RaftMachine
         mState = ELECTOR.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(mTerm = term);
-        mapper.updateCandidate(mCandidate = candidate);
+        mCandidate = candidate;
     }
 
     @Override
@@ -343,164 +312,117 @@ public class RaftMachine
         mState = FOLLOWER.getCode();
         mLeader = INVALID_PEER_ID;
         mapper.updateTerm(mTerm = term);
-        mapper.updateCandidate(mCandidate = INVALID_PEER_ID);
+        mCandidate = INVALID_PEER_ID;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public RaftMachine createCandidate()
     {
-        RaftMachine candidate = new RaftMachine(_PeerId);
-        candidate.setTerm(mTerm + 1);
-        candidate.setIndex(mIndex);
-        candidate.setIndexTerm(mIndexTerm);
-        candidate.setState(CANDIDATE);
-        candidate.setCandidate(_PeerId);
-        candidate.setLeader(INVALID_PEER_ID);
-        candidate.setCommit(mCommit);
-        candidate.setOperation(OP_INSERT);
+        RaftMachine candidate = new RaftMachine(peer(), OP_INSERT);
+        candidate.term(mTerm + 1);
+        candidate.index(mIndex);
+        candidate.indexTerm(mIndexTerm);
+        candidate.state(CANDIDATE);
+        candidate.candidate(peer());
+        candidate.leader(INVALID_PEER_ID);
+        candidate.commit(mCommit);
         return candidate;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public RaftMachine createLeader()
-    {
-        RaftMachine leader = new RaftMachine(_PeerId);
-        leader.setTerm(mTerm);
-        leader.setIndex(mIndex);
-        leader.setIndexTerm(mIndexTerm);
-        leader.setCommit(mCommit);
-        leader.setLeader(_PeerId);
-        leader.setCandidate(_PeerId);
-        leader.setState(LEADER);
-        leader.setOperation(OP_APPEND);
-        return leader;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public RaftMachine createFollower()
     {
-        RaftMachine follower = new RaftMachine(_PeerId);
-        follower.setTerm(mTerm);
-        follower.setIndex(mIndex);
-        follower.setIndexTerm(mIndexTerm);
-        follower.setCommit(mCommit);
-        follower.setCandidate(INVALID_PEER_ID);
-        follower.setLeader(INVALID_PEER_ID);
-        follower.setState(FOLLOWER);
-        follower.setOperation(OP_MODIFY);
+        RaftMachine follower = new RaftMachine(peer(), OP_MODIFY);
+        follower.term(mTerm);
+        follower.index(mIndex);
+        follower.indexTerm(mIndexTerm);
+        follower.commit(mCommit);
+        follower.candidate(INVALID_PEER_ID);
+        follower.leader(INVALID_PEER_ID);
+        follower.state(FOLLOWER);
         return follower;
     }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public RaftMachine createLearner()
-    {
-        RaftMachine follower = new RaftMachine(_PeerId);
-        follower.setTerm(mTerm);
-        follower.setIndex(mIndex);
-        follower.setIndexTerm(mIndexTerm);
-        follower.setCommit(mCommit);
-        follower.setState(LEARNER);
-        follower.setCandidate(INVALID_PEER_ID);
-        follower.setLeader(INVALID_PEER_ID);
-        follower.setOperation(OP_MODIFY);
-        return follower;
-    }
-
+*/
     @Override
     public void follow(long term, long leader, IRaftMapper mapper)
     {
-        mState = FOLLOWER.getCode();
+        approve(FOLLOWER);
         mTerm = term;
         mLeader = leader;
         mCandidate = leader;
-        mapper.updateCandidate(mLeader);
         mapper.updateTerm(mTerm);
-    }
-
-    @Override
-    public void apply(IRaftMapper mapper)
-    {
-        mapper.updateLogApplied(mApplied = mIndex);
-        _Logger.debug("apply : %d | [index %d commit %d]", mApplied, mIndex, mCommit);
     }
 
     @Override
     public void commit(long index, IRaftMapper mapper)
     {
-        if(mCommit != index) {
-            mCommit = index;
-            mapper.updateLogCommit(mCommit);
-            mapper.flush();
-            _Logger.debug("%s commit[%d] ", getState(), mCommit);
-        }
+        mCommit = index;
+        mapper.updateCommit(mCommit);
+        mapper.flush();
+        _Logger.debug("commit: [%d@%d]", mCommit, mTerm);
     }
 
     @Override
-    public void append(long index, long indexTerm, IRaftMapper mapper)
+    public void accept(long index, long indexTerm)
     {
-        mIndex = index;
-        mMatchIndex = index;
+        mAccept = mIndex = index;
         mIndexTerm = indexTerm;
-        mapper.updateLogIndexAndTerm(mIndex, mIndexTerm);
     }
 
     @Override
     public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
-        append(index, indexTerm, mapper);
-        apply(mapper);
+        _Logger.debug("rollback to [ %d@%d ]", index, indexTerm);
+        accept(index, indexTerm);
         commit(index, mapper);
     }
 
     @Override
     public void reset()
     {
-        mState = FOLLOWER.getCode();
         mIndex = 0;
         mIndexTerm = 0;
         mMatchIndex = INDEX_NAN;
         mTerm = 0;
-        mApplied = 0;
+        mAccept = 0;
         mCommit = 0;
     }
 
     @Override
     public String toString()
     {
-        return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" +
-                             "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" +
-                             "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n" + "\t\tgates:%s\n" + "\n}",
-                             _PeerId,
-                             getState(),
-                             mTerm,
-                             mIndex,
-                             mIndexTerm,
-                             mMatchIndex,
-                             mCommit,
-                             mApplied,
-                             mLeader,
-                             mCandidate,
-                             set2String(mPeerSet),
-                             set2String(mGateSet));
+        return format("""
+                              {
+                              \t\tpeer:%#x
+                              \t\tstate:%s
+                              \t\tterm:%d
+                              \t\tindex:%d
+                              \t\tindex_term:%d
+                              \t\tmatch_index:%d
+                              \t\tcommit:%d
+                              \t\taccept:%d
+                              \t\tleader:%#x
+                              \t\tcandidate:%#x
+                              }
+                              """, peer(), RaftState.roleOf(state()), term(), index(), indexTerm(), matchIndex(), commit(), accept(), leader(), candidate());
     }
 
-    private <T> String set2String(Collection<T> set)
+    @Override
+    public String toPrimary()
     {
-        if(set != null) {
-            StringBuilder sb = new StringBuilder("[\n");
-            for(T t : set) {
-                sb.append("\t\t\t<")
-                  .append(String.format(" %s ", t))
-                  .append(">\n");
-            }
-            sb.append("\t\t]");
-            return sb.toString();
-        }
-        return null;
+        return format("P:#%x,%d@%d,C:%d,A:%d[← %#x]", peer(), index(), term(), commit(), accept(), candidate());
     }
 
+    public void from(IRaftMachine source)
+    {
+        mTerm = source.term();
+        mIndex = source.index();
+        mIndexTerm = source.indexTerm();
+        mMatchIndex = source.matchIndex();
+        mCandidate = source.candidate();
+        mLeader = source.leader();
+        mCommit = source.commit();
+        mAccept = source.accept();
+        mState = source.state();
+    }
 }
