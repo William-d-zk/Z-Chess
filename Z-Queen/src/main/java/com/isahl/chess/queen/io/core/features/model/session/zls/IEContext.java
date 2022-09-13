@@ -103,10 +103,6 @@ public interface IEContext
     {
     }
 
-    int inState();
-
-    int outState();
-
     void cryptIn();
 
     void cryptOut();

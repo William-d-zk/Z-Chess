@@ -23,16 +23,20 @@
 
 package com.isahl.chess.knight.raft.model;
 
+import com.isahl.chess.king.config.KingCode;
+
 public enum RaftCode
 {
-    SUCCESS(0, "success"),
+    SUCCESS(KingCode.SUCCESS, "success"),
     LOWER_TERM(1, "term < current,reject"),
     CONFLICT(2, "pre-log-index&pre-log-term inconsistent,reject"),
     ILLEGAL_STATE(3, "illegal state,reject"),
     SPLIT_CLUSTER(4, "split cluster,reject"),
     ALREADY_VOTE(5, "already vote,reject"),
     OBSOLETE(6, "index obsolete,reject"),
-    WAL_FAILED(7, "log entry write failed");
+    WAL_FAILED(7, "log entry write failed"),
+
+    GRAPH_CONFIG(8, "graph config exclude self peer; check config ");
 
     private final int    _Code;
     private final String _Description;

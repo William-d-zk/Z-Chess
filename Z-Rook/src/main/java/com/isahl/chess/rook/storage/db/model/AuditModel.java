@@ -31,7 +31,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.queen.message.JsonProtocol;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.message.InnerProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -39,46 +40,47 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 /**
  * @author william.d.zk
  */
-@TypeDefs({
-        @TypeDef(name = "string-array",
-                 typeClass = StringArrayType.class),
-        @TypeDef(name = "int-array",
-                 typeClass = IntArrayType.class),
-        @TypeDef(name = "list-array",
-                 typeClass = ListArrayType.class)
-})
+@TypeDefs({ @TypeDef(name = "string-array",
+                     typeClass = StringArrayType.class),
+            @TypeDef(name = "int-array",
+                     typeClass = IntArrayType.class),
+            @TypeDef(name = "list-array",
+                     typeClass = ListArrayType.class) })
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = {
-        "created_at",
-        "updated_at"
-},
+@JsonIgnoreProperties(value = { "created_at",
+                                "updated_at" },
                       allowGetters = true)
 public abstract class AuditModel
-        extends JsonProtocol
-        implements Serializable
+        extends InnerProtocol
 {
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
     @CreatedDate
+    @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at",
             nullable = false)
     @LastModifiedDate
+    @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
     private LocalDateTime updatedAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -109,17 +111,57 @@ public abstract class AuditModel
         this.updatedAt = updatedAt;
     }
 
+    public AuditModel()
+    {
+        super();
+    }
+
+    public AuditModel(Operation operation, Strategy strategy)
+    {
+        super(operation, strategy);
+    }
+
+    public AuditModel(ByteBuf input)
+    {
+        super(input);
+    }
+
     @Override
     public String toString()
     {
-        return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+        return String.format("  create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
     }
 
     @Override
-    public int superSerial()
+    public int length()
     {
-        return AUDIT_MODEL_SERIAL;
+        return super.length() + // inner-protocol.length
+               8 + // create_at
+               8;  // update_at
     }
 
-    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 100;
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        long create_at = input.getLong();
+        long update_at = input.getLong();
+        remain -= 16;
+        setCreatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(create_at), ZoneId.systemDefault()));
+        setUpdatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(update_at), ZoneId.systemDefault()));
+        return remain;
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(createdAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
+                                                                     .getId()))
+                                      .toEpochMilli())
+                    .putLong(updatedAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
+                                                                     .getId()))
+                                      .toEpochMilli());
+    }
+
 }

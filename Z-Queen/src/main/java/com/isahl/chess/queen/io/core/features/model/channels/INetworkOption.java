@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.features.model.channels;
 
-import com.isahl.chess.queen.io.core.features.model.session.ISessionOption;
+import com.isahl.chess.queen.io.core.features.model.session.IOption;
 
 import java.nio.channels.NetworkChannel;
 import java.time.Duration;
@@ -32,7 +32,7 @@ import java.time.Duration;
  * @author William.d.zk
  */
 public interface INetworkOption
-        extends ISessionOption
+        extends IOption
 {
     void configChannel(NetworkChannel channel);
 

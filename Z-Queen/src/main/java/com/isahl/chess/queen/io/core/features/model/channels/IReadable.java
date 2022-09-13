@@ -23,7 +23,8 @@
 
 package com.isahl.chess.queen.io.core.features.model.channels;
 
-import java.nio.ByteBuffer;
+import com.isahl.chess.king.base.content.ByteBuf;
+
 import java.nio.channels.CompletionHandler;
 
 /**
@@ -51,5 +52,5 @@ public interface IReadable<A>
      * @param length
      * @return receiver
      */
-    ByteBuffer read(int length);
+    ByteBuf read(int length);
 }

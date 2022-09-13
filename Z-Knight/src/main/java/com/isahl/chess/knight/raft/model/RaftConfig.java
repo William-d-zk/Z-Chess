@@ -55,7 +55,8 @@ public class RaftConfig
     @JsonDeserialize(converter = LongToDataSizeConverter.class)
     private DataSize             maxSegmentSize;
     private IRaftConfig.Uid      uid;
-    private boolean              beLearner;
+
+    private int syncBatchMaxSize;
 
     public Map<Integer, String> getPeers()
     {
@@ -167,14 +168,14 @@ public class RaftConfig
         this.uid = uid;
     }
 
-    public boolean isBeLearner()
+    public int getSyncBatchMaxSize()
     {
-        return beLearner;
+        return syncBatchMaxSize;
     }
 
-    public void setBeLearner(boolean beLearner)
+    public void setSyncBatchMaxSize(int syncBatchMaxSize)
     {
-        this.beLearner = beLearner;
+        this.syncBatchMaxSize = syncBatchMaxSize;
     }
 }
 

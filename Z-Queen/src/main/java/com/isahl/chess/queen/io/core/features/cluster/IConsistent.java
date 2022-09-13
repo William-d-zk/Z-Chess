@@ -23,18 +23,13 @@
 
 package com.isahl.chess.queen.io.core.features.cluster;
 
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
 /**
  * @author william.d.zk
  */
 public interface IConsistent
-        extends ITraceable,
-                IProtocol
+        extends  IoSerial
 {
-    default boolean isConsistency()
-    {
-        return true;
-    }
+    int code();
 }

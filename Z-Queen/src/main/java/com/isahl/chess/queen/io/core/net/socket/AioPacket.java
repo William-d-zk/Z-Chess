@@ -22,50 +22,41 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.board.base.ISerial;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 
-import java.nio.ByteBuffer;
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author William.d.zk
  */
+@ISerialGenerator(parent = ISerial.IO_QUEEN_PACKET_SERIAL)
 public class AioPacket
         implements IPacket
 {
-    public final static int SERIAL = PACKET_SERIAL + 1;
 
-    private ByteBuffer mBuf;
-    private Status     mStatus = Status.No_Send;
-    private int        mRightIdempotentBit;
-    private int        mLeftIdempotentBit;
+    private Status  mStatus = Status.No_Send;
+    private int     mRightIdempotentBit;
+    private int     mLeftIdempotentBit;
+    private ByteBuf mBuffer;
 
-    public AioPacket(int size, boolean direct)
+    public AioPacket(int size)
     {
-        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size)) : null;
+        mBuffer = ByteBuf.allocate(size);
     }
 
-    public AioPacket(ByteBuffer buf)
+    public AioPacket(ByteBuf exist)
     {
-        mBuf = buf;
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return mBuf.array();
+        mBuffer = exist;
     }
 
     @Override
-    public ByteBuffer getBuffer()
+    public ByteBuf getBuffer()
     {
-        return mBuf;
-    }
-
-    @Override
-    public IPacket wrapper(ByteBuffer buffer)
-    {
-        return new AioPacket(buffer);
+        return mBuffer;
     }
 
     @Override
@@ -121,21 +112,9 @@ public class AioPacket
     }
 
     @Override
-    public int dataLength()
+    public int length()
     {
-        return mBuf.capacity();
-    }
-
-    @Override
-    public int serial()
-    {
-        return SERIAL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return PACKET_SERIAL;
+        return 1 + mBuffer.capacity();
     }
 
     @Override
@@ -155,36 +134,48 @@ public class AioPacket
     }
 
     @Override
-    public IPacket flip()
+    public int prefix(ByteBuf input)
     {
-        mBuf.flip();
-        return this;
+        int length = input.vLength();
+        int serial = input.get();
+        if(serial != serial()) {
+            throw new ZException("serial[%d vs %d] no expected", serial, serial());
+        }
+        return length - 1;
     }
 
     @Override
-    public void put(ByteBuffer src)
+    public void fold(ByteBuf input, int remain)
     {
-        if(mBuf.capacity() < src.remaining()) {
-            int size = src.remaining();
-            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);
+        if(remain > 0) {
+            byte[] array = new byte[remain];
+            input.get(array);
+            mBuffer = ByteBuf.wrap(array);
+        }
+    }
+
+    @Override
+    public int sizeOf()
+    {
+        return vSizeOf(length());
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return output.vPutLength(length())
+                     .put(serial())
+                     .put(payload());
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        if(mBuffer.readerIdx() == 0 && mBuffer.writerIdx() == mBuffer.capacity()) {
+            return mBuffer.array();
         }
         else {
-            mBuf.clear();
+            return mBuffer.peekAll();
         }
-        IoUtil.write(src.array(), src.position(), mBuf.array(), mBuf.position(), src.remaining());
-        //mBuf.position == 0
-        mBuf.limit(src.remaining());
-    }
-
-    @Override
-    public void replace(ByteBuffer src)
-    {
-        mBuf = src;
-    }
-
-    @Override
-    public void expand(int size)
-    {
-        mBuf = IoUtil.expandBuffer(mBuf, size);
     }
 }

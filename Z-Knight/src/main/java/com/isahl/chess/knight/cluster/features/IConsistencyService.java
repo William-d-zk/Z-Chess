@@ -23,43 +23,43 @@
 
 package com.isahl.chess.knight.cluster.features;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.ICode;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.cluster.config.CodeKnight;
-import com.isahl.chess.queen.events.cluster.IConsistencyReject;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CONSISTENT_SERVICE;
+
 public interface IConsistencyService
 {
-    default <T extends IProtocol> ICode submit(T request, IClusterNode node, IConsistencyReject reject)
+    default <T extends IoSerial> ICode submit(T request, IClusterNode node)
     {
         if(request == null || node == null) {
             return CodeKing.MISS;
         }
-        if(!node.getPeer()
+        if(!node.clusterPeer()
                 .isInCongress())
         {
             return CodeKnight.CLUSTER_NO_IN_CONGRESS;
         }
-        final ReentrantLock _Lock = node.getLock(IOperator.Type.CONSISTENCY_SERVICE);
-        final RingBuffer<QEvent> _Publish = node.getPublisher(IOperator.Type.CONSISTENCY_SERVICE);
+        final ReentrantLock _Lock = node.selectLock(CONSISTENT_SERVICE);
+        final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENT_SERVICE);
         _Lock.lock();
         try {
             long sequence = _Publish.next();
             try {
                 QEvent event = _Publish.get(sequence);
-                event.produce(IOperator.Type.CONSISTENCY_SERVICE,
+                event.produce(CONSISTENT_SERVICE,
                               new Pair<>(request,
-                                         node.getPeer()
-                                             .getPeerId()),
-                              reject.getOperator());
+                                         node.clusterPeer()
+                                             .peerId()),
+                              null);
             }
             finally {
                 _Publish.publish(sequence);
@@ -72,4 +72,9 @@ public interface IConsistencyService
     }
 
     ICode submit(String content);
+
+    ICode modify(String host, int port);
+
+    ICode modify(String host, String gate, int gatePort);
+
 }

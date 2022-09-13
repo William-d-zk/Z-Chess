@@ -24,11 +24,13 @@
 package com.isahl.chess.queen.events.server;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.queen.events.cluster.IConsistencyJudge;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.events.cluster.IConsistencyBackload;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
 
@@ -38,17 +40,18 @@ import java.util.List;
  */
 public interface ILinkCustom
         extends IMappingCustom,
-                IConsistencyJudge
+                IConsistencyBackload
 {
 
     /**
      * Cluster->Link.notify(Cluster.consensus_result)
      *
-     * @param manager session - manager
-     * @param request 需要执行一致性要求的请求
-     * @return first: response, second:session, third:operator
+     * @param manager  session - manager
+     * @param backload cluster 处理请求的返回结果
+     * @param request  需要执行一致性要求的请求
+     * @return list of{ first: response, second:session, third:operator }
      */
-    List<ITriple> notify(ISessionManager manager, IControl request, long origin, boolean isConsistency);
+    List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request);
 
     /**
      * 当出现了关闭 session 的需要时
@@ -56,7 +59,9 @@ public interface ILinkCustom
      * 触发映射处理机制
      *
      * @param session target session
+     * @return session close → cluster consistent
+     * 不同处理系统会采取不同的关闭事件指代
      */
-    void close(ISession session);
+    IProtocol onClose(ISession session);
 
 }

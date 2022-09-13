@@ -23,11 +23,14 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
 
@@ -36,21 +39,52 @@ import java.util.List;
  */
 public interface IAccessService
 {
-    boolean isHandleProtocol(IProtocol protocol);
+    boolean isSupported(IoSerial input);
 
-    List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content);
+    boolean isSupported(ISession session);
 
-    ITriple onLink(ISessionManager manager, ISession session, IControl input);
+    /**
+     * @param exchanger session manager
+     * @param session   by session
+     * @param content   input IProtocol
+     * @param load      handle on 'load' element: fst 「IControl」snd「ISession」trd「ISession.IEncoder」
+     */
+    void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load);
 
-    void onOffline(ISession session);
+    /**
+     * @param manager session manager
+     * @param session input session
+     * @param input   input IProtocol
+     * @return ITriple
+     * fst: 直接在session上需要进行返回的内容「IProtocol/List of IProtocol」
+     * snd: 需要向Cluster进行一致性处理的内容「IProtocol」
+     * trd: 处理模式 fst 对应的内容需要以什么方式处理「 SINGLE/BATCH 」
+     */
+    ITriple onLink(IManager manager, ISession session, IProtocol input);
 
-    List<ITriple> onConsistencyResult(ISessionManager manager,
-                                      long origin,
-                                      IProtocol consensusBody,
-                                      boolean isConsistency);
+    /**
+     * @param session close session
+     * @return session , 如果非空返回，说明是当前节点管理的 session
+     */
+    default ISession clean(IManager manager, long session)
+    {
+        return manager.cleanIndex(session);
+    }
 
-    default void consume(IProtocol request)
+    List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody);
+
+    default void consume(IoSerial request)
     {
 
+    }
+
+    default void onExchange(IProtocol request, List<ITriple> load)
+    {
+
+    }
+
+    default IProtocol onClose(ISession session)
+    {
+        return null;
     }
 }

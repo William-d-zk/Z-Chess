@@ -24,67 +24,92 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.board.annotation.ISerialGenerator;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.Serial;
 
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
+@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 1)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LogMeta
         extends BaseMeta
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 1;
+    @Serial
+    private static final long serialVersionUID = 401154084882121307L;
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
      * <p>
      * ``` 1 ``` 为首条日志index
      */
-    private long          mStart;
+    private long mStart;
     /**
      * 本机存储日志的 index
      */
-    private long          mIndex;
+    private long mIndex;
     /**
      * 本机存储日志的 index-term
      */
-    private long          mIndexTerm;
+    private long mIndexTerm;
     /**
      * 已存储的最大任期号
      */
-    private long          mTerm;
-    /**
-     * 当前状态机候选人
-     */
-    private long          mCandidate;
+    private long mTerm;
     /**
      * 集群中已知的最大的被提交的日志index
      */
-    private long          mCommit;
+    private long mCommit;
     /**
      * 已被应用到状态机日志index
      */
-    private long          mApplied;
-    /**
-     * 集群节点信息
-     */
-    private Set<RaftNode> mPeerSet;
-    /**
-     * 集群跨分区网关
-     */
-    private Set<RaftNode> mGateSet;
+    private long mAccept;
+
+    @Override
+    public int length()
+    {
+        return 8 + // start
+               8 + // term
+               8 + // index
+               8 + // index term
+               8 + // commit
+               8 + // applied
+               super.length(); //primary key => System.current-mills
+    }
+
+    @Override
+    public ByteBuf suffix(ByteBuf output)
+    {
+        return super.suffix(output)
+                    .putLong(getStart())
+                    .putLong(getTerm())
+                    .putLong(getIndex())
+                    .putLong(getIndexTerm())
+                    .putLong(getCommit())
+                    .putLong(getAccept());
+    }
+
+    @Override
+    public int prefix(ByteBuf input)
+    {
+        int remain = super.prefix(input);
+        setStart(input.getLong());
+        setTerm(input.getLong());
+        setIndex(input.getLong());
+        setIndexTerm(input.getLong());
+        setCommit(input.getLong());
+        setAccept(input.getLong());
+        remain -= 48;
+        return remain;
+    }
 
     @Override
     public void reset()
@@ -93,92 +118,44 @@ public class LogMeta
         mIndex = 0;
         mIndexTerm = 0;
         mTerm = 0;
-        mCandidate = 0;
         mCommit = 0;
-        mApplied = 0;
-        if(mPeerSet != null) {mPeerSet.clear();}
-        if(mGateSet != null) {mGateSet.clear();}
+        mAccept = 0;
         flush();
     }
 
     @JsonCreator
     public LogMeta(
             @JsonProperty("start")
-                    long start,
+            long start,
             @JsonProperty("term")
-                    long term,
+            long term,
             @JsonProperty("index")
-                    long index,
+            long index,
             @JsonProperty("index_term")
-                    long indexTerm,
-            @JsonProperty("candidate")
-                    long candidate,
+            long indexTerm,
             @JsonProperty("commit")
-                    long commit,
-            @JsonProperty("applied")
-                    long applied,
-            @JsonProperty("peer_set")
-                    Set<RaftNode> peerSet,
-            @JsonProperty("gate_set")
-                    Set<RaftNode> gateSet)
+            long commit,
+            @JsonProperty("accept")
+            long accept)
     {
+        super(Operation.OP_INSERT, Strategy.RETAIN);
         mStart = start;
         mTerm = term;
         mIndex = index;
         mIndexTerm = indexTerm;
-        mCandidate = candidate;
         mCommit = commit;
-        mApplied = applied;
-        mPeerSet = peerSet;
-        mGateSet = gateSet;
+        mAccept = accept;
     }
 
-    private LogMeta()
+    public LogMeta()
     {
+        super();
         mStart = MIN_START;
     }
 
-    public static LogMeta loadFromFile(RandomAccessFile file)
+    public LogMeta(ByteBuf input)
     {
-        try {
-            if(file.length() > 0) {
-                file.seek(0);
-                int mLength = file.readInt();
-                if(mLength > 0) {
-                    byte[] data = new byte[mLength];
-                    file.read(data);
-                    LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                    if(logMeta != null) {
-                        logMeta.setFile(file);
-                        logMeta.decode(data);
-                        return logMeta;
-                    }
-                }
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-        return new LogMeta().setFile(file);
-    }
-
-    @JsonIgnore
-    public LogMeta setFile(RandomAccessFile source)
-    {
-        mFile = source;
-        return this;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _SERIAL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return INTERNAL_SERIAL;
+        super(input);
     }
 
     public long getStart()
@@ -201,16 +178,6 @@ public class LogMeta
         mTerm = term;
     }
 
-    public long getCandidate()
-    {
-        return mCandidate;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        mCandidate = candidate;
-    }
-
     public long getCommit()
     {
         return mCommit;
@@ -221,38 +188,14 @@ public class LogMeta
         mCommit = commit;
     }
 
-    public long getApplied()
+    public long getAccept()
     {
-        return mApplied;
+        return mAccept;
     }
 
-    public void setApplied(long applied)
+    public void setAccept(long accept)
     {
-        mApplied = applied;
-    }
-
-    public Set<RaftNode> getPeerSet()
-    {
-        return mPeerSet;
-    }
-
-    public void setPeerSet(Collection<RaftNode> peers)
-    {
-        if(peers != null && !peers.isEmpty()) {
-            mPeerSet = new TreeSet<>(peers);
-        }
-    }
-
-    public Set<RaftNode> getGateSet()
-    {
-        return mGateSet;
-    }
-
-    public void setGateSet(Collection<RaftNode> gates)
-    {
-        if(gates != null && !gates.isEmpty()) {
-            mGateSet = new TreeSet<>(gates);
-        }
+        mAccept = accept;
     }
 
     public long getIndex()
@@ -273,6 +216,12 @@ public class LogMeta
     public long getIndexTerm()
     {
         return mIndexTerm;
+    }
+
+    public void accept(LogEntry end)
+    {
+        mAccept = mIndex = end.index();
+        mIndexTerm = end.term();
     }
 
 }

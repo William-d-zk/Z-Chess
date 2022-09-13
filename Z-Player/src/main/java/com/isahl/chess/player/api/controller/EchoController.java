@@ -26,6 +26,7 @@ package com.isahl.chess.player.api.controller;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.model.TextSerial;
 import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.player.api.service.HookOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class EchoController
                     String input)
     {
         EchoDo echo = new EchoDo();
-        echo.setContent(input);
+        echo.withSub(new TextSerial(input));
         ICode code = _HookOpenService.hookLogic(echo);
         return ZResponse.of(code, echo, "example test");
     }

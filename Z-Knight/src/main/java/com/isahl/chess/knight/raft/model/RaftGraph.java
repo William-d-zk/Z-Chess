@@ -23,13 +23,17 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
 
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static com.isahl.chess.knight.raft.model.RaftState.JOINT;
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -37,66 +41,125 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * Raft 集群的拓扑关系
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftGraph
 {
-    private final NavigableMap<Long, RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
+    private final NavigableMap<Long, IRaftMachine> _Peers;
+    private final NavigableMap<Long, IRaftMachine> _Members;
+    private final String                           _Name;
 
-    public boolean contains(long peerId)
+    private RaftGraph(String name)
     {
-        return _NodeMap.containsKey(peerId);
+        _Peers = new ConcurrentSkipListMap<>();
+        _Members = new ConcurrentSkipListMap<>();
+        _Name = name;
     }
 
-    @JsonIgnore
-    public RaftMachine getMachine(long peerId)
+    public IRaftMachine get(long peerId)
     {
-        return _NodeMap.get(peerId);
+        return _Members.get(peerId);
+    }
+
+    public NavigableMap<Long, IRaftMachine> getPeers()
+    {
+        return _Peers;
+    }
+
+    public void append(IRaftMachine machine)
+    {
+        _Peers.putIfAbsent(machine.peer(), machine);
+        if(machine.isGreaterThanState(CLIENT)) {
+            _Members.putIfAbsent(machine.peer(), machine);
+        }
+    }
+
+    public void resetTo(RaftGraph other)
+    {
+        _Members.clear();
+        _Peers.clear();
+        _Members.putAll(other._Members);
+        _Peers.putAll(other._Peers);
+        other._Members.clear();
+        other._Peers.clear();
+    }
+
+    public boolean isMajorAccept(long candidate, long term)
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.term() <= term && machine.candidate() == candidate)
+                       .count() > _Members.size() / 2;
+    }
+
+    public boolean isMajorReject(long candidate, long term)
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.term() >= term && machine.candidate() != candidate)
+                       .count() > _Members.size() / 2;
+    }
+
+    public boolean isMajorAccept(long accept)
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.accept() >= accept)
+                       .count() > _Members.size() / 2;
+    }
+
+    public boolean isMajorConfirm()
+    {
+        return _Members.values()
+                       .stream()
+                       .filter(machine->machine.isInState(JOINT))
+                       .count() > _Members.size() / 2;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(_Name + "{");
+        _Members.forEach((k, v)->sb.append(format("#%x->%s\n", k, v.toPrimary())));
+        return sb.append('}')
+                 .toString();
+    }
+
+    public String name()
+    {
+        return _Name;
+    }
+
+    public static RaftGraph create(String name)
+    {
+        return new RaftGraph(name);
     }
 
     /**
-     * @param peer
+     * 联合一致发生时old_leader与new_leader结果上是相同的
+     * old_leader 必然包含在 joint_graph 中, 由raft的变更流程保障
+     * old_leader 发布转换状态指令,  joint_graph 开始执行选举流程。
+     * <p>
+     * self ∈ left && self ∈ right 返回并集
+     * self ∈ left && self ∉ right 返回 left
+     * self ∉ left && self ∈ right 返回 right
+     * self ∉ left && self ∉ right 返回 null
      */
-    public void remove(long peer)
+    public static Map<Long, IRaftMachine> join(long self, RaftGraph left, RaftGraph right)
     {
-        _NodeMap.remove(peer);
-    }
-
-    public NavigableMap<Long, RaftMachine> getNodeMap()
-    {
-        return _NodeMap;
-    }
-
-    public void append(RaftMachine machine)
-    {
-        _NodeMap.putIfAbsent(machine.getPeerId(), machine);
-    }
-
-    @JsonIgnore
-    public boolean isMajorAcceptCandidate(long candidate, long term)
-    {
-        return _NodeMap.values()
-                       .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
-                       .count() > _NodeMap.size() / 2;
-    }
-
-    @JsonIgnore
-    public boolean isMajorAcceptLeader(long leader, long term, long index)
-    {
-        return _NodeMap.values()
-                       .stream()
-                       .filter(machine->machine.getTerm() == term && machine.getApplied() >= index &&
-                                        machine.getLeader() == leader)
-                       .count() > _NodeMap.size() / 2;
-    }
-
-    @JsonIgnore
-    public boolean isMajorReject(long candidate, long term)
-    {
-        return _NodeMap.values()
-                       .stream()
-                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
-                       .count() > _NodeMap.size() / 2;
+        if(!left._Members.isEmpty() && !right._Members.isEmpty()) {
+            if(left._Members.containsKey(self) && right._Members.containsKey(self)) {
+                Map<Long, IRaftMachine> union = new TreeMap<>();
+                left._Members.forEach(union::putIfAbsent);
+                right._Members.forEach(union::putIfAbsent);
+                return union;
+            }
+        }
+        else if(left._Members.isEmpty() && !right._Members.isEmpty() && right._Members.containsKey(self)) {
+            return right._Members;
+        }
+        else if(right._Members.isEmpty() && !left._Members.isEmpty() && left._Members.containsKey(self)) {
+            return left._Members;
+        }
+        return null;
     }
 
 }

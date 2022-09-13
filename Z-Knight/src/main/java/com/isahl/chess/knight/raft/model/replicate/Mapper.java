@@ -25,18 +25,23 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.*;
+import javax.cache.CacheManager;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +57,7 @@ import java.util.stream.Stream;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.TERM_NAN;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
 import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
 public class Mapper
@@ -62,11 +68,10 @@ public class Mapper
     private final String                    _LogDataDir;
     private final String                    _LogMetaDir;
     private final String                    _SnapshotDir;
-    private final String                    _RaftConfigDir;
     private final long                      _MaxSegmentSize;
     private final TreeMap<Long, Segment>    _Index2SegmentMap          = new TreeMap<>();
-    private final IRaftConfig               _RaftConfig;
     private final TypeReference<RaftConfig> _TypeReferenceOfRaftConfig = new TypeReference<>() {};
+    private final CacheManager              _CacheManager;
 
     private          LogMeta       mLogMeta;
     private          SnapshotMeta  mSnapshotMeta;
@@ -79,11 +84,10 @@ public class Mapper
     private final    Lock          _SnapshotLock    = new ReentrantLock();
 
     @Autowired
-    public Mapper(ZRaftConfig config)
+    public Mapper(ZRaftConfig config, CacheManager cacheManager)
     {
         String baseDir = config.getBaseDir();
-        _RaftConfig = config;
-        _RaftConfigDir = String.format("%s%s.conf", baseDir, File.separator);
+        _CacheManager = cacheManager;
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
         _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
@@ -91,13 +95,10 @@ public class Mapper
     }
 
     @PostConstruct
-    private void init()
+    private void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        File file = new File(_RaftConfigDir);
-        if(!file.exists() && !file.mkdirs()) {
-            throw new SecurityException(String.format("%s check mkdir authority", _RaftConfigDir));
-        }
-        file = new File(_LogMetaDir);
+        EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(30, SECONDS));
+        File file = new File(_LogMetaDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
         }
@@ -115,32 +116,36 @@ public class Mapper
                 _Index2SegmentMap.put(segment.getStartIndex(), segment);
             }
         }
-        String metaFileName = _LogMetaDir + File.separator + ".metadata";
+        String logMetaName = _LogMetaDir + File.separator + ".metadata";
         try {
-            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mLogMeta = LogMeta.loadFromFile(metaFile);
+            RandomAccessFile metaFile = new RandomAccessFile(logMetaName, "rw");
+            mLogMeta = BaseMeta.from(metaFile, LogMeta::new);
+            if(mLogMeta == null) {
+                mLogMeta = new LogMeta();
+                mLogMeta.ofFile(metaFile);
+            }
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name: %s", metaFileName);
-        }
-        metaFileName = _SnapshotDir + File.separator + ".metadata";
-        try {
-            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mSnapshotMeta = SnapshotMeta.loadFromFile(metaFile);
-        }
-        catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name: %s", metaFileName);
-        }
-        File configFile = getConfigFile();
-        try {
-            FileInputStream fis = new FileInputStream(configFile);
-            _RaftConfig.update(JsonUtil.readValue(fis, _TypeReferenceOfRaftConfig));
-        }
-        catch(FileNotFoundException e) {
-            _Logger.warning("config file not exist, name: %s", configFile.getName());
+            _Logger.warning("log meta file not exist, name: %s", logMetaName);
         }
         catch(IOException e) {
-            _Logger.warning("update config failed", e);
+            _Logger.warning("log meta load file error", e);
+        }
+
+        String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
+        try {
+            RandomAccessFile metaFile = new RandomAccessFile(snapshotMetaName, "rw");
+            mSnapshotMeta = BaseMeta.from(metaFile, SnapshotMeta::new);
+            if(mSnapshotMeta == null) {
+                mSnapshotMeta = new SnapshotMeta();
+                mSnapshotMeta.ofFile(metaFile);
+            }
+        }
+        catch(FileNotFoundException e) {
+            _Logger.warning("meta file not exist, name: %s", snapshotMetaName);
+        }
+        catch(IOException e) {
+            _Logger.warning("snapshot meta load file error", e);
         }
         if(checkState()) {
             installSnapshot();
@@ -157,30 +162,7 @@ public class Mapper
     {
         mLogMeta.close();
         mSnapshotMeta.close();
-        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
-        try {
-            File configFile = new File(configFileName);
-            if(configFile.exists() || configFile.createNewFile()) {
-                JsonUtil.writeValueWithFile(_RaftConfig.getConfig(), configFile);
-            }
-        }
-        catch(IOException e) {
-            _Logger.warning("config file create & write ", e);
-        }
         _Logger.debug("raft dao dispose");
-    }
-
-    private File getConfigFile()
-    {
-        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
-        return new File(configFileName);
-    }
-
-    @Override
-    public void loadDefaultGraphSet()
-    {
-        mLogMeta.setPeerSet(_RaftConfig.getPeers());
-        mLogMeta.setGateSet(_RaftConfig.getGates());
     }
 
     @Override
@@ -188,7 +170,6 @@ public class Mapper
     {
         mLogMeta.flush();
         mSnapshotMeta.flush();
-        JsonUtil.writeValueWithFile(_RaftConfig.getConfig(), getConfigFile());
     }
 
     @Override
@@ -242,7 +223,7 @@ public class Mapper
     public long getEntryTerm(long index)
     {
         LogEntry entry = getEntry(index);
-        return entry == null ? TERM_NAN : entry.getTerm();
+        return entry == null ? TERM_NAN : entry.term();
     }
 
     @Override
@@ -252,14 +233,14 @@ public class Mapper
     }
 
     @Override
-    public void updateLogIndexAndTerm(long index, long term)
+    public void updateIndexAtTerm(long index, long term)
     {
         mLogMeta.setIndex(index);
         mLogMeta.setIndexTerm(term);
     }
 
     @Override
-    public void updateLogCommit(long commit)
+    public void updateCommit(long commit)
     {
         mLogMeta.setCommit(commit);
         mSnapshotMeta.setCommit(commit);
@@ -273,15 +254,9 @@ public class Mapper
     }
 
     @Override
-    public void updateCandidate(long candidate)
+    public void updateAccept(long applied)
     {
-        mLogMeta.setCandidate(candidate);
-    }
-
-    @Override
-    public void updateLogApplied(long applied)
-    {
-        mLogMeta.setApplied(applied);
+        mLogMeta.setAccept(applied);
     }
 
     @Override
@@ -303,24 +278,24 @@ public class Mapper
     {
         File dataDir = new File(_LogDataDir);
         if(!dataDir.isDirectory()) {throw new IllegalArgumentException("_LogDataDir doesn't point to a directory");}
-        File[] subs = dataDir.listFiles();
-        if(subs != null) {
-            return Stream.of(subs)
-                         .filter(sub->!sub.isDirectory())
-                         .map(sub->{
+        File[] subFiles = dataDir.listFiles();
+        if(subFiles != null) {
+            return Stream.of(subFiles)
+                         .filter(subFile->!subFile.isDirectory())
+                         .map(subFile->{
                              try {
-                                 String fileName = sub.getName();
+                                 String fileName = subFile.getName();
                                  _Logger.debug("sub:%s", fileName);
                                  Matcher matcher = SEGMENT_NAME_PATTERN.matcher(fileName);
                                  if(matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
-                                     long end = Long.parseLong(matcher.group(2));
                                      String g3 = matcher.group(3);
                                      boolean canWrite = SEGMENT_SUFFIX_WRITE.equalsIgnoreCase(g3);
-                                     return new Segment(sub, start, end, canWrite);
+                                     return new Segment(subFile, start, canWrite);
                                  }
                              }
-                             catch(IOException | IllegalArgumentException e) {
+                             catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException |
+                                   IllegalAccessException e) {
                                  e.printStackTrace();
                              }
                              return null;
@@ -359,9 +334,8 @@ public class Mapper
         _Logger.debug("wait to append %s", entry);
         if(entry == null) {return false;}
         long newEndIndex = getEndIndex() + 1;
-        if(entry.getIndex() == newEndIndex) {
-            byte[] data = entry.encode();
-            int size = data.length + 4;
+        if(entry.index() == newEndIndex) {
+            int size = entry.sizeOf();
             boolean needNewFile = false;
             if(_Index2SegmentMap.isEmpty()) {
                 needNewFile = true;
@@ -378,7 +352,7 @@ public class Mapper
                     segment.freeze();
                 }
             }
-            Segment targetSegment = null;
+            Segment segment = null;
             if(needNewFile) {
                 String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
                 _Logger.info("new segment file :%s", newFileName);
@@ -386,29 +360,29 @@ public class Mapper
                 if(!newFile.exists()) {
                     try {
                         if(newFile.createNewFile()) {
-                            targetSegment = new Segment(newFile, newEndIndex, 0, true);
-                            _Index2SegmentMap.put(newEndIndex, targetSegment);
+                            segment = new Segment(newFile, newEndIndex, true);
+                            _Index2SegmentMap.put(newEndIndex, segment);
                         }
                         else {throw new IOException("create file failed");}
                     }
-                    catch(IOException e) {
+                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
                         _Logger.warning("create segment file failed %s", e, newFileName);
                         return false;
                     }
                 }
             }
             else {
-                targetSegment = _Index2SegmentMap.lastEntry()
-                                                 .getValue();
+                segment = _Index2SegmentMap.lastEntry()
+                                           .getValue();
             }
-            if(targetSegment != null) {
-                targetSegment.add(data, entry);
+            if(segment != null && segment.add(entry)) {
                 vTotalSize += size;
-                _Logger.debug("append ok: %d", newEndIndex);
+                mLogMeta.accept(entry);
+                _Logger.debug("append ok [%d]", newEndIndex);
                 return true;
             }
         }
-        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
+        _Logger.warning("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
         return false;
     }
 
@@ -444,9 +418,7 @@ public class Mapper
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
         updateLogStart(newActualFirstIndex);
-        _Logger.debug("Truncating log from old first index %d to new first index %d",
-                      oldFirstIndex,
-                      newActualFirstIndex);
+        _Logger.debug("Truncating log from old first index %d to new first index %d", oldFirstIndex, newActualFirstIndex);
     }
 
     @Override
@@ -461,8 +433,8 @@ public class Mapper
             try {
                 if(newEndIndex == segment.getEndIndex()) {
                     LogEntry newEndEntry = getEntry(newEndIndex);
-                    // 此时entry 不会为null, 无需此处直接操作log meta.由上层逻辑负责更新
-                    _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.getIndex(), newEndEntry.getTerm());
+                    _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.index(), newEndEntry.term());
+                    mLogMeta.accept(newEndEntry);
                     return newEndEntry;
                 }
                 else if(newEndIndex < segment.getStartIndex()) {
@@ -509,6 +481,12 @@ public class Mapper
     }
 
     @Override
+    public SnapshotEntry getSnapshot()
+    {
+        return null;
+    }
+
+    @Override
     public long getTotalSize()
     {
         return vTotalSize;
@@ -546,7 +524,6 @@ public class Mapper
         mLogMeta.reset();
         mSnapshotMeta.reset();
         clearSegments();
-        loadDefaultGraphSet();
         flushAll();
     }
 }

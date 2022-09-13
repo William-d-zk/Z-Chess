@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.14-SNAPSHOT</version>
+    <version>1.0.15</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -50,6 +50,54 @@
         <url>git@github.com:William-d-zk/Z-Chess.git</url>
         <tag>R1.0.3</tag>
     </scm>
+    <properties>
+        <!--RT-->
+        <java.version>17</java.version>
+        <java.encoding>UTF-8</java.encoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
+        <!--LOG-->
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
+        <!--SPRING-BOOT-->
+        <spring-boot.version>2.7.3</spring-boot.version>
+        <!--Commons-IO-->
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-codec.version>1.15</commons-codec.version>
+        <commons-compress.version>1.21</commons-compress.version>
+        <!--DB-->
+        <sqlite.driver.version>3.36.0.3</sqlite.driver.version>
+        <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
+        <postgresql.driver.version>42.4.2</postgresql.driver.version>
+        <hibernate-types-52.version>2.16.3</hibernate-types-52.version>
+
+        <!--PIPELINE-->
+        <disruptor.version>3.4.4</disruptor.version>
+        <!--TOOLS-->
+        <httpcore-nio.version>4.4.15</httpcore-nio.version>
+        <!--TEST TOOLS VERSION-->
+        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <junit.platform.verssion>1.8.2</junit.platform.verssion>
+        <mockito.version>4.6.1</mockito.version>
+        <!--CACHE-->
+        <ehcache.version>3.10.0</ehcache.version>
+        <jcache.version>1.1.1</jcache.version>
+        <!--JSON-->
+        <jackson.version>2.13.3</jackson.version>
+        <json-schema-validator.version>1.0.71</json-schema-validator.version>
+        <!--PLUGINS-->
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+        <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+        <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
+        <hibernate-enhance-maven-plugin.version>6.1.1.Final</hibernate-enhance-maven-plugin.version>
+        <maven.compiler.debug>true</maven.compiler.debug>
+    </properties>
     <profiles>
         <profile>
             <id>run</id>
@@ -140,21 +188,12 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                        <version>${maven-gpg-plugin.version}</version>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>1.6.13</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>oss</serverId>
@@ -165,31 +204,14 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <configuration>
-                            <show>private</show>
-                            <nohelp>true</nohelp>
-                            <charset>UTF-8</charset>
-                            <encoding>UTF-8</encoding>
-                            <docencoding>UTF-8</docencoding>
-                            <doclint>none</doclint>
-                            <detectOfflineLinks>false</detectOfflineLinks>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                        <version>${maven-javadoc-plugin.version}</version>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
     <modules>
+        <module>Z-Board</module>
         <module>Z-King</module>
         <module>Z-Queen</module>
         <module>Z-Bishop</module>
@@ -201,47 +223,7 @@
         <module>Z-Audience</module>
         <module>Z-Arena</module>
     </modules>
-    <properties>
-        <!--RT-->
-        <java.version>16</java.version>
-        <java.encoding>UTF-8</java.encoding>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
-        <!--LOG-->
-        <slf4j.version>1.7.32</slf4j.version>
-        <logback.version>1.2.5</logback.version>
-        <!--SPRING-BOOT-->
-        <spring-boot.version>2.5.6</spring-boot.version>
-        <!--Commons-IO-->
-        <commons-io.version>2.11.0</commons-io.version>
-        <commons-codec.version>1.15</commons-codec.version>
-        <!--DB-->
-        <sqlite.driver.version>3.36.0.3</sqlite.driver.version>
-        <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
-        <postgresql.driver.version>42.2.24</postgresql.driver.version>
-        <hibernate-types-52.version>2.12.1</hibernate-types-52.version>
 
-        <!--PIPELINE-->
-        <disruptor.version>3.4.4</disruptor.version>
-        <!--TOOLS-->
-        <httpcore-nio.version>4.4.14</httpcore-nio.version>
-        <!--TEST TOOLS VERSION-->
-        <junit.jupiter.version>5.8.1</junit.jupiter.version>
-        <junit.platform.verssion>1.8.1</junit.platform.verssion>
-        <mockito.version>3.12.4</mockito.version>
-        <!--CACHE-->
-        <ehcache.version>3.9.6</ehcache.version>
-        <jcache.version>1.1.1</jcache.version>
-        <!--JSON-->
-        <jackson.version>2.12.5</jackson.version>
-        <json-schema-validator.version>1.0.60</json-schema-validator.version>
-        <!--SECURITY-->
-        <jjwt.version>0.11.2</jjwt.version>
-        <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
-        <spring-security-oauth2-autoconfigure.version>2.5.5</spring-security-oauth2-autoconfigure.version>
-        <spring-security-oauth2.version>2.5.1.RELEASE</spring-security-oauth2.version>
-    </properties>
     <dependencies>
         <!--Log-->
         <dependency>
@@ -255,6 +237,10 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-access</artifactId>
         </dependency>
         <!--Test-->
         <dependency>
@@ -296,6 +282,11 @@
                 <artifactId>logback-core</artifactId>
                 <version>${logback.version}</version>
             </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-access</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
             <!--IO-->
             <dependency>
                 <groupId>commons-io</groupId>
@@ -306,6 +297,11 @@
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
             </dependency>
             <!--SpringBoot-->
             <dependency>
@@ -357,53 +353,71 @@
                 <version>${spring-boot.version}</version>
                 <optional>true</optional>
             </dependency>
-            <!--security-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-                <version>${spring-boot.version}</version>
+            <!--LOW_CODE_ERUPT-->
+            <dependency><!--用户权限管理-->
+                <groupId>xyz.erupt</groupId>
+                <artifactId>erupt-upms</artifactId>
+                <version>${erupt.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.pdfbox</groupId>
+                        <artifactId>pdfbox</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.santuario</groupId>
+                        <artifactId>xmlsec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.xmlgraphics</groupId>
+                        <artifactId>batik-svgbrowser</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.xmlgraphics</groupId>
+                        <artifactId>xmlgraphics-commons</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-oauth2-client</artifactId>
-                <version>${spring-boot.version}</version>
+            <dependency><!--接口数据安全-->
+                <groupId>xyz.erupt</groupId>
+                <artifactId>erupt-security</artifactId>
+                <version>${erupt.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-                <version>${spring-boot.version}</version>
+            <dependency><!--后台WEB界面-->
+                <groupId>xyz.erupt</groupId>
+                <artifactId>erupt-web</artifactId>
+                <version>${erupt.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-tomcat</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+            <!--magic-api-->
             <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-jwt</artifactId>
-                <version>${spring-security-jwt.version}</version>
+                <groupId>xyz.erupt</groupId>
+                <artifactId>erupt-magic-api</artifactId>
+                <version>${erupt.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-text</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-collections</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth.boot</groupId>
-                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
-                <version>${spring-security-oauth2-autoconfigure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth</groupId>
-                <artifactId>spring-security-oauth2</artifactId>
-                <version>${spring-security-oauth2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <!--postgresql DB-->
+            <!--Postgresql DB-->
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
@@ -528,11 +542,68 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven-clean-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <show>private</show>
+                        <nohelp>true</nohelp>
+                        <charset>UTF-8</charset>
+                        <encoding>UTF-8</encoding>
+                        <docencoding>UTF-8</docencoding>
+                        <doclint>none</doclint>
+                        <detectOfflineLinks>false</detectOfflineLinks>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.8</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>oss</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven-source-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -546,17 +617,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${maven-resources-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
+                <version>${maven-install-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
+                <version>${maven-deploy-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default-deploy</id>
@@ -570,7 +641,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

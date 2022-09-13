@@ -25,9 +25,9 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.pawn.endpoint.device.api.db.model.ShadowEntity;
-import com.isahl.chess.pawn.endpoint.device.api.features.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -38,9 +38,8 @@ import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static java.lang.Math.min;
 
 /**
  * @author william.d.zk
@@ -52,11 +51,13 @@ public class MixOpenService
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     private final IDeviceService _DeviceService;
+    private final IStateService  _StateService;
 
     @Autowired
-    public MixOpenService(IDeviceService deviceService)
+    public MixOpenService(IDeviceService deviceService, IStateService stateService)
     {
         _DeviceService = deviceService;
+        _StateService = stateService;
     }
 
     public DeviceEntity newDevice(DeviceEntity device)
@@ -109,27 +110,21 @@ public class MixOpenService
 
     public List<DeviceDo> getOnlineDevice(Pageable pageable)
     {
-        return shadows2DeviceDo(_DeviceService.getOnlineDevices(null, pageable));
+        List<Long> sessions = _StateService.listIndex();
+        return sessions.subList((int) pageable.getOffset(),
+                                min(sessions.size(),
+                                    (int) pageable.next()
+                                                  .getOffset()))
+                       .stream()
+                       .map(deviceIdx->DeviceDo.of(_StateService.getClient(deviceIdx)))
+                       .toList();
     }
 
-    private List<DeviceDo> shadows2DeviceDo(List<ShadowEntity> shadows)
+    public List<DeviceDo> getStorageDevice(Pageable pageable)
     {
-        if(shadows == null || shadows.isEmpty()) {return new LinkedList<>();}
-        List<DeviceEntity> devices = _DeviceService.findDevicesIn(shadows.stream()
-                                                                         .map(ShadowEntity::getDeviceId)
-                                                                         .collect(Collectors.toList()));
-        return devices.stream()
-                      .map(DeviceDo::of)
-                      .collect(Collectors.toList());
+        return _StateService.listStorages(pageable)
+                            .stream()
+                            .map(se->DeviceDo.of(se.client()))
+                            .toList();
     }
-
-    public List<DeviceDo> getOnlineDevicesGroupByUsername(String username, Pageable pageable)
-    {
-        if(isBlank(username)) {return getOnlineDevice(pageable);}
-        return shadows2DeviceDo(_DeviceService.getOnlineDevices((Specification<ShadowEntity>) (r, q, builder)->{
-            return q.where(builder.equal(r.get("username"), username))
-                    .getRestriction();
-        }, pageable));
-    }
-
 }

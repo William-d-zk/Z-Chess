@@ -42,7 +42,6 @@ import java.util.Map;
 public class IoConsumerConfig
         implements IAioConfig
 {
-
     private Map<String, Integer> sizePowers;
     private SocketConfig         consumer;
     private SocketConfig         internal;

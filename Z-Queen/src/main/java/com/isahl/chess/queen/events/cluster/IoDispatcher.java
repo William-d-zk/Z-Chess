@@ -27,15 +27,14 @@ import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.config.QueenCode;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
@@ -71,7 +70,7 @@ public class IoDispatcher
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -81,91 +80,71 @@ public class IoDispatcher
     {
         IError.Type errorType = event.getErrorType();
         switch(errorType) {
-            case ACCEPT_FAILED:
-            case CONNECT_FAILED:
-                IPair connectFailedContent = event.getContent();
-                Throwable throwable = connectFailedContent.getFirst();
-                IConnectActivity connectActive = connectFailedContent.getSecond();
-                error(getNextPipe(connectActive.getMode()),
-                      errorType,
-                      new Pair<>(throwable, connectActive),
-                      event.getEventOp());
-                break;
-            case CONSISTENCY_REJECT:
-                IPair consistencyRejected = event.getContent();
-                IControl reject = consistencyRejected.getFirst();
-                _Logger.debug("consistency reject: %s", consistencyRejected);
-                ISession session = consistencyRejected.getSecond();
-                IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
+            case ACCEPT_FAILED, CONNECT_FAILED -> {
+                _Logger.warning("connection build failed");
+                IPair content = event.getContent();
+                Throwable throwable = content.getFirst();
+                IConnectActivity connector = content.getSecond();
+                error(getNextPipe(connector.getMode()), errorType, new Pair<>(throwable, connector), event.getEventOp());
+            }
+            case CONSISTENCY_REJECT -> {
+                IPair content = event.getContent();
+                Throwable throwable = content.getFirst();
+                _Logger.debug("consistency reject: %s", content);
+                ISession session = content.getSecond();
+                IOperator<Throwable, ISession, IPair> op = event.getEventOp();
                 if(!session.isClosed()) {
-                    IPair result = errorOperator.handle(null, session);
-                    error(getNextPipe(session.getMode()),
-                          INITIATIVE_CLOSE,
-                          new Pair<>(QueenCode.ERROR_CLOSE, session),
-                          result.getSecond());
+                    IPair result = op.handle(throwable, session);
+                    error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, Pair.of(throwable, session), result.getSecond());
                 }
-                break;
-            case NO_ERROR:
+            }
+            case NO_ERROR -> {
                 switch(event.getEventType()) {
                     case CONNECTED, ACCEPTED -> {
-                        _Logger.trace("connected");
+                        _Logger.debug("connected");
                         IPair connectContent = event.getContent();
-                        connectActive = connectContent.getFirst();
+                        IConnectActivity connector = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
-                        publish(getNextPipe(connectActive.getMode()),
-                                event.getEventType(),
-                                new Pair<>(connectActive, channel),
-                                connectOperator);
+                        publish(getNextPipe(connector.getMode()), event.getEventType(), Pair.of(connector, channel), connectOperator);
                     }
                     case READ -> {
-                        _Logger.trace("read");
-                        IPair readContent = event.getContent();
-                        session = readContent.getSecond();
-                        publish(dispatchWorker(session.hashCode()),
-                                IOperator.Type.DECODE,
-                                readContent,
-                                event.getEventOp());
+                        _Logger.debug("read");
+                        IPair content = event.getContent();
+                        ISession session = content.getSecond();
+                        publish(dispatchWorker(session.hashCode()), IOperator.Type.DECODE, content, event.getEventOp());
                     }
                     case WROTE -> {
-                        _Logger.trace("wrote");
+                        _Logger.debug("wrote");
                         IPair wroteContent = event.getContent();
                         publish(_IoWrote, IOperator.Type.WROTE, wroteContent, event.getEventOp());
                     }
                     case LOCAL_CLOSE -> {
-                        _Logger.trace("local close");
-                        IPair closeContent = event.getContent();
-                        session = closeContent.getSecond();
+                        _Logger.debug("local close");
+                        IPair content = event.getContent();
+                        ISession session = content.getSecond();
                         if(!session.isClosed()) {
-                            error(getNextPipe(session.getMode()),
-                                  INITIATIVE_CLOSE,
-                                  new Pair<>(QueenCode.LOCAL_CLOSE, session),
-                                  event.getEventOp());
+                            error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, Pair.of(new ZException("initiative close"), session), event.getEventOp());
                         }
                     }
                     default -> _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
                 }
-                break;
-            default:
+            }
+            default -> {
                 /* 未指定类型的错误 来自Decoded/Encoded Dispatcher */
-                errorOperator = event.getEventOp();
-                IPair errorContent = event.getContent();
-                throwable = errorContent.getFirst();
-                session = errorContent.getSecond();
-                _Logger.warning("error %s @ %s, → mapping handler [close] \n",
-                                throwable,
-                                errorType.getMsg(),
-                                session.summary());
+                IOperator<Throwable, ISession, IPair> op = event.getEventOp();
+                IPair content = event.getContent();
+                Throwable throwable = content.getFirst();
+                ISession session = content.getSecond();
+                _Logger.warning("error %s @ %s, → mapping handler [close] \n", throwable, errorType.getMsg(), session.summary());
                 if(!session.isClosed()) {
-                    IPair result = errorOperator.handle(throwable, session);
-                    error(getNextPipe(session.getMode()),
-                          PASSIVE_CLOSE,
-                          new Pair<>(QueenCode.ERROR_CLOSE, session),
-                          result.getSecond());
+                    IPair result = op.handle(throwable, session);
+                    error(getNextPipe(session.getMode()), PASSIVE_CLOSE, Pair.of(throwable, session), result.getSecond());
                 }
-                break;
+
+            }
+
         }
-        event.reset();
     }
 
     private RingBuffer<QEvent> dispatchWorker(int code)
@@ -179,7 +158,7 @@ public class IoDispatcher
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

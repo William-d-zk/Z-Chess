@@ -25,8 +25,11 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
 
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
+/**
+ * @author william.d.zk
+ */
 public interface IPipeFilter
 {
     <O extends IProtocol> Pair<IFilter.ResultType, IPContext> pipeSeek(IPContext context, O output);

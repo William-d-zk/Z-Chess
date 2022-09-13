@@ -31,5 +31,5 @@ import com.isahl.chess.queen.db.model.IStorage;
  */
 public interface IClusterTimer
 {
-    <T extends IStorage> void trigger(T content);
+    <T extends IStorage> void timeTrigger(T content);
 }

@@ -33,10 +33,11 @@ import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.isahl.chess.king.base.features.IError.Type.HANDLE_DATA;
@@ -63,7 +64,7 @@ public class WriteDispatcher
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
@@ -94,36 +95,27 @@ public class WriteDispatcher
                 case NULL, IGNORE -> {
                 }
                 case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
-                    IPair writeContent = event.getContent();
-                    _Logger.debug("content:%s,%s", writeContent, event.getEventType());
-                    IControl cmd = writeContent.getFirst();
-                    ISession session = writeContent.getSecond();
-                    if(cmd.isShutdown()) {
-                        if(!session.isValid()) {
-                            error(_Error,
-                                  INITIATIVE_CLOSE,
-                                  new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getError());
+                    IPair content = event.getContent();
+                    _Logger.debug("content:%s,%s", content, event.getEventType());
+                    IProtocol cmd = content.getFirst();
+                    ISession session = content.getSecond();
+                    if(session != null) {
+                        try {
+                            cmd.transfer();
+                            publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), session.encoder());
+                        }
+                        catch(IOException | ZException e) {
+                            error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
                         }
                     }
-                    else {
-                        publish(dispatchEncoder(session.hashCode()),
-                                IOperator.Type.WRITE,
-                                new Pair<>(cmd, session),
-                                session.getEncoder());
-
-                    }
                 }
-                case WROTE// from io-wrote
-                        -> {
-                    IPair wroteContent = event.getContent();
-                    int wroteCount = wroteContent.getFirst();
-                    ISession session = wroteContent.getSecond();
-                    if(session.isValid()) {
-                        publish(dispatchEncoder(session.hashCode()),
-                                IOperator.Type.WROTE,
-                                new Pair<>(wroteCount, session),
-                                event.getEventOp());
+                // from io-wrote
+                case WROTE -> {
+                    IPair content = event.getContent();
+                    int count = content.getFirst();
+                    ISession session = content.getSecond();
+                    if(session != null) {
+                        publish(dispatchEncoder(session.hashCode()), IOperator.Type.WROTE, Pair.of(count, session), event.getEventOp());
                     }
                 }
                 /*
@@ -131,42 +123,29 @@ public class WriteDispatcher
                  * DISPATCH:logic->batch->dispatch
                  */
                 case LOGIC, DISPATCH -> {
-                    List<ITriple> writeContents = event.getContentList();
-                    for(ITriple content : writeContents) {
-                        IControl command = content.getFirst();
+                    List<ITriple> contents = event.getContentList();
+                    for(ITriple content : contents) {
+                        IProtocol cmd = content.getFirst();
                         ISession session = content.getSecond();
-                        if(command.isShutdown()) {
-                            if(session != null && session.isValid()) {
-                                error(_Error,
-                                      INITIATIVE_CLOSE,
-                                      new Pair<>(new ZException("session to shutdown"), session),
-                                      session.getError());
+                        _Logger.debug("→ %s", content);
+                        if(session != null) {
+                            try {
+                                cmd.transfer();
+                                publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), content.getThird());
                             }
-                            /*
-                             * session == null 意味着 _SessionManager.find..失败
-                             * !session.isValid 意味着 session 已经被关闭
-                             * 这两种情形都忽略执行即可
-                             */
-                            else {
-                                _Logger.warning("dispatch failed [ %s ]", session);
+                            catch(IOException | ZException e) {
+                                error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
                             }
-                        }
-                        else {
-                            publish(dispatchEncoder(session.hashCode()),
-                                    IOperator.Type.WRITE,
-                                    new Pair<>(command, session),
-                                    content.getThird());
                         }
                     }
                 }
                 default -> {}
             }
         }
-        event.reset();
     }
 
     @Override
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

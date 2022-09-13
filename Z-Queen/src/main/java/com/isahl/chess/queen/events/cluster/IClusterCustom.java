@@ -24,11 +24,11 @@
 package com.isahl.chess.queen.events.cluster;
 
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.routes.IMappingCustom;
-import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
+import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 
 import java.util.List;
 
@@ -44,11 +44,11 @@ public interface IClusterCustom<T extends IStorage>
      * Cluster.Follower check leader available,timeout -> start vote
      * Cluster.Candidate check elector response,timeout -> restart vote
      *
-     * @param manager
-     * @param content
-     * @return
+     * @param manager session-manager
+     * @param machine cluster-state-machine
+     * @return cluster result list of {fst:content,snd:session,trd:encoder}
      */
-    List<ITriple> onTimer(ISessionManager manager, T content);
+    List<ITriple> onTimer(IManager manager, T machine);
 
     /**
      * Link → Cluster.consistent(Link.consensus_data,consensus_data.origin)
@@ -56,19 +56,22 @@ public interface IClusterCustom<T extends IStorage>
      * @param manager session 管理器
      * @param request 需要进行强一致的指令
      * @param origin  指令的发起者编号；一致性完成时需要回溯
-     * @return triples first:request,second:session[cluster|single::linker],third:operator
-     * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
+     * @param factory request 的构建器编号
+     * @return triples
+     * fst:request
+     * snd:session[cluster|single::linker]
+     * trd:operator[session.encoder]
      */
-    <E extends IProtocol> List<ITriple> consistent(ISessionManager manager, E request, long origin);
+    List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)
      *
-     * @param manager
-     * @param topology
-     * @return
+     * @param manager  session-manager
+     * @param topology 节点信息
+     * @return list of triple → publish (write,list)
      */
-    <E extends IConsistent> List<ITriple> changeTopology(ISessionManager manager, E topology);
+    List<ITriple> change(IManager manager, IoSerial topology);
 
     /**
      * 用于验证是否需要执行集群commit
@@ -77,13 +80,5 @@ public interface IClusterCustom<T extends IStorage>
      */
     boolean waitForCommit();
 
-    /**
-     * @param result consistent protocol
-     * @return flag: need transfer → link-custom
-     */
-    boolean onConsistentCall(IConsistent result);
-
-    IConsistencyReject getReject();
-
-    void register(IConsistencyHandler handler);
+    IConsistency skipConsistency(IoSerial request, long origin);
 }

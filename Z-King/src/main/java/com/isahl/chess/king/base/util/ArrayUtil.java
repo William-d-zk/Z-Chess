@@ -60,10 +60,10 @@ public interface ArrayUtil
         return pos >= 0 ? a : setAdd(_l, a, -1 - pos);
     }
 
-    static long[] setSortAdd(long _l, long[] a, long prefix)
+    static long[] setSortAdd(long _l, long[] a, long mask)
     {
         if(a == null) {return new long[]{ _l };}
-        int pos = binarySearch0(a, _l, prefix);
+        int pos = binarySearch0(a, _l, mask);
         return pos >= 0 ? a : setAdd(_l, a, -1 - pos);
     }
 
@@ -82,7 +82,7 @@ public interface ArrayUtil
         return t;
     }
 
-    static int binarySearch0(long[] a, long key, long prefix)
+    static int binarySearch0(long[] a, long key, long mask)
     {
         Objects.requireNonNull(a);
         int low = 0;
@@ -90,7 +90,7 @@ public interface ArrayUtil
 
         while(low <= high) {
             int mid = (low + high) >>> 1;
-            long midVal = a[mid] & prefix;
+            long midVal = a[mid] & mask;
 
             if(midVal < key) {low = mid + 1;}
             else if(midVal > key) {high = mid - 1;}

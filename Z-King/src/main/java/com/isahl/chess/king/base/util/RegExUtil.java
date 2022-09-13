@@ -59,4 +59,14 @@ public class RegExUtil
         return String.class;
     }
 
+    public static String splitFormatter(String regex, int count)
+    {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0, size = count - 1; i < size; i++) {
+            sb.append("%s")
+              .append(regex);
+        }
+        sb.append("%s");
+        return sb.toString();
+    }
 }

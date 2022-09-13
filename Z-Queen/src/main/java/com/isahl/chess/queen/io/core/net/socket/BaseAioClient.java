@@ -43,18 +43,19 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BaseAioClient
         implements IAioClient
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
+    private final Logger _Logger;
 
     private final TimeWheel                                            _TimeWheel;
     private final AsynchronousChannelGroup                             _ChannelGroup;
     private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new HashMap<>();
 
-    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup)
+    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup, String type)
     {
         Objects.requireNonNull(timeWheel);
         Objects.requireNonNull(channelGroup);
         _TimeWheel = timeWheel;
         _ChannelGroup = channelGroup;
+        _Logger = Logger.getLogger("io.queen.client." + type);
     }
 
     private final ReentrantLock _Lock = new ReentrantLock();
@@ -66,7 +67,7 @@ public class BaseAioClient
         try {
             AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
             InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
+            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, Pair.of(0, connector));
             socketChannel.connect(remoteAddress, socketChannel, connector);
             int retryCount = 0;
             if(pair != null) {
@@ -83,14 +84,13 @@ public class BaseAioClient
     @Override
     public void onFailed(IAioConnector connector)
     {
-        _Logger.debug("connect failed: retry");
         delayConnect(connector);
     }
 
     @Override
     public void onCreated(ISession session)
     {
-        _Logger.debug("connected :%s", session);
+        _Logger.info("connected :%s", session);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BaseAioClient
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector connector = _TargetManageMap.get(remoteAddress)
                                                   .getSecond();
-        _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
+        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 

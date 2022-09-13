@@ -23,7 +23,7 @@
 package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.king.base.cron.features.ILifeCycle;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionCreated;
+import com.isahl.chess.queen.io.core.features.model.session.ICreated;
 
 /**
  * @author William.d.zk
@@ -31,8 +31,8 @@ import com.isahl.chess.queen.io.core.features.model.session.ISessionCreated;
 public interface IConnectActivity
         extends IAddress,
                 IConnectMode,
-                ISessionCreated,
-                IRespConnected,
+                ICreated,
+                IAfterConnected,
                 ILifeCycle
 {
     String getProtocol();

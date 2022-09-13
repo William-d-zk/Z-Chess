@@ -23,6 +23,7 @@
 
 package com.isahl.chess.king.base.util;
 
+import java.io.DataInput;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
@@ -37,264 +38,262 @@ import static java.lang.System.arraycopy;
  */
 public interface IoUtil
 {
-    byte[] table_byte = {
-            0x0,
-            0x7,
-            0xe,
-            0x9,
-            0x5,
-            0x2,
-            0xb,
-            0xc,
-            0xa,
-            0xd,
-            0x4,
-            0x3,
-            0xf,
-            0x8,
-            0x1,
-            0x6,
-            0xd,
-            0xa,
-            0x3,
-            0x4,
-            0x8,
-            0xf,
-            0x6,
-            0x1,
-            0x7,
-            0x0,
-            0x9,
-            0xe,
-            0x2,
-            0x5,
-            0xc,
-            0xb,
-            0x3,
-            0x4,
-            0xd,
-            0xa,
-            0x6,
-            0x1,
-            0x8,
-            0xf,
-            0x9,
-            0xe,
-            0x7,
-            0x0,
-            0xc,
-            0xb,
-            0x2,
-            0x5,
-            0xe,
-            0x9,
-            0x0,
-            0x7,
-            0xb,
-            0xc,
-            0x5,
-            0x2,
-            0x4,
-            0x3,
-            0xa,
-            0xd,
-            0x1,
-            0x6,
-            0xf,
-            0x8,
-            0x6,
-            0x1,
-            0x8,
-            0xf,
-            0x3,
-            0x4,
-            0xd,
-            0xa,
-            0xc,
-            0xb,
-            0x2,
-            0x5,
-            0x9,
-            0xe,
-            0x7,
-            0x0,
-            0xb,
-            0xc,
-            0x5,
-            0x2,
-            0xe,
-            0x9,
-            0x0,
-            0x7,
-            0x1,
-            0x6,
-            0xf,
-            0x8,
-            0x4,
-            0x3,
-            0xa,
-            0xd,
-            0x5,
-            0x2,
-            0xb,
-            0xc,
-            0x0,
-            0x7,
-            0xe,
-            0x9,
-            0xf,
-            0x8,
-            0x1,
-            0x6,
-            0xa,
-            0xd,
-            0x4,
-            0x3,
-            0x8,
-            0xf,
-            0x6,
-            0x1,
-            0xd,
-            0xa,
-            0x3,
-            0x4,
-            0x2,
-            0x5,
-            0xc,
-            0xb,
-            0x7,
-            0x0,
-            0x9,
-            0xe,
-            0xc,
-            0xb,
-            0x2,
-            0x5,
-            0x9,
-            0xe,
-            0x7,
-            0x0,
-            0x6,
-            0x1,
-            0x8,
-            0xf,
-            0x3,
-            0x4,
-            0xd,
-            0xa,
-            0x1,
-            0x6,
-            0xf,
-            0x8,
-            0x4,
-            0x3,
-            0xa,
-            0xd,
-            0xb,
-            0xc,
-            0x5,
-            0x2,
-            0xe,
-            0x9,
-            0x0,
-            0x7,
-            0xf,
-            0x8,
-            0x1,
-            0x6,
-            0xa,
-            0xd,
-            0x4,
-            0x3,
-            0x5,
-            0x2,
-            0xb,
-            0xc,
-            0x0,
-            0x7,
-            0xe,
-            0x9,
-            0x2,
-            0x5,
-            0xc,
-            0xb,
-            0x7,
-            0x0,
-            0x9,
-            0xe,
-            0x8,
-            0xf,
-            0x6,
-            0x1,
-            0xd,
-            0xa,
-            0x3,
-            0x4,
-            0xa,
-            0xd,
-            0x4,
-            0x3,
-            0xf,
-            0x8,
-            0x1,
-            0x6,
-            0x0,
-            0x7,
-            0xe,
-            0x9,
-            0x5,
-            0x2,
-            0xb,
-            0xc,
-            0x7,
-            0x0,
-            0x9,
-            0xe,
-            0x2,
-            0x5,
-            0xc,
-            0xb,
-            0xd,
-            0xa,
-            0x3,
-            0x4,
-            0x8,
-            0xf,
-            0x6,
-            0x1,
-            0x9,
-            0xe,
-            0x7,
-            0x0,
-            0xc,
-            0xb,
-            0x2,
-            0x5,
-            0x3,
-            0x4,
-            0xd,
-            0xa,
-            0x6,
-            0x1,
-            0x8,
-            0xf,
-            0x4,
-            0x3,
-            0xa,
-            0xd,
-            0x1,
-            0x6,
-            0xf,
-            0x8,
-            0xe,
-            0x9,
-            0x0,
-            0x7,
-            0xb,
-            0xc,
-            0x5,
-            0x2
-    };
+    byte[] table_byte = { 0x0,
+                          0x7,
+                          0xe,
+                          0x9,
+                          0x5,
+                          0x2,
+                          0xb,
+                          0xc,
+                          0xa,
+                          0xd,
+                          0x4,
+                          0x3,
+                          0xf,
+                          0x8,
+                          0x1,
+                          0x6,
+                          0xd,
+                          0xa,
+                          0x3,
+                          0x4,
+                          0x8,
+                          0xf,
+                          0x6,
+                          0x1,
+                          0x7,
+                          0x0,
+                          0x9,
+                          0xe,
+                          0x2,
+                          0x5,
+                          0xc,
+                          0xb,
+                          0x3,
+                          0x4,
+                          0xd,
+                          0xa,
+                          0x6,
+                          0x1,
+                          0x8,
+                          0xf,
+                          0x9,
+                          0xe,
+                          0x7,
+                          0x0,
+                          0xc,
+                          0xb,
+                          0x2,
+                          0x5,
+                          0xe,
+                          0x9,
+                          0x0,
+                          0x7,
+                          0xb,
+                          0xc,
+                          0x5,
+                          0x2,
+                          0x4,
+                          0x3,
+                          0xa,
+                          0xd,
+                          0x1,
+                          0x6,
+                          0xf,
+                          0x8,
+                          0x6,
+                          0x1,
+                          0x8,
+                          0xf,
+                          0x3,
+                          0x4,
+                          0xd,
+                          0xa,
+                          0xc,
+                          0xb,
+                          0x2,
+                          0x5,
+                          0x9,
+                          0xe,
+                          0x7,
+                          0x0,
+                          0xb,
+                          0xc,
+                          0x5,
+                          0x2,
+                          0xe,
+                          0x9,
+                          0x0,
+                          0x7,
+                          0x1,
+                          0x6,
+                          0xf,
+                          0x8,
+                          0x4,
+                          0x3,
+                          0xa,
+                          0xd,
+                          0x5,
+                          0x2,
+                          0xb,
+                          0xc,
+                          0x0,
+                          0x7,
+                          0xe,
+                          0x9,
+                          0xf,
+                          0x8,
+                          0x1,
+                          0x6,
+                          0xa,
+                          0xd,
+                          0x4,
+                          0x3,
+                          0x8,
+                          0xf,
+                          0x6,
+                          0x1,
+                          0xd,
+                          0xa,
+                          0x3,
+                          0x4,
+                          0x2,
+                          0x5,
+                          0xc,
+                          0xb,
+                          0x7,
+                          0x0,
+                          0x9,
+                          0xe,
+                          0xc,
+                          0xb,
+                          0x2,
+                          0x5,
+                          0x9,
+                          0xe,
+                          0x7,
+                          0x0,
+                          0x6,
+                          0x1,
+                          0x8,
+                          0xf,
+                          0x3,
+                          0x4,
+                          0xd,
+                          0xa,
+                          0x1,
+                          0x6,
+                          0xf,
+                          0x8,
+                          0x4,
+                          0x3,
+                          0xa,
+                          0xd,
+                          0xb,
+                          0xc,
+                          0x5,
+                          0x2,
+                          0xe,
+                          0x9,
+                          0x0,
+                          0x7,
+                          0xf,
+                          0x8,
+                          0x1,
+                          0x6,
+                          0xa,
+                          0xd,
+                          0x4,
+                          0x3,
+                          0x5,
+                          0x2,
+                          0xb,
+                          0xc,
+                          0x0,
+                          0x7,
+                          0xe,
+                          0x9,
+                          0x2,
+                          0x5,
+                          0xc,
+                          0xb,
+                          0x7,
+                          0x0,
+                          0x9,
+                          0xe,
+                          0x8,
+                          0xf,
+                          0x6,
+                          0x1,
+                          0xd,
+                          0xa,
+                          0x3,
+                          0x4,
+                          0xa,
+                          0xd,
+                          0x4,
+                          0x3,
+                          0xf,
+                          0x8,
+                          0x1,
+                          0x6,
+                          0x0,
+                          0x7,
+                          0xe,
+                          0x9,
+                          0x5,
+                          0x2,
+                          0xb,
+                          0xc,
+                          0x7,
+                          0x0,
+                          0x9,
+                          0xe,
+                          0x2,
+                          0x5,
+                          0xc,
+                          0xb,
+                          0xd,
+                          0xa,
+                          0x3,
+                          0x4,
+                          0x8,
+                          0xf,
+                          0x6,
+                          0x1,
+                          0x9,
+                          0xe,
+                          0x7,
+                          0x0,
+                          0xc,
+                          0xb,
+                          0x2,
+                          0x5,
+                          0x3,
+                          0x4,
+                          0xd,
+                          0xa,
+                          0x6,
+                          0x1,
+                          0x8,
+                          0xf,
+                          0x4,
+                          0x3,
+                          0xa,
+                          0xd,
+                          0x1,
+                          0x6,
+                          0xf,
+                          0x8,
+                          0xe,
+                          0x9,
+                          0x0,
+                          0x7,
+                          0xb,
+                          0xc,
+                          0x5,
+                          0x2 };
 
     static byte crc4itu(byte[] data)
     {
@@ -309,27 +308,26 @@ public interface IoUtil
         return crc;
     }
 
-    char[] HEX_DIGITS = {
-            '0',
-            '1',
-            '2',
-            '3',
-            '4',
-            '5',
-            '6',
-            '7',
-            '8',
-            '9',
-            'A',
-            'B',
-            'C',
-            'D',
-            'E',
-            'F'
-    };
+    char[] HEX_DIGITS = { '0',
+                          '1',
+                          '2',
+                          '3',
+                          '4',
+                          '5',
+                          '6',
+                          '7',
+                          '8',
+                          '9',
+                          'A',
+                          'B',
+                          'C',
+                          'D',
+                          'E',
+                          'F' };
 
     static String bin2Hex(byte[] b, String... split)
     {
+        if(b == null) {return null;}
         return bin2Hex(b, 0, b.length, split);
     }
 
@@ -391,11 +389,31 @@ public interface IoUtil
         return null;
     }
 
-    static String longToMacStr(long mac)
+    static String long2MacStr(long mac)
     {
-        return Long.toHexString((mac >> 40) & 0xFF) + ":" + Long.toHexString((mac >> 32) & 0xFF) + ":" +
-               Long.toHexString((mac >> 24) & 0xFF) + ":" + Long.toHexString((mac >> 16) & 0xFF) + ":" +
-               Long.toHexString((mac >> 8) & 0xFF) + ":" + Long.toHexString(mac & 0xFF) + ":";
+        return Long.toHexString((mac >> 40) & 0xFF) + ":" + Long.toHexString((mac >> 32) & 0xFF) + ":" + Long.toHexString((mac >> 24) & 0xFF) + ":" +
+               Long.toHexString((mac >> 16) & 0xFF) + ":" + Long.toHexString((mac >> 8) & 0xFF) + ":" + Long.toHexString(mac & 0xFF) + ":";
+    }
+
+    static String int2Chars(int num)
+    {
+        char[] cs = new char[4];
+        cs[0] = (char) (num >>> 24);
+        cs[1] = (char) ((num >> 16) & 0xFF);
+        cs[2] = (char) ((num >> 8) & 0xFF);
+        cs[3] = (char) (num & 0xFF);
+        return new String(cs);
+    }
+
+    static int chars2Int(char[] src)
+    {
+        if(src != null && src.length <= 4) {
+            int r = 0;
+            for(int i = 0; i < src.length; i++) {
+                r |= src[i] << (24 - 8 * i);
+            }
+        }
+        return 0;
     }
 
     static int writeIp(String ipAddr)
@@ -473,25 +491,19 @@ public interface IoUtil
             return new byte[]{ (byte) length };
         }
         else if(length < 16384) {
-            return new byte[]{
-                    (byte) (0x80 | (length & 0x7F)),
-                    (byte) (length >>> 7)
-            };
+            return new byte[]{ (byte) (0x80 | (length & 0x7F)),
+                               (byte) (length >>> 7) };
         }
         else if(length < 2097152) {
-            return new byte[]{
-                    (byte) (0x80 | (length & 0x7F)),
-                    (byte) (0x80 | (length & 0x7F80) >>> 7),
-                    (byte) (length >>> 14)
-            };
+            return new byte[]{ (byte) (0x80 | (length & 0x7F)),
+                               (byte) (0x80 | (length & 0x7F80) >>> 7),
+                               (byte) (length >>> 14) };
         }
         else if(length < 268435456) {
-            return new byte[]{
-                    (byte) (0x80 | (length & 0x7F)),
-                    (byte) (0x80 | (length & 0x7F80) >>> 7),
-                    (byte) (0x80 | (length & 0x3FC000) >>> 14),
-                    (byte) (length >>> 21)
-            };
+            return new byte[]{ (byte) (0x80 | (length & 0x7F)),
+                               (byte) (0x80 | (length & 0x7F80) >>> 7),
+                               (byte) (0x80 | (length & 0x3FC000) >>> 14),
+                               (byte) (length >>> 21) };
         }
         throw new ArrayIndexOutOfBoundsException("malformed length");
     }
@@ -541,16 +553,34 @@ public interface IoUtil
     static long readVariableLongLength(ByteBuffer buf)
     {
         long length = 0;
-        int cur;
+        int cur, pos = 0;
         if(buf.hasRemaining()) {
             do {
                 cur = buf.get();
-                length |= (cur & 0x7F);
-                if((cur & 0x80) != 0) {length <<= 7;}
+                length += (cur & 0x7F) << (pos * 7);
+                pos++;
             }
             while((cur & 0x80) != 0 && buf.hasRemaining());
         }
         return length;
+    }
+
+    static int readVariableIntLength(DataInput input)
+    {
+        int length = 0;
+        int cur, pos = 0;
+        try {
+            do {
+                cur = input.readByte();
+                length += (cur & 0x7F) << (pos * 7);
+                pos++;
+            }
+            while((cur & 0x80) != 0);
+            return length;
+        }
+        catch(Exception e) {
+            return 0;
+        }
     }
 
     static int readVariableIntLength(ByteBuffer buf)
@@ -565,7 +595,6 @@ public interface IoUtil
             }
             while((cur & 0x80) != 0 && buf.hasRemaining());
         }
-
         return length;
     }
 
@@ -598,16 +627,14 @@ public interface IoUtil
 
     static byte[] writeLong(long v)
     {
-        return new byte[]{
-                (byte) (0xFF & (v >>> 56)),
-                (byte) (0xFF & (v >>> 48)),
-                (byte) (0xFF & (v >>> 40)),
-                (byte) (0xFF & (v >>> 32)),
-                (byte) (0xFF & (v >>> 24)),
-                (byte) (0xFF & (v >>> 16)),
-                (byte) (0xFF & (v >>> 8)),
-                (byte) (0xFF & v)
-        };
+        return new byte[]{ (byte) (0xFF & (v >>> 56)),
+                           (byte) (0xFF & (v >>> 48)),
+                           (byte) (0xFF & (v >>> 40)),
+                           (byte) (0xFF & (v >>> 32)),
+                           (byte) (0xFF & (v >>> 24)),
+                           (byte) (0xFF & (v >>> 16)),
+                           (byte) (0xFF & (v >>> 8)),
+                           (byte) (0xFF & v) };
     }
 
     static byte[] writeLongArray(long... v)
@@ -663,6 +690,12 @@ public interface IoUtil
         return 1;
     }
 
+    static int writeBool(boolean v, byte[] b, int off)
+    {
+        b[off] = (byte) (v ? 1 : 0);
+        return 1;
+    }
+
     static int write(byte[] v, int src_off, byte[] b, int off, int len)
     {
         if(v == null || v.length == 0 || len == 0) {return 0;}
@@ -707,6 +740,16 @@ public interface IoUtil
         }
     }
 
+    static void addArray(byte[] src, byte[] dst, byte... add)
+    {
+        if(src != null && dst != null && dst.length >= src.length) {
+            arraycopy(src, 0, dst, 0, src.length);
+            if(add != null && add.length > 0 && dst.length >= src.length + add.length) {
+                arraycopy(add, 0, dst, src.length, add.length);
+            }
+        }
+    }
+
     static void addArray(Object[] src, Object[] dst, int pos)
     {
         if(src != null && dst != null && dst.length >= pos + src.length) {
@@ -733,15 +776,13 @@ public interface IoUtil
 
     static int readInt(byte[] src, int off)
     {
-        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 |
-               (src[off + 3] & 0xFF);
+        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 | (src[off + 3] & 0xFF);
     }
 
     static long readLong(byte[] src, int off)
     {
-        return (src[off] & 0xFFL) << 56 | (src[off + 1] & 0xFFL) << 48 | (src[off + 2] & 0xFFL) << 40 |
-               (src[off + 3] & 0xFFL) << 32 | (src[off + 4] & 0xFFL) << 24 | (src[off + 5] & 0xFFL) << 16 |
-               (src[off + 6] & 0xFFL) << 8 | (src[off + 7] & 0xFFL);
+        return (src[off] & 0xFFL) << 56 | (src[off + 1] & 0xFFL) << 48 | (src[off + 2] & 0xFFL) << 40 | (src[off + 3] & 0xFFL) << 32 |
+               (src[off + 4] & 0xFFL) << 24 | (src[off + 5] & 0xFFL) << 16 | (src[off + 6] & 0xFFL) << 8 | (src[off + 7] & 0xFFL);
     }
 
     static int readLongArray(byte[] src, int src_off, long[] dst)
@@ -770,8 +811,8 @@ public interface IoUtil
 
     static long read6BLong(byte[] src, int off)
     {
-        return (src[off] & 0xFFL) << 40 | (src[off + 1] & 0xFFL) << 32 | (src[off + 2] & 0xFFL) << 24 |
-               (src[off + 3] & 0xFFL) << 16 | (src[off + 4] & 0xFFL) << 8 | (src[off + 5] & 0xFFL);
+        return (src[off] & 0xFFL) << 40 | (src[off + 1] & 0xFFL) << 32 | (src[off + 2] & 0xFFL) << 24 | (src[off + 3] & 0xFFL) << 16 |
+               (src[off + 4] & 0xFFL) << 8 | (src[off + 5] & 0xFFL);
 
     }
 
@@ -870,7 +911,7 @@ public interface IoUtil
 
     static String longArrayToHex(long[] l)
     {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder("{");
         if(l != null) {
             for(int i = 0; i < l.length; i++) {
                 sb.append(String.format("%#x", l[i]));
@@ -879,7 +920,22 @@ public interface IoUtil
                 }
             }
         }
-        sb.append("]");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    static String longArrayToHex(Long[] l)
+    {
+        StringBuilder sb = new StringBuilder("{");
+        if(l != null) {
+            for(int i = 0; i < l.length; i++) {
+                sb.append(String.format("%#x", l[i]));
+                if(i < l.length - 1) {
+                    sb.append(',');
+                }
+            }
+        }
+        sb.append("}");
         return sb.toString();
     }
 

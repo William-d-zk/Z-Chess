@@ -32,8 +32,8 @@ import com.isahl.chess.queen.events.functions.SessionWrote;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.session.IFailed;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionError;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
@@ -112,7 +112,7 @@ public class AioWorker
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
     }
 
-    public <T> void publishWroteError(final ISessionError op,
+    public <T> void publishWroteError(final IFailed op,
                                       final IError.Type eType,
                                       final T t,
                                       final ISession session)
@@ -142,7 +142,7 @@ public class AioWorker
         publish(_Producer, op, IError.Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public <T> void publishReadError(final ISessionError op, final IError.Type eType, final T t, final ISession session)
+    public <T> void publishReadError(final IFailed op, final IError.Type eType, final T t, final ISession session)
     {
         publish(_Producer, op, eType, IOperator.Type.READ, new Pair<>(t, session));
     }

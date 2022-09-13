@@ -26,70 +26,85 @@ package com.isahl.chess.queen.events.server;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.IError;
+import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
 import java.util.List;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.DISPATCH;
 
 public interface ILogicHandler
         extends IBatchHandler<QEvent>
 {
     Logger getLogger();
 
-    ISessionManager getISessionManager();
+    IExchanger getExchanger();
 
     @Override
     default void onEvent(QEvent event, long sequence)
     {
         switch(event.getEventType()) {
-            case SERVICE -> {
-                IProtocol request = event.getContent()
-                                         .getFirst();
-                try {
-                    serviceHandle(request);
-                }
-                catch(Exception e) {
-                    getLogger().warning("service handler interface", e);
-
-                }
-                event.ignore();
-            }
-            case LOGIC -> {
-                IControl content = event.getContent()
-                                        .getFirst();
-                ISession session = event.getContent()
-                                        .getSecond();
-                if(content != null) {
-                    try {
-                        List<ITriple> responses = logicHandle(getISessionManager(), session, content);
-                        if(responses != null && !responses.isEmpty()) {
-                            event.produce(IOperator.Type.DISPATCH, responses);
-                        }
-                        else {
-                            event.ignore();
-                        }
-                    }
-                    catch(Exception e) {
-                        getLogger().warning("logic handler interface", e);
-                        event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
-                    }
-                }
-                else {
-                    event.ignore();
-                }
-            }
+            case SERVICE -> _ServiceHandle(event);
+            case LOGIC -> _LogicHandle(event);
+            case WRITE, IGNORE, NULL -> getLogger().info("ignore handler[%s]", event.getEventType());
+            default -> getLogger().warning("Unsupported type[%s] no handle, %s",
+                                           event.getEventType(),
+                                           event.getContent());
         }
     }
 
-    List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws Exception;
+    default void _LogicHandle(QEvent event)
+    {
+        IPair content = event.getContent();
+        if(content != null) {
+            IProtocol input = content.getFirst();
+            ISession session = content.getSecond();
+            IOperator<IProtocol, ISession, List<ITriple>> transfer = event.getEventOp();
+            if(transfer == null) {
+                transfer = defaultTransfer();
+            }
+            if(input != null && transfer != null) {
+                try {
+                    List<ITriple> responses = transfer.handle(input, session);
+                    if(responses != null && !responses.isEmpty()) {
+                        event.produce(DISPATCH, responses);
+                        return;
+                    }
+                }
+                catch(Exception e) {
+                    getLogger().warning("logic handler interface", e);
+                    event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
+                    return;
+                }
+            }
+        }
+        event.ignore();
+    }
 
-    default void serviceHandle(IProtocol request) throws Exception
+    default void _ServiceHandle(QEvent event)
+    {
+        IPair content = event.getContent();
+        if(content != null) {
+            IoSerial request = content.getFirst();
+            try {
+                serviceHandle(request);
+            }
+            catch(Exception e) {
+                getLogger().warning("service handler %s", e, request);
+            }
+        }
+        event.ignore();
+    }
+
+    default void serviceHandle(IoSerial request)
     {
 
     }
@@ -99,4 +114,5 @@ public interface ILogicHandler
         ILogicHandler create(int slot);
     }
 
+    IPipeTransfer defaultTransfer();
 }

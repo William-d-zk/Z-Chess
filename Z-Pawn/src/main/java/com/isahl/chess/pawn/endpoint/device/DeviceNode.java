@@ -23,9 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.ctrl.X103_Ping;
-import com.isahl.chess.bishop.io.ws.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1F_Exchange;
+import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0B_Ping;
+import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
@@ -34,30 +35,31 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
+import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.example.MixManager;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionDismiss;
 import com.isahl.chess.queen.io.core.net.socket.BaseAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 import com.isahl.chess.queen.io.core.tasks.ServerCore;
+import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
-import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 
 /**
  * @author william.d.zk
@@ -65,7 +67,7 @@ import static com.isahl.chess.king.base.cron.TimeWheel.IWheelItem.PRIORITY_NORMA
  */
 public class DeviceNode
         extends MixManager
-        implements ISessionDismiss,
+        implements IDismiss,
                    IClusterNode
 {
     private final IClusterPeer     _ClusterPeer;
@@ -73,12 +75,12 @@ public class DeviceNode
     private final IAioClient       _PeerClient;
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
-    private final X103_Ping        _PeerPing, _GatePing;
+    private final X0B_Ping         _PeerPing, _GatePing;
 
     @Override
     public void onDismiss(ISession session)
     {
-        _Logger.debug("dismiss %s", session);
+        _Logger.warning("dismiss %s", session);
         rmSession(session);
     }
 
@@ -93,13 +95,13 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
         _ClusterPeer = clusterPeer;
+
         if(raftConfig.isInCongress()) {
             RaftNode peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getHost();
             final int _PeerBindPort = peerBind.getPort();
-            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _PeerBindHost, _PeerBindPort)
-                                            .getBytes(StandardCharsets.UTF_8));
+            hosts.add(Triple.of(_PeerBindHost, _PeerBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            _PeerPing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _PeerBindHost, _PeerBindPort));
         }
         else {
             _PeerPing = null;
@@ -108,9 +110,8 @@ public class DeviceNode
             RaftNode gateBind = raftConfig.getPeerBind();
             final String _GateBindHost = gateBind.getGateHost();
             final int _GateBindPort = gateBind.getGatePort();
-            hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
-            _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ClusterPeer.getPeerId(), _GateBindHost, _GateBindPort)
-                                            .getBytes(StandardCharsets.UTF_8));
+            hosts.add(Triple.of(_GateBindHost, _GateBindPort, ZSortHolder.Z_CLUSTER_SYMMETRY));
+            _GatePing = new X0B_Ping(String.format("%#x,%s:%d", _ClusterPeer.peerId(), _GateBindHost, _GateBindPort));
         }
         else {
             _GatePing = null;
@@ -120,6 +121,8 @@ public class DeviceNode
                                final String _Host = triple.getFirst();
                                final int _Port = triple.getSecond();
                                final ZSortHolder _Holder = triple.getThird();
+                               registerFactory(_Holder.getSort()
+                                                      .getFactory());
                                return buildServer(_Host,
                                                   _Port,
                                                   getSocketConfig(_Holder.getSlot()),
@@ -130,15 +133,14 @@ public class DeviceNode
                                                   _ClusterPeer);
                            })
                            .collect(Collectors.toList());
-        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
+        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup(), "GateClient")
         {
             @Override
             public void onCreated(ISession session)
             {
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::gateHeartbeat, PRIORITY_NORMAL));
+                _TimeWheel.acquire(session, new ScheduleHandler<>(gap, true, DeviceNode.this::gateHeartbeat));
             }
 
             @Override
@@ -148,16 +150,14 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
+        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup(), "PeerClient")
         {
-
             @Override
             public void onCreated(ISession session)
             {
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::peerHeartbeat, PRIORITY_NORMAL));
+                _TimeWheel.acquire(session, new ScheduleHandler<>(gap, true, DeviceNode.this::peerHeartbeat));
             }
 
             @Override
@@ -167,12 +167,10 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _Logger.debug("Device Node Bean Load");
+        _Logger.info("Device Node Bean Load");
     }
 
-    public void start(ILogicHandler.factory logicFactory,
-                      ILinkCustom linkCustom,
-                      IClusterCustom<RaftMachine> clusterCustom)
+    public void start(ILogicHandler.factory logicFactory, ILinkCustom linkCustom, IClusterCustom<IRaftMachine> clusterCustom)
     {
         build(logicFactory, linkCustom, clusterCustom, Encryptor::new);
         for(IAioServer server : _AioServers) {
@@ -183,39 +181,28 @@ public class DeviceNode
                 _Logger.warning("server bind error %s", e, server.getLocalAddress());
             }
             server.pendingAccept();
-            _Logger.info(String.format("device node start %s %s @ %s",
-                                       server.getLocalAddress(),
-                                       server.getMode(),
-                                       server.getProtocol()));
+            _Logger.info(String.format("device node start %s %s @ %s", server.getLocalAddress(), server.getMode(), server.getProtocol()));
         }
     }
 
     @Override
     public void setupPeer(String host, int port) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
+        final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _PeerClient.connect(buildConnector(host,
-                                           port,
-                                           socketConfig,
-                                           _PeerClient,
-                                           DeviceNode.this,
-                                           _Holder,
-                                           _ClusterPeer));
+        registerFactory(_Holder.getSort()
+                               .getFactory());
+        _PeerClient.connect(buildConnector(host, port, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
     @Override
     public void setupGate(String host, int port) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
+        final ZSortHolder _Holder = ZSortHolder.Z_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _GateClient.connect(buildConnector(host,
-                                           port,
-                                           socketConfig,
-                                           _GateClient,
-                                           DeviceNode.this,
-                                           _Holder,
-                                           _ClusterPeer));
+        registerFactory(_Holder.getSort()
+                               .getFactory());
+        _GateClient.connect(buildConnector(host, port, socketConfig, _GateClient, DeviceNode.this, _Holder, _ClusterPeer));
     }
 
     private void peerHeartbeat(ISession session)
@@ -233,12 +220,50 @@ public class DeviceNode
     @Override
     public boolean isOwnedBy(long origin)
     {
-        return _ClusterPeer.getPeerId() == (origin & ZUID.PEER_MASK);
+        return _ClusterPeer.peerId() == (origin & ZUID.PEER_MASK);
     }
 
     @Override
-    public IClusterPeer getPeer()
+    public IClusterPeer clusterPeer()
     {
         return _ClusterPeer;
+    }
+
+    @Override
+    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
+    {
+        return getLocalPublisher().selectPublisher(type);
+    }
+
+    @Override
+    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
+    {
+        return getLocalPublisher().selectCloser(type);
+    }
+
+    @Override
+    public ReentrantLock selectLock(IOperator.Type type)
+    {
+        return getLocalPublisher().selectLock(type);
+    }
+
+    @Override
+    public void exchange(IProtocol body, long target, int factory, List<ITriple> load)
+    {
+        if(load == null || body == null || target == INVALID_INDEX) {
+            _Logger.warning("exchange failed{ load:%s body:%s origin:%#x }", load, body, target);
+            return;
+        }
+        ISession session = findSessionOverIndex(target);
+        if(session == null) {
+            _Logger.warning("exchange failed, no session routing");
+            return;
+        }
+        X1F_Exchange x1F = new X1F_Exchange(clusterPeer().generateId());
+        x1F.withSub(body);
+        x1F.target(target);
+        x1F.factory(factory);
+        x1F.peer(clusterPeer().peerId());
+        load.add(Triple.of(x1F.with(session), session, session.encoder()));
     }
 }

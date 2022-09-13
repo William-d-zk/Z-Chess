@@ -23,40 +23,18 @@
 
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import com.isahl.chess.queen.io.core.features.model.channels.IRespConnected;
-import com.isahl.chess.queen.io.core.features.model.session.IContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
  * @author william.d.zk
  * @date 2019-05-17
  */
-public interface ICommand
-        extends IControl,
-                IStreamProtocol
+public interface ICommand<C extends IPContext>
+        extends IControl<C>
 {
-    @Override
-    default int superSerial()
-    {
-        return COMMAND_SERIAL;
-    }
 
-    long getMsgId();
+    long msgId();
 
-    void setMsgId(long msgId);
+    void msgId(long msgId);
 
-    /**
-     * 核心方法
-     * 根据命令字 创建具体的通讯指令
-     * 通讯指令 必须是 IRouteLv4 & IStreamProtocol & IControl 的子集
-     * IControl 作为 ISession 的最基本的指令单元，严格化的支持 Route 和 Stream 处理
-     *
-     * @author william.d.zk
-     * @see IRespConnected
-     */
-    interface Factory<T extends IProtocol, I extends IFrame, C extends IContext>
-    {
-        T create(I frame, C context);
-
-        T create(int serial, byte[] payload, C context);
-    }
 }

@@ -23,15 +23,17 @@
 
 package com.isahl.chess.queen.events.server;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.events.model.QEvent;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.session.IMessage;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
+
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.LINK;
 
 /**
  * @author william.d.zk
@@ -52,20 +54,17 @@ public class MixDecodedDispatcher
     }
 
     @Override
-    protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
+    protected IPair getNextPipe(ISort.Mode mode, IoSerial input)
     {
-        if(mode == ISort.Mode.LINK) {
-            if(cmd.isMapping()) {
-                return new Pair<>(_Link, IOperator.Type.LINK);
-            }
-            else {
-                return new Pair<>(dispatchWorker(cmd), IOperator.Type.LOGIC);
+        if(input instanceof IMessage msg) {
+            if(mode == ISort.Mode.LINK && msg.isMapping()) {
+                return Pair.of(_Link, LINK);
             }
         }
-        return super.getNextPipe(mode, cmd);
+        return super.getNextPipe(mode, input);
     }
 
-    public Logger getLogger()
+    public Logger _Logger()
     {
         return _Logger;
     }

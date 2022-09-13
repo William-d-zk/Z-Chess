@@ -22,81 +22,19 @@
  */
 package com.isahl.chess.queen.io.core.features.model.content;
 
-import com.isahl.chess.queen.io.core.features.model.pipe.IDecode;
-import com.isahl.chess.queen.io.core.features.model.pipe.IEncode;
-import com.isahl.chess.queen.io.core.features.model.routes.IPortChannel;
+import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.features.model.IoFactory;
+import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.queen.io.core.features.model.session.ISession;
+
+import java.io.IOException;
 
 /**
  * @author William.d.zk
  */
 public interface IProtocol
-        extends IEncode,
-                IDecode,
-                IPortChannel
+        extends IoSerial
 {
-    int PACKET_SERIAL     = 0x008;// 0x08~0x0F(8~15)
-    int COMMAND_SERIAL    = 0x0FF;// 0x10~0xFE(16~254)
-    int CONTROL_SERIAL    = 0x100;// 0x101~0x1FE(257~510)
-    int FRAME_SERIAL      = 0x200;// 0x201~0x2FE(513~766)
-    int INTERNAL_SERIAL   = 0x400;// 0x401~0x4FE(1025~1278)
-    int DB_SERIAL         = 0x800;// 0x801~0x8FE(2049~2302)
-    int CONSISTENT_SERIAL = 0xE00;// 0xE01~0xEFE(3584~3838)
-    int OTHER_SERIAL      = 0xF00;// 0xF01~0xFFE(3841~4094)
-
-    /**
-     * @return max in encoding min in decoding
-     */
-    int dataLength();
-
-    int serial();
-
-    int superSerial();
-
-    default int subSerial()
-    {
-        return -1;
-    }
-
-    byte[] payload();
-
-    default byte[] encode()
-    {
-        int len = dataLength();
-        if(len > 0) {
-            byte[] a = new byte[len];
-            encodec(a, 0);
-            return a;
-        }
-        return null;
-    }
-
-    default int encode(byte[] buf, int pos, int length)
-    {
-        int len = dataLength();
-        if(len > length || len > 0 && buf == null || (buf != null && (buf.length < len || pos + length > buf.length))) {
-            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
-        }
-        pos = encodec(buf, pos);
-        return pos;
-    }
-
-    default int decode(byte[] input, int pos, int length)
-    {
-        if(input == null || input.length == 0) {return 0;}
-        // dataLength 此处表达了最短长度值
-        int len = dataLength();
-        if(len > length || (input.length < len || pos + length > input.length)) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        return decodec(input, pos);
-    }
-
-    default int decode(byte[] data)
-    {
-        if(data == null || data.length == 0) {return 0;}
-        return decode(data, 0, data.length);
-    }
-
     default boolean inIdempotent(int bitIdempotent)
     {
         return true;
@@ -105,5 +43,29 @@ public interface IProtocol
     default boolean outIdempotent(int bitIdempotent)
     {
         return true;
+    }
+
+    default IProtocol with(ISession session)
+    {
+        return this;
+    }
+
+    default ISession session()
+    {
+        return null;
+    }
+
+    default void transfer() throws IOException {}
+
+    default byte[] encoded() {return encode().array();}
+
+    @Override
+    default <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
+    {
+        ByteBuf encoded = subEncoded();
+        if(encoded != null && factory != null) {
+            return factory.create(encoded);
+        }
+        return null;
     }
 }

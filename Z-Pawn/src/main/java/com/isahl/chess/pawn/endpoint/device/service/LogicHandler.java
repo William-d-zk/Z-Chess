@@ -23,29 +23,30 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.bishop.protocol.zchat.model.command.X1F_Exchange;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
+import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
+import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionManager;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk
  */
-public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
+public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         implements ILogicHandler
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
@@ -64,42 +65,96 @@ public class LogicHandler<T extends IActivity & ISessionManager & IClusterNode>
     }
 
     @Override
-    public IHealth getHealth()
+    public IHealth _Health()
     {
         return _Health;
     }
 
     @Override
-    public ISessionManager getISessionManager()
+    public IExchanger getExchanger()
     {
         return _ClusterNode;
     }
 
     @Override
-    public List<ITriple> logicHandle(ISessionManager manager, ISession session, IControl content) throws ZException
+    public IPipeTransfer defaultTransfer()
     {
-        List<? extends IControl> pushList = null;
+        return this::logicHandle;
+    }
+
+    private List<ITriple> logicHandle(IProtocol content, ISession session)
+    {
+        List<ITriple> results = new LinkedList<>();
         for(IAccessService service : _AccessService) {
-            if(service.isHandleProtocol(content)) {
-                pushList = service.handle(manager, session, content);
+            if(service.isSupported(content)) {
+                try {
+                    service.onLogic(getExchanger(), session, content, results);
+                }
+                catch(Exception e) {
+                    _Logger.warning("logic handle:%s",
+                                    e,
+                                    service.getClass()
+                                           .getSimpleName());
+                }
+            }
+            else if(content.serial() == 0x1F) {
+                try {
+                    X1F_Exchange x1F = (X1F_Exchange) content;
+                    IManager manager = getExchanger();
+                    IProtocol body = x1F.deserializeSub(manager.findIoFactoryBySerial(x1F.factory()));
+                    ISession ts = manager.findSessionByIndex(x1F.target());
+                    if(ts != null) {
+                        body.with(ts);
+                        service.onExchange(body, results);
+                    }
+                }
+                catch(Exception e) {
+                    _Logger.warning("on exchange,%s <- %s",
+                                    e,
+                                    content,
+                                    service.getClass()
+                                           .getSimpleName());
+                }
             }
         }
         for(IHandleHook hook : _HandleHooks) {
-            hook.handle(content, pushList);
+            try {
+                hook.afterLogic(content, results);
+            }
+            catch(Exception e) {
+                _Logger.warning("hook:%s",
+                                e,
+                                hook.getClass()
+                                    .getSimpleName());
+            }
         }
-        return (pushList == null || pushList.isEmpty()) ? null : pushList.stream()
-                                                                         .map(cmd->new Triple<>(cmd,
-                                                                                                session,
-                                                                                                session.getEncoder()))
-                                                                         .collect(Collectors.toList());
+        return results.isEmpty() ? null : results;
     }
 
     @Override
-    public void serviceHandle(IProtocol request) throws Exception
+    public void serviceHandle(IoSerial request)
     {
         for(IAccessService service : _AccessService) {
-            if(service.isHandleProtocol(request)) {
+            if(!service.isSupported(request)) continue;
+            try {
                 service.consume(request);
+            }
+            catch(Exception e) {
+                _Logger.warning("service handle:%s",
+                                e,
+                                service.getClass()
+                                       .getSimpleName());
+            }
+        }
+        for(IHandleHook hook : _HandleHooks) {
+            try {
+                hook.afterConsume(request);
+            }
+            catch(Exception e) {
+                _Logger.warning("hook:%s",
+                                e,
+                                hook.getClass()
+                                    .getSimpleName());
             }
         }
     }

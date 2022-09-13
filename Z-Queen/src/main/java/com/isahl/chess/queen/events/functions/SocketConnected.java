@@ -46,12 +46,12 @@ public class SocketConnected
     {
         ISession session = null;
         try {
-            session = connection.createSession(channel, connection);
+            session = connection.create(channel, connection);
             // session == null 已经throw IOException了
             connection.onCreated(session);
             session.ready();
             session.readNext(_AioReader);
-            return new Triple<>(true, session, connection.response(session));
+            return Triple.of(true, session, connection.afterConnected(session));
         }
         catch(IOException e) {
             try {
@@ -60,11 +60,11 @@ public class SocketConnected
             catch(IOException ex) {
                 ex.printStackTrace();
             }
-            return new Triple<>(false, channel, e);
+            return Triple.of(false, channel, e);
         }
         catch(Exception e) {
             // 此时session!=null
-            return session != null ? new Triple<>(false, session, e) : new Triple<>(false, channel, e);
+            return session != null ? Triple.of(false, session, e) : Triple.of(false, channel, e);
         }
     }
 

@@ -27,8 +27,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.pawn.endpoint.device.api.model.DeviceProfile;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import org.springframework.lang.NonNull;
 
 /**
@@ -50,18 +51,18 @@ public class DeviceDo
         return mSn;
     }
 
-    public void setSn(
-            @NonNull
-                    String sn)
+    public void setSn(String sn)
     {
-        this.mSn = sn.toUpperCase();
+        if(sn != null) {
+            mSn = sn.toUpperCase();
+        }
     }
 
-    public void setPassword(
-            @NonNull
-                    String password)
+    public void setPassword(String password)
     {
-        this.mPassword = password;
+        if(password != null) {
+            mPassword = password;
+        }
     }
 
     public String getPassword()
@@ -115,6 +116,14 @@ public class DeviceDo
         deviceDo.setSn(entity.getSn());
         deviceDo.setToken(entity.getToken());
         deviceDo.setProfile(entity.getProfile());
+        return deviceDo;
+    }
+
+    public static DeviceDo of(DeviceClient client)
+    {
+        DeviceDo deviceDo = new DeviceDo();
+        deviceDo.setUsername(client.getUsername());
+        deviceDo.setSn(client.getSn());
         return deviceDo;
     }
 }

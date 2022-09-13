@@ -46,6 +46,11 @@ public class Pair<FIRST, SECOND>
     {
     }
 
+    public static <F, S> Pair<F, S> of(F first, S second)
+    {
+        return new Pair<>(first, second);
+    }
+
     public void setFirst(FIRST f)
     {
         first = f;
@@ -74,6 +79,12 @@ public class Pair<FIRST, SECOND>
     public Pair<FIRST, SECOND> clone()
     {
         return new Pair<>(first, second);
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return first == null && second == null;
     }
 
     @Override

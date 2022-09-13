@@ -29,16 +29,12 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
-import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
-import com.isahl.chess.knight.raft.service.RaftCustom;
+import com.isahl.chess.knight.cluster.model.ConsistentText;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
-import com.isahl.chess.queen.events.cluster.IConsistencyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @Service
 public class ConsistencyOpenService
@@ -49,31 +45,58 @@ public class ConsistencyOpenService
 
     private final DeviceNode _DeviceNode;
     private final RaftPeer   _RaftPeer;
-    private final RaftCustom _RaftCustom;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode,
-                                  RaftPeer raftPeer,
-                                  RaftCustom raftCustom,
-                                  List<IConsistencyHandler> handlers)
+    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
-        _RaftCustom = raftCustom;
-        handlers.forEach(raftCustom::register);
     }
 
     @Override
     public ICode submit(String content)
     {
         if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
-        ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                                _RaftPeer.generateId());
-        ICode result = submit(consistency, _DeviceNode, _RaftCustom.getReject());
+        ConsistentText consistency = new ConsistentText(content, _RaftPeer.generateId());
+        ICode result = submit(consistency, _DeviceNode);
 
         if(result.getCode() == KingCode.SUCCESS) {
             _Logger.debug("consistency submit ok:[ %s ]", content);
         }
         return result;
+    }
+
+    @Override
+    public ICode modify(String host, int port)
+    {
+
+        if(_RaftPeer.topology()
+                    .stream()
+                    .anyMatch(node->node.getHost()
+                                        .equals(host)))
+        {
+            _RaftPeer.topology(new RaftNode(host));
+        }
+        else {
+            _RaftPeer.topology(new RaftNode(host, port));
+        }
+        return CodeKing.SUCCESS;
+    }
+
+    @Override
+    public ICode modify(String host, String gate, int gatePort)
+    {
+        if(_RaftPeer.topology()
+                    .stream()
+                    .anyMatch(node->node.getHost()
+                                        .equals(host) && node.getGateHost()
+                                                             .equals(gate) && node.getGatePort() == gatePort))
+        {
+            _RaftPeer.topology(new RaftNode(host));
+        }
+        else {
+            _RaftPeer.topology(new RaftNode(host, gate, gatePort));
+        }
+        return CodeKing.SUCCESS;
     }
 }

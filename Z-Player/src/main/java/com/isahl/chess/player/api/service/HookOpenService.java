@@ -38,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class HookOpenService
-
 {
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
@@ -48,14 +47,14 @@ public class HookOpenService
 
     public ICode hookLogic(EchoDo request)
     {
-        final RingBuffer<QEvent> _Publisher = _DeviceNode.getPublisher(IOperator.Type.SERVICE);
-        final ReentrantLock _Lock = _DeviceNode.getLock(IOperator.Type.SERVICE);
+        final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(IOperator.Type.SERVICE);
+        final ReentrantLock _Lock = _DeviceNode.selectLock(IOperator.Type.SERVICE);
         if(_Lock.tryLock()) {
             try {
                 long sequence = _Publisher.next();
                 try {
                     QEvent event = _Publisher.get(sequence);
-                    event.produce(IOperator.Type.SERVICE, new Pair<>(request, null), null);
+                    event.produce(IOperator.Type.SERVICE, Pair.of(request, null), null);
                     return CodeKing.SUCCESS;
                 }
                 finally {

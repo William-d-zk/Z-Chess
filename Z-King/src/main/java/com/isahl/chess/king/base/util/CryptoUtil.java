@@ -37,8 +37,8 @@ import java.util.Random;
 public class CryptoUtil
 {
 
-    private final static String        chars          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    private final static char          pad            = '=';
+    private final static String        _CHARS         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    private final static char          _PAD           = '=';
     private final        MessageDigest _MD5           = create("MD5");
     private final        MessageDigest _SHA_1         = create("SHA-1");
     private final        MessageDigest _SHA_256       = create("SHA-256");
@@ -46,6 +46,7 @@ public class CryptoUtil
                                                                                             .toEpochMilli());
     private final        byte[]        _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(
             StandardCharsets.US_ASCII);
+    private final        byte[]        _PasswordWords = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890".getBytes(StandardCharsets.UTF_8);
 
     /**
      * xor ^ [0-127]
@@ -180,21 +181,21 @@ public class CryptoUtil
                     else {return dst.toByteArray();}
                 }
                 c = src[start++];
-                if(chars.indexOf(c) != -1 || c == pad) {four[i++] = c;}
+                if(_CHARS.indexOf(c) != -1 || c == _PAD) {four[i++] = c;}
                 else if(c != '\r' && c != '\n') {throw new IOException("bad BASE 64 In->");}
             }
             while(i < 4);
             padded = false;
             for(i = 0; i < 4; i++) {
-                if(four[i] != pad && padded) {throw new IOException("bad BASE 64 In->");}
-                else if(!padded && four[i] == pad) {padded = true;}
+                if(four[i] != _PAD && padded) {throw new IOException("bad BASE 64 In->");}
+                else if(!padded && four[i] == _PAD) {padded = true;}
             }
-            if(four[3] == pad) {
+            if(four[3] == _PAD) {
                 if(start < src.length) {throw new IOException("bad BASE 64 In->");}
-                l = four[2] == pad ? 1 : 2;
+                l = four[2] == _PAD ? 1 : 2;
             }
             else {l = 3;}
-            for(i = 0, aux = 0; i < 4; i++) {if(four[i] != pad) {aux |= chars.indexOf(four[i]) << (6 * (3 - i));}}
+            for(i = 0, aux = 0; i < 4; i++) {if(four[i] != _PAD) {aux |= _CHARS.indexOf(four[i]) << (6 * (3 - i));}}
 
             for(i = 0; i < l; i++) {dst.write((aux >>> (8 * (2 - i))) & 0xFF);}
         }
@@ -217,16 +218,15 @@ public class CryptoUtil
         length = Math.min(start + length, src.length);
         while(start < length) {
             int buffer = 0, byteCounter;
-            for(byteCounter = 0; byteCounter < 3 && start < length; byteCounter++, start++)
-            {buffer |= (src[start] & 0xFF) << (16 - (byteCounter << 3));}
+            for(byteCounter = 0; byteCounter < 3 && start < length; byteCounter++, start++) {buffer |= (src[start] & 0xFF) << (16 - (byteCounter << 3));}
             if(wrapAt > 0 && lineCounter == wrapAt) {
                 encodeDst.append("\r\n");
                 lineCounter = 0;
             }
-            char b1 = chars.charAt((buffer << 8) >>> 26);
-            char b2 = chars.charAt((buffer << 14) >>> 26);
-            char b3 = (byteCounter < 2) ? pad : chars.charAt((buffer << 20) >>> 26);
-            char b4 = (byteCounter < 3) ? pad : chars.charAt((buffer << 26) >>> 26);
+            char b1 = _CHARS.charAt((buffer << 8) >>> 26);
+            char b2 = _CHARS.charAt((buffer << 14) >>> 26);
+            char b3 = (byteCounter < 2) ? _PAD : _CHARS.charAt((buffer << 20) >>> 26);
+            char b4 = (byteCounter < 3) ? _PAD : _CHARS.charAt((buffer << 26) >>> 26);
             encodeDst.append(b1)
                      .append(b2)
                      .append(b3)
@@ -394,12 +394,13 @@ public class CryptoUtil
         return IoUtil.bin2Hex(sha256(input.getBytes(StandardCharsets.UTF_8)));
     }
 
-    public final String randomPassword(int min, int max)
+    public final String randomPassword(int min, int max, boolean onlyWords)
     {
         int passwordLength = _Random.nextInt(max - min) + min;
+        byte[] seeds = onlyWords ? _PasswordWords : _PasswordChars;
         byte[] pwdBytes = new byte[passwordLength];
         for(int i = 0; i < passwordLength; i++) {
-            pwdBytes[i] = _PasswordChars[_Random.nextInt(_PasswordChars.length)];
+            pwdBytes[i] = seeds[_Random.nextInt(seeds.length)];
         }
         return new String(pwdBytes, StandardCharsets.UTF_8);
     }
@@ -428,6 +429,6 @@ public class CryptoUtil
 
     public static String Password(int min, int max)
     {
-        return _Instance.randomPassword(min, max);
+        return _Instance.randomPassword(min, max, false);
     }
 }

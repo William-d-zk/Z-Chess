@@ -25,21 +25,16 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.config.CodeKing;
-import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.pawn.endpoint.device.db.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
-import com.isahl.chess.queen.db.model.IStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 
 /**
  * @author william.d.zk
@@ -49,34 +44,34 @@ import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 @RequestMapping("device")
 public class DeviceController
 {
-    private final Logger         _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
     private final MixOpenService _MixOpenService;
+    private final IStateService  _StateService;
 
     @Autowired
-    public DeviceController(MixOpenService mixOpenService)
+    public DeviceController(MixOpenService mixOpenService, IStateService stateService)
     {
         _MixOpenService = mixOpenService;
+        _StateService = stateService;
     }
 
     @PostMapping("register")
-    public @ResponseBody
-    ZResponse<?> registerDevice(
+    public @ResponseBody ZResponse<?> registerDevice(
             @RequestBody
-                    DeviceDo deviceDo)
+            DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
-        deviceEntity.setOperation(IStorage.Operation.OP_INSERT);
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
     @GetMapping("open/query")
-    public @ResponseBody
-    ZResponse<?> queryDeviceByToken(
+    public @ResponseBody ZResponse<?> queryDeviceByToken(
             @RequestParam("token")
-                    String token)
+            String token)
     {
         if(!isBlank(token)) {
             DeviceEntity exist = _MixOpenService.findByToken(token);
@@ -86,10 +81,9 @@ public class DeviceController
     }
 
     @GetMapping("manager/query")
-    public @ResponseBody
-    ZResponse<?> queryDeviceBySn(
+    public @ResponseBody ZResponse<?> queryDeviceBySn(
             @RequestParam("sn")
-                    String sn)
+            String sn)
     {
         if(!isBlank(sn)) {
             DeviceEntity exist = _MixOpenService.findBySn(sn);
@@ -98,7 +92,7 @@ public class DeviceController
         return ZResponse.error(CodeKing.MISS.getCode(), "device miss");
     }
 
-    /**
+    /*
      * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
      * 推荐使用带有 查询条件的请求方式
      * 引入 click-house 建立搜索引擎的模式
@@ -106,7 +100,7 @@ public class DeviceController
      * @param page
      * @param size
      * @return
-     */
+
     @GetMapping("all")
     public @ResponseBody
     ZResponse<?> listDevices(
@@ -131,43 +125,37 @@ public class DeviceController
                                                                        createAt == null ? ZUID.EPOCH_DATE : createAt,
                                                                        new Triple<>("username", username, AND)));
     }
+    */
 
     @GetMapping("online/all")
-    public @ResponseBody
-    ZResponse<?> listOnlineDevices(
+    public @ResponseBody ZResponse<?> listOnlineDevices(
             @RequestParam(value = "page",
                           defaultValue = "0",
                           required = false)
-                    Integer page,
+            Integer page,
             @RequestParam(value = "size",
                           defaultValue = "20",
                           required = false)
-                    Integer size)
+            Integer size)
     {
         size = size < 1 ? 10 : size > 50 ? 50 : size;
         page = page < 0 ? 0 : page;
         return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
     }
 
-    @GetMapping("online/group-by")
-    public @ResponseBody
-    ZResponse<?> filterOnlineDevicesByUsername(
-            @RequestParam("username")
-                    String username,
+    @GetMapping("online/stored")
+    public @ResponseBody ZResponse<?> listStored(
             @RequestParam(value = "page",
                           required = false,
                           defaultValue = "0")
-                    Integer page,
+            Integer page,
             @RequestParam(value = "size",
                           defaultValue = "20",
                           required = false)
-                    Integer size)
+            Integer size)
     {
         size = size < 1 ? 10 : size > 50 ? 50 : size;
         page = page < 0 ? 0 : page;
-        if(isBlank(username)) {
-            return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
-        }
-        return ZResponse.success(_MixOpenService.getOnlineDevicesGroupByUsername(username, PageRequest.of(page, size)));
+        return ZResponse.success(_MixOpenService.getStorageDevice(PageRequest.of(page, size)));
     }
 }

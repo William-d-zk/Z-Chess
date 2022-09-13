@@ -25,8 +25,8 @@ package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -46,12 +46,12 @@ public class PipeEncoder
     }
 
     @Override
-    public ITriple handle(IControl command, ISession session)
+    public ITriple handle(IProtocol output, ISession session)
     {
-        IPacket send = protocolWrite(command, session);
+        IPacket send = protocolWrite(output, session);
         //write 错误将向event handler 抛出异常，并终止向session 执行写操作。
         if(send != null) {
-            _Logger.debug("%s ", command);
+            _Logger.debug("%s ", output);
             session.write(send, _AioWriter);
         }
         return null;

@@ -27,24 +27,20 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
  */
 public interface IPipeEncoder
-        extends IOperator<IControl, ISession, ITriple>
+        extends IOperator<IProtocol, ISession, ITriple>
 {
-    default IPacket protocolWrite(IControl output, ISession session)
+    default IPacket protocolWrite(IProtocol output, ISession session)
     {
-
         IPContext context = session.getContext();
         if(context == null || output == null) {return null;}
         IFilterChain previous = session.getFilterChain()
@@ -76,11 +72,11 @@ public interface IPipeEncoder
                 }
                 previous = previous.getPrevious();
             }
-            if(resultType == IFilter.ResultType.IGNORE && protocol.superSerial() != IProtocol.PACKET_SERIAL) {
+            if(resultType == IFilter.ResultType.IGNORE && protocol._super() != IProtocol.IO_QUEEN_PACKET_SERIAL) {
                 throw new ZException("no filter handle output: %s ", protocol);
             }
         }
-        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(ByteBuffer.wrap(protocol.encode()));
+        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(protocol.encode());
     }
 
 }

@@ -32,9 +32,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
         "com.isahl.chess.audience",
-        "com.isahl.chess.pawn",
-        "com.isahl.chess.rook",
-        "com.isahl.chess.knight"
+        "com.isahl.chess.knight.raft"
 })
 public class ApplicationAudience
 {

@@ -27,6 +27,7 @@ import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.player.api.model.ClusterDo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +43,13 @@ public class ClusterController
 {
     private final Logger       _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final IRaftService _RaftService;
+    private final IRaftMapper  _RaftMapper;
 
     @Autowired
-    public ClusterController(IRaftService raftService)
+    public ClusterController(IRaftService raftService, IRaftMapper raftMapper)
     {
         _RaftService = raftService;
+        _RaftMapper = raftMapper;
     }
 
     @PostMapping("change")
@@ -56,12 +59,23 @@ public class ClusterController
                     ClusterDo peer)
     {
         Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
+
+
+
+
         try {
-            return ZResponse.success(_RaftService.getTopology());
+            return ZResponse.success(_RaftService.topology());
         }
         catch(ZException e) {
             return ZResponse.error(e.getMessage());
         }
+    }
+
+    @GetMapping("close")
+    public ZResponse<?> close()
+    {
+        _RaftMapper.flushAll();
+        return ZResponse.success(_RaftMapper.getLogMeta());
     }
 
 }

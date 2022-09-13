@@ -23,7 +23,6 @@
   -->
 
 <configuration>
-    <!-- https://github.com/spring-projects/spring-boot/blob/v1.4.2.RELEASE/spring-boot/src/main/resources/org/springframework/boot/logging/logback/defaults.xml -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="APP_NAME" value="Z-Chess"/>
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
@@ -33,7 +32,7 @@
         <file>${Z_CHESS_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
+            <charset>${FILE_LOG_CHARSET}</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${Z_CHESS_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
@@ -45,42 +44,45 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
+            <charset>${FILE_LOG_CHARSET}</charset>
         </encoder>
     </appender>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="Z-CHESS"/>
     </root>
-
-    <logger name="base.king" level="INFO">
+    <logger name="base.king">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen" level="INFO">
+    <logger name="io.queen">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen.dispatcher" level="DEBUG">
+    <logger name="io.queen.dispatcher">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="protocol.bishop" level="INFO">
+    <logger name="io.queen.processor">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="protocol.bishop">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="cluster.knight" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="storage.rook" level="DEBUG">
+    <logger name="storage.rook">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="biz.player" level="DEBUG">
+    <logger name="biz.player">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="security.referee" level="DEBUG">
+    <logger name="security.referee">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="gateway.arena" level="DEBUG">
+    <logger name="gateway.arena">
         <appender-ref ref="Z-CHESS"/>
     </logger>
 </configuration>

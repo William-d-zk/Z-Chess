@@ -24,12 +24,12 @@
 package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.queen.io.core.features.model.content.IControl;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
 public interface IActivity
 {
-    boolean send(ISession session, IOperator.Type eventType, IControl... toSends);
+    boolean send(ISession session, IOperator.Type eventType, IProtocol... toSends);
 
     void close(ISession session, IOperator.Type eventType);
 }

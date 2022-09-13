@@ -24,18 +24,17 @@
 package com.isahl.chess.knight.raft.features;
 
 import com.isahl.chess.king.base.features.IReset;
-import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.model.IStorage;
-
-import java.util.Set;
 
 /**
  * @author william.d.zk
  * @date 2019/12/10
  */
 public interface IRaftMachine
-        extends IReset
+        extends IReset,
+                IStorage,
+                Comparable<IRaftMachine>
 {
     long INDEX_NAN = -1;
     long TERM_NAN  = -1;
@@ -44,80 +43,108 @@ public interface IRaftMachine
     /**
      * @return 当前任期 自然数
      */
-    long getTerm();
+    long term();
 
     /**
      * @return 当前任期的 log-index
      */
-    long getIndex();
+    long index();
 
-    long getIndexTerm();
+    long indexTerm();
 
     /**
      * @return 候选人 Id
      */
-    long getCandidate();
+    long candidate();
 
     /**
      * @return 主节点 Id
      */
-    long getLeader();
+    long leader();
 
     /**
      * @return 节点的全局ID
      */
-    long getPeerId();
+    long peer();
 
     /**
      * @return 节点状态
      */
-    RaftState getState();
+    int state();
 
     /**
      * @return 已知最大的已提交日志的索引值
      */
-    long getCommit();
+    long commit();
 
     /**
      * @return 最后一条被应用到状态机的索引值
      */
-    long getApplied();
+    long accept();
 
-    long getMatchIndex();
+    long matchIndex();
 
-    /**
-     * @return 集群中所有节点
-     */
-    Set<RaftNode> getPeerSet();
+    void term(long term);
 
-    /**
-     * @return 跨集群网关
-     */
-    Set<RaftNode> getGateSet();
+    void index(long index);
 
-    void append(long index, long indexTerm, IRaftMapper mapper);
+    void indexTerm(long term);
 
-    void rollBack(long index, long indexTerm, IRaftMapper mapper);
+    void matchIndex(long matchIndex);
 
-    void commit(long index, IRaftMapper mapper);
+    void candidate(long candidate);
 
-    void apply(IRaftMapper mapper);
+    void leader(long leader);
 
-    void beLeader(IRaftMapper mapper);
+    void commit(long commit);
 
-    void beCandidate(IRaftMapper mapper);
+    void accept(long accept);
 
-    void beElector(long candidate, long term, IRaftMapper mapper);
-
-    void beFollower(long term, IRaftMapper mapper);
+    void accept(long index, long indexTerm);
 
     void follow(long term, long leader, IRaftMapper mapper);
 
-    <T extends IRaftMachine & IStorage> T createCandidate();
+    void commit(long index, IRaftMapper mapper);
 
-    <T extends IRaftMachine & IStorage> T createLeader();
+    void rollBack(long index, long indexTerm, IRaftMapper mapper);
 
-    <T extends IRaftMachine & IStorage> T createFollower();
+    /**
+     * @param state elector,candidate,leader,client,follow(重置)
+     *              follow → follow(long term, long leader, IRaftMapper mapper)
+     */
+    void approve(RaftState state);
 
-    <T extends IRaftMachine & IStorage> T createLearner();
+    void outside();
+
+    void gate();
+
+    /**
+     * 确认集群变更完成
+     */
+    void confirm();
+
+    /**
+     * 进入集群变更状态
+     */
+    void modify();
+
+    void modify(RaftState state);
+
+    default boolean isInState(RaftState state) {return (state() & state.getCode()) != 0;}
+
+    default boolean isGreaterThanState(RaftState state)
+    {
+        return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) > 0;
+    }
+
+    default boolean isLessThanState(RaftState state) {return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) < 0;}
+
+    @Override
+    default int compareTo(IRaftMachine o)
+    {
+        return Long.compare(peer(), o.peer());
+    }
+
+    String toPrimary();
+
 }

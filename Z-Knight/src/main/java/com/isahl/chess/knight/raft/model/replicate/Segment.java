@@ -23,16 +23,18 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.king.base.model.ListSerial;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 public class Segment
 {
@@ -41,33 +43,11 @@ public class Segment
     final static String SEGMENT_SUFFIX_READONLY = "r";
     final static String SEGMENT_DATE_FORMATTER  = "%020d-%020d";
 
-    public static class Record
-    {
-        private final long     _Offset;
-        private final LogEntry _Entry;
-
-        public Record(long offset, LogEntry entry)
-        {
-            _Offset = offset;
-            _Entry = entry;
-        }
-
-        public long getOffset()
-        {
-            return _Offset;
-        }
-
-        public LogEntry getEntry()
-        {
-            return _Entry;
-        }
-    }
-
     private final static Logger _Logger = Logger.getLogger("cluster.knight." + Segment.class.getSimpleName());
 
-    private final long         _StartIndex;
-    private final String       _FileDirectory;
-    private final List<Record> _Records = new ArrayList<>();
+    private final long                 _StartIndex;
+    private final String               _FileDirectory;
+    private final ListSerial<LogEntry> _Records;
 
     private RandomAccessFile mRandomAccessFile;
     private String           mFileName;
@@ -77,45 +57,35 @@ public class Segment
 
     public LogEntry getEntry(long index)
     {
-        if(_StartIndex == 0 || mEndIndex == 0) {return null;}
-        if(index < _StartIndex || index > mEndIndex) {return null;}
-        int indexInList = (int) (index - _StartIndex);
-        LogEntry logEntry = _Records.get(indexInList)
-                                    .getEntry();
-        if(logEntry.getIndex() != index) {
-            _Logger.warning("segment get log-entry %d [%s]", index, logEntry);
+        int listIndex = (int) (index - _StartIndex);
+        if(_StartIndex == 0 || mEndIndex == 0 || index < _StartIndex || index > mEndIndex || listIndex < 0 || listIndex >= _Records.size()) {
+            _Logger.warning("get entry failed@%d;start:%d,end:%d,size:%d", index, _StartIndex, mEndIndex, _Records.size());
+            return null;
+        }
+        LogEntry logEntry = _Records.get(listIndex);
+        if(logEntry.index() != index) {
+            _Logger.warning("segment get(%d) log entry [%s]", index, logEntry);
         }
         return logEntry;
     }
 
-    public Segment(File file, long startIndex, long endIndex, boolean canWrite) throws IOException
+    public Segment(File file,
+                   long startIndex,
+                   boolean canWrite) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
-        mFileName = file.getAbsolutePath();
         _FileDirectory = file.getParent();
-        _StartIndex = startIndex;
+        _Records = new ListSerial<>(LogEntry::new);
+        mEndIndex = _StartIndex = startIndex;
+        mFileName = file.getAbsolutePath();
         mCanWrite = canWrite;
         mRandomAccessFile = new RandomAccessFile(file, isCanWrite() ? "rw" : "r");
-        mEndIndex = endIndex;
         mFileSize = mRandomAccessFile.length();
         loadRecord();
     }
 
     public static String fileNameFormatter(boolean readonly)
     {
-        return String.format("%s_%s_%s",
-                             SEGMENT_PREFIX,
-                             SEGMENT_DATE_FORMATTER,
-                             readonly ? SEGMENT_SUFFIX_READONLY : SEGMENT_SUFFIX_WRITE);
-    }
-
-    public String getFileName()
-    {
-        return mFileName;
-    }
-
-    public RandomAccessFile getRandomAccessFile()
-    {
-        return mRandomAccessFile;
+        return String.format("%s_%s_%s", SEGMENT_PREFIX, SEGMENT_DATE_FORMATTER, readonly ? SEGMENT_SUFFIX_READONLY : SEGMENT_SUFFIX_WRITE);
     }
 
     public long getStartIndex()
@@ -128,7 +98,7 @@ public class Segment
         return mEndIndex;
     }
 
-    public void setEndIndex(long newEndIndex)
+    private void setEndIndex(long newEndIndex)
     {
         mEndIndex = newEndIndex;
     }
@@ -143,12 +113,7 @@ public class Segment
         return mCanWrite;
     }
 
-    public List<Record> getRecords()
-    {
-        return _Records;
-    }
-
-    public void setFileSize(long newFileSize)
+    private void setFileSize(long newFileSize)
     {
         mFileSize = newFileSize;
         try {
@@ -159,34 +124,18 @@ public class Segment
         }
     }
 
-    private void loadRecord() throws IOException
+    private void loadRecord() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
-        long offset = 0;
-        long startIndex = -1;
-        long endIndex = 0;
         if(mFileSize == 0) {return;}
-        while(offset < mFileSize) {
-            int length = mRandomAccessFile.readInt();
-            long entryStart = mRandomAccessFile.getFilePointer();
-            byte[] data = new byte[length];
-            mRandomAccessFile.read(data);
-            LogEntry entry = JsonUtil.readValue(data, LogEntry.class);
-            if(entry != null) {
-                entry.decode(data);//仅更新 length 信息
-                endIndex = entry.getIndex();
-                if(startIndex < 0) {
-                    startIndex = endIndex;
-                }
-                _Records.add((int) (endIndex - startIndex), new Record(entryStart, entry));
-            }
-            offset = mRandomAccessFile.getFilePointer();
-        }
+        _Records.decode(ByteBuf.wrap(mRandomAccessFile.getChannel()
+                                                      .map(FileChannel.MapMode.READ_ONLY, 0, mFileSize)));
+        long startIndex = _Records.get(0)
+                                  .index();
         if(startIndex != _StartIndex) {
             throw new ZException("first entry index %d isn't equal segment's start_index %d", startIndex, _StartIndex);
         }
-        if(endIndex != mEndIndex) {
-            mEndIndex = endIndex;
-        }
+        mEndIndex = _Records.get(_Records.size() - 1)
+                            .index();
     }
 
     public void freeze()
@@ -206,19 +155,37 @@ public class Segment
         }
     }
 
-    public void add(byte[] data, LogEntry entry)
+    public boolean add(LogEntry entry)
     {
         try {
-            long offset = mRandomAccessFile.getFilePointer();
-            mRandomAccessFile.writeInt(data.length);
-            mRandomAccessFile.write(data);
-            _Records.add(new Record(offset, entry));
-            mEndIndex = entry.getIndex();
-            mFileSize += data.length + 4;
+            if(_Records.add(entry)) {
+                byte[] output;
+                if(_Records.size() > 1) {
+                    output = entry.encoded();
+                    ByteBuffer mapped = mRandomAccessFile.getChannel()
+                                                         .map(FileChannel.MapMode.READ_WRITE, mFileSize, output.length);
+                    mapped.put(output);
+                    mapped = mRandomAccessFile.getChannel()
+                                              .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
+                    int oldLength = mapped.getInt(_Records.LENGTH_POS);
+                    mapped.putInt(_Records.LENGTH_POS, oldLength + output.length);
+                    mapped.putInt(_Records.SIZE_POS, _Records.size());
+                }
+                else {
+                    output = _Records.encoded();
+                    ByteBuffer mapped = mRandomAccessFile.getChannel()
+                                                         .map(FileChannel.MapMode.READ_WRITE, 0, output.length);
+                    mapped.put(output);
+                }
+                mFileSize += output.length;
+            }
+            mEndIndex = entry.index();
+            return true;
         }
         catch(IOException e) {
-            throw new ZException("add record failed ", e);
+            _Logger.warning("add record failed ", e);
         }
+        return false;
     }
 
     public long drop() throws IOException
@@ -231,27 +198,34 @@ public class Segment
 
     public long truncate(long newEndIndex) throws IOException
     {
-        int recordIndex = (int) (newEndIndex - getStartIndex());
-        setEndIndex(newEndIndex);
-        long newFileSize = getRecords().get(recordIndex)
-                                       .getOffset() - 4;
-        long size = getFileSize() - newFileSize;
-        setFileSize(newFileSize);
-        if(_Records.size() > recordIndex + 1) {
-            _Records.subList(recordIndex + 1, _Records.size())
+        int newRecordCount = (int) (newEndIndex - _StartIndex) + 1;
+        if(newRecordCount < 0) {
+            throw new ZException("new record size[%d],error input", newRecordCount);
+        }
+        if(_Records.size() > newRecordCount) {
+            _Records.subList(newRecordCount, _Records.size())
                     .clear();
+            mEndIndex = newEndIndex;
+            long newFileSize = _Records.sizeOf();
+            long dropSize = mFileSize - newFileSize;
+            ByteBuffer mapped = mRandomAccessFile.getChannel()
+                                                 .map(FileChannel.MapMode.READ_WRITE, _Records.SERIAL_POS, _Records.SIZE_POS + Integer.BYTES);
+            mapped.putInt(_Records.LENGTH_POS, _Records.length());
+            mapped.putInt(_Records.SIZE_POS, _Records.size());
+            mRandomAccessFile.setLength(mFileSize = newFileSize);
+            mRandomAccessFile.close();
+            // 缩减后一定处于可write状态
+            String newFileName = String.format(fileNameFormatter(false), _StartIndex, mEndIndex);
+            String newFullFileName = _FileDirectory + File.separator + newFileName;
+            if(new File(mFileName).renameTo(new File(newFullFileName))) {
+                mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
+                mFileName = newFullFileName;
+            }
+            else {
+                throw new ZException("file [%s] rename to [%s] failed", mFileName, newFileName);
+            }
+            return dropSize;
         }
-        mRandomAccessFile.close();
-        // 缩减后一定处于可write状态
-        String newFileName = String.format(fileNameFormatter(false), getStartIndex(), getEndIndex());
-        String newFullFileName = _FileDirectory + File.separator + newFileName;
-        if(new File(getFileName()).renameTo(new File(newFullFileName))) {
-            mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
-            mFileName = newFullFileName;
-        }
-        else {
-            throw new ZException("file [%s] rename to [%s] failed", getFileName(), newFileName);
-        }
-        return size;
+        return 0;
     }
 }

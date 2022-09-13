@@ -23,14 +23,13 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.custom.ZClusterMappingCustom;
-import com.isahl.chess.bishop.io.ws.zchat.custom.ZLinkMappingCustom;
+import com.isahl.chess.bishop.protocol.zchat.custom.ZClusterCustom;
+import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
+import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.component.ConsistencyReject;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.service.RaftCustom;
@@ -70,51 +69,32 @@ public class NodeService
     private final ILogicHandler.factory _LogicFactory;
 
     @Autowired
-    NodeService(MixConfig deviceConfig,
-                @Qualifier("pawn_io_config")
-                        IAioConfig ioConfig,
-                TimeWheel timeWheel,
-                IMixConfig mixConfig,
-                IRaftConfig raftConfig,
-                IRaftMapper raftMapper,
-                ILinkCustom linkCustom,
-                List<IAccessService> accessAdapters,
-                List<IHandleHook> hooks) throws IOException
+    public NodeService(MixConfig deviceConfig,
+                       @Qualifier("pawn_io_config")
+                       IAioConfig ioConfig,
+                       TimeWheel timeWheel,
+                       IMixConfig mixConfig,
+                       IRaftConfig raftConfig,
+                       IRaftMapper raftMapper,
+                       ILinkCustom linkCustom,
+                       List<IAccessService> accessAdapters,
+                       List<IHandleHook> hooks) throws IOException
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
-                                          .map(listener->{
-                                              ZSortHolder sort = switch(listener.getScheme()) {
-                                                  case "mqtt" -> ZSortHolder.QTT_SERVER;
-                                                  case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
-                                                  case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-                                                  case "ws-zchat" -> ZSortHolder.WS_ZCHAT_SERVER;
-                                                  case "wss-zchat" -> ZSortHolder.WS_ZCHAT_SERVER_SSL;
-                                                  case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-                                                  case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
-                                                  case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
-                                                  default -> throw new UnsupportedOperationException(listener.getScheme());
-                                              };
-                                              return new Triple<>(listener.getHost(), listener.getPort(), sort);
-                                          })
+                                          .map(listener->Triple.of(listener.getHost(), listener.getPort(), ZSortHolder._Mapping(listener.getScheme())))
                                           .collect(Collectors.toList());
         _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
-        _DeviceNode = new DeviceNode(hosts,
-                                     deviceConfig.isMultiBind(),
-                                     ioConfig,
-                                     raftConfig,
-                                     mixConfig,
-                                     timeWheel,
-                                     _RaftPeer);
-        _RaftCustom = new RaftCustom(_RaftPeer, new ConsistencyReject(_RaftPeer, _DeviceNode));
+        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel, _RaftPeer);
+        _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
-        _LogicFactory = slot->new LogicHandler<>(_DeviceNode, slot, accessAdapters, hooks);
+        _LogicFactory = threadId->new LogicHandler<>(_DeviceNode, threadId, accessAdapters, hooks);
     }
 
     @PostConstruct
     private void start()
     {
-        _DeviceNode.start(_LogicFactory, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
+        _DeviceNode.start(_LogicFactory, new ZLinkCustom(_LinkCustom), new ZClusterCustom<>(_RaftCustom));
         _RaftPeer.start(_DeviceNode);
         _Logger.info(" device service start ");
     }
@@ -125,7 +105,7 @@ public class NodeService
      * → ConsistencyOpenService
      */
     @Bean
-    public DeviceNode getDeviceNode()
+    public DeviceNode _DeviceNodeBean()
     {
         return _DeviceNode;
     }
@@ -135,16 +115,6 @@ public class NodeService
      * → ConsistencyOpenService
      */
     @Bean
-    public RaftPeer getRaftPeer() {return _RaftPeer;}
-
-    /**
-     * @return RaftCustom
-     * → ConsistencyOpenService
-     */
-    @Bean
-    public RaftCustom getRaftCustom()
-    {
-        return _RaftCustom;
-    }
+    public RaftPeer _RaftPeerBean() {return _RaftPeer;}
 
 }

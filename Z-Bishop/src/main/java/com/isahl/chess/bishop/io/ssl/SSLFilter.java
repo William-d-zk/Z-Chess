@@ -23,15 +23,13 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.proxy.IPContext;
+import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
-
-import java.nio.ByteBuffer;
 
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
@@ -53,24 +51,9 @@ public class SSLFilter<A extends IPContext>
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
         if(output.outIdempotent(getLeftIdempotentBit())) {
-            return new AioPacket(context.doWrap(output.getBuffer())
-                                        .flip());
+            return new AioPacket(context.doWrap(output.getBuffer()));
         }
         return output;
-    }
-
-    @Override
-    public ResultType seek(SSLZContext<A> context, IPacket output)
-    {
-        if(context.isOutFrame() &&
-           (context.getHandShakeStatus() == NOT_HANDSHAKING || context.getHandShakeStatus() == FINISHED))
-        {
-            context.updateOut();
-            _Logger.info("SSL ready to write");
-            return ResultType.NEXT_STEP;
-        }
-        else if(context.isOutConvert()) {return ResultType.NEXT_STEP;}
-        return ResultType.IGNORE;
     }
 
     @Override
@@ -80,55 +63,66 @@ public class SSLFilter<A extends IPContext>
     }
 
     @Override
-    public ResultType peek(SSLZContext<A> context, IPacket input)
-    {
-        ByteBuffer appInBuffer;
-        ByteBuffer netInBuffer = input.getBuffer();
-        ByteBuffer localBuffer = context.getRvBuffer();
-        if(netInBuffer.hasRemaining()) {
-            if(localBuffer.position() > 0) {
-                IoUtil.write(netInBuffer, localBuffer);
-                localBuffer.flip();
-                netInBuffer = localBuffer;
-            }
-            appInBuffer = context.doUnwrap(netInBuffer);
-            if(netInBuffer == localBuffer && localBuffer.hasRemaining()) {
-                /*
-                ssl 并非流式解码，而是存在块状解码的，所以粘包【半包】需要处理
-                上文中 netInBuffer 的数据转移到了localBuffer里
-                 */
-                netInBuffer = input.getBuffer();
-                netInBuffer.position(netInBuffer.position() - localBuffer.remaining());
-                localBuffer.clear();
-            }
-            if(appInBuffer != null) {
-                context.setCarrier(new AioPacket(appInBuffer.flip()));
-                return ResultType.NEXT_STEP;
-            }
-        }
-        return ResultType.NEED_DATA;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if(checkType(output, IProtocol.PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext) {
-            return new Pair<>(seek((SSLZContext<A>) context, (IPacket) output), context);
+        if(checkType(output, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isProxy() &&
+           context instanceof SSLZContext ssl_ctx && output instanceof IPacket out_packet)
+        {
+            NEXT_STEP:
+            {
+                if(ssl_ctx.isOutFrame() &&
+                   (ssl_ctx.getHandShakeStatus() == NOT_HANDSHAKING || ssl_ctx.getHandShakeStatus() == FINISHED))
+                {
+                    ssl_ctx.promotionOut();
+                    _Logger.info("SSL ready to write");
+                }
+                else if(ssl_ctx.isOutConvert()) {
+                    _Logger.info("SSL to write");
+                }
+                else {
+                    break NEXT_STEP;
+                }
+                return Pair.of(ResultType.NEXT_STEP, ssl_ctx);
+            }
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if(checkType(input, IProtocol.PACKET_SERIAL) && context.isProxy() && context.isInConvert() &&
-           context instanceof SSLZContext)
+        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL) && context.isProxy() && context.isInConvert() &&
+           context instanceof SSLZContext ssl_ctx && input instanceof IPacket in_packet)
         {
-            return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);
+            ByteBuf appInBuffer;
+            ByteBuf netInBuffer = in_packet.getBuffer();
+            ByteBuf localBuffer = ssl_ctx.getRvBuffer();
+            if(localBuffer.isReadable()) {
+                //存在上次没处理完的内容，否则直接解码，减少一次内存copy
+                localBuffer.append(netInBuffer);
+                netInBuffer = localBuffer;
+            }
+            appInBuffer = ssl_ctx.doUnwrap(netInBuffer);
+            if(netInBuffer.isReadable()) {
+                /*
+                ssl 并非流式解码，而是存在块状解码的，所以粘包【半包】需要处理
+                上文中 netInBuffer 的数据转移到了localBuffer里
+                 */
+                if(netInBuffer == localBuffer) {
+                    localBuffer.discard();
+                }
+                else {
+                    localBuffer.append(netInBuffer);
+                }
+                if(appInBuffer != null) {
+                    ssl_ctx.setCarrier(new AioPacket(appInBuffer));
+                    return Pair.of(ResultType.NEXT_STEP, ssl_ctx);
+                }
+            }
+            return Pair.of(ResultType.NEED_DATA, ssl_ctx);
         }
-        return new Pair<>(ResultType.IGNORE, context);
+        return Pair.of(ResultType.IGNORE, context);
     }
 
     @Override
