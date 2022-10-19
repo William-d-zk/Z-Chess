@@ -84,7 +84,7 @@
         <ehcache.version>3.10.0</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.13.3</jackson.version>
+        <jackson.version>2.13.4</jackson.version>
         <json-schema-validator.version>1.0.71</json-schema-validator.version>
         <!--PLUGINS-->
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
