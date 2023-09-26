@@ -51,9 +51,11 @@ public class ParamSetNotSupportedException
      */
     private static String oidToString(byte[] oid)
     {
-        String s = "";
-        if(oid.length > 0) {s += oid[0];}
-        for(int i = 1; i < oid.length; i++) {s += "." + (0xff & oid[i]);}
-        return s;
+        StringBuilder s = new StringBuilder();
+        if(oid.length > 0) {
+            s.append(oid[0]);}
+        for(int i = 1; i < oid.length; i++) {
+            s.append(".").append(0xff & oid[i]);}
+        return s.toString();
     }
 }

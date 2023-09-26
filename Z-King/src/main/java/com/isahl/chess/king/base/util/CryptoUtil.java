@@ -59,15 +59,14 @@ public class CryptoUtil
     public static byte xorArrays(byte[] src, byte xor, byte xor_s, byte xor_e)
     {
         if(src == null || src.length == 0) {return xor;}
-        if((xor_s & 0xFF) == 0xFF && (xor_e & 0xFF) == 0xFF) {return xor;}
-        else {
+        if ((xor_s & 0xFF) != 0xFF || (xor_e & 0xFF) != 0xFF) {
             int length = src.length;
-            for(int i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++) {
                 IoUtil.writeByte((src[i] & 0xFF) ^ xor, src, i);
                 xor = (byte) (xor < xor_e ? xor + 1 : xor_s);
             }
-            return xor;
         }
+        return xor;
     }
 
     public static int adler32(byte[] buf, int off, int len)

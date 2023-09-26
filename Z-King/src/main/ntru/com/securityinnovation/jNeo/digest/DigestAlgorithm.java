@@ -50,7 +50,7 @@ public enum DigestAlgorithm
     /**
      * The class used to generate objects
      */
-    private Class<? extends Digest> clss;
+    private final Class<? extends Digest> clss;
 
     /**
      * Return the byte array identifying the OID.

@@ -26,6 +26,7 @@ package com.isahl.chess.king.base.log;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
 public class Logger
         implements Serializable
 {
+    @Serial
     private static final long serialVersionUID = 6165161241382365689L;
 
     private final String           _Name;
@@ -46,6 +48,9 @@ public class Logger
         _Logger = LoggerFactory.getLogger(name);
     }
 
+    public String getName(){
+        return _Name;
+    }
     public static Logger getLogger(String name)
     {
         return new Logger(name);
@@ -190,6 +195,7 @@ public class Logger
      */
     public static boolean skipLine(String line)
     {
-        return Objects.isNull(line) || "".equals(line) || line.matches("\\s+");
+        return Objects.isNull(line) || line.isEmpty() || line.matches("\\s+");
     }
+
 }

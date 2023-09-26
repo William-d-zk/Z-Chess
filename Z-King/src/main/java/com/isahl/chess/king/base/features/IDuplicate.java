@@ -33,7 +33,7 @@ public interface IDuplicate
      *
      * @return
      */
-    default IDuplicate copy()
+    default IDuplicate duplicate()
     {
         throw new UnsupportedOperationException();
     }
@@ -53,7 +53,7 @@ public interface IDuplicate
      *
      * @return self.this;
      */
-    default IDuplicate duplicate()
+    default IDuplicate reference()
     {
         return this;
     }

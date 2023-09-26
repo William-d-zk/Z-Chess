@@ -213,6 +213,10 @@ public class TimeWheel
             super(3);
             _Slot = slot;
         }
+
+        public int getSlot() {
+            return _Slot;
+        }
     }
 
     private class HandleTask<V extends IValid>

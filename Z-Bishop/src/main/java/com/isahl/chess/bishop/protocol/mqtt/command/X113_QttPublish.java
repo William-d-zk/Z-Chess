@@ -129,7 +129,7 @@ public class X113_QttPublish
     }
 
     @Override
-    public X113_QttPublish copy()
+    public X113_QttPublish duplicate()
     {
         X113_QttPublish n113 = new X113_QttPublish();
         n113.withTopic(topic());

@@ -53,8 +53,8 @@ public abstract class QttControl
         mFrameHeader = 0;
         mFrameHeader |= dup ? DUPLICATE_FLAG : 0;
         mFrameHeader |= retain ? RETAIN_FLAG : 0;
-        mFrameHeader |= qosLevel.getValue() << 1;
-        mFrameHeader |= qttType.getValue();
+        mFrameHeader |= (byte) (qosLevel.getValue() << 1);
+        mFrameHeader |= (byte) qttType.getValue();
     }
 
     @Override
@@ -140,7 +140,7 @@ public abstract class QttControl
     public void setLevel(IQoS.Level level)
     {
         mFrameHeader &= ~QOS_MASK;
-        mFrameHeader |= level.getValue() << 1;
+        mFrameHeader |= (byte) (level.getValue() << 1);
         if(level == Level.ALMOST_ONCE) {
             mFrameHeader &= ~DUPLICATE_FLAG;
         }
@@ -162,7 +162,8 @@ public abstract class QttControl
         return (mFrameHeader & DUPLICATE_FLAG) == DUPLICATE_FLAG;
     }
 
-    public IDuplicate duplicate()
+    @Override
+    public IDuplicate reference()
     {
         mFrameHeader |= DUPLICATE_FLAG;
         return this;

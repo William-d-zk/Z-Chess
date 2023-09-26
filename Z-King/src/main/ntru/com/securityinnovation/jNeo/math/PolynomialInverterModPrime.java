@@ -149,7 +149,7 @@ public class PolynomialInverterModPrime
     /**
      * Return the degree of a polynomial.
      */
-    protected final static int getDegree(FullPolynomial f)
+    protected static int getDegree(FullPolynomial f)
     {
         int df = f.p.length - 1;
         while((df > 0) && f.p[df] == 0)
@@ -173,7 +173,7 @@ public class PolynomialInverterModPrime
      * Divide f(X) by the polynomial g(X)=X. f(X) is updated in-place.
      * This effectively a "shift-left-with-wraparound" of the indices.
      */
-    protected final static void divideByX(FullPolynomial f)
+    protected static void divideByX(FullPolynomial f)
     {
         short f0 = f.p[0];
         for(int i = 0; i < f.p.length - 1; i++) {f.p[i] = f.p[i + 1];}
@@ -184,7 +184,7 @@ public class PolynomialInverterModPrime
      * Mulitply f(X) by the polynomial g(X)=X. f(X) is updated in-place.
      * This effectively a "shift-right-with-wraparound" of the indices.
      */
-    protected final static void multiplyByX(FullPolynomial f)
+    protected static void multiplyByX(FullPolynomial f)
     {
         short fn = f.p[f.p.length - 1];
         for(int i = f.p.length - 1; i > 0; i--) {f.p[i] = f.p[i - 1];}

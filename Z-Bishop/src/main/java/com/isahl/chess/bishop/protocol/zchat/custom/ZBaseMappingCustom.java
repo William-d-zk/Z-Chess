@@ -53,21 +53,19 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     public ITriple inject(IManager manager, ISession session, IProtocol content)
     {
         _Logger.debug("mapping receive %s", content);
-        switch(content.serial()) {
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
+        return switch (content.serial()) {
+            case 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 ->
                 /*
                  * 内嵌逻辑，在ZCommandFilter中已经处理结束
                  * 此处仅执行转发逻辑
                  */
-                return new Triple<>(content, null, WRITE);
-            default:
-                if(_Then == null) {return null;}
-                return _Then.inject(manager, session, content);
-        }
+                    new Triple<>(content, null, WRITE);
+            default -> {
+                if (_Then == null) {
+                    yield null;
+                }
+                yield _Then.inject(manager, session, content);
+            }
+        };
     }
 }
