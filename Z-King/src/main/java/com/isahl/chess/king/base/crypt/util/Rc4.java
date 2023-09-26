@@ -86,10 +86,12 @@ public class Rc4
         int len = bKey.length;
         int num = 0;// 0x0E计数
         if(len > 0 && len <= 256) {
-            for(int i = 0; i < len; i++) {
-                if((bKey[i] & 0xFF) == 0x0E) {
+            for (byte b : bKey) {
+                if ((b & 0xFF) == 0x0E) {
                     num++;
-                    if(num > 3) {return false;}
+                    if (num > 3) {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -111,7 +113,7 @@ public class Rc4
         for(int i = 0, j = 1; i < key.length; i++) {
             for(byte b : xc) {
                 long dx = System.nanoTime() ^ tick ^ rd.nextLong() ^ b;
-                key[i] ^= dx >> j++;
+                key[i] ^= (byte) (dx >> j++);
                 if(j > 40) {j = 1;}
             }
         }

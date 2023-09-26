@@ -984,7 +984,7 @@ public class RaftPeer
                     union.forEach((peer, machine)->{
                         ISession session = manager.fairLoadSessionByPrefix(peer);
                         if(session != null) {
-                            X78_RaftModify copy = x78.copy();
+                            X78_RaftModify copy = x78.duplicate();
                             copy.with(session);
                             copy.msgId(_ZUid.getId());
                             joints.add(Triple.of(copy, session, session.encoder()));
@@ -1035,7 +1035,7 @@ public class RaftPeer
                     union.forEach((peer, machine)->{
                         ISession session = manager.fairLoadSessionByPrefix(peer);
                         if(session != null) {
-                            X78_RaftModify copy = x78.copy();
+                            X78_RaftModify copy = x78.duplicate();
                             copy.with(session);
                             copy.msgId(_ZUid.getId());
                             joints.add(copy);

@@ -96,7 +96,7 @@ public class Z2Processor<T extends IEvent>
                 DataProvider<T> provider = _Providers[i];
                 SequenceBarrier barrier = _Barriers[i];
                 Sequence sequence = _Sequences[i];
-                count += processEvents(provider, barrier, sequence);
+                count += (int) processEvents(provider, barrier, sequence);
                 // 没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
                 if(c == 50 && count < 50) {
                     LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));

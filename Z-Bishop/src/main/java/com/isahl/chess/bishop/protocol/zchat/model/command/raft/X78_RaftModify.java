@@ -87,7 +87,7 @@ public class X78_RaftModify
     private long[] mPeers;
 
     @Override
-    public X78_RaftModify copy()
+    public X78_RaftModify duplicate()
     {
         X78_RaftModify n = new X78_RaftModify();
         n.mCount = mCount;

@@ -207,7 +207,7 @@ public class WsFrame
     @Override
     public ByteBuf suffix(ByteBuf output)
     {
-        output.put(mFrameHeader |= frame_fin_no_more);
+        output.put(mFrameHeader |= (byte) frame_fin_no_more);
         int attr = 0;
         output.markWriter();
         output.seek(1);

@@ -85,7 +85,7 @@ public class Triple<FIRST, SECOND, THIRD>
     }
 
     @Override
-    public Triple<FIRST, SECOND, THIRD> clone()
+    public Triple<FIRST, SECOND, THIRD> duplicate()
     {
         return new Triple<>(first, second, third);
     }

@@ -81,7 +81,7 @@ public class QEvent
         dest.mType = mType;
         dest.mErrType = mErrType;
         dest.mOperator = mOperator;
-        dest.mContent = mContent.clone();
+        dest.mContent = (IPair) mContent.duplicate();
         dest.mContentList = mContentList;
     }
 

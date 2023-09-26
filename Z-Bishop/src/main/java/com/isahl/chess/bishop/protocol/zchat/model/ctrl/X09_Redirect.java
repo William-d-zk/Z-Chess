@@ -66,7 +66,7 @@ public class X09_Redirect
     }
 
     @Override
-    public X09_Redirect copy()
+    public X09_Redirect duplicate()
     {
         X09_Redirect x09 = new X09_Redirect();
         x09.setHost(getHost());

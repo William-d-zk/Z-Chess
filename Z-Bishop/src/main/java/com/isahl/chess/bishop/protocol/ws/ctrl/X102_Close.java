@@ -50,7 +50,7 @@ public class X102_Close<T extends WsContext>
     }
 
     @Override
-    public X102_Close<T> copy()
+    public X102_Close<T> duplicate()
     {
         return new X102_Close<>(mPayload);
     }

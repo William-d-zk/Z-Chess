@@ -52,7 +52,7 @@ public abstract class QttProtocol
 
     public void setType(QttType type)
     {
-        mFrameHeader |= type.getValue();
+        mFrameHeader |= (byte) type.getValue();
     }
 
     @Override

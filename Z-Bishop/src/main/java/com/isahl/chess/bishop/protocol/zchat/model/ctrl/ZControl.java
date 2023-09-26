@@ -36,7 +36,7 @@ public abstract class ZControl
     {
         setVersion();
         withId(false);
-        mFrameHeader |= ZFrame.frame_op_code_ctrl | (level().getValue() << ZFrame.frame_op_code_qos_bit_left);
+        mFrameHeader |= (byte) (ZFrame.frame_op_code_ctrl | (level().getValue() << ZFrame.frame_op_code_qos_bit_left));
     }
 
     @Override
@@ -54,7 +54,7 @@ public abstract class ZControl
 
     protected void withId(boolean flag)
     {
-        mAttr |= flag ? attribute_rsv_msg_id : 0;
+        mAttr |= (byte) (flag ? attribute_rsv_msg_id : 0);
     }
 
     protected boolean isWithId()
@@ -205,7 +205,8 @@ public abstract class ZControl
         return true;
     }
 
-    public ZControl duplicate()
+    @Override
+    public ZControl reference()
     {
         mFrameHeader |= ZFrame.frame_op_code_duplicate;
         return this;
