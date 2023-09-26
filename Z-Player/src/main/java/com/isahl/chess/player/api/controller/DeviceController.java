@@ -47,13 +47,11 @@ public class DeviceController
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     private final MixOpenService _MixOpenService;
-    private final IStateService  _StateService;
 
     @Autowired
     public DeviceController(MixOpenService mixOpenService, IStateService stateService)
     {
         _MixOpenService = mixOpenService;
-        _StateService = stateService;
     }
 
     @PostMapping("register")

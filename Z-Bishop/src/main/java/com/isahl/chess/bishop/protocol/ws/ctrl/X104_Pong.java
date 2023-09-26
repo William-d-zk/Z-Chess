@@ -50,7 +50,7 @@ public class X104_Pong<T extends WsContext>
     }
 
     @Override
-    public X104_Pong<T> copy()
+    public X104_Pong<T> duplicate()
     {
         return new X104_Pong<>(mPayload);
     }

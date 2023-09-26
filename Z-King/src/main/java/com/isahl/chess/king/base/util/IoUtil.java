@@ -435,7 +435,7 @@ public interface IoUtil
         int b = Integer.parseInt(ipx[1]);
         int c = Integer.parseInt(ipx[2]);
         int d = Integer.parseInt(ipx[3]);
-        long ip = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
+        long ip = (long) a << 24 | (long) b << 16 | (long) c << 8 | d | 0xFFFFFFFFL;
         return ip << 16 | port;
     }
 
@@ -519,7 +519,7 @@ public interface IoUtil
             resLength++;
             if(length > 0) {
                 result >>>= 8;
-                result |= 0x80000000;
+                result |= 0x80000000L;
             }
         }
         while(length > 0);
@@ -557,7 +557,7 @@ public interface IoUtil
         if(buf.hasRemaining()) {
             do {
                 cur = buf.get();
-                length += (cur & 0x7F) << (pos * 7);
+                length += (long) (cur & 0x7F) << (pos * 7);
                 pos++;
             }
             while((cur & 0x80) != 0 && buf.hasRemaining());

@@ -40,13 +40,7 @@ public class ZServerFactory
     protected ZControl build(int serial)
     {
         return switch(serial) {
-            case 0x20 -> null;
-            case 0x21 -> null;
-            case 0x22 -> null;
-            case 0x23 -> null;
-            case 0x24 -> null;
-            case 0x25 -> null;
-            case 0x6F -> null;
+            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x6F -> null;
             default -> super.build(serial);
         };
     }

@@ -54,10 +54,7 @@ public class MockApi
     @GetMapping("mapper")
     public @ResponseBody ZResponse<?> mapper()
     {
-        mockEntryInput().forEach(entry->{
-            _Peer.mapper()
-                 .append(entry);
-        });
+        mockEntryInput().forEach(entry-> _Peer.mapper().append(entry));
         _Peer.mapper()
              .flush();
         return ZResponse.of(CodeKing.SUCCESS, "-", "mapper test");

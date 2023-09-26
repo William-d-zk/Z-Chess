@@ -95,7 +95,7 @@ public class MessageService
     @Override
     public Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification)
     {
-        return null;
+        return Optional.empty();
     }
 
     @Override

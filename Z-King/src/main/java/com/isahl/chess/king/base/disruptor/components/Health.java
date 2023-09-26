@@ -106,4 +106,11 @@ public class Health
     {
         return mAverageDuration;
     }
+
+    public Logger getLogger() {
+        return _Logger;
+    }
+    public int getThreadSlot(){
+        return _ThreadSlot;
+    }
 }

@@ -66,7 +66,7 @@ public class X08_Identity
     }
 
     @Override
-    public X08_Identity copy()
+    public X08_Identity duplicate()
     {
         return new X08_Identity(mPeer, mSession);
     }

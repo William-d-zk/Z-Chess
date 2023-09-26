@@ -102,7 +102,7 @@ public class ZFrame
 
     public void setLevel(Level level)
     {
-        mFrameHeader |= level.getValue() << frame_op_code_qos_bit_left;
+        mFrameHeader |= (byte) (level.getValue() << frame_op_code_qos_bit_left);
     }
 
     @Override
@@ -134,16 +134,15 @@ public class ZFrame
     }
 
     @Override
-    public ZFrame duplicate()
+    public ZFrame reference()
     {
         mFrameHeader |= frame_op_code_duplicate;
         return this;
     }
 
-    public ZFrame withMore()
+    public void withMore()
     {
-        mFrameHeader |= frame_op_code_fin_more;
-        return this;
+        mFrameHeader |= (byte) frame_op_code_fin_more;
     }
 
     @Override
@@ -187,12 +186,12 @@ public class ZFrame
 
     public ZFrame setSeq(int seq)
     {
-        mFrameHeader |= seq & frame_op_code_sequence_mask;
+        mFrameHeader |= (byte) (seq & frame_op_code_sequence_mask);
         return this;
     }
 
     @Override
-    public ZFrame copy()
+    public ZFrame duplicate()
     {
         ZFrame frame = new ZFrame();
         frame.mFrameHeader = mFrameHeader;
@@ -215,7 +214,7 @@ public class ZFrame
                 IoUtil.write(payload, 0, mPayload, 0, mPayload.length);
                 withMore();
                 for(int i = 1, j = ByteBuf.maxLength(); i < size; i++) {
-                    multiFrames[i] = copy().setSeq(i);
+                    multiFrames[i] = duplicate().setSeq(i);
                     multiFrames[i].mPayload = new byte[Math.min(ByteBuf.maxLength(), payload.length - j)];
                     IoUtil.write(payload, j, multiFrames[i].mPayload, 0, multiFrames[i].mPayload.length);
                     j += multiFrames[i].mPayload.length;
