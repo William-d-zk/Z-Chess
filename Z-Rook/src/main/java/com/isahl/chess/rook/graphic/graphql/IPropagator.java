@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2022~2022. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,27 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.zchat.factory;
+package com.isahl.chess.rook.graphic.graphql;
 
-import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
-import com.isahl.chess.board.annotation.ISerialFactory;
+import com.isahl.chess.rook.graphic.IEdge;
 
 /**
- * @author william.d.zk
- * @date 2019-05-08
+ * 传播器
  */
-@ISerialFactory(serial = ('S' << 24) | ('E' << 16) | ('R' << 8) | 'V')
-public class ZServerFactory
-        extends ZChatFactory
+public interface IPropagator
 {
-    public static final ZServerFactory _Instance = new ZServerFactory();
-
-    @Override
-    protected ZControl build(int serial)
-    {
-        return switch(serial) {
-            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x6F -> null;
-            default -> super.build(serial);
-        };
-    }
+    /**
+     * 传播过程是 从视角节点 到 目标节点
+     *
+     * @param perspective 视角节点 ID
+     * @param target      目标节点 ID
+     * @return 扩散所经过的边
+     */
+    IEdge propagate(long perspective, long target);
 }

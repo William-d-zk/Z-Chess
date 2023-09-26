@@ -138,7 +138,7 @@ public class X111_QttConnect
 
     public void setClean()
     {
-        mAttr |= Flag.Clean.getMask();
+        mAttr |= (byte) Flag.Clean.getMask();
     }
 
     public void setVersion(byte version)
@@ -172,7 +172,7 @@ public class X111_QttConnect
         if(retain) {
             setWillRetain();
         }
-        else {mAttr |= Flag.Will.getMask();}
+        else {mAttr |= (byte) Flag.Will.getMask();}
         setLevel(level);
         return this;
     }
@@ -184,7 +184,7 @@ public class X111_QttConnect
 
     public void setWillRetain()
     {
-        mAttr |= Flag.Will.getMask() | Flag.WillRetain.getMask();
+        mAttr |= (byte) (Flag.Will.getMask() | Flag.WillRetain.getMask());
     }
 
     public boolean isWillRetain()
@@ -192,12 +192,11 @@ public class X111_QttConnect
         return (mAttr & Flag.WillRetain.getMask()) > 0;
     }
 
-    public X111_QttConnect setUserName(String name)
+    public void setUserName(String name)
     {
         if(isBlank(name)) {throw new NullPointerException("user name within [null]");}
         mUserName = name;
-        mAttr |= Flag.UserName.getMask();
-        return this;
+        mAttr |= (byte) Flag.UserName.getMask();
     }
 
     public String getUserName()
@@ -210,12 +209,11 @@ public class X111_QttConnect
         return (mAttr & Flag.UserName.getMask()) > 0;
     }
 
-    public X111_QttConnect setPassword(String password)
+    public void setPassword(String password)
     {
         if(isBlank(password)) {throw new NullPointerException("password within [null]");}
         mPassword = password;
-        mAttr |= Flag.Password.getMask();
-        return this;
+        mAttr |= (byte) Flag.Password.getMask();
     }
 
     public String getPassword()
@@ -245,7 +243,7 @@ public class X111_QttConnect
     {
         if(isBlank(topic)) {throw new NullPointerException("will topic within [null]");}
         mWillTopic = topic;
-        mAttr |= Flag.Will.getMask();
+        mAttr |= (byte) Flag.Will.getMask();
         return this;
     }
 
@@ -261,7 +259,7 @@ public class X111_QttConnect
         if(messageLength > 65535) {
             throw new IndexOutOfBoundsException(String.format("will message length [%d] out of bounds", messageLength));
         }
-        mAttr |= Flag.Will.getMask();
+        mAttr |= (byte) Flag.Will.getMask();
         return this;
     }
 
@@ -272,7 +270,7 @@ public class X111_QttConnect
 
     public X111_QttConnect setWillLevel(Level level)
     {
-        mAttr |= level.getValue() << 3;
+        mAttr |= (byte) (level.getValue() << 3);
         return this;
     }
 
@@ -324,9 +322,9 @@ public class X111_QttConnect
             int userNameLength = input.getShort() & 0xFFFF;
             if(userNameLength < 1 || userNameLength > MAX_USER_NAME_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format("client:[%s] { user name length within [0 < length ≤ %d], error:[%d] }",
-                                                                  mClientId,
-                                                                  MAX_USER_NAME_LENGTH,
-                                                                  userNameLength));
+                        mClientId,
+                        MAX_USER_NAME_LENGTH,
+                        userNameLength));
             }
             mUserName = input.readUTF(userNameLength);
         }

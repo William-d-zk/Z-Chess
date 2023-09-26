@@ -23,19 +23,19 @@
 
 package com.isahl.chess.king.base.features.model;
 
+import com.isahl.chess.king.base.features.IDuplicate;
+
 /**
  * @author william.d.zk
  * @date 2016-06-01
  */
 public interface IPair
-        extends Cloneable
+        extends IDuplicate
 {
 
     <FIRST> FIRST getFirst();
 
     <SECOND> SECOND getSecond();
-
-    IPair clone();
 
     boolean isEmpty();
 

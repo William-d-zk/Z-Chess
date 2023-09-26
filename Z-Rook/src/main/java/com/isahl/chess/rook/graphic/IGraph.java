@@ -66,11 +66,11 @@ public interface IGraph<V extends IoSerial>
      */
     Set<GNode<V>> search(INode.Type type, IScene... conditions);
 
-    IEdge assign(long child, long parent);
+    IEdge assign(long target, long perspective);
 
-    IEdge deassign(long child, long parent);
+    IEdge deassign(long target, long perspective);
 
-    boolean isAssigned(long child, long parent);
+    boolean isAssigned(long target, long perspective);
 
     /**
      * 节点(perspective) 与 节点(target) 之间形成联结, 如果两点之间已经存在联结,

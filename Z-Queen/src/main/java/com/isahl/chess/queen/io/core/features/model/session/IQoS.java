@@ -29,7 +29,7 @@ public interface IQoS
         extends ISequence,
                 Comparable<IQoS>
 {
-    int QOS_PRIORITY_00_NETWORK_CONTROL    = 4 << 0;
+    int QOS_PRIORITY_00_NETWORK_CONTROL    = 4;
     int QOS_PRIORITY_01_CLUSTER_CONTROL    = 4 << 1;
     int QOS_PRIORITY_02_MQ_CONTROL         = 4 << 2;
     int QOS_PRIORITY_03_CLUSTER_EXCHANGE   = 4 << 3;

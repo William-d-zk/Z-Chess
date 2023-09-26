@@ -112,15 +112,15 @@ public class MapSerial<K extends Comparable<K>, V extends IoSerial>
             }
             case _Byte -> {
                 output.put(_Byte.id());
-                output.put((byte) k);
+                output.put((Byte) k);
             }
             case _Integer -> {
                 output.put(_Integer.id());
-                output.putInt((int) k);
+                output.putInt((Integer) k);
             }
             case _Long -> {
                 output.put(_Long.id());
-                output.putLong((long) k);
+                output.putLong((Long) k);
             }
             default -> throw new UnsupportedOperationException();
         }

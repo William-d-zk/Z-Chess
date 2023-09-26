@@ -492,7 +492,7 @@ public class MQttPlugin
         _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
         mappeds.forEach(mapped->{
             long target = mapped.session();
-            X113_QttPublish n113 = x113.copy();
+            X113_QttPublish n113 = x113.duplicate();
             n113.target(target);
             n113.setLevel(mapped.level());
             if(mapped.level()

@@ -23,12 +23,14 @@
 
 package com.isahl.chess.king.base.features.model;
 
+import com.isahl.chess.king.base.features.IDuplicate;
+
 /**
  * @author william.d.zk
  * @date 2016-06-01
  */
 public interface ISquare
-        extends Cloneable
+        extends IDuplicate
 {
     <FIRST> FIRST getFirst();
 
@@ -38,5 +40,5 @@ public interface ISquare
 
     <FOURTH> FOURTH getFourth();
 
-    ISquare clone();
+    ISquare duplicate();
 }

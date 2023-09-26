@@ -1,8 +1,8 @@
-POST http://test.isahl.com:8080/device/register
+POST http://idempotent.isahl.com:8080/device/register
 Content-Type: application/json
 
 {
-  "sn": "z-chess0003",
+  "sn": "z-chess-01",
   "username": "isahl.test",
   "profile": {
     "wifi_mac": "09:12:11:FF:2D:8F",
@@ -14,7 +14,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://test.isahl.com:8080/device/register
+POST http://idempotent.isahl.com:8080/device/register
 Content-Type: application/json
 
 {
@@ -30,7 +30,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://test.isahl.com:8080/device/register
+POST http://idempotent.isahl.com:8080/device/register
 Content-Type: application/json
 
 {

@@ -70,8 +70,8 @@ public class FullPolynomial
         int newUpperLimit = newLowerLimit + q;
         for(int i = 0; i < a.p.length; i++) {
             a.p[i] = (short) (a.p[i] % q);
-            if(a.p[i] >= newUpperLimit) {a.p[i] -= q;}
-            if(a.p[i] < newLowerLimit) {a.p[i] += q;}
+            if(a.p[i] >= newUpperLimit) {a.p[i] -= (short) q;}
+            if(a.p[i] < newLowerLimit) {a.p[i] += (short) q;}
         }
     }
 
@@ -89,7 +89,7 @@ public class FullPolynomial
 
         FullPolynomial c = new FullPolynomial(a.p.length);
         for(int i = 0; i < a.p.length; i++)
-        {for(int j = 0; j < b.p.length; j++) {c.p[(i + j) % c.p.length] += (a.p[i] * b.p[j]);}}
+        {for(int j = 0; j < b.p.length; j++) {c.p[(i + j) % c.p.length] += (short) (a.p[i] * b.p[j]);}}
         return c;
     }
 

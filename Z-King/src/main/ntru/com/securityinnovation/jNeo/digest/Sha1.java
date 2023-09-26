@@ -223,7 +223,7 @@ class Sha1
         }
     }
 
-    private static final int RL(int a, int n)
+    private static int RL(int a, int n)
     {
         return ((a << n) | (a >>> (32 - n)));
     }

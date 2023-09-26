@@ -62,13 +62,13 @@ public interface IPContext
 
     int DECODE_NULL    = -2 << COUNT_BITS;
     int DECODE_FRAME   = -1 << COUNT_BITS;
-    int DECODE_PAYLOAD = 01 << COUNT_BITS;
-    int DECODE_ERROR   = 03 << COUNT_BITS;
+    int DECODE_PAYLOAD = 1 << COUNT_BITS;
+    int DECODE_ERROR   = 3 << COUNT_BITS;
 
     int ENCODE_ERROR   = -2 << COUNT_BITS;
     int ENCODE_FRAME   = -1 << COUNT_BITS;
-    int ENCODE_PAYLOAD = 01 << COUNT_BITS;
-    int ENCODE_NULL    = 03 << COUNT_BITS;
+    int ENCODE_PAYLOAD = 1 << COUNT_BITS;
+    int ENCODE_NULL    = 3 << COUNT_BITS;
 
     boolean isInConvert();
 

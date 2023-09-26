@@ -186,25 +186,17 @@ public class ClientPool
             @Override
             public ITriple afterConnected(ISession session)
             {
-                switch(zsort) {
-                    case Z_CLUSTER_SYMMETRY -> {
-                        return null;
-                    }
-                    case QTT_CONSUMER -> {
-                        X111_QttConnect x111 = new X111_QttConnect();
-                        x111.setClientId("3FA073405AC0BF4B348BFBA7FAAE86B09A33643A88EF24AEBA69F8BB87D39B28");
-                        x111.setUserName("lab-meter");
-                        x111.setPassword("Yh6@Y3*5teP~#y67n_j0L4");
-                        x111.setClean();
-                        x111.setKeepAlive(60);
-                        mHeartbeatTask = _TimeWheel.acquire(session, new ScheduleHandler<>(Duration.ofSeconds(60), true, ClientPool.this::qttHeartbeat));
-                        return new Triple<>(x111, session, SINGLE);
-                    }
-                    case WS_PLAIN_TEXT_CONSUMER -> {
-                        return null;
-                    }
-                    default -> {return null;}
+                if (zsort == ZSortHolder.QTT_CONSUMER) {
+                    X111_QttConnect x111 = new X111_QttConnect();
+                    x111.setClientId("3FA073405AC0BF4B348BFBA7FAAE86B09A33643A88EF24AEBA69F8BB87D39B28");
+                    x111.setUserName("lab-meter");
+                    x111.setPassword("Yh6@Y3*5teP~#y67n_j0L4");
+                    x111.setClean();
+                    x111.setKeepAlive(60);
+                    mHeartbeatTask = _TimeWheel.acquire(session, new ScheduleHandler<>(Duration.ofSeconds(60), true, ClientPool.this::qttHeartbeat));
+                    return new Triple<>(x111, session, SINGLE);
                 }
+                return null;
             }
         };
         IoFactory<IProtocol> factory = zsort.getSort()

@@ -115,7 +115,7 @@ public class Square<FIRST, SECOND, THIRD, FOURTH>
     }
 
     @Override
-    public Square<FIRST, SECOND, THIRD, FOURTH> clone()
+    public Square<FIRST, SECOND, THIRD, FOURTH> duplicate()
     {
         return new Square<>(first, second, third, fourth);
     }

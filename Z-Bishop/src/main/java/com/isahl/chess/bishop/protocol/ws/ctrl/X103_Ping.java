@@ -51,7 +51,7 @@ public class X103_Ping<T extends WsContext>
     }
 
     @Override
-    public X103_Ping<T> copy()
+    public X103_Ping<T> duplicate()
     {
         return new X103_Ping<>(mPayload);
     }

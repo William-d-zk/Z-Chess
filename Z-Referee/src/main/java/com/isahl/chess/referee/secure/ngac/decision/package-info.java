@@ -20,19 +20,8 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package com.isahl.chess.rook.graphic;
-
 /**
- * 传播器
+ * 基于 策略(policy) → 处理事件(event) → 决策 (decision) 这个有向路径的终点
+ * 决策(decision) 的图节点
  */
-public interface IPropagator
-{
-    /**
-     * 传播过程是
-     * @param perspective
-     * @param target
-     * @return
-     */
-    IEdge propagate(long perspective, long target);
-}
+package com.isahl.chess.referee.secure.ngac.decision;
