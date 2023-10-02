@@ -39,8 +39,7 @@ public class CacheLogger
     @Override
     public void onEvent(CacheEvent<?, ?> cacheEvent)
     {
-        _Logger.info("%s, Rook-Cache Key: {%s} | EventType: {%s} | Old value: {%s} | New value: {%s}",
-                     cacheEvent.getSource(),
+        _Logger.info(" Rook-Cache Key: {%s} | EventType: {%s} | Old value: {%s} | New value: {%s}",
                      cacheEvent.getKey(),
                      cacheEvent.getType(),
                      cacheEvent.getOldValue(),

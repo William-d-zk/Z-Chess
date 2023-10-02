@@ -73,7 +73,7 @@
         <hibernate-types-52.version>2.16.3</hibernate-types-52.version>
 
         <!--PIPELINE-->
-        <disruptor.version>3.4.4</disruptor.version>
+        <disruptor.version>4.0.0</disruptor.version>
         <!--TOOLS-->
         <httpcore-nio.version>4.4.15</httpcore-nio.version>
         <!--TEST TOOLS VERSION-->
