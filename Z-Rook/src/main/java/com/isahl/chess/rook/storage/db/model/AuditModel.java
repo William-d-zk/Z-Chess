@@ -70,6 +70,13 @@ import java.time.ZoneOffset;
 public abstract class AuditModel
         extends InnerProtocol
 {
+    @Column(name = "created_by_id",
+            nullable = false,
+            updatable = false)
+    private Long createdById;
+    @Column(name = "updated_by_id",
+            nullable = false)
+    private Long updatedById;
     @Column(name = "created_at",
             nullable = false,
             updatable = false)
@@ -135,9 +142,11 @@ public abstract class AuditModel
     @Override
     public int length()
     {
-        return super.length() + // inner-protocol.length
-               8 + // create_at
-               8;  // update_at
+        return super.length() + // AliothModel \ InnerProtocol.length
+               8 + // created_at
+               8 + // updated_at
+               8 + // created_by_id
+               8; // updated_by_id
     }
 
     @Override

@@ -60,22 +60,15 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(value = { "created_at",
                                 "updated_at" },
                       allowGetters = true)
-public abstract class AuditModelManual
-        extends InnerProtocol
+public abstract class AuditManual
+        extends AuditModel
 {
     @Column(name = "net_at",
             nullable = false,
             updatable = false)
     @CreatedDate
     private LocalDateTime netAt;
-    @Column(name = "created_at",
-            nullable = false,
-            updatable = false)
-    private LocalDateTime createdAt;
 
-    @Column(name = "updated_at",
-            nullable = false)
-    private LocalDateTime updatedAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -91,34 +84,12 @@ public abstract class AuditModelManual
         this.netAt = netAt;
     }
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getCreatedAt()
+    @Override
+    public int length()
     {
-        return createdAt;
+        return super.length() + // AuditModel
+               8; // net_at
     }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public void setCreatedAt(LocalDateTime createdAt)
-    {
-        this.createdAt = createdAt;
-    }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getUpdatedAt()
-    {
-        return updatedAt;
-    }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public void setUpdatedAt(LocalDateTime updatedAt)
-    {
-        this.updatedAt = updatedAt;
-    }
-
     @Override
     public String toString()
     {
