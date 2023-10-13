@@ -24,6 +24,7 @@
 package com.isahl.chess.rook.storage.db.config;
 
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -33,7 +34,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.annotation.PostConstruct;
 
 @EnableJpaAuditing
 @EnableTransactionManagement

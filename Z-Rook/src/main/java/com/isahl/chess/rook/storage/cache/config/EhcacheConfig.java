@@ -23,20 +23,19 @@
 
 package com.isahl.chess.rook.storage.cache.config;
 
+import static org.ehcache.config.builders.ExpiryPolicyBuilder.timeToIdleExpiration;
+import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguration;
+
+import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.util.Objects;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import javax.annotation.PostConstruct;
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import java.time.Duration;
-import java.util.Objects;
-
-import static org.ehcache.config.builders.ExpiryPolicyBuilder.timeToIdleExpiration;
-import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguration;
 
 /**
  * @author william.d.zk
