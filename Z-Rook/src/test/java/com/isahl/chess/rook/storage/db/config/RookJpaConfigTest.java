@@ -24,17 +24,16 @@
 package com.isahl.chess.rook.storage.db.config;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-
-import javax.annotation.Resource;
 
 
 @SpringBootTest
 class RookJpaConfigTest
 {
 
-    @Resource
+    @Autowired
     ApplicationContext context;
 
     @Test
