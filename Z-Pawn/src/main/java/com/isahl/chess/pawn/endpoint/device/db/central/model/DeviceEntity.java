@@ -198,7 +198,7 @@ public class DeviceEntity
         mUsername = username;
     }
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     public DeviceProfile getProfile()
     {
