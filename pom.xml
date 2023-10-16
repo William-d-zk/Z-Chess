@@ -68,7 +68,7 @@
         <commons-compress.version>1.21</commons-compress.version>
         <!--DB-->
         <sqlite.driver.version>3.36.0.3</sqlite.driver.version>
-        <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
+        <sqllite.hibernate.dialect.version>0.1.4</sqllite.hibernate.dialect.version>
         <postgresql.driver.version>42.4.2</postgresql.driver.version>
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
 
