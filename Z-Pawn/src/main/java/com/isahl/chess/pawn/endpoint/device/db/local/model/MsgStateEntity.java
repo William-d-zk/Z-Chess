@@ -33,12 +33,12 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
 import org.hibernate.annotations.Type;
 
 @Entity(name = "msg_var")

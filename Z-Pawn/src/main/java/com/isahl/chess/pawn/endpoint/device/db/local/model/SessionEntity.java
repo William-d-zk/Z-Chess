@@ -32,13 +32,12 @@ import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import java.io.Serial;
+import org.hibernate.annotations.Type;
 
 /**
  * @author william.d.zk
