@@ -23,23 +23,23 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.cron.features.ICancelable;
+import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
-import org.hibernate.annotations.Type;
-
+import java.io.Serial;
+import java.nio.charset.StandardCharsets;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-import java.io.Serial;
-import java.nio.charset.StandardCharsets;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import org.hibernate.annotations.Type;
 
 @Entity(name = "msg_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -148,7 +148,7 @@ public class MsgStateEntity
     }
 
     @Column
-    @Type(type = "org.hibernate.type.BinaryType")
+    @Type(LegacyBinaryType.class)
     public byte[] getContent()
     {
         return payload();
