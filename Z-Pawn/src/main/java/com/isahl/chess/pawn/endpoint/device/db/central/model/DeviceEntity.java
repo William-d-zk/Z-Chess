@@ -49,15 +49,12 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.Length;
 
 /**
  * @author william.d.zk
  */
 @Entity(name = "device")
-@TypeDef(name = "jsonb",
-         typeClass = JsonBinaryType.class)
 @Table(schema = "z_chess_pawn",
        indexes = { @Index(name = "device_idx_token_pwd_id",
                           columnList = "token,password,password_id"),

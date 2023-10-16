@@ -30,7 +30,7 @@ spring:
     show-sql: true
     generate-ddl: true
     open-in-view: true
-    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     database: POSTGRESQL
   #    properties:
   #      hibernate:
