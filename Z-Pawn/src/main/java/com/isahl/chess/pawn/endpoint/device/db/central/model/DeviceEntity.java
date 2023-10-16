@@ -37,22 +37,24 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.validator.constraints.Length;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serial;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author william.d.zk
  */
 @Entity(name = "device")
-@TypeDef(name = "jsonb",
-         typeClass = JsonBinaryType.class)
 @Table(schema = "z_chess_pawn",
        indexes = { @Index(name = "device_idx_token_pwd_id",
                           columnList = "token,password,password_id"),
@@ -193,7 +195,7 @@ public class DeviceEntity
         mUsername = username;
     }
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     public DeviceProfile getProfile()
     {

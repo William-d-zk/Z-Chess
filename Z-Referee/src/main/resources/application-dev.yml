@@ -23,8 +23,8 @@ magic-api:
 
 spring:
   datasource:
-    url: jdbc:postgresql://db-pg.isahl.com:5432/isahl.z-chess
-    username: isahl.z-chess.pgsql
+    url: jdbc:postgresql://localhost:5432/isahl.z-chess
+    username: z-chess
     password: 2da790253022bd05cddda6d06bdc1e60
   jpa:
     show-sql: true
@@ -32,18 +32,16 @@ spring:
     open-in-view: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     database: POSTGRESQL
-#    properties:
-#      hibernate:
-#        default_schema: "z_chess_referee"
-#        format_sql: true
-#        enable_lazy_load_no_trans: true
-#        hdm2ddl:
-#          auto: true
-#        jdbc:
-#          lob:
-#            non_contextual_creation: true
-  profiles:
-    active: dev
+  #    properties:
+  #      hibernate:
+  #        default_schema: "z_chess_referee"
+  #        format_sql: true
+  #        enable_lazy_load_no_trans: true
+  #        hdm2ddl:
+  #          auto: true
+  #        jdbc:
+  #          lob:
+  #            non_contextual_creation: true
   mail:
     username: xxxx@qq.com
     password: xxxxxxx

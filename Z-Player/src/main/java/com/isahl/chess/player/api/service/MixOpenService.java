@@ -23,23 +23,22 @@
 
 package com.isahl.chess.player.api.service;
 
+import static java.lang.Math.min;
+
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
+import jakarta.persistence.criteria.Predicate;
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.criteria.Predicate;
-import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-
-import static java.lang.Math.min;
 
 /**
  * @author william.d.zk

@@ -27,14 +27,12 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
-import org.hibernate.HibernateException;
+import jakarta.annotation.PostConstruct;
+import java.io.Serializable;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.Serializable;
 
 /**
  * JPA 会优先初始化
@@ -74,8 +72,7 @@ public class ZMessageGenerator
     }
 
     @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
-    {
+    public Serializable generate(SharedSessionContractImplementor session, Object object) {
         return next();
     }
 

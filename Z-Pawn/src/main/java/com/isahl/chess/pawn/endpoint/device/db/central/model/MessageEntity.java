@@ -23,6 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static java.lang.String.format;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -34,22 +38,25 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static java.lang.String.format;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 /**
  * @author william.d.zk
@@ -130,7 +137,7 @@ public class MessageEntity
 
     @Lob
     @Column(name = "content")
-    @Type(type = "org.hibernate.type.BinaryType")
+    @Type(LegacyBinaryType.class)
     public byte[] getContent()
     {
         return payload();
