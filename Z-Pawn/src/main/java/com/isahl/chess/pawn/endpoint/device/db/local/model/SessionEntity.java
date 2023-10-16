@@ -29,15 +29,15 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IValid;
+import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import java.io.Serial;
+import org.hibernate.annotations.Type;
 
 /**
  * @author william.d.zk
@@ -67,14 +67,14 @@ public class SessionEntity
     }
 
     @Column(name = "device_client")
-    @Type(type = "org.hibernate.type.BinaryType")
+    @Type(LegacyBinaryType.class)
     public void setDeviceClient(byte[] data)
     {
         mClient = data == null ? null : new DeviceClient(ByteBuf.wrap(data));
     }
 
     @Column(name = "device_client")
-    @Type(type = "org.hibernate.type.BinaryType")
+    @Type(LegacyBinaryType.class)
     public byte[] getDeviceClient()
     {
         return mClient == null ? null : mClient.encoded();

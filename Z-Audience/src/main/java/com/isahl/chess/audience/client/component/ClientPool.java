@@ -23,6 +23,8 @@
 
 package com.isahl.chess.audience.client.component;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+
 import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
@@ -56,19 +58,20 @@ import com.isahl.chess.queen.io.core.net.socket.BaseAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.tasks.ClientCore;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
-
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 /**
  * @author william.d.zk

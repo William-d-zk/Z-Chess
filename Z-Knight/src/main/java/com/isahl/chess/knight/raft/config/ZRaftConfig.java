@@ -23,6 +23,9 @@
 
 package com.isahl.chess.knight.raft.config;
 
+import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
+import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
+
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
@@ -31,11 +34,7 @@ import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.model.IStorage.Operation;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,9 +43,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-
-import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
-import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
