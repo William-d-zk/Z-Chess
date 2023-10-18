@@ -37,10 +37,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
@@ -53,7 +55,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonIgnoreProperties(value = { "created_at",
-                                "updated_at" },
+                                "updated_at",
+                                "created_by_id",
+                                "updated_by_id" },
                       allowGetters = true)
 public abstract class AuditModel
         extends InnerProtocol
@@ -99,6 +103,33 @@ public abstract class AuditModel
         this.updatedAt = updatedAt;
     }
 
+    @Column(name = "created_by_id",
+            nullable = false)
+    private Long createdById;
+    @Column(name = "updated_by_id",
+            nullable = false)
+    private Long updatedById;
+
+    public Long getCreatedById()
+    {
+        return createdById;
+    }
+
+    public Long getUpdatedById()
+    {
+        return updatedById;
+    }
+
+    public void setCreatedById(Long createdById)
+    {
+        this.createdById = createdById;
+    }
+
+    public void setUpdatedById(Long updatedById)
+    {
+        this.updatedById = updatedById;
+    }
+
     public AuditModel()
     {
         super();
@@ -124,20 +155,21 @@ public abstract class AuditModel
     public int length()
     {
         return super.length() + // inner-protocol.length
-               8 + // create_at
-               8;  // update_at
+               8 + // created_at
+               8 + // updated_at
+               8 + // created_by_id
+               8; // updated_by_id
     }
 
     @Override
     public int prefix(ByteBuf input)
     {
         int remain = super.prefix(input);
-        long create_at = input.getLong();
-        long update_at = input.getLong();
-        remain -= 16;
-        setCreatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(create_at), ZoneId.systemDefault()));
-        setUpdatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(update_at), ZoneId.systemDefault()));
-        return remain;
+        setCreatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()), ZoneId.systemDefault()));
+        setUpdatedAt(LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()), ZoneId.systemDefault()));
+        setCreatedById(input.getLong());
+        setUpdatedById(input.getLong());
+        return remain - 32;
     }
 
     @Override
@@ -149,7 +181,9 @@ public abstract class AuditModel
                                       .toEpochMilli())
                     .putLong(updatedAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
                                                                      .getId()))
-                                      .toEpochMilli());
+                                      .toEpochMilli())
+                    .putLong(createdById)
+                    .putLong(updatedById);
     }
 
 }

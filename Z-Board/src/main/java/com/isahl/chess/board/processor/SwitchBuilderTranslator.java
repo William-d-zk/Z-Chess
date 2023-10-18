@@ -75,6 +75,7 @@ public class SwitchBuilderTranslator
             String className = canonicalName.substring(lp + 1);
             int serial = serialClass.serial();
             _Logger.debug("case {} → ", serial);
+
             //@formatter:off
             JCTree.JCCase _case = _Maker.Case(CaseTree.CaseKind.STATEMENT,
                                               List.of(_Maker.Literal(serial)),

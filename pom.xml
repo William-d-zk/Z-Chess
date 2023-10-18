@@ -58,8 +58,8 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <logback.version>1.4.11</logback.version>
         <!--SPRING-BOOT-->
         <spring-boot.version>3.1.4</spring-boot.version>
         <!--Commons-IO-->
@@ -72,26 +72,26 @@
         <!--PIPELINE-->
         <disruptor.version>4.0.0</disruptor.version>
         <!--TOOLS-->
-        <httpcore-nio.version>4.4.15</httpcore-nio.version>
+        <httpcore-nio.version>4.4.16</httpcore-nio.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <junit.platform.verssion>1.8.2</junit.platform.verssion>
         <mockito.version>4.6.1</mockito.version>
         <!--CACHE-->
-        <ehcache.version>3.10.0</ehcache.version>
+        <ehcache.version>3.10.8</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.13.3</jackson.version>
-        <json-schema-validator.version>1.0.71</json-schema-validator.version>
+        <jackson.version>2.15.3</jackson.version>
+        <json-schema-validator.version>1.0.87</json-schema-validator.version>
         <!--PLUGINS-->
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
-        <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
         <hibernate-enhance-maven-plugin.version>6.1.1.Final</hibernate-enhance-maven-plugin.version>
         <maven.compiler.debug>true</maven.compiler.debug>
     </properties>

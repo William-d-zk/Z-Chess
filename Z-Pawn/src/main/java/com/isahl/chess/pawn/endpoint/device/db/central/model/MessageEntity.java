@@ -62,9 +62,8 @@ import org.hibernate.annotations.Type;
  * @author william.d.zk
  * @date 2019-07-22
  */
-@Entity(name = "message")
-@Table(schema = "z_chess_pawn",
-       indexes = { @Index(name = "origin_idx",
+@Entity(name = "zc_rd_message")
+@Table(indexes = { @Index(name = "origin_idx",
                           columnList = "origin"),
                    @Index(name = "topic_idx",
                           columnList = "topic") })

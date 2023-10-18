@@ -32,11 +32,13 @@ import org.slf4j.helpers.Util;
 
 import java.net.URL;
 
+import static ch.qos.logback.classic.spi.Configurator.ExecutionStatus.NEUTRAL;
+
 public class BoardLogLoader
         extends ContextAwareBase
         implements Configurator
 {
-    public void configure(LoggerContext loggerContext)
+    public ExecutionStatus configure(LoggerContext loggerContext)
     {
         this.addInfo("Setting up retail default configuration.");
         // 清除loggerContext已加载配置，重新加载
@@ -54,5 +56,6 @@ public class BoardLogLoader
         catch(JoranException e) {
             Util.report("Failed to instantiate [" + LoggerContext.class.getName() + "]", e);
         }
+        return NEUTRAL;
     }
 }
