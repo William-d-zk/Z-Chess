@@ -54,9 +54,8 @@ import org.hibernate.validator.constraints.Length;
 /**
  * @author william.d.zk
  */
-@Entity(name = "device")
-@Table(schema = "z_chess_pawn",
-       indexes = { @Index(name = "device_idx_token_pwd_id",
+@Entity(name = "zc_rd_device")
+@Table(indexes = { @Index(name = "device_idx_token_pwd_id",
                           columnList = "token,password,password_id"),
                    @Index(name = "device_idx_token_pwd",
                           columnList = "token,password"),
