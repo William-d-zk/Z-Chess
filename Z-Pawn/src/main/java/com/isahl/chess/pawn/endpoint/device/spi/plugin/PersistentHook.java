@@ -72,21 +72,22 @@ public class PersistentHook
     @Override
     public void afterLogic(IoSerial content, List<ITriple> results)
     {
-        switch(content.serial()) {
-            case 0x113 -> {
-                X113_QttPublish x113 = (X113_QttPublish) content;
-                if(!x113.isDuplicate()) {
-                    String topic = x113.topic();
-                    byte[] contents = x113.payload();
-                    MessageEntity msgEntity = new MessageEntity();
-                    msgEntity.setMessage(contents);
-                    msgEntity.setTopic(topic);
-                    msgEntity.setNetAt(LocalDateTime.now());
-                    msgEntity.setOrigin(x113.session()
-                                            .index());
-                    _MainQueue.offer(msgEntity);
-                }
+        if(content.serial() == 0x113) {
+            X113_QttPublish x113 = (X113_QttPublish) content;
+            if(!x113.isDuplicate()) {
+                String topic = x113.topic();
+                byte[] contents = x113.payload();
+                MessageEntity msgEntity = new MessageEntity();
+                msgEntity.setMessage(contents);
+                msgEntity.setTopic(topic);
+                msgEntity.setNetAt(LocalDateTime.now());
+                msgEntity.setOrigin(x113.session()
+                                        .index());
+                _MainQueue.offer(msgEntity);
             }
+        }
+        else {
+            throw new IllegalStateException("Unexpected value: " + content.serial());
         }
     }
 
