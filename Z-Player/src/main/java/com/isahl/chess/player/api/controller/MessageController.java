@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * @author william.d.zk
- * @date 2019/11/3
+ * {@code @date} 2019/11/3
  */
 @RestController
 @RequestMapping("message")
