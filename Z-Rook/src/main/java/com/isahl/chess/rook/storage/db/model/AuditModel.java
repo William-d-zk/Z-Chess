@@ -33,20 +33,18 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.message.InnerProtocol;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import static jakarta.persistence.TemporalType.TIMESTAMP;
 
 /**
  * @author william.d.zk
@@ -67,12 +65,14 @@ public abstract class AuditModel
             updatable = false)
     @CreatedDate
     @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
+    @Temporal(TIMESTAMP)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at",
             nullable = false)
     @LastModifiedDate
     @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
+    @Temporal(TIMESTAMP)
     private LocalDateTime updatedAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
