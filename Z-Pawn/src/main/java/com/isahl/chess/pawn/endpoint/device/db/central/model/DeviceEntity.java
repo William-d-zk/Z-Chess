@@ -37,19 +37,16 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import java.io.Serial;
-import java.time.LocalDateTime;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
+
+import java.io.Serial;
+import java.time.LocalDateTime;
+
+import static jakarta.persistence.TemporalType.TIMESTAMP;
 
 /**
  * @author william.d.zk
@@ -92,7 +89,7 @@ public class DeviceEntity
     @JsonIgnore
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
-                      strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator")
+                      type = com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator.class)
     public long getId()
     {
         return primaryKey();
@@ -153,6 +150,7 @@ public class DeviceEntity
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @Column(name = "invalid_at",
             nullable = false)
+    @Temporal(TIMESTAMP)
     public LocalDateTime getInvalidAt()
     {
         return mInvalidAt;
@@ -209,17 +207,18 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
-                             getId(),
-                             getToken(),
-                             getUsername(),
-                             getPasswordId(),
-                             getPassword(),
-                             getSn(),
-                             getProfile(),
-                             getCreatedAt(),
-                             getUpdatedAt(),
-                             getInvalidAt());
+        return String.format(
+                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
+                getId(),
+                getToken(),
+                getUsername(),
+                getPasswordId(),
+                getPassword(),
+                getSn(),
+                getProfile(),
+                getCreatedAt(),
+                getUpdatedAt(),
+                getInvalidAt());
     }
 
     public DeviceEntity()

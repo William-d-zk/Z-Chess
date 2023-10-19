@@ -23,10 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.model;
 
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static java.lang.String.format;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -41,22 +37,21 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static jakarta.persistence.TemporalType.TIMESTAMP;
+import static java.lang.String.format;
 
 /**
  * @author william.d.zk
@@ -97,7 +92,7 @@ public class MessageEntity
     @JsonIgnore
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
-                      strategy = "com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator")
+                      type = com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator.class)
     public long getId()
     {
         return primaryKey();
@@ -121,6 +116,7 @@ public class MessageEntity
     @Column(name = "net_at",
             nullable = false,
             updatable = false)
+    @Temporal(TIMESTAMP)
     public LocalDateTime getNetAt()
     {
         return mNetAt;
