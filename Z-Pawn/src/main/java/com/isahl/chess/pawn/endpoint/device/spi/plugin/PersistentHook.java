@@ -79,7 +79,7 @@ public class PersistentHook
                     String topic = x113.topic();
                     byte[] contents = x113.payload();
                     MessageEntity msgEntity = new MessageEntity();
-                    msgEntity.setContent(contents);
+                    msgEntity.setMessage(contents);
                     msgEntity.setTopic(topic);
                     msgEntity.setNetAt(LocalDateTime.now());
                     msgEntity.setOrigin(x113.session()

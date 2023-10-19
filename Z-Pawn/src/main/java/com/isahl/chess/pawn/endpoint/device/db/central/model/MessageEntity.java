@@ -55,7 +55,7 @@ import static java.lang.String.format;
 
 /**
  * @author william.d.zk
- * @date 2019-07-22
+ * {@code @date} 2019-07-22
  */
 @Entity(name = "zc_rd_message")
 @Table(indexes = { @Index(name = "origin_idx",
@@ -131,9 +131,9 @@ public class MessageEntity
     }
 
     @Lob
-    @Column(name = "content")
+    @Column(name = "message")
     @Type(LegacyBinaryType.class)
-    public byte[] getContent()
+    public byte[] getMessage()
     {
         return payload();
     }
@@ -160,7 +160,7 @@ public class MessageEntity
         mTopic = topic;
     }
 
-    public void setContent(byte[] data)
+    public void setMessage(byte[] data)
     {
         withSub(data);
     }
@@ -172,7 +172,7 @@ public class MessageEntity
                       getId(),
                       getOrigin(),
                       getTopic(),
-                      new String(getContent(), StandardCharsets.UTF_8),
+                      new String(getMessage(), StandardCharsets.UTF_8),
                       getNetAt(),
                       super.toString());
     }

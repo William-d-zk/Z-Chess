@@ -57,7 +57,7 @@ public class MessageOpenService
         long msgId = _ClusterPeer.generateId();
         MessageEntity entity = new MessageEntity();
         entity.setId(msgId);
-        entity.setContent(body.getContent());
+        entity.setMessage(body.getContent());
         entity.setTopic(body.getTopic());
         entity.setOrigin(deviceId);
         entity.setNetAt(LocalDateTime.now());

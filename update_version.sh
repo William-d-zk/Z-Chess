@@ -25,9 +25,9 @@ version="1.0.16"
 # shellcheck disable=SC2044
 for file in $(find \./Z-* -name "pom.xml"); do
   echo $file
-  sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" \
+  sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g" \
     $file >$file.new
   mv -f $file.new $file
 done
-sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" ./pom.xml >./pom.xml.new
+sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g" ./pom.xml >./pom.xml.new
 mv -f ./pom.xml.new ./pom.xml
