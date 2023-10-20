@@ -47,7 +47,7 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
- * @date 2021/5/9
+ * {@code @date} 2021/5/9
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -68,8 +68,8 @@ public class DeviceClient
     private long                      mInvalidAt;
     private boolean                   mClean;
 
-    private transient Map<Long, IProtocol> tIdentifierReceivedMap = new HashMap<>();
-    private transient Map<Long, IProtocol> tIdentifierSendingMap  = new HashMap<>();
+    private final transient Map<Long, IProtocol> tIdentifierReceivedMap = new HashMap<>();
+    private final transient Map<Long, IProtocol> tIdentifierSendingMap  = new HashMap<>();
 
     @JsonCreator
     public DeviceClient(

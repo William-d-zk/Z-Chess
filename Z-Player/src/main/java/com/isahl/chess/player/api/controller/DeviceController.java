@@ -38,7 +38,7 @@ import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 
 /**
  * @author william.d.zk
- * @date 2019/05/01
+ * {@code @date} 2019/05/01
  */
 @RestController
 @RequestMapping("device")
