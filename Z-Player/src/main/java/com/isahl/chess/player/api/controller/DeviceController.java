@@ -60,7 +60,7 @@ public class DeviceController
             DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setSn(deviceDo.getSn());
+        deviceEntity.setNumber(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));

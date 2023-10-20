@@ -27,13 +27,19 @@ import static org.ehcache.config.builders.ExpiryPolicyBuilder.timeToIdleExpirati
 import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguration;
 
 import jakarta.annotation.PostConstruct;
+
 import java.time.Duration;
 import java.util.Objects;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+
 import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.jsr107.Eh107Configuration;
 import org.ehcache.xml.XmlConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -46,7 +52,6 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource({ "classpath:cache.properties" })
 public class EhcacheConfig
 {
-
     private static       XmlConfiguration RookConfig;
     private static final String           DEFAULT_TEMPLATE_NAME = "rook-default";
 
@@ -55,24 +60,24 @@ public class EhcacheConfig
     {
         RookConfig = new XmlConfiguration(Objects.requireNonNull(getClass().getResource("/ehcache.xml")));
     }
-
-    public static <K, V> Cache<K, V> createCache(CacheManager cacheManager,
-                                                 String cacheName,
-                                                 Class<K> keyType,
-                                                 Class<V> valueType,
-                                                 Duration expiry) throws ClassNotFoundException, InstantiationException, IllegalAccessException
+    public static <K, V> void createCache(CacheManager cacheManager,
+                                          String cacheName,
+                                          Class<K> keyType,
+                                          Class<V> valueType,
+                                          Duration expiry) throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         CacheConfigurationBuilder<K, V> builder = RookConfig.newCacheConfigurationBuilderFromTemplate(
                 DEFAULT_TEMPLATE_NAME,
                 keyType,
                 valueType);
-        return cacheManager.createCache(cacheName,
-                                        fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
-                                                                             .build()));
+        cacheManager.createCache(cacheName,
+                                 fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
+                                                                      .build()));
     }
 
     public void defaultDefine()
     {
 
     }
+
 }

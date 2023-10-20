@@ -107,8 +107,7 @@ public class DeviceService
             {
                 exist.setPassword(_CryptoUtil.randomPassword(17,
                                                              32,
-                                                             device.getProfile()
-                                                                   .isOnlyWords()));
+                                                             true));
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_MixConfig.getPasswordInvalidDays()));
@@ -117,8 +116,8 @@ public class DeviceService
         }
         else {
             DeviceEntity exist = null;
-            if(!isBlank(device.getSn())) {
-                exist = _DeviceRepository.findBySn(device.getSn());
+            if(!isBlank(device.getNumber())) {
+                exist = _DeviceRepository.findBySn(device.getNumber());
             }
             else if(!isBlank(device.getToken())) {
                 exist = _DeviceRepository.findByToken(device.getToken());
@@ -126,13 +125,13 @@ public class DeviceService
             DeviceEntity entity = exist == null ? new DeviceEntity() : exist;
             if(exist == null) {
                 String source = String.format("sn:%s,random %s%d",
-                                              device.getSn(),
+                                              device.getNumber(),
                                               _MixConfig.getPasswordRandomSeed(),
                                               Instant.now()
                                                      .toEpochMilli());
                 _Logger.debug("new device %s ", source);
                 entity.setToken(IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
-                entity.setSn(device.getSn());
+                entity.setNumber(device.getNumber());
                 entity.setUsername(device.getUsername());
                 entity.setProfile(device.getProfile());
             }
@@ -141,8 +140,7 @@ public class DeviceService
             {
                 entity.setPassword(_CryptoUtil.randomPassword(17,
                                                               32,
-                                                              device.getProfile()
-                                                                    .isOnlyWords()));
+                                                              true));
                 entity.increasePasswordId();
                 entity.setInvalidAt(LocalDateTime.now()
                                                  .plus(_MixConfig.getPasswordInvalidDays()));

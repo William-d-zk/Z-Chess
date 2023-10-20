@@ -40,21 +40,21 @@ import org.springframework.lang.NonNull;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceDo
 {
-    private String        mSn;
+    private String        mNumber;
     private String        mUsername;
     private String        mPassword;
     private String        mToken;
     private DeviceProfile mProfile;
 
-    public String getSn()
+    public String getNumber()
     {
-        return mSn;
+        return mNumber;
     }
 
-    public void setSn(String sn)
+    public void setNumber(String number)
     {
-        if(sn != null) {
-            mSn = sn.toUpperCase();
+        if(number != null) {
+            mNumber = number.toUpperCase();
         }
     }
 
@@ -72,7 +72,7 @@ public class DeviceDo
 
     public void setToken(
             @NonNull
-                    String token)
+            String token)
     {
         this.mToken = token.toUpperCase();
     }
@@ -81,11 +81,6 @@ public class DeviceDo
     public String getToken()
     {
         return mToken;
-    }
-
-    public String getClientId()
-    {
-        return getToken();
     }
 
     public String getUsername()
@@ -113,7 +108,7 @@ public class DeviceDo
         DeviceDo deviceDo = new DeviceDo();
         deviceDo.setUsername(entity.getUsername());
         deviceDo.setPassword(entity.getPassword());
-        deviceDo.setSn(entity.getSn());
+        deviceDo.setNumber(entity.getNumber());
         deviceDo.setToken(entity.getToken());
         deviceDo.setProfile(entity.getProfile());
         return deviceDo;
@@ -123,7 +118,7 @@ public class DeviceDo
     {
         DeviceDo deviceDo = new DeviceDo();
         deviceDo.setUsername(client.getUsername());
-        deviceDo.setSn(client.getSn());
+        deviceDo.setNumber(client.getSn());
         return deviceDo;
     }
 }

@@ -77,6 +77,8 @@ public class MessageEntity
     private String        mTopic;
     @Transient
     private LocalDateTime mNetAt;
+    @Transient
+    private String        mContent;
 
     public MessageEntity()
     {
@@ -104,7 +106,8 @@ public class MessageEntity
         return mOrigin;
     }
 
-    @Column(updatable = false,
+    @Column(name ="origin",
+            updatable = false,
             nullable = false)
     public long getOrigin()
     {
@@ -122,7 +125,8 @@ public class MessageEntity
         return mNetAt;
     }
 
-    @Column(length = 511,
+    @Column(name = "topic",
+            length = 511,
             nullable = false,
             updatable = false)
     public String getTopic()
