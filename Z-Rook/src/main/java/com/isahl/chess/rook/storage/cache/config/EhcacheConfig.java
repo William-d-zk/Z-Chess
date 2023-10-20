@@ -39,7 +39,7 @@ import static org.ehcache.jsr107.Eh107Configuration.fromEhcacheCacheConfiguratio
 
 /**
  * @author william.d.zk
- * @date 2020/6/6
+ * {@code @date} 2020/6/6
  */
 @Configuration
 @EnableCaching
