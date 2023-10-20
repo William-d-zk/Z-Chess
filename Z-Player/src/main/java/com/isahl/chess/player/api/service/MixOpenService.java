@@ -23,8 +23,6 @@
 
 package com.isahl.chess.player.api.service;
 
-import static java.lang.Math.min;
-
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
@@ -32,13 +30,26 @@ import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.player.api.model.DeviceDo;
 import jakarta.persistence.criteria.Predicate;
-import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
+
+import static java.lang.Math.min;
 
 /**
  * @author william.d.zk
@@ -80,7 +91,7 @@ public class MixOpenService
                                                           Triple<String, Object, Predicate.BooleanOperator>... columns)
     {
         return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder)->{
-            criteriaBuilder.greaterThan(root.get("createAt"), dateTime);
+            criteriaBuilder.greaterThan(root.get("createdAt"), dateTime);
             if(columns != null && columns.length > 0) {
                 Predicate.BooleanOperator last = Predicate.BooleanOperator.AND;
                 List<Predicate> predicates = new LinkedList<>();
@@ -125,5 +136,22 @@ public class MixOpenService
                             .stream()
                             .map(se->DeviceDo.of(se.client()))
                             .toList();
+    }
+    @Bean
+    CommonsRequestLoggingFilter loggingFilter(){
+        CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+        // 记录 客户端 IP信息
+        loggingFilter.setIncludeClientInfo(true);
+        // 记录请求头
+        loggingFilter.setIncludeHeaders(true);
+        // 如果记录请求头的话，可以指定哪些记录，哪些不记录
+        // loggingFilter.setHeaderPredicate();
+        // 记录 请求体  特别是POST请求的body参数
+        loggingFilter.setIncludePayload(true);
+        // 请求体的大小限制 默认50
+        loggingFilter.setMaxPayloadLength(10000);
+        //记录请求路径中的query参数
+        loggingFilter.setIncludeQueryString(true);
+        return loggingFilter;
     }
 }

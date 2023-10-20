@@ -56,8 +56,8 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
                           columnList = "token,password,password_id"),
                    @Index(name = "device_idx_token_pwd",
                           columnList = "token,password"),
-                   @Index(name = "device_idx_sn",
-                          columnList = "sn"),
+                   @Index(name = "device_idx_number",
+                          columnList = "number"),
                    @Index(name = "device_idx_token",
                           columnList = "token"),
                    @Index(name = "device_idx_username",
@@ -71,7 +71,7 @@ public class DeviceEntity
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Transient
-    private String        mSn;
+    private String        mNumber;
     @Transient
     private String        mPassword;
     @Transient
@@ -166,14 +166,14 @@ public class DeviceEntity
     @Column(length = 32,
             nullable = false,
             updatable = false)
-    public String getSn()
+    public String getNumber()
     {
-        return mSn;
+        return mNumber;
     }
 
-    public void setSn(String sn)
+    public void setNumber(String number)
     {
-        mSn = sn;
+        mNumber = number;
     }
 
     @Column(length = 32,
@@ -208,13 +208,13 @@ public class DeviceEntity
     public String toString()
     {
         return String.format(
-                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
+                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,No.:%s,profile:%s,createdAt:%s,updatedAt:%s,invalidAt:%s}",
                 getId(),
                 getToken(),
                 getUsername(),
                 getPasswordId(),
                 getPassword(),
-                getSn(),
+                getNumber(),
                 getProfile(),
                 getCreatedAt(),
                 getUpdatedAt(),

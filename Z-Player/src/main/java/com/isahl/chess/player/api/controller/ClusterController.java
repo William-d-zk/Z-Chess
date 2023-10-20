@@ -60,9 +60,6 @@ public class ClusterController
     {
         Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
 
-
-
-
         try {
             return ZResponse.success(_RaftService.topology());
         }
