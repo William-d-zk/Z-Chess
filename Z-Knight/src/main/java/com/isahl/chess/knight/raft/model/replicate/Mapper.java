@@ -23,11 +23,6 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
-import static com.isahl.chess.knight.raft.features.IRaftMachine.TERM_NAN;
-import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
-import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
@@ -36,6 +31,11 @@ import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
+
+import javax.cache.CacheManager;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,10 +53,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.cache.CacheManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
+
+import static com.isahl.chess.knight.raft.features.IRaftMachine.TERM_NAN;
+import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
+import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
 public class Mapper

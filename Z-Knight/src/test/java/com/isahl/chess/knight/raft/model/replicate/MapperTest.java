@@ -25,8 +25,6 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class MapperTest
 {
 

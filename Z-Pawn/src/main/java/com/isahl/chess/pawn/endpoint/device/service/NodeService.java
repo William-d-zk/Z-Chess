@@ -43,13 +43,14 @@ import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk

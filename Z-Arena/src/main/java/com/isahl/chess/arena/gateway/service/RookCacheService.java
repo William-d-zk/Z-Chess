@@ -23,16 +23,17 @@
 
 package com.isahl.chess.arena.gateway.service;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
-import java.time.Duration;
-import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import javax.cache.CacheManager;
+import java.time.Duration;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class RookCacheService

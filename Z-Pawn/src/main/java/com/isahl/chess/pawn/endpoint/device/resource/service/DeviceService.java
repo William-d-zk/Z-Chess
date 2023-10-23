@@ -23,10 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.service;
 
-import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
@@ -37,13 +33,6 @@ import com.isahl.chess.pawn.endpoint.device.db.central.repository.IDeviceReposit
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -51,6 +40,18 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import javax.cache.CacheManager;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
@@ -78,8 +79,16 @@ public class DeviceService
     @PostConstruct
     public void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager, "device_token_cache", String.class, DeviceEntity.class, Duration.of(20, MINUTES));
-        EhcacheConfig.createCache(_CacheManager, "device_id_cache", Long.class, DeviceEntity.class, Duration.of(15, MINUTES));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "device_token_cache",
+                                  String.class,
+                                  DeviceEntity.class,
+                                  Duration.of(20, MINUTES));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "device_id_cache",
+                                  Long.class,
+                                  DeviceEntity.class,
+                                  Duration.of(15, MINUTES));
     }
 
     @CachePut(value = "device_token_cache",
@@ -105,9 +114,7 @@ public class DeviceService
             if(exist.getInvalidAt()
                     .isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId())
             {
-                exist.setPassword(_CryptoUtil.randomPassword(17,
-                                                             32,
-                                                             true));
+                exist.setPassword(_CryptoUtil.randomPassword(17, 32, true));
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_MixConfig.getPasswordInvalidDays()));
@@ -117,7 +124,7 @@ public class DeviceService
         else {
             DeviceEntity exist = null;
             if(!isBlank(device.getNumber())) {
-                exist = _DeviceRepository.findBySn(device.getNumber());
+                exist = _DeviceRepository.findByNumber(device.getNumber());
             }
             else if(!isBlank(device.getToken())) {
                 exist = _DeviceRepository.findByToken(device.getToken());
@@ -134,13 +141,13 @@ public class DeviceService
                 entity.setNumber(device.getNumber());
                 entity.setUsername(device.getUsername());
                 entity.setProfile(device.getProfile());
+                entity.setNotice(device.getName() + ":" + device.getNumber());
+                entity.setCreatedById(device.getCreatedById());
             }
             if(exist == null || exist.getInvalidAt()
                                      .isBefore(LocalDateTime.now()))
             {
-                entity.setPassword(_CryptoUtil.randomPassword(17,
-                                                              32,
-                                                              true));
+                entity.setPassword(_CryptoUtil.randomPassword(17, 32, true));
                 entity.increasePasswordId();
                 entity.setInvalidAt(LocalDateTime.now()
                                                  .plus(_MixConfig.getPasswordInvalidDays()));
@@ -163,9 +170,9 @@ public class DeviceService
     }
 
     @Override
-    public DeviceEntity findBySn(String sn) throws ZException
+    public DeviceEntity findByNumber(String number) throws ZException
     {
-        return _DeviceRepository.findBySn(sn);
+        return _DeviceRepository.findByNumber(number);
     }
 
     @Override

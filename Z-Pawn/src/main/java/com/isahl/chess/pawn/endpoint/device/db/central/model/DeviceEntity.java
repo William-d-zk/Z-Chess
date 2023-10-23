@@ -84,6 +84,10 @@ public class DeviceEntity
     private LocalDateTime mInvalidAt;
     @Transient
     private DeviceProfile mProfile;
+    @Transient
+    private String        mNotice;
+    @Transient
+    private String        mName;
 
     @Id
     @JsonIgnore
@@ -202,6 +206,28 @@ public class DeviceEntity
     public void setProfile(DeviceProfile profile)
     {
         mProfile = profile;
+    }
+
+    @Column(nullable = false)
+    public String getNotice()
+    {
+        return mNotice;
+    }
+
+    public void setNotice(String notice)
+    {
+        mNotice = notice;
+    }
+
+    @Column(name = "o_name")
+    public String getName()
+    {
+        return "IoT-Device";
+    }
+
+    public void setName(String name)
+    {
+        mName = name;
     }
 
     @Override

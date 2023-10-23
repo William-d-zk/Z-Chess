@@ -31,11 +31,9 @@ import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.player.api.model.DeviceDo;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -72,9 +70,9 @@ public class MixOpenService
         return _DeviceService.findByToken(token);
     }
 
-    public DeviceEntity findBySn(String sn)
+    public DeviceEntity findByNumber(String number)
     {
-        return _DeviceService.findBySn(sn);
+        return _DeviceService.findByNumber(number);
     }
 
     @SafeVarargs
@@ -129,6 +127,10 @@ public class MixOpenService
                             .map(se->DeviceDo.of(se.client()))
                             .toList();
     }
+
+    /** 需要调试 服务收到的Http 请求的时候放开
+     * Application.properties 需要添加
+     -- logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=debug
     @Bean
     CommonsRequestLoggingFilter loggingFilter(){
         CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
@@ -146,4 +148,5 @@ public class MixOpenService
         loggingFilter.setIncludeQueryString(true);
         return loggingFilter;
     }
+    */
 }

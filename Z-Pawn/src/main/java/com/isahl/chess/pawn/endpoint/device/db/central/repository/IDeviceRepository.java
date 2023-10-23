@@ -37,9 +37,9 @@ public interface IDeviceRepository
 {
     DeviceEntity findByToken(String token);
 
-    DeviceEntity findBySn(String sn);
+    DeviceEntity findByNumber(String number);
 
-    DeviceEntity findBySnOrToken(String sn, String token);
+    DeviceEntity findByNumberOrToken(String sn, String token);
 
     DeviceEntity findByIdAndUsername(long id, String username);
 }
