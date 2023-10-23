@@ -113,7 +113,7 @@ public class DeviceClient
         return mWillContent;
     }
 
-    public String getSn()
+    public String getNumber()
     {
         return mNumber;
     }

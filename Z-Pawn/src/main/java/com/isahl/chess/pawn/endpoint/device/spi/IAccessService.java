@@ -23,7 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;

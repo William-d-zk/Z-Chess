@@ -36,8 +36,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
-import java.io.Serial;
 import org.hibernate.annotations.Type;
+
+import java.io.Serial;
 
 /**
  * @author william.d.zk

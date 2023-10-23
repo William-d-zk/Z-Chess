@@ -28,11 +28,12 @@ import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import jakarta.annotation.PostConstruct;
-import java.io.Serializable;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.Serializable;
 
 /**
  * JPA 会优先初始化

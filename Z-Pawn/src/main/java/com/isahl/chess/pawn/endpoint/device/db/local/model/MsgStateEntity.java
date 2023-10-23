@@ -23,8 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.model;
 
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -37,9 +35,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
+import org.hibernate.annotations.Type;
+
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
-import org.hibernate.annotations.Type;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 @Entity(name = "msg_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

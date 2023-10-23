@@ -24,7 +24,6 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
-import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;

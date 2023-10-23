@@ -24,8 +24,8 @@
 package com.isahl.chess.pawn.endpoint.device.resource.features;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 

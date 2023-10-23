@@ -26,8 +26,8 @@ package com.isahl.chess.player.api.controller;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.CodeKing;
-import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class DeviceController
     private final MixOpenService _MixOpenService;
 
     @Autowired
-    public DeviceController(MixOpenService mixOpenService, IStateService stateService)
+    public DeviceController(MixOpenService mixOpenService)
     {
         _MixOpenService = mixOpenService;
     }
@@ -63,6 +63,7 @@ public class DeviceController
         deviceEntity.setNumber(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
+        deviceEntity.setCreatedById(deviceDo.getCreatedById());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
@@ -79,51 +80,16 @@ public class DeviceController
     }
 
     @GetMapping("manager/query")
-    public @ResponseBody ZResponse<?> queryDeviceBySn(
-            @RequestParam("sn")
-            String sn)
+    public @ResponseBody ZResponse<?> queryDeviceByNumber(
+            @RequestParam("number")
+            String number)
     {
-        if(!isBlank(sn)) {
-            DeviceEntity exist = _MixOpenService.findBySn(sn);
+        if(!isBlank(number)) {
+            DeviceEntity exist = _MixOpenService.findByNumber(number);
             if(exist != null) {return ZResponse.success(exist);}
         }
         return ZResponse.error(CodeKing.MISS.getCode(), "device miss");
     }
-
-    /*
-     * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
-     * 推荐使用带有 查询条件的请求方式
-     * 引入 click-house 建立搜索引擎的模式
-     *
-     * @param page
-     * @param size
-     * @return
-
-    @GetMapping("all")
-    public @ResponseBody
-    ZResponse<?> listDevices(
-            @RequestParam(name = "create_at",
-                          required = false)
-                    LocalDateTime createAt,
-            @RequestParam(name = "username",
-                          required = false)
-                    String username,
-            @RequestParam(name = "page",
-                          defaultValue = "0",
-                          required = false)
-                    Integer page,
-            @RequestParam(name = "size",
-                          defaultValue = "20",
-                          required = false)
-                    Integer size)
-    {
-        size = size < 1 ? 1 : size > 50 ? 50 : size;
-        page = page < 0 ? 0 : page;
-        return ZResponse.success(_MixOpenService.findAllByColumnsAfter(PageRequest.of(page, size),
-                                                                       createAt == null ? ZUID.EPOCH_DATE : createAt,
-                                                                       new Triple<>("username", username, AND)));
-    }
-    */
 
     @GetMapping("online/all")
     public @ResponseBody ZResponse<?> listOnlineDevices(
