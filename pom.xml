@@ -59,7 +59,7 @@
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
         <slf4j.version>2.0.9</slf4j.version>
-        <logback.version>1.4.11</logback.version>
+        <logback.version>1.4.12</logback.version>
         <!--SPRING-BOOT-->
         <spring-boot.version>3.1.4</spring-boot.version>
         <!--Commons-IO-->
