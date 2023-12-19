@@ -22,4 +22,4 @@
 #
 
 cd ..
-mvn clean compile -Dmaven.test.skip=true -P dev
+mvn clean compile install -Dmaven.test.skip=true -P dev
