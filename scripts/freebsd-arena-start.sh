@@ -21,10 +21,11 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-cp SQLite-ABI-FreeBSD-amd64/libsqlitejdbc.so /usr/local/lib/.
+
 cd ..
 git pull
 mvn clean install -Dmaven.test.skip=true -P run
+cp scripts/SQLite-ABI-FreeBSD-amd64/libsqlitejdbc.so /usr/local/lib/.
 cd Z-Arena || exit
 nohup mvn spring-boot:run -Dspring-boot.run.profiles=daily "-Dspring-boot.run.jvmArguments=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000" &
 tail -f ~/Z-Chess/logs/z-chess.log

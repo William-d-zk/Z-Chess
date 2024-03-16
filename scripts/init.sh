@@ -21,6 +21,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Linux/aarch64/libsqlitejdbc.so -o SQLite-ABI-Linux-Alpine-arm64/libsqlitejdbc.so
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/FreeBSD/x86_64/libsqlitejdbc.so -o SQLite-ABI-FreeBSD-amd64/libsqlitejdbc.so
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so -o SQLite-ABI-Linux-Alpine-amd64/libsqlitejdbc.so
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Mac/aarch64/libsqlitejdbc.dylib -o SQLite-ABI-Mac-aarch64/libsqlitejdbc.dylib
 
 cd ../Z-Board || exit
 mvn -P dev clean install -Dmaven.test.skip=true
