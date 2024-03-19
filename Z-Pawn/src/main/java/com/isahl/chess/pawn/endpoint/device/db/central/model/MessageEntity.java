@@ -55,11 +55,12 @@ import static java.lang.String.format;
 
 /**
  * @author william.d.zk
- * {@code @date} 2019-07-22
+ * @since 2019-07-22
+ * @version 2024-03-18
  */
 @Entity(name = "zc_rd_message")
 @Table(indexes = { @Index(name = "origin_idx",
-                          columnList = "origin"),
+                          columnList = "rk_origin"),
                    @Index(name = "topic_idx",
                           columnList = "topic") })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -106,7 +107,7 @@ public class MessageEntity
         return mOrigin;
     }
 
-    @Column(name ="origin",
+    @Column(name ="rk_origin",
             updatable = false,
             nullable = false)
     public long getOrigin()
@@ -167,6 +168,16 @@ public class MessageEntity
     public void setMessage(byte[] data)
     {
         withSub(data);
+        setContent(new String(data, StandardCharsets.UTF_8));
+    }
+    @Column(name = "content", columnDefinition = "text")
+    public String getContent()
+    {
+        return mContent;
+    }
+
+    public void setContent(String content){
+        mContent = content;
     }
 
     @Override
@@ -176,7 +187,7 @@ public class MessageEntity
                       getId(),
                       getOrigin(),
                       getTopic(),
-                      new String(getMessage(), StandardCharsets.UTF_8),
+                      getContent(),
                       getNetAt(),
                       super.toString());
     }
