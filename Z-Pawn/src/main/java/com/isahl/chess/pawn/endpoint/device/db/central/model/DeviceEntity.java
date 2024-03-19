@@ -77,7 +77,7 @@ public class DeviceEntity
     @Transient
     private String        mUsername;
     @Transient
-    private int           mPasswordId;
+    private long          mPasswordId;
     @Transient
     private String        mToken;
     @Transient
@@ -104,8 +104,7 @@ public class DeviceEntity
         pKey = id;
     }
 
-    @Column(length = 32,
-            nullable = false)
+    @Column(nullable = false)
     @Length(min = 17,
             max = 32,
             message = "*Your password must have at least 17 characters less than 33 characters")
@@ -125,8 +124,7 @@ public class DeviceEntity
         mPasswordId++;
     }
 
-    @Column(length = 64,
-            nullable = false,
+    @Column(nullable = false,
             unique = true)
     public String getToken()
     {
@@ -140,12 +138,12 @@ public class DeviceEntity
 
     @JsonIgnore
     @Column(name = "password_id")
-    public int getPasswordId()
+    public long getPasswordId()
     {
         return mPasswordId;
     }
 
-    public void setPasswordId(int passwordId)
+    public void setPasswordId(long passwordId)
     {
         mPasswordId = passwordId;
     }
@@ -167,8 +165,7 @@ public class DeviceEntity
         mInvalidAt = invalidAt;
     }
 
-    @Column(length = 32,
-            nullable = false,
+    @Column(nullable = false,
             updatable = false)
     public String getNumber()
     {
@@ -180,8 +177,7 @@ public class DeviceEntity
         mNumber = number;
     }
 
-    @Column(length = 32,
-            nullable = false)
+    @Column(nullable = false)
     @Length(min = 8,
             max = 32,
             message = "* Your Username must have at least 8 characters less than 33 characters")
