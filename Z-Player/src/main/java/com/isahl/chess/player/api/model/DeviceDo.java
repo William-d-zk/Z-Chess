@@ -34,7 +34,7 @@ import org.springframework.lang.NonNull;
 
 /**
  * @author william.d.zk
- * {@code @date} 2019-06-15
+ * @since  2019-06-15
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

@@ -53,10 +53,9 @@ public class ClusterController
     }
 
     @PostMapping("change")
-    public @ResponseBody
-    ZResponse<?> changeTopology(
+    public @ResponseBody ZResponse<?> changeTopology(
             @RequestBody
-                    ClusterDo peer)
+            ClusterDo peer)
     {
         Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
 
