@@ -55,9 +55,9 @@ public class MessageController
     @PostMapping("submit")
     public ZResponse<?> submit(
             @RequestParam(name = "token")
-                    String token,
+            String token,
             @RequestBody
-                    MessageBody body)
+            MessageBody body)
     {
         DeviceEntity device = _DeviceService.findByToken(token);
         if(device == null) {
