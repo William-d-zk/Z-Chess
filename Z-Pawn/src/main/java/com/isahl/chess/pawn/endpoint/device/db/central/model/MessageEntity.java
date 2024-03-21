@@ -110,7 +110,7 @@ public class MessageEntity
     @Column(name ="rk_origin",
             updatable = false,
             nullable = false)
-    public long getOrigin()
+    public long getRkOrigin()
     {
         return mOrigin;
     }
@@ -185,7 +185,7 @@ public class MessageEntity
     {
         return format("MessageEntity{ id=%s, origin=%#x, topic:%s,msg:%s,netAt:%s[%s]}",
                       getId(),
-                      getOrigin(),
+                      origin(),
                       getTopic(),
                       getContent(),
                       getNetAt(),
