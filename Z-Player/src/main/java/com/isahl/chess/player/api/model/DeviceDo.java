@@ -136,6 +136,7 @@ public class DeviceDo
         deviceDo.setUsername(entity.getUsername());
         deviceDo.setPassword(entity.getPassword());
         deviceDo.setNumber(entity.getNumber());
+        deviceDo.setName(entity.getNotice());
         deviceDo.setToken(entity.getToken());
         deviceDo.setProfile(entity.getProfile());
         deviceDo.setUid(entity.getCreatedById());
