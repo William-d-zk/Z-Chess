@@ -45,7 +45,7 @@ public class DeviceDo
     private String        mPassword;
     private String        mToken;
     private DeviceProfile mProfile;
-    private Long          mCreatedById;
+    private Long          mUid;
 
     public String getNumber()
     {
@@ -104,19 +104,19 @@ public class DeviceDo
         this.mProfile = profile;
     }
 
-    public void setCreatedById(String id)
+    public void setUid(String id)
     {
-        mCreatedById = Long.parseLong(id);
+        mUid = Long.parseLong(id);
     }
 
-    public void setCreatedById(long id)
+    public void setUid(long id)
     {
-        mCreatedById = id;
+        mUid = id;
     }
 
-    public long getCreatedById()
+    public long getUid()
     {
-        return mCreatedById;
+        return mUid;
     }
 
     public static DeviceDo of(DeviceEntity entity)
@@ -127,7 +127,7 @@ public class DeviceDo
         deviceDo.setNumber(entity.getNumber());
         deviceDo.setToken(entity.getToken());
         deviceDo.setProfile(entity.getProfile());
-        deviceDo.setCreatedById(entity.getCreatedById());
+        deviceDo.setUid(entity.getCreatedById());
         return deviceDo;
     }
 

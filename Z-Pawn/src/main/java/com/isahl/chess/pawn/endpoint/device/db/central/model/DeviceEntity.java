@@ -216,12 +216,12 @@ public class DeviceEntity
     }
 
     @Column(name = "o_name")
-    public String getName()
+    public String getOName()
     {
-        return "IoT-Device";
+        return mName == null? "Iot-Device": mName;
     }
 
-    public void setName(String name)
+    public void setOName(String name)
     {
         mName = name;
     }

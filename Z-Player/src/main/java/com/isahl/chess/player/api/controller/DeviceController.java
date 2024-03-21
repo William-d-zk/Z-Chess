@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 
 /**
@@ -63,7 +65,10 @@ public class DeviceController
         deviceEntity.setNumber(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
-        deviceEntity.setCreatedById(deviceDo.getCreatedById());
+        deviceEntity.setCreatedById(deviceDo.getUid());
+        deviceEntity.setUpdatedById(deviceDo.getUid());
+        deviceEntity.setUpdatedAt(LocalDateTime.now());
+        deviceEntity.setCreatedAt(LocalDateTime.now());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
