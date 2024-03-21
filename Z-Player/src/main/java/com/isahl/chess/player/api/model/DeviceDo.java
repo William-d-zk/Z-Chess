@@ -34,7 +34,7 @@ import org.springframework.lang.NonNull;
 
 /**
  * @author william.d.zk
- * @since  2019-06-15
+ * @since 2019-06-15
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -46,6 +46,17 @@ public class DeviceDo
     private String        mToken;
     private DeviceProfile mProfile;
     private Long          mUid;
+    private String        mName;
+
+    public String getName()
+    {
+        return mName;
+    }
+
+    public void setName(String name)
+    {
+        mName = name;
+    }
 
     public String getNumber()
     {
