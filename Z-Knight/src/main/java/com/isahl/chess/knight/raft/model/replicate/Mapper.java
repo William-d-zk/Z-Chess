@@ -200,7 +200,7 @@ public class Mapper
 
     @Cacheable(value = "raft_log_entry",
                unless = "#result == null",
-               key = "#index")
+               key = "#p0")
     @Override
     public LogEntry getEntry(long index)
     {
