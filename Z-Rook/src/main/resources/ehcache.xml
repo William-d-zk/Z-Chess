@@ -55,7 +55,6 @@
             </listener>
         </listeners>
         <resources>
-            <heap unit="kB">1000</heap>
             <offheap unit="MB">10</offheap>
             <disk persistent="true" unit="MB">100</disk>
         </resources>

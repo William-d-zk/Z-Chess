@@ -92,7 +92,7 @@ public class DeviceService
     }
 
     @CachePut(value = "device_token_cache",
-              key = "#device.token",
+              key = "#p0.token",
               condition = "#result != null")
     public DeviceEntity saveDevice(DeviceEntity device)
     {
@@ -157,8 +157,8 @@ public class DeviceService
     }
 
     @Caching(cacheable = { @Cacheable(value = "device_token_cache",
-                                      key = "#token",
-                                      condition = "#token != null",
+                                      key = "#p0",
+                                      condition = "#p0 != null",
                                       unless = "#result == null") },
              put = { @CachePut(value = "device_id_cache",
                                key = "#result.id",
@@ -183,8 +183,8 @@ public class DeviceService
     }
 
     @Cacheable(value = "device_id_cache",
-               key = "#id",
-               condition = "#id != 0",
+               key = "#p0",
+               condition = "#p0 != 0",
                unless = "#result == null")
     @Override
     public DeviceEntity getOneDevice(long id)
