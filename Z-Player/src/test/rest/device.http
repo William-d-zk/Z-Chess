@@ -1,24 +1,9 @@
-POST http://idempotent.isahl.com:8080/device/register
-Content-Type: application/json
-
-{
-  "sn": "z-chess-01",
-  "username": "isahl.test",
-  "profile": {
-    "wifi_mac": "09:12:11:FF:2D:8F",
-    "sensor_mac": "09:12:12:3A:2D:8F",
-    "bluetooth_mac": "09:12:12:7F:2D:8F",
-    "imei": "766781230782477",
-    "imsi": "460011357824680"
-  }
-}
-
 ###
-POST http://idempotent.isahl.com:8080/device/register
+POST http://iot.isahl.com:8080/device/register
 Content-Type: application/json
 
 {
-  "sn": "z-chess.device-local-test.00002",
+  "number": "z-chess.device-local-test.00002",
   "username": "isahl.test",
   "profile": {
     "wifi_mac": "09:12:11:FF:2D:8E",
@@ -26,11 +11,12 @@ Content-Type: application/json
     "bluetooth_mac": "09:12:12:7F:2D:8E",
     "imei": "766781230782476",
     "imsi": "460001357824680"
-  }
+  },
+  "uid": 1
 }
 
 ###
-POST http://idempotent.isahl.com:8080/device/register
+POST http://iot.isahl.com:8080/device/register
 Content-Type: application/json
 
 {

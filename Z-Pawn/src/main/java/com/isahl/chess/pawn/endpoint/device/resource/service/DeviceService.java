@@ -118,6 +118,8 @@ public class DeviceService
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_MixConfig.getPasswordInvalidDays()));
+                exist.setUpdatedById(device.getUpdatedById());
+                exist.setUpdatedAt(device.getUpdatedAt());
             }
             return saveDevice(exist);
         }
@@ -129,7 +131,7 @@ public class DeviceService
             else if(!isBlank(device.getToken())) {
                 exist = _DeviceRepository.findByToken(device.getToken());
             }
-            DeviceEntity entity = exist == null ? new DeviceEntity() : exist;
+            DeviceEntity entity = exist == null ? device : exist;
             if(exist == null) {
                 String source = String.format("sn:%s,random %s%d",
                                               device.getNumber(),
@@ -138,11 +140,7 @@ public class DeviceService
                                                      .toEpochMilli());
                 _Logger.debug("new device %s ", source);
                 entity.setToken(IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
-                entity.setNumber(device.getNumber());
-                entity.setUsername(device.getUsername());
-                entity.setProfile(device.getProfile());
-                entity.setNotice(device.getName() + ":" + device.getNumber());
-                entity.setCreatedById(device.getCreatedById());
+                entity.setUpdatedAt(LocalDateTime.now());
             }
             if(exist == null || exist.getInvalidAt()
                                      .isBefore(LocalDateTime.now()))
@@ -151,6 +149,8 @@ public class DeviceService
                 entity.increasePasswordId();
                 entity.setInvalidAt(LocalDateTime.now()
                                                  .plus(_MixConfig.getPasswordInvalidDays()));
+                entity.setUpdatedAt(device.getUpdatedAt());
+                entity.setUpdatedById(device.getUpdatedById());
             }
             return saveDevice(entity);
         }
