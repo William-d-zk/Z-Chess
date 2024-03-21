@@ -41,8 +41,8 @@ public class RookCacheService
     private final Logger _Logger = Logger.getLogger("arena." + getClass().getSimpleName());
 
     @Cacheable(value = "areaOfCircleCache",
-               key = "#radius",
-               condition = "#radius > 5")
+               key = "#p0",
+               condition = "#p0 > 5")
     public double areaOfCircle(int radius)
     {
         _Logger.info("calculate the area of a circle with a radius of {}", radius);
@@ -50,8 +50,8 @@ public class RookCacheService
     }
 
     @Cacheable(value = "cache0",
-               key = "#radius",
-               condition = "#radius > 5")
+               key = "#p0",
+               condition = "#p0 > 5")
     public double cache0(int radius)
     {
         _Logger.info("calculate the area of a circle with a radius of {}", radius);

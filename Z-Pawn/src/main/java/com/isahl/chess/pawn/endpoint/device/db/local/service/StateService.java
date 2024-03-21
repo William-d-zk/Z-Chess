@@ -103,7 +103,11 @@ public class StateService
     @PostConstruct
     void initCache() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager, "message_cache_msg_id", Long.class, Integer.class, Duration.of(2, MINUTES));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "message_cache_msg_id",
+                                  Long.class,
+                                  Integer.class,
+                                  Duration.of(2, MINUTES));
         //        EhcacheConfig.createCache(_CacheManager,
         //                                  "raft_log_entry",
         //                                  Long.class,
@@ -117,14 +121,15 @@ public class StateService
         return getLast(key) & 0xFFFF;
     }
 
-    @Cacheable(key = "#key",
+    @Cacheable(key = "#p0",
+               condition = "#p0 != 0",
                value = "message_cache_msg_id")
     public long getLast(long key)
     {
         return _ZUID.getId();
     }
 
-    @CachePut(key = "#key",
+    @CachePut(key = "#p0",
               value = "message_cache_msg_id")
     public long getNew(long key)
     {
