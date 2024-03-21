@@ -148,11 +148,14 @@ public class MessageEntity
         pKey = id;
     }
 
+    public void setRkOrigin(long origin)
+    {
+        mOrigin = origin;
+    }
     public void setOrigin(long origin)
     {
         mOrigin = origin;
     }
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setNetAt(LocalDateTime netAt)
