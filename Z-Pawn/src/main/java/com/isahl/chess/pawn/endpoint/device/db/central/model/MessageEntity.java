@@ -98,7 +98,7 @@ public class MessageEntity
                       type = com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator.class)
     public long getId()
     {
-        return primaryKey();
+        return pKey;
     }
 
     @Override

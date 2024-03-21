@@ -96,7 +96,7 @@ public class DeviceEntity
                       type = com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator.class)
     public long getId()
     {
-        return primaryKey();
+        return pKey;
     }
 
     public void setId(long id)
@@ -216,12 +216,12 @@ public class DeviceEntity
     }
 
     @Column(name = "o_name")
-    public String getoName()
+    public String getName()
     {
         return mName == null? "Iot-Device": mName;
     }
-
-    public void setoName(String name)
+    @Column(name = "o_name")
+    public void setName(String name)
     {
         mName = name;
     }

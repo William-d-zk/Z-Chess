@@ -64,7 +64,7 @@ public class SessionEntity
     @Id
     public long getId()
     {
-        return primaryKey();
+        return pKey;
     }
 
     @Column(name = "device_client")
