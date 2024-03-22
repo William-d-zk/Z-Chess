@@ -4,8 +4,8 @@ Content-Type: application/json
 
 {
   "number": "z-chess.device-local-test.00003",
-  "name": "isahl.http.test",
-  "username": "isahl.test",
+  "name": "Iot-Device",
+  "username": "isahl.chess-mqtt",
   "profile": {
     "wifi_mac": "09:12:11:FF:1D:8E",
     "sensor_mac": "09:12:12:2A:2D:8E",
