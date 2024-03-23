@@ -94,6 +94,7 @@
         <maven-gpg-plugin.version>3.2.0</maven-gpg-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <hibernate-enhance-maven-plugin.version>6.4.4.Final</hibernate-enhance-maven-plugin.version>
+        <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
         <maven.compiler.debug>true</maven.compiler.debug>
     </properties>
     <profiles>
