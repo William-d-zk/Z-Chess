@@ -34,6 +34,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.util.CryptoUtil;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -196,10 +198,10 @@ public class MessageEntity
             updatable = false)
     public String getNumber()
     {
-        return mNumber == null ? mNumber = format("%s-%s",
-                                                  mNetAt.toInstant(ZoneOffset.UTC)
-                                                        .toEpochMilli(),
-                                                  mOrigin) : mNumber;
+        return mNumber == null ? mNumber = CryptoUtil.SHA1(format("%s-%s",
+                                                                  mNetAt.toInstant(ZoneOffset.UTC)
+                                                                        .toEpochMilli(),
+                                                                  mOrigin)) : mNumber;
     }
 
     public void setNumber(String number)
@@ -233,9 +235,7 @@ public class MessageEntity
     {
         int remain = super.prefix(input);
         mOrigin = input.getLong();
-        mNetAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()),
-                                         TimeZone.getDefault()
-                                                 .toZoneId());
+        mNetAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()), ZoneOffset.UTC);
         remain -= 16;
         int tl = input.vLength();
         mTopic = input.readUTF(tl);
@@ -248,8 +248,7 @@ public class MessageEntity
     {
         return super.suffix(output)
                     .putLong(mOrigin)
-                    .putLong(mNetAt.toInstant(ZoneOffset.of(ZoneOffset.systemDefault()
-                                                                      .getId()))
+                    .putLong(mNetAt.toInstant(ZoneOffset.UTC)
                                    .toEpochMilli())
                     .putUTF(mTopic);
     }
