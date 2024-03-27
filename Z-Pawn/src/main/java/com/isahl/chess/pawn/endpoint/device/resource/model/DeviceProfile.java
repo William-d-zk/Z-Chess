@@ -39,7 +39,7 @@ public class DeviceProfile
     private static final long serialVersionUID = -3059633247602550952L;
 
     private String wifiMac;
-    private String sensorMac;
+    private String ethernetMac;
     private String bluetoothMac;
     private String imei;
     private String imsi;
@@ -54,14 +54,14 @@ public class DeviceProfile
         this.wifiMac = wifiMac;
     }
 
-    public String getSensorMac()
+    public String getEthernetMac()
     {
-        return sensorMac;
+        return ethernetMac;
     }
 
-    public void setSensorMac(String sensorMac)
+    public void setEthernetMac(String ethernetMac)
     {
-        this.sensorMac = sensorMac;
+        this.ethernetMac = ethernetMac;
     }
 
     public String getBluetoothMac()
