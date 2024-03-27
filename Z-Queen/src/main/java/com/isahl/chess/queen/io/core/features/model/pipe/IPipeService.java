@@ -20,16 +20,23 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.queen.io.core.features.model.pipe;
 
-package com.isahl.chess.queen.io.core.features.model.channels;
+import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
-import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.List;
 
-public interface IActivity
+/**
+ * @author william.d.zk
+ * @since 2024-03-26
+ * IoSerial → decoded input 「IoSerial」 content
+ * ISession
+ * List of ITriple fst:protocol snd:session thr:encoder
+ */
+public interface IPipeService
+        extends IOperator<IoSerial, List<ITriple>>
 {
-    boolean send(ISession session, OperateType eventType, IProtocol... toSends);
 
-    void close(ISession session, OperateType eventType);
 }

@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.protocol.zchat.custom;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.events.server.ILinkCustom;
@@ -61,7 +61,7 @@ public class ZLinkCustom
     }
 
     @Override
-    public IOperator<IConsistency, IManager, IProtocol> getUnbox()
+    public IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox()
     {
         return this::unbox;
     }

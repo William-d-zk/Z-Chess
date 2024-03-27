@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
@@ -36,14 +36,14 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.BATCH;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.BATCH;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 
 /**
  * @author William.d.zk
  */
 public interface IPipeDecoder
-        extends IOperator<IPacket, ISession, ITriple>
+        extends IBinaryOperator<IPacket, ISession, ITriple>
 {
     default ITriple filterRead(IPacket input, ISession session)
     {

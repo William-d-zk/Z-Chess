@@ -29,9 +29,11 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -88,7 +90,7 @@ public class PersistentHook
             }
         }
         else {
-            throw new IllegalStateException("Unexpected value: " + content.serial());
+            throw new IllegalStateException("Unexpected value: 0x" + Integer.toHexString(content.serial()));
         }
     }
 
@@ -123,4 +125,12 @@ public class PersistentHook
         void onBatch(List<IoSerial> contents);
     }
 
+    @Override
+    public boolean isExpect(IoSerial content)
+    {
+        return switch(content.serial()){
+            case 0x113, 0x1D -> true;
+            default -> false;
+        };
+    }
 }

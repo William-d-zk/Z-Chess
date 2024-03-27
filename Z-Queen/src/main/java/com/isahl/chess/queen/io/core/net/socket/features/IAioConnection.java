@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.net.socket.features;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectError;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnected;
@@ -41,5 +41,5 @@ public interface IAioConnection
                 IConnected
 {
     @Override
-    IOperator<Throwable, IAioConnection, Void> getErrorOperator();
+    IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator();
 }

@@ -1,0 +1,8 @@
+POST http://localhost:2808/message/submit?token=0A4B4367692FDD2E33DFA90F70DD5F67264745E7731CD119ADB1ED5390A824CD
+Content-Type: application/json
+
+{
+  "topic": "123",
+  "content": "hello-client",
+  "protocol": "mqtt"
+}

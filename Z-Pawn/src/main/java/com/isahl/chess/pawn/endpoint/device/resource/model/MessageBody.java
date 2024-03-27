@@ -60,9 +60,9 @@ public class MessageBody
     @JsonCreator
     public MessageBody(
             @JsonProperty("topic")
-                    String topic,
+            String topic,
             @JsonProperty("content")
-                    byte[] content)
+            byte[] content)
     {
         mTopic = Objects.requireNonNull(topic);
         withSub(Objects.requireNonNull(content));

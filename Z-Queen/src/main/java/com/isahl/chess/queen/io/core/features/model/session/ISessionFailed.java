@@ -21,15 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.channels;
+package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.features.model.IPair;
 
-public interface IActivity
+/**
+ * @author william.d.zk
+ * @date 2019-06-28
+ */
+public interface ISessionFailed
+        extends IBinaryOperator<Throwable, ISession, IPair>
 {
-    boolean send(ISession session, OperateType eventType, IProtocol... toSends);
-
-    void close(ISession session, OperateType eventType);
+    IPair handle(Throwable throwable, ISession session);
 }

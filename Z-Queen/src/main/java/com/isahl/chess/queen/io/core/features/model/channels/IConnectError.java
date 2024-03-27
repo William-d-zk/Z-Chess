@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.features.model.channels;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 
 /**
  * @author William.d.zk
@@ -30,5 +30,5 @@ import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 @FunctionalInterface
 public interface IConnectError
 {
-    IOperator<Throwable, ? extends IConnectActivity, Void> getErrorOperator();
+    IBinaryOperator<Throwable, ? extends IConnectActivity, Void> getErrorOperator();
 }

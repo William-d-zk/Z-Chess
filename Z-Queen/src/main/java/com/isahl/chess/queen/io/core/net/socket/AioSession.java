@@ -463,7 +463,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public IFailed getError()
+    public ISessionFailed getError()
     {
         return _Sort.getError();
     }

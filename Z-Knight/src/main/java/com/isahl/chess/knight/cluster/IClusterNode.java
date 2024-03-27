@@ -25,7 +25,7 @@ package com.isahl.chess.knight.cluster;
 
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.bishop.sort.ZSortHolder;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
@@ -51,7 +51,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 
 /**
  * @author william.d.zk
@@ -177,7 +177,7 @@ public interface IClusterNode
     IClusterPeer clusterPeer();
 
     @Override
-    default boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    default boolean send(ISession session, OperateType type, IProtocol... outputs)
     {
         if(session == null || outputs == null || outputs.length == 0) {return false;}
         return publish(type,
@@ -188,7 +188,7 @@ public interface IClusterNode
     }
 
     @Override
-    default void close(ISession session, IOperator.Type type)
+    default void close(ISession session, OperateType type)
     {
         if(session == null) {return;}
         close(type, Pair.of(null, session), session.getCloser());

@@ -25,10 +25,14 @@ package com.isahl.chess.player.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.queen.db.model.IStorage;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
@@ -41,16 +45,15 @@ public class MessageDo
     @JsonIgnore
     private IStorage.Operation mOperation;
 
-    private long        mId;
-    private String      mOwner;
-    private long        mOrigin;
-    private long        mDestination;
-    private long        mMsgId;
-    private String      mDirection;
-    private String      mTopic;
-    private MessageBody mContent;
+    private long   mOrigin;
+    private String mNumber;
+    private String mTopic;
+    private byte[] mPayload;
+    private String mContent;
+    private String mProtocol;
 
-    public IStorage.Operation operation()
+    @JsonIgnore
+    public IStorage.Operation getOperation()
     {
         return mOperation;
     }
@@ -61,26 +64,6 @@ public class MessageDo
         mOperation = operation;
     }
 
-    public long getId()
-    {
-        return mId;
-    }
-
-    public String getOwner()
-    {
-        return mOwner;
-    }
-
-    public void setOwner(String owner)
-    {
-        mOwner = owner;
-    }
-
-    public void setId(long id)
-    {
-        this.mId = id;
-    }
-
     public long getOrigin()
     {
         return mOrigin;
@@ -88,37 +71,7 @@ public class MessageDo
 
     public void setOrigin(long origin)
     {
-        this.mOrigin = origin;
-    }
-
-    public long getDestination()
-    {
-        return mDestination;
-    }
-
-    public void setDestination(long destination)
-    {
-        this.mDestination = destination;
-    }
-
-    public long getMsgId()
-    {
-        return mMsgId;
-    }
-
-    public void setMsgId(long msgId)
-    {
-        this.mMsgId = msgId;
-    }
-
-    public String getDirection()
-    {
-        return mDirection;
-    }
-
-    public void setDirection(String direction)
-    {
-        this.mDirection = direction;
+        mOrigin = origin;
     }
 
     public String getTopic()
@@ -128,16 +81,60 @@ public class MessageDo
 
     public void setTopic(String topic)
     {
-        this.mTopic = topic;
+        mTopic = topic;
     }
 
-    public MessageBody getContent()
+    public void setPayload(byte[] payload)
+    {
+        mPayload = payload;
+    }
+
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    public void setNumber(String number)
+    {
+        mNumber = number;
+    }
+
+    public String getNumber()
+    {
+        return mNumber;
+    }
+
+    public void setContent(String content)
+    {
+        mContent = content;
+
+    }
+
+    public String getContent()
     {
         return mContent;
     }
 
-    public void setContent(MessageBody content)
+    public void setProtocol(String protocol)
     {
-        this.mContent = content;
+        mProtocol = protocol;
+    }
+
+    public String getProtocol()
+    {
+        return mProtocol;
+    }
+
+    public void afterEncode()
+    {
+        switch(mProtocol) {
+            case "mqtt", "z-chat" -> {
+                if(mContent == null && mPayload != null) {mContent = new String(mPayload, StandardCharsets.UTF_8);}
+                else if(!IoUtil.isBlank(mContent) && mPayload == null) {
+                    mPayload = mContent.getBytes(StandardCharsets.UTF_8);
+                }
+            }
+            default -> throw new IllegalArgumentException("unsupported protocol:< " + mProtocol + '>');
+        }
     }
 }

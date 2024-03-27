@@ -25,7 +25,7 @@ package com.isahl.chess.queen.io.core.tasks;
 
 import com.isahl.chess.king.base.disruptor.components.Z1Processor;
 import com.isahl.chess.king.base.disruptor.components.Z2Processor;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.IMixConfig;
@@ -455,7 +455,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(OperateType type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalCloseEvent;
@@ -465,7 +465,7 @@ public class ServerCore
     }
 
     @Override
-    public ReentrantLock selectLock(IOperator.Type type)
+    public ReentrantLock selectLock(OperateType type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _LocalLock;
@@ -478,7 +478,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(OperateType type)
     {
         return switch(type) {
             case BIZ_LOCAL -> _BizLocalSendEvent;

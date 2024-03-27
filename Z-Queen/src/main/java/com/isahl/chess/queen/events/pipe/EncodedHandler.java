@@ -58,10 +58,10 @@ public class EncodedHandler
     public void onEvent(QEvent event, long sequence) throws Exception
     {
         if(event.hasError()) {
-            IPair errorContent = event.getContent();
+            IPair errorContent = event.getComponent();
             ISession session = errorContent.getSecond();
             if(session.isValid()) {
-                error(_Error, event.getErrorType(), errorContent, event.getEventOp());
+                error(_Error, event.getErrorType(), errorContent, event.getEventBinaryOp());
             }
         }
     }

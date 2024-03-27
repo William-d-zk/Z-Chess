@@ -22,15 +22,16 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-cd ../Z-Board || exit
-mvn -P dev clean install -Dmaven.test.skip=true
-
-cd ..
-mvn clean compile install -Dmaven.test.skip=true -P dev
-
+env_dir=$(pwd)
 cd ~ || exit
 rm -rf Z-Chess
 mkdir -p Z-Chess/raft00
 mkdir -p Z-Chess/raft01
 mkdir -p Z-Chess/raft02
+cd "$env_dir" || exit
 
+cd ../Z-Board || exit
+mvn -P dev clean install -Dmaven.test.skip=true
+
+cd ..
+mvn clean compile install -Dmaven.test.skip=true -P dev

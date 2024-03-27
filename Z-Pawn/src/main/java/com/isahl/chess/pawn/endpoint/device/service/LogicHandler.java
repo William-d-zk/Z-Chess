@@ -35,6 +35,8 @@ import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFailed;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
@@ -77,9 +79,14 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
     }
 
     @Override
-    public IPipeTransfer defaultTransfer()
+    public IPipeTransfer logicTransfer()
     {
         return this::logicHandle;
+    }
+
+    public IPipeService serviceTransfer()
+    {
+        return this::serviceHandle;
     }
 
     private List<ITriple> logicHandle(IProtocol content, ISession session)
@@ -118,45 +125,51 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
             }
         }
         for(IHandleHook hook : _HandleHooks) {
-            try {
-                hook.afterLogic(content, results);
-            }
-            catch(Exception e) {
-                _Logger.warning("hook:%s",
-                                e,
-                                hook.getClass()
-                                    .getSimpleName());
+            if(hook.isExpect(content)) {
+                try {
+                    hook.afterLogic(content, results);
+                }
+                catch(Exception e) {
+                    _Logger.warning("hook:%s",
+                                    e,
+                                    hook.getClass()
+                                        .getSimpleName());
+                }
             }
         }
         return results.isEmpty() ? null : results;
     }
 
-    @Override
-    public void serviceHandle(IoSerial request)
+    private List<ITriple> serviceHandle(IoSerial request)
     {
+        List<ITriple> results = new LinkedList<>();
         for(IAccessService service : _AccessService) {
-            if(!service.isSupported(request)) continue;
-            try {
-                service.consume(request);
-            }
-            catch(Exception e) {
-                _Logger.warning("service handle:%s",
-                                e,
-                                service.getClass()
-                                       .getSimpleName());
+            if(service.isSupported(request)) {
+                try {
+                    service.consume(getExchanger(), request, results);
+                }
+                catch(Exception e) {
+                    _Logger.warning("service handle:%s",
+                                    e,
+                                    service.getClass()
+                                           .getSimpleName());
+                }
             }
         }
         for(IHandleHook hook : _HandleHooks) {
-            try {
-                hook.afterConsume(request);
-            }
-            catch(Exception e) {
-                _Logger.warning("hook:%s",
-                                e,
-                                hook.getClass()
-                                    .getSimpleName());
+            if(hook.isExpect(request)) {
+                try {
+                    hook.afterConsume(request);
+                }
+                catch(Exception e) {
+                    _Logger.warning("hook:%s",
+                                    e,
+                                    hook.getClass()
+                                        .getSimpleName());
+                }
             }
         }
+        return results;
     }
 
     @Override
@@ -164,4 +177,6 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
     {
         return _Logger;
     }
+
+
 }

@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
@@ -55,8 +56,8 @@ import static java.lang.String.format;
 
 /**
  * @author william.d.zk
- * @since 2019-07-22
  * @version 2024-03-18
+ * @since 2019-07-22
  */
 @Entity(name = "zc_rd_message")
 @Table(indexes = { @Index(name = "origin_idx",
@@ -80,6 +81,8 @@ public class MessageEntity
     private LocalDateTime mNetAt;
     @Transient
     private String        mContent;
+    @Transient
+    private String        mNumber;
 
     public MessageEntity()
     {
@@ -107,7 +110,7 @@ public class MessageEntity
         return mOrigin;
     }
 
-    @Column(name ="rk_origin",
+    @Column(name = "rk_origin",
             updatable = false,
             nullable = false)
     public long getRkOrigin()
@@ -152,10 +155,12 @@ public class MessageEntity
     {
         mOrigin = origin;
     }
+
     public void setOrigin(long origin)
     {
         mOrigin = origin;
     }
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setNetAt(LocalDateTime netAt)
@@ -171,16 +176,35 @@ public class MessageEntity
     public void setMessage(byte[] data)
     {
         withSub(data);
+        if(data == null) return;
         setContent(new String(data, StandardCharsets.UTF_8));
     }
-    @Column(name = "content", columnDefinition = "text")
+
+    @Column(name = "content",
+            columnDefinition = "text")
     public String getContent()
     {
         return mContent;
     }
 
-    public void setContent(String content){
+    public void setContent(String content)
+    {
         mContent = content;
+    }
+
+    @Column(name = "number",
+            updatable = false)
+    public String getNumber()
+    {
+        return mNumber == null ? mNumber = format("%s-%s",
+                                                  mNetAt.toInstant(ZoneOffset.UTC)
+                                                        .toEpochMilli(),
+                                                  mOrigin) : mNumber;
+    }
+
+    public void setNumber(String number)
+    {
+        mNumber = number;
     }
 
     @Override

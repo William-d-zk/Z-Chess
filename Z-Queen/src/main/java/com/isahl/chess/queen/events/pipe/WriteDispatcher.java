@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.pipe;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -83,7 +83,7 @@ public class WriteDispatcher
                  * logic 处理错误，转换为shutdown目标投递给 _Error
                  * 交由 IoDispatcher转发给对应的MappingHandler 执行close
                  */
-                error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
+                error(_Error, HANDLE_DATA, event.getComponent(), event.getEventBinaryOp());
             }
         }
         else {
@@ -95,14 +95,14 @@ public class WriteDispatcher
                 case NULL, IGNORE -> {
                 }
                 case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
-                    IPair content = event.getContent();
+                    IPair content = event.getComponent();
                     _Logger.debug("content:%s,%s", content, event.getEventType());
                     IProtocol cmd = content.getFirst();
                     ISession session = content.getSecond();
                     if(session != null) {
                         try {
                             cmd.transfer();
-                            publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), session.encoder());
+                            publish(dispatchEncoder(session.hashCode()), OperateType.WRITE, Pair.of(cmd, session), session.encoder());
                         }
                         catch(IOException | ZException e) {
                             error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
@@ -111,11 +111,11 @@ public class WriteDispatcher
                 }
                 // from io-wrote
                 case WROTE -> {
-                    IPair content = event.getContent();
+                    IPair content = event.getComponent();
                     int count = content.getFirst();
                     ISession session = content.getSecond();
                     if(session != null) {
-                        publish(dispatchEncoder(session.hashCode()), IOperator.Type.WROTE, Pair.of(count, session), event.getEventOp());
+                        publish(dispatchEncoder(session.hashCode()), OperateType.WROTE, Pair.of(count, session), event.getEventBinaryOp());
                     }
                 }
                 /*
@@ -123,7 +123,7 @@ public class WriteDispatcher
                  * DISPATCH:logic->batch->dispatch
                  */
                 case LOGIC, DISPATCH -> {
-                    List<ITriple> contents = event.getContentList();
+                    List<ITriple> contents = event.getResultList();
                     for(ITriple content : contents) {
                         IProtocol cmd = content.getFirst();
                         ISession session = content.getSecond();
@@ -131,7 +131,7 @@ public class WriteDispatcher
                         if(session != null) {
                             try {
                                 cmd.transfer();
-                                publish(dispatchEncoder(session.hashCode()), IOperator.Type.WRITE, Pair.of(cmd, session), content.getThird());
+                                publish(dispatchEncoder(session.hashCode()), OperateType.WRITE, Pair.of(cmd, session), content.getThird());
                             }
                             catch(IOException | ZException e) {
                                 error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());

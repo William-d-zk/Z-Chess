@@ -23,10 +23,13 @@
 package com.isahl.chess.queen.events.model;
 
 import com.isahl.chess.king.base.disruptor.features.event.IEvent;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.lmax.disruptor.EventFactory;
 
 import java.util.List;
@@ -40,53 +43,66 @@ public class QEvent
         implements IEvent
 {
     public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
-    private             IError.Type          mErrType      = NO_ERROR;
-    private             IOperator.Type       mType         = IOperator.Type.NULL;
-    private             IPair                mContent;
-    private             IOperator<?, ?, ?>   mOperator;
-    private             List<ITriple>        mContentList;
+
+    private IError.Type              mErrType = NO_ERROR;
+    private OperateType              mType    = OperateType.NULL;
+    private IPair                    mComponent;
+    private IBinaryOperator<?, ?, ?> mBinaryOperator;
+    private IoSerial                 mContent;
+    private Throwable                mThrowable;
+    private IOperator<?, ?>          mOperator;
+    private List<ITriple>            mResultList;
 
     @Override
     public String toString()
     {
-        return String.format("\nerror: %s\ntype:%s\noperator:%s\ncontent_list:%s\ncontent:%s",
-                             mErrType,
-                             mType,
-                             mOperator,
-                             mContentList,
-                             mContent);
+        return String.format(
+                "\nerror: %s\n\ttype:%s\n\tresults:%s\n\tcontent:%s\n\toperator:%s\n\tcomponent:%s\n\tbinary_operator:%s\n\t",
+                mErrType,
+                mType,
+                mResultList,
+                mContent,
+                mOperator,
+                mComponent,
+                mBinaryOperator);
     }
 
     @Override
     public void reset()
     {
-        mType = IOperator.Type.NULL;
+        mType = OperateType.NULL;
         mErrType = NO_ERROR;
-        mOperator = null;
+        mBinaryOperator = null;
+        mComponent = null;
         mContent = null;
-        mContentList = null;
+        mOperator = null;
+        mResultList = null;
     }
 
     public void ignore()
     {
-        mType = IOperator.Type.IGNORE;
+        mType = OperateType.IGNORE;
         mErrType = NO_ERROR;
+        mComponent = null;
+        mBinaryOperator = null;
         mContent = null;
         mOperator = null;
-        mContentList = null;
+        mResultList = null;
     }
 
     public void transfer(QEvent dest)
     {
         dest.mType = mType;
         dest.mErrType = mErrType;
+        dest.mBinaryOperator = mBinaryOperator;
+        dest.mComponent = mComponent != null ? (IPair) mComponent.duplicate() : null;
+        dest.mContent = mContent;
         dest.mOperator = mOperator;
-        dest.mContent = (IPair) mContent.duplicate();
-        dest.mContentList = mContentList;
+        dest.mResultList = mResultList;
     }
 
     @Override
-    public IOperator.Type getEventType()
+    public OperateType getEventType()
     {
         return mType;
     }
@@ -98,52 +114,85 @@ public class QEvent
     }
 
     @Override
-    public <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator)
+    public <V, A, R> void produce(OperateType t, IPair component, IBinaryOperator<V, A, R> binaryOperator)
+    {
+        mErrType = NO_ERROR;
+        mType = t;
+        mComponent = component;
+        mBinaryOperator = binaryOperator;
+        mResultList = null;
+    }
+
+    @Override
+    public <V, R> void produce(OperateType t, IoSerial content, IOperator<V, R> operator)
     {
         mErrType = NO_ERROR;
         mType = t;
         mContent = content;
         mOperator = operator;
-        mContentList = null;
+        mResultList = null;
     }
 
     @Override
-    public void produce(IOperator.Type t, List<ITriple> cp)
+    public void produce(OperateType t, List<ITriple> triples)
     {
         mErrType = NO_ERROR;
         mType = t;
-        mContent = null;
-        mOperator = null;
-        mContentList = cp;
+        mComponent = null;
+        mBinaryOperator = null;
+        mResultList = triples;
     }
 
     @Override
-    public <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator)
+    public <E, H, R> void error(IError.Type t, IPair component, IBinaryOperator<E, H, R> binaryOperator)
     {
-        mType = IOperator.Type.NULL;
+        mType = OperateType.NULL;
         mErrType = t;
-        mContent = content;
+        mComponent = component;
+        mBinaryOperator = binaryOperator;
+        mResultList = null;
+    }
+
+    @Override
+    public <R> void error(IError.Type t, Throwable throwable, IOperator<Throwable, R> operator)
+    {
+        mType = OperateType.NULL;
+        mErrType = t;
+        mThrowable = throwable;
         mOperator = operator;
-        mContentList = null;
+        mResultList = null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V, A, R> IOperator<V, A, R> getEventOp()
+    public <V, A, R> IBinaryOperator<V, A, R> getEventBinaryOp()
     {
-        return (IOperator<V, A, R>) mOperator;
+        return (IBinaryOperator<V, A, R>) mBinaryOperator;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T, R> IOperator<T, R> getEventOp()
+    {
+        return (IOperator<T, R>) mOperator;
     }
 
     @Override
-    public IPair getContent()
+    public IPair getComponent()
+    {
+        return mComponent;
+    }
+
+    @Override
+    public IoSerial getContent()
     {
         return mContent;
     }
 
     @Override
-    public List<ITriple> getContentList()
+    public List<ITriple> getResultList()
     {
-        return mContentList;
+        return mResultList;
     }
 
     private static class QEventFactory

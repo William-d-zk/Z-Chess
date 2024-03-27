@@ -26,7 +26,8 @@ package com.isahl.chess.queen.events.cluster;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
@@ -82,17 +83,17 @@ public class IoDispatcher
         switch(errorType) {
             case ACCEPT_FAILED, CONNECT_FAILED -> {
                 _Logger.warning("connection build failed");
-                IPair content = event.getContent();
+                IPair content = event.getComponent();
                 Throwable throwable = content.getFirst();
                 IConnectActivity connector = content.getSecond();
-                error(getNextPipe(connector.getMode()), errorType, new Pair<>(throwable, connector), event.getEventOp());
+                error(getNextPipe(connector.getMode()), errorType, new Pair<>(throwable, connector), event.getEventBinaryOp());
             }
             case CONSISTENCY_REJECT -> {
-                IPair content = event.getContent();
+                IPair content = event.getComponent();
                 Throwable throwable = content.getFirst();
                 _Logger.debug("consistency reject: %s", content);
                 ISession session = content.getSecond();
-                IOperator<Throwable, ISession, IPair> op = event.getEventOp();
+                IBinaryOperator<Throwable, ISession, IPair> op = event.getEventBinaryOp();
                 if(!session.isClosed()) {
                     IPair result = op.handle(throwable, session);
                     error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, Pair.of(throwable, session), result.getSecond());
@@ -102,29 +103,29 @@ public class IoDispatcher
                 switch(event.getEventType()) {
                     case CONNECTED, ACCEPTED -> {
                         _Logger.debug("connected");
-                        IPair connectContent = event.getContent();
+                        IPair connectContent = event.getComponent();
                         IConnectActivity connector = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
-                        IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
+                        IBinaryOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventBinaryOp();
                         publish(getNextPipe(connector.getMode()), event.getEventType(), Pair.of(connector, channel), connectOperator);
                     }
                     case READ -> {
                         _Logger.debug("read");
-                        IPair content = event.getContent();
+                        IPair content = event.getComponent();
                         ISession session = content.getSecond();
-                        publish(dispatchWorker(session.hashCode()), IOperator.Type.DECODE, content, event.getEventOp());
+                        publish(dispatchWorker(session.hashCode()), OperateType.DECODE, content, event.getEventBinaryOp());
                     }
                     case WROTE -> {
                         _Logger.debug("wrote");
-                        IPair wroteContent = event.getContent();
-                        publish(_IoWrote, IOperator.Type.WROTE, wroteContent, event.getEventOp());
+                        IPair wroteContent = event.getComponent();
+                        publish(_IoWrote, OperateType.WROTE, wroteContent, event.getEventBinaryOp());
                     }
                     case LOCAL_CLOSE -> {
                         _Logger.debug("local close");
-                        IPair content = event.getContent();
+                        IPair content = event.getComponent();
                         ISession session = content.getSecond();
                         if(!session.isClosed()) {
-                            error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, Pair.of(new ZException("initiative close"), session), event.getEventOp());
+                            error(getNextPipe(session.getMode()), INITIATIVE_CLOSE, Pair.of(new ZException("initiative close"), session), event.getEventBinaryOp());
                         }
                     }
                     default -> _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
@@ -132,8 +133,8 @@ public class IoDispatcher
             }
             default -> {
                 /* 未指定类型的错误 来自Decoded/Encoded Dispatcher */
-                IOperator<Throwable, ISession, IPair> op = event.getEventOp();
-                IPair content = event.getContent();
+                IBinaryOperator<Throwable, ISession, IPair> op = event.getEventBinaryOp();
+                IPair content = event.getComponent();
                 Throwable throwable = content.getFirst();
                 ISession session = content.getSecond();
                 _Logger.warning("error %s @ %s, → mapping handler [close] \n", throwable, errorType.getMsg(), session.summary());

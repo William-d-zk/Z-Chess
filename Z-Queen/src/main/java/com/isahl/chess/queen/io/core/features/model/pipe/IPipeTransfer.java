@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -32,15 +32,13 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019-05-12
- * <p>
- * <p>
+ * @since  2019-05-12
  * IOperator.IProtocol → decoded input 「IProtocol」 content
  * IOperator.ISession
  * IOperator.List of ITriple fst:protocol snd:session thr:encoder
  */
 public interface IPipeTransfer
-        extends IOperator<IProtocol, ISession, List<ITriple>>
+        extends IBinaryOperator<IProtocol, ISession, List<ITriple>>
 {
 
 }

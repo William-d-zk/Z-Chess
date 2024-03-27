@@ -26,7 +26,8 @@ package com.isahl.chess.queen.events.pipe;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -77,19 +78,19 @@ public class EncodeHandler
         else {
             switch(event.getEventType()) {
                 case WRITE -> {
-                    IPair pairWriteContent = event.getContent();
+                    IPair pairWriteContent = event.getComponent();
                     IProtocol cmd = pairWriteContent.getFirst();
                     ISession session = pairWriteContent.getSecond();
-                    IOperator<IProtocol, ISession, ITriple> writeOperator = event.getEventOp();
-                    _Logger.debug("%s→  %s | %s", IOperator.Type.WRITE, cmd, session);
+                    IBinaryOperator<IProtocol, ISession, ITriple> writeOperator = event.getEventBinaryOp();
+                    _Logger.debug("%s→  %s | %s", OperateType.WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                 }
                 case WROTE -> {
-                    IPair pairWroteContent = event.getContent();
+                    IPair pairWroteContent = event.getComponent();
                     int wroteCnt = pairWroteContent.getFirst();
                     ISession session = pairWroteContent.getSecond();
-                    IOperator<Integer, ISession, ITriple> wroteOperator = event.getEventOp();
-                    _Logger.debug("%s→  %s | %s", IOperator.Type.WROTE, wroteCnt, session);
+                    IBinaryOperator<Integer, ISession, ITriple> wroteOperator = event.getEventBinaryOp();
+                    _Logger.debug("%s→  %s | %s", OperateType.WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                 }
                 default -> {
@@ -98,7 +99,7 @@ public class EncodeHandler
         }
     }
 
-    private <A> void encodeHandler(QEvent event, A a, ISession session, IOperator<A, ISession, ITriple> operator)
+    private <A> void encodeHandler(QEvent event, A a, ISession session, IBinaryOperator<A, ISession, ITriple> operator)
     {
         IPContext context = session.getContext();
         if(context instanceof IEContext eContext) {

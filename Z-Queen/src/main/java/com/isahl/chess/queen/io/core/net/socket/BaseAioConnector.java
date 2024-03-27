@@ -24,7 +24,7 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.cron.features.ITask;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.IFailed;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.config.ISocketConfig;
@@ -114,13 +114,13 @@ public abstract class BaseAioConnector
     }
 
     @Override
-    public IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator()
+    public IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator()
     {
         return _SocketConnected;
     }
 
     @Override
-    public IOperator<Throwable, IAioConnection, Void> getErrorOperator()
+    public IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator()
     {
         return _SocketConnectFailed;
     }

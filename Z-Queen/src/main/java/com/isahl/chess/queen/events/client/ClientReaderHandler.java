@@ -24,7 +24,8 @@
 package com.isahl.chess.queen.events.client;
 
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -38,8 +39,8 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.DISPATCH;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.DISPATCH;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 import static com.isahl.chess.king.base.features.IError.Type.CONNECT_FAILED;
 
 /**
@@ -65,10 +66,10 @@ public class ClientReaderHandler
             }
             else {
                 _Logger.warning("client io error , do close session");
-                IPair errorContent = event.getContent();
+                IPair errorContent = event.getComponent();
                 ISession session = errorContent.getSecond();
                 IDismiss dismiss = session.getDismissCallback();
-                IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
+                IBinaryOperator<Void, ISession, Void> closeOperator = event.getEventBinaryOp();
                 if(!session.isClosed()) {
                     closeOperator.handle(null, session);
                     dismiss.onDismiss(session);
@@ -76,19 +77,19 @@ public class ClientReaderHandler
             }
         }
         else {
-            if(event.getEventType() == IOperator.Type.CONNECTED) {
+            if(event.getEventType() == OperateType.CONNECTED) {
                 try {
-                    IPair connected = event.getContent();
+                    IPair connected = event.getComponent();
                     IAioConnection connection = connected.getFirst();
                     AsynchronousSocketChannel channel = connected.getSecond();
-                    IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventBinaryOp();
                     ITriple handled = connectedOperator.handle(connection, channel);
                     boolean success = handled.getFirst();
                     if(success) {
                         ISession session = handled.getSecond();
                         ITriple result = handled.getThird();
                         if(result != null) {
-                            IOperator.Type type = result.getThird();
+                            OperateType type = result.getThird();
                             switch(type) {
                                 case SINGLE -> event.produce(WRITE,
                                                              new Pair<>(result.getFirst(), session),

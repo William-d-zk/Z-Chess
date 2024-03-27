@@ -29,7 +29,7 @@ import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
@@ -208,13 +208,13 @@ public class DeviceNode
     private void peerHeartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
-        send(session, IOperator.Type.CLUSTER_LOCAL, _PeerPing);
+        send(session, OperateType.CLUSTER_LOCAL, _PeerPing);
     }
 
     private void gateHeartbeat(ISession session)
     {
         _Logger.debug("gate_cluster heartbeat => %s ", session.getRemoteAddress());
-        send(session, IOperator.Type.CLUSTER_LOCAL, _GatePing);
+        send(session, OperateType.CLUSTER_LOCAL, _GatePing);
     }
 
     @Override
@@ -230,19 +230,19 @@ public class DeviceNode
     }
 
     @Override
-    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(OperateType type)
     {
         return getLocalPublisher().selectPublisher(type);
     }
 
     @Override
-    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(OperateType type)
     {
         return getLocalPublisher().selectCloser(type);
     }
 
     @Override
-    public ReentrantLock selectLock(IOperator.Type type)
+    public ReentrantLock selectLock(OperateType type)
     {
         return getLocalPublisher().selectLock(type);
     }

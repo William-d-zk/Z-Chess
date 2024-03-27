@@ -74,7 +74,7 @@ public interface ISort
 
     ICloser getCloser();
 
-    IFailed getError();
+    ISessionFailed getError();
 
     IFilterChain getFilterChain();
 

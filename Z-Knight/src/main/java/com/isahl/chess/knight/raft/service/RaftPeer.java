@@ -27,7 +27,7 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -59,7 +59,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.*;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.*;
 import static com.isahl.chess.king.env.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.INDEX_NAN;
 import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
@@ -1274,7 +1274,7 @@ public class RaftPeer
         return null;
     }
 
-    private <T> void trigger(T delta, IOperator.Type type)
+    private <T> void trigger(T delta, OperateType type)
     {
         final RingBuffer<QEvent> _Publisher = mClusterNode.selectPublisher(type);
         final ReentrantLock _Lock = mClusterNode.selectLock(type);
@@ -1297,13 +1297,13 @@ public class RaftPeer
     @Override
     public void topology(RaftNode delta)
     {
-        trigger(delta, IOperator.Type.CLUSTER_TOPOLOGY);
+        trigger(delta, OperateType.CLUSTER_TOPOLOGY);
     }
 
     @Override
     public <T extends IStorage> void timeTrigger(T content)
     {
-        trigger(content, IOperator.Type.CLUSTER_TIMER);
+        trigger(content, OperateType.CLUSTER_TIMER);
     }
 
     @Override

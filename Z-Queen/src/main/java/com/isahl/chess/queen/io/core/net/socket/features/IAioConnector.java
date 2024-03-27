@@ -24,7 +24,7 @@
 package com.isahl.chess.queen.io.core.net.socket.features;
 
 import com.isahl.chess.king.base.cron.features.ITask;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
 
@@ -44,7 +44,7 @@ public interface IAioConnector
     default void completed(Void result, AsynchronousSocketChannel channel)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, IOperator.Type.CONNECTED, channel);
+        worker.publishConnected(getConnectedOperator(), this, OperateType.CONNECTED, channel);
     }
 
     @Override

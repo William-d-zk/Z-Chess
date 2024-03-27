@@ -20,18 +20,27 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.king.base.disruptor.features.functions;
 
-package com.isahl.chess.queen.io.core.features.model.session;
-
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
-import com.isahl.chess.king.base.features.model.IPair;
+import java.util.Objects;
 
 /**
- * @author william.d.zk
- * @date 2019-06-28
+ * @author William.d.zk
  */
-public interface IFailed
-        extends IOperator<Throwable, ISession, IPair>
+@FunctionalInterface
+public interface IBinaryOperator<T, U, R>
 {
-    IPair handle(Throwable throwable, ISession session);
+    R handle(T t, U u);
+
+    default <V> IBinaryOperator<T, U, V> andThen(IBinaryOperator<? super T, ? super R, ? extends V> after)
+    {
+        Objects.requireNonNull(after);
+        return (t, u)->after.handle(t, handle(t, u));
+    }
+
+    default String getName()
+    {
+        return "binary-operator.";
+    }
+
 }

@@ -29,7 +29,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
-import com.isahl.chess.queen.io.core.features.model.session.IFailed;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
@@ -37,9 +37,9 @@ public abstract class BaseSort<C extends IPContext>
         implements IAioSort<C>
 {
     private final AioWriter            _AioWriter     = new AioWriter();
-    private final ICloser              _CloseOperator = new Closer();
-    private final IFailed              _ErrorOperator = new Failed();
-    private final IPipeEncoder         _Encoder       = new PipeEncoder(_AioWriter);
+    private final ICloser        _CloseOperator = new Closer();
+    private final ISessionFailed _ErrorOperator = new SessionFailed();
+    private final IPipeEncoder   _Encoder       = new PipeEncoder(_AioWriter);
     private final IPipeDecoder         _Decoder       = new PipeDecoder();
     private final SessionIgnore        _Ignore        = new SessionIgnore();
     private final Mode                 _Mode;
@@ -94,7 +94,7 @@ public abstract class BaseSort<C extends IPContext>
     }
 
     @Override
-    public IFailed getError()
+    public ISessionFailed getError()
     {
         return _ErrorOperator;
     }

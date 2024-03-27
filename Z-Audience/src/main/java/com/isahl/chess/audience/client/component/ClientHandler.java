@@ -25,9 +25,12 @@ package com.isahl.chess.audience.client.component;
 
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFailed;
+import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
@@ -66,9 +69,15 @@ public class ClientHandler
     }
 
     @Override
-    public IPipeTransfer defaultTransfer()
+    public IPipeTransfer logicTransfer()
     {
         return this::logicHandle;
+    }
+
+    @Override
+    public IPipeService serviceTransfer()
+    {
+        return this::clientHandle;
     }
 
     private List<ITriple> logicHandle(IProtocol content, ISession session)
@@ -76,8 +85,11 @@ public class ClientHandler
         List<ITriple> results = null;
 
         _Logger.info("logic recv: %s", content);
-
         return results;
     }
 
+    private List<ITriple> clientHandle(IoSerial request)
+    {
+        return null;
+    }
 }

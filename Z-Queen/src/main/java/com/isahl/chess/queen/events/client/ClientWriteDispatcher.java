@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.client;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -38,7 +38,7 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 
 /**
  * @author william.d.zk
@@ -69,12 +69,12 @@ public class ClientWriteDispatcher
     public void onEvent(QEvent event, long sequence) throws Exception
     {
         if(event.hasError()) {
-            error(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
+            error(_Error, event.getErrorType(), event.getComponent(), event.getEventBinaryOp());
         }
         else {
             switch(event.getEventType()) {
                 case BIZ_LOCAL, WRITE, LOGIC -> {
-                    IPair content = event.getContent();
+                    IPair content = event.getComponent();
                     IProtocol output = content.getFirst();
                     ISession session = content.getSecond();
                     if(session.isValid() && output != null) {
@@ -82,7 +82,7 @@ public class ClientWriteDispatcher
                     }
                 }
                 case DISPATCH -> {
-                    List<ITriple> contents = event.getContentList();
+                    List<ITriple> contents = event.getResultList();
                     if(contents != null) {
                         for(ITriple triple : contents) {
                             IProtocol output = triple.getFirst();
@@ -94,10 +94,10 @@ public class ClientWriteDispatcher
                     }
                 }
                 case WROTE -> {
-                    IPair wrote = event.getContent();
+                    IPair wrote = event.getComponent();
                     ISession session = wrote.getSecond();
                     if(session.isValid()) {
-                        publish(_Encoder, IOperator.Type.WROTE, wrote, event.getEventOp());
+                        publish(_Encoder, OperateType.WROTE, wrote, event.getEventBinaryOp());
                     }
                 }
                 default -> {}
