@@ -34,8 +34,8 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.LOGIC;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LOGIC;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 
 /**
  * @author william.d.zk
@@ -64,9 +64,9 @@ public class ClientDecodedHandler
     public void onEvent(QEvent event, long sequence) throws Exception
     {
         switch(event.getEventType()) {
-            case SINGLE -> publish(_LogicPublisher, LOGIC, event.getContent(), event.getEventOp());
+            case SINGLE -> publish(_LogicPublisher, LOGIC, event.getComponent(), event.getEventBinaryOp());
             case BATCH -> {
-                List<ITriple> contents = event.getContentList();
+                List<ITriple> contents = event.getResultList();
                 for(ITriple content : contents) {
                     publish(_LogicPublisher,
                             LOGIC,
@@ -74,9 +74,9 @@ public class ClientDecodedHandler
                             content.getThird());
                 }
             }
-            case WRITE -> publish(_LogicPublisher, WRITE, event.getContent(), event.getEventOp());
+            case WRITE -> publish(_LogicPublisher, WRITE, event.getComponent(), event.getEventBinaryOp());
             case DISPATCH -> {
-                List<ITriple> outputs = event.getContentList();
+                List<ITriple> outputs = event.getResultList();
                 for(ITriple output : outputs) {
                     publish(_LogicPublisher, WRITE, Pair.of(output.getFirst(), output.getSecond()), output.getThird());
                 }

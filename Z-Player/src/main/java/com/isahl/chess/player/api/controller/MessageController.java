@@ -29,6 +29,7 @@ import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
+import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.player.api.service.MessageOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,11 +58,11 @@ public class MessageController
             @RequestParam(name = "token")
             String token,
             @RequestBody
-            MessageBody body)
+            MessageDo body)
     {
         DeviceEntity device = _DeviceService.findByToken(token);
         if(device == null) {
-            return ZResponse.error(KingCode.MISS, "device not found");
+            return ZResponse.error(KingCode.MISS, "origin device not found");
         }
         _MessageService.submit(device.getId(), body);
         return ZResponse.success("submit succeed");

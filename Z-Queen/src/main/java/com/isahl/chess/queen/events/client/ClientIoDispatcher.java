@@ -26,7 +26,8 @@ package com.isahl.chess.queen.events.client;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -74,32 +75,32 @@ public class ClientIoDispatcher
         // convert & transfer
         switch(event.getErrorType()) {
             case CONNECT_FAILED -> {
-                IPair connectFailedContent = event.getContent();
+                IPair connectFailedContent = event.getComponent();
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity connectActive = connectFailedContent.getSecond();
-                IOperator<Throwable, IConnectActivity, ITriple> connectFailedOperator = event.getEventOp();
+                IBinaryOperator<Throwable, IConnectActivity, ITriple> connectFailedOperator = event.getEventBinaryOp();
                 error(_Reader, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
             }
             case NO_ERROR -> {
                 switch(event.getEventType()) {
                     case CONNECTED, ACCEPTED -> {
-                        IPair connectContent = event.getContent();
+                        IPair connectContent = event.getComponent();
                         IConnectActivity connectActivity = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
-                        IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
+                        IBinaryOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventBinaryOp();
                         publish(_Reader, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
                     }
                     case READ -> {
-                        IPair readContent = event.getContent();
-                        publish(_Reader, IOperator.Type.DECODE, readContent, event.getEventOp());
+                        IPair readContent = event.getComponent();
+                        publish(_Reader, OperateType.DECODE, readContent, event.getEventBinaryOp());
                     }
                     case WROTE -> {
-                        IPair wroteContent = event.getContent();
-                        publish(_Wrote, IOperator.Type.WROTE, wroteContent, event.getEventOp());
+                        IPair wroteContent = event.getComponent();
+                        publish(_Wrote, OperateType.WROTE, wroteContent, event.getEventBinaryOp());
                     }
                     case LOCAL_CLOSE -> {
-                        IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
-                        IPair closeContent = event.getContent();
+                        IBinaryOperator<Void, ISession, Void> closeOperator = event.getEventBinaryOp();
+                        IPair closeContent = event.getComponent();
                         ISession session = closeContent.getSecond();
                         if(!session.isClosed()) {
                             error(_Reader, INITIATIVE_CLOSE, closeContent, closeOperator);
@@ -110,8 +111,8 @@ public class ClientIoDispatcher
                 }
             }
             case READ_EOF -> {
-                IPair errorContent = event.getContent();
-                IOperator<Throwable, ISession, IPair> errorOperator = event.getEventOp();
+                IPair errorContent = event.getComponent();
+                IBinaryOperator<Throwable, ISession, IPair> errorOperator = event.getEventBinaryOp();
                 ISession session = errorContent.getSecond();
                 Throwable throwable = errorContent.getFirst();
                 if(!session.isClosed()) {
@@ -123,7 +124,7 @@ public class ClientIoDispatcher
                 }
             }
             case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
-                IPair errorContent = event.getContent();
+                IPair errorContent = event.getComponent();
                 String msg = errorContent.getFirst();
                 ISession session = errorContent.getSecond();
                 _Logger.warning("closed: [%s] -> %s", session.isClosed(), session);

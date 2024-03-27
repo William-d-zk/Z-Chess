@@ -162,7 +162,7 @@ public interface ISession
         return c >= SESSION_CLOSE;
     }
 
-    IFailed getError();
+    ISessionFailed getError();
 
     ICloser getCloser();
 

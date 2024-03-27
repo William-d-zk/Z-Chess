@@ -61,7 +61,7 @@ public class BinarySerial
     @Override
     public int sizeOf()
     {
-        return ByteBuf.vSizeOf(length()) + 2;
+        return ByteBuf.vSizeOf(length()) + LENGTH_POS;
     }
 
     protected byte[]   mPayload;

@@ -34,7 +34,7 @@ import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.components.Health;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -68,7 +68,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 
 /**
  * @author william.d.zk
@@ -225,7 +225,7 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(session != null) {
-            send(session, IOperator.Type.BIZ_LOCAL, toSends);
+            send(session, OperateType.BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -235,7 +235,7 @@ public class ClientPool
     public final void sendLocal(ISession session, IProtocol... request)
     {
         if(session != null) {
-            send(session, IOperator.Type.BIZ_LOCAL, request);
+            send(session, OperateType.BIZ_LOCAL, request);
         }
         else {
             throw new ZException("client offline");
@@ -246,7 +246,7 @@ public class ClientPool
     {
         ISession session = findSessionByIndex(sessionIndex);
         if(Objects.nonNull(session)) {
-            close(session, IOperator.Type.BIZ_LOCAL);
+            close(session, OperateType.BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");
@@ -255,12 +255,12 @@ public class ClientPool
 
     public void qttHeartbeat(ISession session)
     {
-        send(session, IOperator.Type.BIZ_LOCAL, new X11C_QttPingreq());
+        send(session, OperateType.BIZ_LOCAL, new X11C_QttPingreq());
     }
 
     public void wsHeartbeat(ISession session)
     {
-        send(session, IOperator.Type.BIZ_LOCAL, new X103_Ping<>());
+        send(session, OperateType.BIZ_LOCAL, new X103_Ping<>());
     }
 
     @Override
@@ -282,7 +282,7 @@ public class ClientPool
     }
 
     @Override
-    public boolean send(ISession session, IOperator.Type type, IProtocol... outputs)
+    public boolean send(ISession session, OperateType type, IProtocol... outputs)
     {
         if(session == null || outputs == null || outputs.length == 0) {return false;}
         return _ClientCore.publish(type,
@@ -293,7 +293,7 @@ public class ClientPool
     }
 
     @Override
-    public void close(ISession session, IOperator.Type type)
+    public void close(ISession session, OperateType type)
     {
         if(session == null) {return;}
         _ClientCore.close(type, Pair.of(null, session), session.getCloser());

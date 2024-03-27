@@ -33,7 +33,7 @@ import com.isahl.chess.queen.io.core.features.model.session.IMessage;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.LINK;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LINK;
 
 /**
  * @author william.d.zk

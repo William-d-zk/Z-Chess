@@ -23,7 +23,8 @@
 
 package com.isahl.chess.queen.io.core.tasks.features;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
@@ -36,13 +37,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public interface ILocalPublisher
 {
-    RingBuffer<QEvent> selectPublisher(IOperator.Type type);
+    RingBuffer<QEvent> selectPublisher(OperateType type);
 
-    RingBuffer<QEvent> selectCloser(IOperator.Type type);
+    RingBuffer<QEvent> selectCloser(OperateType type);
 
-    ReentrantLock selectLock(IOperator.Type type);
+    ReentrantLock selectLock(OperateType type);
 
-    default <T, U, R> boolean publish(IOperator.Type type, IOperator<T, U, R> next, IPair... contents)
+    default <T, U, R> boolean publish(OperateType type, IBinaryOperator<T, U, R> next, IPair... contents)
     {
         if(contents == null || contents.length == 0 || type == null) {
             return false;
@@ -75,7 +76,7 @@ public interface ILocalPublisher
         return false;
     }
 
-    default <T, U, R> void close(IOperator.Type type, IPair content, IOperator<T, U, R> next)
+    default <T, U, R> void close(OperateType type, IPair content, IBinaryOperator<T, U, R> next)
     {
         if(content == null || content.isEmpty() || type == null) {
             return;
@@ -87,7 +88,7 @@ public interface ILocalPublisher
             long sequence = producer.next();
             try {
                 QEvent event = producer.get(sequence);
-                event.produce(IOperator.Type.LOCAL_CLOSE, content, next);
+                event.produce(OperateType.LOCAL_CLOSE, content, next);
             }
             finally {
                 producer.publish(sequence);

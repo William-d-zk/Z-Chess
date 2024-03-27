@@ -23,7 +23,7 @@
 
 package com.isahl.chess.player.api.service;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
@@ -47,14 +47,14 @@ public class HookOpenService
 
     public ICode hookLogic(EchoDo request)
     {
-        final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(IOperator.Type.SERVICE);
-        final ReentrantLock _Lock = _DeviceNode.selectLock(IOperator.Type.SERVICE);
+        final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(OperateType.SERVICE);
+        final ReentrantLock _Lock = _DeviceNode.selectLock(OperateType.SERVICE);
         if(_Lock.tryLock()) {
             try {
                 long sequence = _Publisher.next();
                 try {
                     QEvent event = _Publisher.get(sequence);
-                    event.produce(IOperator.Type.SERVICE, Pair.of(request, null), null);
+                    event.produce(OperateType.SERVICE, Pair.of(request, null), null);
                     return CodeKing.SUCCESS;
                 }
                 finally {

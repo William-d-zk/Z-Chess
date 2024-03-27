@@ -23,7 +23,8 @@
 package com.isahl.chess.king.base.disruptor.features.flow;
 
 import com.isahl.chess.king.base.disruptor.features.event.IEvent;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -41,7 +42,7 @@ public interface IPipeHandler<E extends IEvent>
 
     Logger _Logger();
 
-    default <V, A, R> void publish(RingBuffer<E> publisher, IOperator.Type type, IPair content, IOperator<V, A, R> operator)
+    default <V, A, R> void publish(RingBuffer<E> publisher, OperateType type, IPair content, IBinaryOperator<V, A, R> operator)
     {
         if(publisher == null || type == null || content == null) {return;}
         if(publisher.remainingCapacity() == 0) {
@@ -66,14 +67,14 @@ public interface IPipeHandler<E extends IEvent>
         long sequence = publisher.next();
         try {
             E event = publisher.get(sequence);
-            event.produce(IOperator.Type.DISPATCH, contents);
+            event.produce(OperateType.DISPATCH, contents);
         }
         finally {
             publisher.publish(sequence);
         }
     }
 
-    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type type, IPair content, IOperator<V, A, R> operator)
+    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type type, IPair content, IBinaryOperator<V, A, R> operator)
     {
         if(publisher == null || type == null || content == null) {return;}
         if(publisher.remainingCapacity() == 0) {

@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.events.functions;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
  * @author william.d.zk
  */
 public class SocketConnectFailed
-        implements IOperator<Throwable, IAioConnection, Void>
+        implements IBinaryOperator<Throwable, IAioConnection, Void>
 {
 
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());

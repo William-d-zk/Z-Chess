@@ -26,7 +26,7 @@ package com.isahl.chess.queen.events.cluster;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -41,7 +41,7 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CLUSTER;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.CLUSTER;
 
 /**
  * @author william.d.zk
@@ -75,27 +75,27 @@ public class DecodedDispatcher
     public void onEvent(QEvent event, long sequence) throws Exception
     {
         if(event.hasError()) {// 错误处理
-            IPair dispatchError = event.getContent();
+            IPair dispatchError = event.getComponent();
             ISession session = dispatchError.getSecond();
             if(!session.isClosed()) {
-                error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
+                error(_Error, event.getErrorType(), dispatchError, event.getEventBinaryOp());
             }
         }
         else {
             switch(event.getEventType()) {
                 case SINGLE -> {
-                    IPair content = event.getContent();
+                    IPair content = event.getComponent();
                     if(content != null) {
                         IProtocol decoded = content.getFirst();
                         ISession session = content.getSecond();
                         ISort.Mode mode = session.getMode();
                         IPair nextPipe = getNextPipe(mode, decoded);
-                        publish(nextPipe.getFirst(), nextPipe.getSecond(), content, event.getEventOp());
+                        publish(nextPipe.getFirst(), nextPipe.getSecond(), content, event.getEventBinaryOp());
                     }
                 }
                 case BATCH -> {
                     //triple.fst 「IProtocol」snd「ISession」trd「IPipeTransfer」
-                    List<ITriple> contents = event.getContentList();
+                    List<ITriple> contents = event.getResultList();
                     if(contents != null) {
                         contents.forEach(triple->{
                             IProtocol decoded = triple.getFirst();
@@ -110,10 +110,10 @@ public class DecodedDispatcher
                     }
                 }
                 case SERVICE -> {
-                    IoSerial content = event.getContent()
+                    IoSerial content = event.getComponent()
                                             .getFirst();
                     publish(dispatchWorker(content.hashCode()),
-                            IOperator.Type.SERVICE,
+                            OperateType.SERVICE,
                             new Pair<>(content, null),
                             null);
                 }
@@ -131,10 +131,10 @@ public class DecodedDispatcher
             }
             else if(msg instanceof IProtocol content) {
                 return Pair.of(dispatchWorker(content.session()
-                                                     .hashCode()), IOperator.Type.LOGIC);
+                                                     .hashCode()), OperateType.LOGIC);
             }
         }
-        return Pair.of(dispatchWorker(input.hashCode()), IOperator.Type.SERVICE);
+        return Pair.of(dispatchWorker(input.hashCode()), OperateType.SERVICE);
     }
 
     protected RingBuffer<QEvent> dispatchWorker(int hashCode)

@@ -25,7 +25,8 @@ package com.isahl.chess.queen.events.pipe;
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -43,8 +44,8 @@ import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.BATCH;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.BATCH;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 
 /**
  * @author William.d.zk
@@ -79,11 +80,11 @@ public class DecodeHandler
         /*
          * 错误事件已在同级旁路中处理，此处不再关心错误处理
          */
-        if(event.getEventType() == IOperator.Type.DECODE) {
-            IPair raw = event.getContent();
+        if(event.getEventType() == OperateType.DECODE) {
+            IPair raw = event.getComponent();
             ISession session = raw.getSecond();
             IPacket input = raw.getFirst();
-            IOperator<IPacket, ISession, ITriple> pipeDecoder = event.getEventOp();
+            IBinaryOperator<IPacket, ISession, ITriple> pipeDecoder = event.getEventBinaryOp();
             IPContext context = session.getContext();
             if(context instanceof IEContext eContext) {
                 eContext.setEncryptHandler(_EncryptHandler);
@@ -91,7 +92,7 @@ public class DecodeHandler
             try {
                 ITriple decoded = pipeDecoder.handle(input, session);
                 if(decoded != null) {
-                    IOperator.Type type = decoded.getThird();
+                    OperateType type = decoded.getThird();
                     switch(type) {
                         case SINGLE -> event.produce(SINGLE,
                                                      // decoded.first「IProtocol」;decoded.second == session

@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Pair;
@@ -37,7 +37,7 @@ import com.isahl.chess.queen.io.core.net.socket.AioPacket;
  * @author William.d.zk
  */
 public interface IPipeEncoder
-        extends IOperator<IProtocol, ISession, ITriple>
+        extends IBinaryOperator<IProtocol, ISession, ITriple>
 {
     default IPacket protocolWrite(IProtocol output, ISession session)
     {

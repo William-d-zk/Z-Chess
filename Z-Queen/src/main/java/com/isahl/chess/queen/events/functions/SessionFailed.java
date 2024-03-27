@@ -21,15 +21,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.features.model.channels;
+package com.isahl.chess.queen.events.functions;
 
-import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.king.base.features.model.IPair;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-public interface IActivity
-{
-    boolean send(ISession session, OperateType eventType, IProtocol... toSends);
+/**
+ * @author william.d.zk
+ * @date 2019-04-25
+ */
+public class SessionFailed
+        implements ISessionFailed
 
-    void close(ISession session, OperateType eventType);
+{
+    private final Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionFailed.class.getSimpleName());
+
+    @Override
+    public String getName()
+    {
+        return "session.failed";
+    }
+
+    @Override
+    public IPair handle(Throwable throwable, ISession session)
+    {
+        _Logger.trace("error session:%s", throwable, session);
+        return session != null ? new Pair<>(session, session.getCloser()) : null;
+    }
 }

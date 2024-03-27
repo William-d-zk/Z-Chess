@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.events.cluster;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
  */
 public interface IConsistencyBackload
 {
-    default IOperator<IConsistency, IManager, IProtocol> getUnbox()
+    default IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox()
     {
         return this::unbox;
     }

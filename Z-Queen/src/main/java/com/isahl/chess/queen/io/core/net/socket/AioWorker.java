@@ -22,7 +22,8 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
@@ -32,7 +33,7 @@ import com.isahl.chess.queen.events.functions.SessionWrote;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
-import com.isahl.chess.queen.io.core.features.model.session.IFailed;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
@@ -79,9 +80,9 @@ public class AioWorker
     }
 
     public <T, A, R> void publish(RingBuffer<QEvent> producer,
-                                  final IOperator<T, A, R> op,
+                                  final IBinaryOperator<T, A, R> op,
                                   final IError.Type eType,
-                                  final IOperator.Type type,
+                                  final OperateType type,
                                   IPair content)
     {
         if(producer.remainingCapacity() == 0) {
@@ -102,48 +103,48 @@ public class AioWorker
         }
     }
 
-    public void publishRead(final IOperator<IPacket, ISession, ITriple> op, IPacket pack, final ISession session)
+    public void publishRead(final IBinaryOperator<IPacket, ISession, ITriple> op, IPacket pack, final ISession session)
     {
-        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, OperateType.READ, new Pair<>(pack, session));
     }
 
     public void publishWrote(final SessionWrote op, final int wroteCnt, final ISession session)
     {
-        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, OperateType.WROTE, new Pair<>(wroteCnt, session));
     }
 
-    public <T> void publishWroteError(final IFailed op,
+    public <T> void publishWroteError(final ISessionFailed op,
                                       final IError.Type eType,
                                       final T t,
                                       final ISession session)
     {
-        publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
+        publish(_Producer, op, eType, OperateType.WROTE, new Pair<>(t, session));
     }
 
-    public void publishConnected(final IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> op,
+    public void publishConnected(final IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> op,
                                  final IConnectActivity activity,
-                                 final IOperator.Type type,
+                                 final OperateType type,
                                  final AsynchronousSocketChannel channel)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
     }
 
-    public void publishConnectingError(final IOperator<Throwable, IAioConnection, Void> op,
+    public void publishConnectingError(final IBinaryOperator<Throwable, IAioConnection, Void> op,
                                        final Throwable e,
                                        final IAioConnector cActive)
     {
-        publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, IError.Type.CONNECT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
     }
 
-    public void publishAcceptError(final IOperator<Throwable, IAioConnection, Void> op,
+    public void publishAcceptError(final IBinaryOperator<Throwable, IAioConnection, Void> op,
                                    final Throwable e,
                                    final IAioServer cActive)
     {
-        publish(_Producer, op, IError.Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, IError.Type.ACCEPT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
     }
 
-    public <T> void publishReadError(final IFailed op, final IError.Type eType, final T t, final ISession session)
+    public <T> void publishReadError(final ISessionFailed op, final IError.Type eType, final T t, final ISession session)
     {
-        publish(_Producer, op, eType, IOperator.Type.READ, new Pair<>(t, session));
+        publish(_Producer, op, eType, OperateType.READ, new Pair<>(t, session));
     }
 }

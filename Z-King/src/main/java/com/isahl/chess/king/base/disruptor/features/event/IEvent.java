@@ -22,11 +22,14 @@
  */
 package com.isahl.chess.king.base.disruptor.features.event;
 
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.features.model.IoSerial;
 
 import java.util.List;
 
@@ -36,21 +39,29 @@ import java.util.List;
 public interface IEvent
         extends IReset
 {
-    IOperator.Type getEventType();
+    OperateType getEventType();
 
     IError.Type getErrorType();
 
-    <T, U, R> IOperator<T, U, R> getEventOp();
+    <T, U, R> IBinaryOperator<T, U, R> getEventBinaryOp();
 
-    IPair getContent();
+    <T, R> IOperator<T, R> getEventOp();
 
-    List<ITriple> getContentList();
+    IPair getComponent();
 
-    <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator);
+    IoSerial getContent();
 
-    <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator);
+    List<ITriple> getResultList();
 
-    void produce(IOperator.Type t, List<ITriple> cp);
+    <V, A, R> void produce(OperateType t, IPair component, IBinaryOperator<V, A, R> binaryOperator);
+
+    <V, R> void produce(OperateType t, IoSerial content, IOperator<V, R> operator);
+
+    <E, H, R> void error(IError.Type t, IPair component, IBinaryOperator<E, H, R> binaryOperator);
+
+    <R> void error(IError.Type t, Throwable throwable, IOperator<Throwable, R> operator);
+
+    void produce(OperateType t, List<ITriple> cp);
 
     default boolean hasError()
     {

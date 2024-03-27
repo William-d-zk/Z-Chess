@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.net.socket.features.server;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 
@@ -48,7 +48,7 @@ public interface IAioServer
     default void completed(AsynchronousSocketChannel channel, IAioServer server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(), server, IOperator.Type.ACCEPTED, channel);
+        worker.publishConnected(server.getConnectedOperator(), server, OperateType.ACCEPTED, channel);
         server.pendingAccept();
     }
 

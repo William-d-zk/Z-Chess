@@ -73,7 +73,7 @@ public class EchoPlugin
     }
 
     @Override
-    public void consume(IoSerial request)
+    public void consume(IExchanger exchanger, IoSerial request, List<ITriple> load)
     {
         EchoDo echo = (EchoDo) request;
     }

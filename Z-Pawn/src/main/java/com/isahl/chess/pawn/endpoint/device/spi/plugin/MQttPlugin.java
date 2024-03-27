@@ -38,6 +38,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
@@ -61,8 +62,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.NULL;
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.SINGLE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.NULL;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 /**
@@ -92,7 +93,7 @@ public class MQttPlugin
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return input.serial() >= 0x111 && input.serial() <= 0x11F;
+        return (input.serial() >= 0x111 && input.serial() <= 0x11F) || input instanceof MessageEntity;
     }
 
     public boolean isSupported(ISession session)
@@ -236,7 +237,8 @@ public class MQttPlugin
                 if(x112.isOk()) {
                     ISession old = manager.mapSession(session.prefix(deviceId), session);
                     if(old != null) {
-                        _Logger.info("re-login ok, wait for consistent notify; client[%s],close old", x111.getClientId());
+                        _Logger.info("re-login ok, wait for consistent notify; client[%s],close old",
+                                     x111.getClientId());
                         old.innerClose();
                     }
                     else {
@@ -487,7 +489,10 @@ public class MQttPlugin
         return Pattern.compile(topic);
     }
 
-    private void brokerTopic(IExchanger exchanger, X113_QttPublish x113, List<Subscribe.Mapped> mappeds, List<ITriple> results)
+    private void brokerTopic(IExchanger exchanger,
+                             X113_QttPublish x113,
+                             List<Subscribe.Mapped> mappeds,
+                             List<ITriple> results)
     {
         _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
         mappeds.forEach(mapped->{
@@ -519,4 +524,36 @@ public class MQttPlugin
 
     }
 
+    @Override
+    public void consume(IExchanger exchanger, IoSerial request, List<ITriple> results)
+    {
+        _Logger.debug("service consume\n\t%s \n→ broker ", request);
+        MessageEntity messageEntity = (MessageEntity) request;
+        broker(messageEntity.getTopic()).forEach(mapped->{
+            long target = mapped.session();
+            X113_QttPublish n113 = new X113_QttPublish().withTopic(messageEntity.getTopic());
+            n113.withSub(messageEntity.getMessage());
+            n113.target(target);
+            if(mapped.level()
+                     .getValue() > 0)
+            {
+                n113.msgId(_MessageService.generateId(target));
+            }
+            ISession session = exchanger.findSessionByIndex(target);
+            if(session != null) {
+                _Logger.debug("broker topic → session [%#x,%s] ", session.index(), mapped.level());
+                n113.with(session);
+                if(mapped.level()
+                         .getValue() > 0)
+                {
+                    register(n113.msgId(), n113);
+                }
+                results.add(Triple.of(n113, session, session.encoder()));
+            }
+            else {
+                exchanger.exchange(n113, target, QttFactory._Instance.serial(), results);
+                _Logger.debug("no local routing, cluster exchange %#x", mapped.session());
+            }
+        });
+    }
 }

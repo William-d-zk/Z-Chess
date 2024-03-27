@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 
 /**
  * @author william.d.zk

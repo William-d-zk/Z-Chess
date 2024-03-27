@@ -34,7 +34,7 @@ import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.IOperator.Type.CONSISTENT_SERVICE;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.CONSISTENT_SERVICE;
 
 public interface IConsistencyService
 {

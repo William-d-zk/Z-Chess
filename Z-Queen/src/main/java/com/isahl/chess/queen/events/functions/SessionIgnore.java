@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.events.functions;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  */
 public class SessionIgnore
-        implements IOperator<IProtocol, ISession, IProtocol>
+        implements IBinaryOperator<IProtocol, ISession, IProtocol>
 {
 
     @Override

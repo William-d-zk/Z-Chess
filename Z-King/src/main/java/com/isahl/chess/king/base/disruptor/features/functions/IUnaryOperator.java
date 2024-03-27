@@ -20,16 +20,23 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.king.base.disruptor.features.functions;
 
-package com.isahl.chess.queen.io.core.features.model.channels;
+import java.util.Objects;
 
-import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
-public interface IActivity
+@FunctionalInterface
+public interface IUnaryOperator<T>
 {
-    boolean send(ISession session, OperateType eventType, IProtocol... toSends);
+    T handle(T t);
 
-    void close(ISession session, OperateType eventType);
+    default IUnaryOperator<T> andThen(IUnaryOperator<T> after)
+    {
+        Objects.requireNonNull(after);
+        return (t)->after.handle(handle(t));
+    }
+
+    default String getName()
+    {
+        return "unary-operator.";
+    }
 }

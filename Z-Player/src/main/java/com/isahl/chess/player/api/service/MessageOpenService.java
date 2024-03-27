@@ -23,11 +23,11 @@
 
 package com.isahl.chess.player.api.service;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
+import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,25 +42,22 @@ import java.time.LocalDateTime;
 public class MessageOpenService
 {
     private final Logger          _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final IClusterPeer    _ClusterPeer;
     private final ILocalPublisher _Publisher;
 
     @Autowired
-    public MessageOpenService(IClusterPeer clusterPeer, ILocalPublisher publisher)
+    public MessageOpenService(ILocalPublisher publisher)
     {
-        _ClusterPeer = clusterPeer;
         _Publisher = publisher;
     }
 
-    public void submit(long deviceId, MessageBody body)
+    public void submit(long deviceId, MessageDo body)
     {
-        long msgId = _ClusterPeer.generateId();
+        body.afterEncode();
         MessageEntity entity = new MessageEntity();
-        entity.setId(msgId);
-        entity.setMessage(body.getContent());
+        entity.setMessage(body.getPayload());
         entity.setTopic(body.getTopic());
         entity.setOrigin(deviceId);
         entity.setNetAt(LocalDateTime.now());
-        _Publisher.publish(IOperator.Type.SERVICE, null, Pair.of(entity, null));
+        _Publisher.publish(OperateType.SERVICE, null, Pair.of(entity, null));
     }
 }

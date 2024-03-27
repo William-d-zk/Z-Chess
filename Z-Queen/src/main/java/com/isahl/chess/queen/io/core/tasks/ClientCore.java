@@ -26,7 +26,7 @@ package com.isahl.chess.queen.io.core.tasks;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.disruptor.components.Z1Processor;
 import com.isahl.chess.king.base.disruptor.components.Z2Processor;
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.events.client.ClientDecodedHandler;
 import com.isahl.chess.queen.events.client.ClientIoDispatcher;
@@ -209,19 +209,19 @@ public class ClientCore
     }
 
     @Override
-    public RingBuffer<QEvent> selectPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> selectPublisher(OperateType type)
     {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> selectCloser(IOperator.Type type)
+    public RingBuffer<QEvent> selectCloser(OperateType type)
     {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock selectLock(IOperator.Type type)
+    public ReentrantLock selectLock(OperateType type)
     {
         return _LocalLock;
     }

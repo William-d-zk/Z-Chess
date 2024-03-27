@@ -72,7 +72,7 @@ public interface IAccessService
 
     List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody);
 
-    default void consume(IoSerial request)
+    default void consume(IExchanger exchanger, IoSerial request, List<ITriple> load)
     {
 
     }

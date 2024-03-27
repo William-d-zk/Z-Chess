@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.events.functions;
 
-import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
+import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.util.Triple;
@@ -37,7 +37,7 @@ import java.nio.channels.AsynchronousSocketChannel;
  * @author william.d.zk
  */
 public class SocketConnected
-        implements IOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
+        implements IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
 {
     private final AioReader _AioReader = new AioReader();
 

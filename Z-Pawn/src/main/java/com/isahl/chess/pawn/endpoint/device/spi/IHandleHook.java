@@ -37,4 +37,6 @@ public interface IHandleHook
     void afterLogic(IoSerial content, List<ITriple> results);
 
     void afterConsume(IoSerial content);
+
+    boolean isExpect(IoSerial content);
 }
