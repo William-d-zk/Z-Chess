@@ -8,7 +8,7 @@ Content-Type: application/json
   "username": "isahl.chess-mqtt",
   "profile": {
     "wifi_mac": "09:12:11:FF:1D:8E",
-    "sensor_mac": "09:12:12:2A:2D:8E",
+    "ethernet_mac": "09:12:12:2A:2D:8E",
     "bluetooth_mac": "09:12:02:7F:2D:8E",
     "imei": "766781230788476",
     "imsi": "460011357824680"
