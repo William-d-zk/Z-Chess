@@ -128,9 +128,6 @@ public class PersistentHook
     @Override
     public boolean isExpect(IoSerial content)
     {
-        return switch(content.serial()){
-            case 0x113, 0x1D -> true;
-            default -> false;
-        };
+        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof MessageEntity;
     }
 }
