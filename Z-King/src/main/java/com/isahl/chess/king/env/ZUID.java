@@ -32,14 +32,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * 2^64 unsigned long data encoding
  * session port-prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
  * [02bit] peer-type
  * <p>
- * {00} Client manager service
- * {01} Internal message queue broker
- * {10} Device consumer connection
- * {11} Cluster symmetry communication
+ *     {00} Client manager service
+ *     {01} Internal message queue broker
+ *     {10} Device consumer connection
+ *     {11} Cluster symmetry communication
  * </p>
  * [04bit] cluster-region
  * [03bit] cluster-set identity
