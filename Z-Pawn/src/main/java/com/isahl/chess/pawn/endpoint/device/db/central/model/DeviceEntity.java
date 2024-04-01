@@ -218,7 +218,7 @@ public class DeviceEntity
     @Column(name = "o_name")
     public String getName()
     {
-        return mName == null? "Iot-Device": mName;
+        return mName;
     }
     @Column(name = "o_name")
     public void setName(String name)
