@@ -47,7 +47,14 @@ public class DeviceDo
     private DeviceProfile mProfile;
     private Long          mUid;
     private String        mName;
+    private String        mType;
 
+    public  String getType(){
+        return mType;
+    }
+    public void setType(String type){
+        mType = type;
+    }
     public String getName()
     {
         return mName;
