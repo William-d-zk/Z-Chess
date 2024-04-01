@@ -70,6 +70,7 @@ public class DeviceController
         deviceEntity.setUpdatedById(deviceDo.getUid());
         deviceEntity.setUpdatedAt(LocalDateTime.now());
         deviceEntity.setCreatedAt(LocalDateTime.now());
+        deviceEntity.setName(deviceDo.getType());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
