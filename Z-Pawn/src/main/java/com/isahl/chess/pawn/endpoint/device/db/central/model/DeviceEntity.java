@@ -51,7 +51,7 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
 /**
  * @author william.d.zk
  */
-@Entity(name = "zc_rd_device")
+@Entity(name = "zc_rd_ent-device")
 @Table(indexes = { @Index(name = "device_idx_token_pwd_id",
                           columnList = "token,password,password_id"),
                    @Index(name = "device_idx_token_pwd",
