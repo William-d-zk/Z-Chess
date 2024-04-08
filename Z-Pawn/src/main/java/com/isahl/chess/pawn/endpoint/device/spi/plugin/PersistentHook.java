@@ -108,6 +108,7 @@ public class PersistentHook
 
     private void batchPush(PersistentHook self)
     {
+        if(_MainQueue.isEmpty()) return;
         List<IoSerial> cached = List.copyOf(_MainQueue);
         for(ISubscribe subscribe : _Subscribes) {
             subscribe.onBatch(cached);
