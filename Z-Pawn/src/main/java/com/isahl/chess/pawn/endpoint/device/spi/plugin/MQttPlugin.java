@@ -536,6 +536,7 @@ public class MQttPlugin
     {
         _Logger.debug("service consume\n\t%s \n→ broker ", request);
         MessageEntity messageEntity = (MessageEntity) request;
+        _MessageService.stateInit(messageEntity);
         broker(messageEntity.getTopic()).forEach(mapped->{
             long target = mapped.session();
             X113_QttPublish n113 = new X113_QttPublish().withTopic(messageEntity.getTopic());

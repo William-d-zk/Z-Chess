@@ -23,7 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.service;
 
-import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
@@ -36,6 +35,7 @@ import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -83,13 +83,7 @@ public class MessageService
     void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         EhcacheConfig.createCache(_CacheManager,
-                                  "message_cache",
-                                  String.class,
-                                  MessageEntity.class,
-                                  Duration.of(2, MINUTES));
-
-        EhcacheConfig.createCache(_CacheManager,
-                                  "delivery_status_cache",
+                                  "msg_delivery_status_cache",
                                   String.class,
                                   MsgDeliveryStatus.class,
                                   Duration.of(4, HOURS));
@@ -133,7 +127,7 @@ public class MessageService
     }
 
     @Override
-    public void submit(List<MessageEntity> contents)
+    public void submitAll(List<MessageEntity> contents)
     {
         if(contents == null || contents.isEmpty()) return;
         _Logger.debug("message service submit [%d]", contents.size());
