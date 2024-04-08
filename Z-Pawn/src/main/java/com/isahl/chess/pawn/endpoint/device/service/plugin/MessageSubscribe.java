@@ -48,9 +48,9 @@ public class MessageSubscribe
     public void onBatch(List<IoSerial> contents)
     {
         _Logger.debug("message subscribe batch");
-        _MessageService.submit(contents.stream()
-                                       .filter(c->c instanceof MessageEntity)
-                                       .map(c->(MessageEntity) c)
-                                       .toList());
+        _MessageService.submitAll(contents.stream()
+                                          .filter(c->c instanceof MessageEntity)
+                                          .map(c->(MessageEntity) c)
+                                          .toList());
     }
 }

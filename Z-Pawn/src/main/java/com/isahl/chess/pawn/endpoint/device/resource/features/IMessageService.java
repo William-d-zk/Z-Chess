@@ -50,7 +50,7 @@ public interface IMessageService
 
     long generateId(long session);
 
-    void submit(List<MessageEntity> contents);
+    void submitAll(List<MessageEntity> contents);
 
     void stateInit(MessageEntity content);
 }

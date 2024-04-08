@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.16</version>
+    <version>1.0.17</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -62,7 +62,7 @@
         <logback.version>1.5.3</logback.version>
         <logback-access.version>1.4.14</logback-access.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>3.2.3</spring-boot.version>
+        <spring-boot.version>3.2.4</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.15.1</commons-io.version>
         <commons-codec.version>1.16.1</commons-codec.version>
@@ -353,70 +353,6 @@
                 <artifactId>spring-boot-configuration-processor</artifactId>
                 <version>${spring-boot.version}</version>
                 <optional>true</optional>
-            </dependency>
-            <!--LOW_CODE_ERUPT-->
-            <dependency><!--用户权限管理-->
-                <groupId>xyz.erupt</groupId>
-                <artifactId>erupt-upms</artifactId>
-                <version>${erupt.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.pdfbox</groupId>
-                        <artifactId>pdfbox</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.santuario</groupId>
-                        <artifactId>xmlsec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.xmlgraphics</groupId>
-                        <artifactId>batik-svgbrowser</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.xmlgraphics</groupId>
-                        <artifactId>xmlgraphics-commons</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk15on</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency><!--接口数据安全-->
-                <groupId>xyz.erupt</groupId>
-                <artifactId>erupt-security</artifactId>
-                <version>${erupt.version}</version>
-            </dependency>
-            <dependency><!--后台WEB界面-->
-                <groupId>xyz.erupt</groupId>
-                <artifactId>erupt-web</artifactId>
-                <version>${erupt.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-tomcat</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!--magic-api-->
-            <dependency>
-                <groupId>xyz.erupt</groupId>
-                <artifactId>erupt-magic-api</artifactId>
-                <version>${erupt.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-text</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-beanutils</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-collections</groupId>
-                        <artifactId>commons-collections</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.vladmihalcea</groupId>

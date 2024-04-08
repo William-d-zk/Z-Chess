@@ -24,6 +24,7 @@
 package com.isahl.chess.rook.storage.cache.config;
 
 import jakarta.annotation.PostConstruct;
+
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
@@ -54,6 +55,7 @@ public class EhcacheConfig
     {
         RookConfig = new XmlConfiguration(Objects.requireNonNull(getClass().getResource("/ehcache.xml")));
     }
+
     public static <K, V> void createCache(CacheManager cacheManager,
                                           String cacheName,
                                           Class<K> keyType,
@@ -64,6 +66,7 @@ public class EhcacheConfig
                 DEFAULT_TEMPLATE_NAME,
                 keyType,
                 valueType);
+
         cacheManager.createCache(cacheName,
                                  fromEhcacheCacheConfiguration(builder.withExpiry(timeToIdleExpiration(expiry))
                                                                       .build()));

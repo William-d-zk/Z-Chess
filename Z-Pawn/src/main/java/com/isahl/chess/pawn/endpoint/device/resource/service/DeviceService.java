@@ -33,6 +33,7 @@ import com.isahl.chess.pawn.endpoint.device.db.central.repository.IDeviceReposit
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;

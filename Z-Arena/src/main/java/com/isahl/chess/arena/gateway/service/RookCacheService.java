@@ -26,6 +26,7 @@ package com.isahl.chess.arena.gateway.service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
