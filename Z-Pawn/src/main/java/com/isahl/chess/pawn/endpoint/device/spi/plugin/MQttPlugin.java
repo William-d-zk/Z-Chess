@@ -105,19 +105,20 @@ public class MQttPlugin
     public void onExchange(IProtocol body, List<ITriple> load)
     {
         _Logger.debug("onExchange:%s ", body);
-        switch(body.serial()) {
-            case 0x113 -> {
-                X113_QttPublish x113 = (X113_QttPublish) body;
-                if(x113.level()
-                       .getValue() > 0)
-                {
-                    register(x113.msgId(), x113);
-                }
-                load.add(Triple.of(x113,
-                                   x113.session(),
-                                   x113.session()
-                                       .encoder()));
+        if(body.serial() == 0x113) {
+            X113_QttPublish x113 = (X113_QttPublish) body;
+            if(x113.level()
+                   .getValue() > 0)
+            {
+                register(x113.msgId(), x113);
             }
+            load.add(Triple.of(x113,
+                               x113.session(),
+                               x113.session()
+                                   .encoder()));
+        }
+        else {
+            _Logger.warning("unsupported message type: " + body);
         }
     }
 
@@ -491,11 +492,11 @@ public class MQttPlugin
 
     private void brokerTopic(IExchanger exchanger,
                              X113_QttPublish x113,
-                             List<Subscribe.Mapped> mappeds,
+                             List<Subscribe.Mapped> mappedList,
                              List<ITriple> results)
     {
-        _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappeds, x113.toString());
-        mappeds.forEach(mapped->{
+        _Logger.debug("broker[%s]→%s | %s", x113.topic(), mappedList, x113.toString());
+        mappedList.forEach(mapped->{
             long target = mapped.session();
             X113_QttPublish n113 = x113.duplicate();
             n113.target(target);

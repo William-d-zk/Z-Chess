@@ -178,5 +178,4 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         return _Logger;
     }
 
-
 }

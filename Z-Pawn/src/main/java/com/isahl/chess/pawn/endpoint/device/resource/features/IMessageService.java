@@ -40,6 +40,8 @@ public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
+    List<MessageEntity> findAfterId(long id);
+
     Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
 
     List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
@@ -48,4 +50,7 @@ public interface IMessageService
 
     long generateId(long session);
 
+    void submit(List<MessageEntity> contents);
+
+    void stateInit(MessageEntity content);
 }

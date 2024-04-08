@@ -71,7 +71,7 @@ public class HttpPlugin
         return null;
     }
 
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
+    public List<ITriple> onConsistency(IManager manager, IConsistency backLoad, IoSerial consensusBody)
     {
         return null;
     }

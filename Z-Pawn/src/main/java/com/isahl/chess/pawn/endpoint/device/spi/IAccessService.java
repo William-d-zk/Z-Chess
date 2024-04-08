@@ -70,7 +70,7 @@ public interface IAccessService
         return manager.cleanIndex(session);
     }
 
-    List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody);
+    List<ITriple> onConsistency(IManager manager, IConsistency backLoad, IoSerial consensusBody);
 
     default void consume(IExchanger exchanger, IoSerial request, List<ITriple> load)
     {
