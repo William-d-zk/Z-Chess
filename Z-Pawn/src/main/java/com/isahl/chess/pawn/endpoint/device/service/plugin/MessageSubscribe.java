@@ -25,6 +25,7 @@
 package com.isahl.chess.pawn.endpoint.device.service.plugin;
 
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.service.MessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
@@ -37,7 +38,7 @@ import java.util.List;
 public class MessageSubscribe
         implements PersistentHook.ISubscribe
 {
-
+    private final Logger         _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final MessageService _MessageService;
 
     @Autowired
@@ -46,6 +47,7 @@ public class MessageSubscribe
     @Override
     public void onBatch(List<IoSerial> contents)
     {
+        _Logger.debug("message subscribe batch");
         _MessageService.submit(contents.stream()
                                        .filter(c->c instanceof MessageEntity)
                                        .map(c->(MessageEntity) c)
