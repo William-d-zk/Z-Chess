@@ -74,7 +74,7 @@ public class StateService
 
     private final IDeviceService                _DeviceService;
     private final ISessionRepository            _SessionRepository;
-    private final IMsgStateRepository           _MessageRepository;
+    private final IMsgStateRepository           _MsgStateRepository;
     private final CacheManager                  _CacheManager;
     private final TimeWheel                     _TimeWheel;
     private final ScheduleHandler<StateService> _StorageHourCleaner;
@@ -90,12 +90,12 @@ public class StateService
                         TimeWheel timeWheel,
                         IRaftConfig raftConfig)
     {
+        _ZUID = raftConfig.getZUID();
         _DeviceService = deviceService;
         _SessionRepository = sessionRepository;
-        _MessageRepository = messageRepository;
+        _MsgStateRepository = messageRepository;
         _CacheManager = cacheManager;
         _TimeWheel = timeWheel;
-        _ZUID = raftConfig.getZUID();
         _Topic2Subscribe = new TreeMap<>(Comparator.comparing(Pattern::pattern));
         _ClientPool = new ConcurrentSkipListMap<>();
         _StorageHourCleaner = new ScheduleHandler<>(Duration.ofHours(1), true, StateService::cleanup);
@@ -155,7 +155,7 @@ public class StateService
         try {
             //@formatter:off
             List<MsgStateEntity> idleMsgHours =
-                    self._MessageRepository
+                    self._MsgStateRepository
                         .findAll((root, criteriaQuery, criteriaBuilder)->
                                         criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
                                                      .getRestriction()
@@ -167,7 +167,7 @@ public class StateService
                                                      .getRestriction()
                                 );
 
-            if(!idleMsgHours.isEmpty()) {self._MessageRepository.deleteAll(idleMsgHours);}
+            if(!idleMsgHours.isEmpty()) {self._MsgStateRepository.deleteAll(idleMsgHours);}
             if(!idleSessionHours.isEmpty()) {
                 self._SessionRepository.deleteAll(
                         self._ClientPool.isEmpty()
@@ -300,7 +300,7 @@ public class StateService
                 message.setContent(body.payload());
                 message.setId(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
                 try {
-                    _MessageRepository.save(message);
+                    _MsgStateRepository.save(message);
                 }
                 catch(Throwable e) {
                     _Logger.warning("local storage received msg %s failed", message.getId(), e);
@@ -315,9 +315,9 @@ public class StateService
         String primaryKey = String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId);
         try {
 
-            Optional<MsgStateEntity> optional = _MessageRepository.findById(primaryKey);
+            Optional<MsgStateEntity> optional = _MsgStateRepository.findById(primaryKey);
             if(optional.isPresent()) {
-                _MessageRepository.deleteById(primaryKey);
+                _MsgStateRepository.deleteById(primaryKey);
                 return optional.get();
             }
         }
@@ -348,7 +348,7 @@ public class StateService
                 message.setContent(body.payload());
                 message.setId(String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, body.target(), msgId));
                 try {
-                    _MessageRepository.save(message);
+                    _MsgStateRepository.save(message);
                 }
                 catch(Throwable e) {
                     _Logger.warning("local add broker msg %s failed", message.getId(), e);
@@ -369,7 +369,7 @@ public class StateService
         }
         String key = String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, target, msgId);
         try {
-            _MessageRepository.deleteById(key);
+            _MsgStateRepository.deleteById(key);
         }
         catch(Throwable e) {
             //ignore no exists key
@@ -428,7 +428,7 @@ public class StateService
         DeviceClient client = getClient(origin);
         return client == null || client.identifierReceivedMap()
                                        .containsKey(msgId) ||
-               _MessageRepository.existsById(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
+               _MsgStateRepository.existsById(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
     }
 
     @Override
