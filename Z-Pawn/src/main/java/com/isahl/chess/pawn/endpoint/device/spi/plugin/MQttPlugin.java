@@ -385,18 +385,24 @@ public class MQttPlugin
     @Override
     public <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body)
     {
+        //TODO 增加MsgDeliveryStatus更新逻辑，<待发>→<发送中>
         _StateService.add(msgId, body);
     }
 
     @Override
     public boolean ack(long msgId, long origin)
     {
+        /*
+            TODO 增加MsgDeliveryStatus更新逻辑，[<待发>/<发送中>]→[<妥投>/<已接收>]，
+            TODO 0x113→0x114 0x113→0x115→0x116→0x117的逻辑不通可以考虑重构接口
+        */
         return _StateService.drop(origin, msgId);
     }
 
     @Override
     public void clean(long session)
     {
+        //TODO 检索状态机中保存的消息，全部改变状态为<失败>
         _StateService.dismiss(session);
     }
 
