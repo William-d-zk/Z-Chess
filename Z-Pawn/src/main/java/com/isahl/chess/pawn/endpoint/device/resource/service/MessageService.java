@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.resource.service;
 
 import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
@@ -59,6 +60,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 public class MessageService
         implements IMessageService
 {
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final CacheManager                 _CacheManager;
     private final IMessageRepository           _MessageRepository;
@@ -134,6 +136,7 @@ public class MessageService
     public void submit(List<MessageEntity> contents)
     {
         if(contents == null || contents.isEmpty()) return;
+        _Logger.debug("message service submit [%d]", contents.size());
         _MessageRepository.saveAll(contents);
     }
 
