@@ -23,16 +23,20 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.service;
 
+import com.isahl.chess.bishop.protocol.zchat.zcrypto.Encryptor;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.MsgDeliveryStatus;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMessageRepository;
+import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMsgDeliveryStatusRepository;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -40,8 +44,11 @@ import org.springframework.stereotype.Service;
 import javax.cache.CacheManager;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
+import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
@@ -53,16 +60,21 @@ public class MessageService
         implements IMessageService
 {
 
-    private final CacheManager       _CacheManager;
-    private final IMessageRepository _MessageRepository;
-    private final ZUID               _ZUID;
+    private final CacheManager                 _CacheManager;
+    private final IMessageRepository           _MessageRepository;
+    private final IMsgDeliveryStatusRepository _MsgDeliveryStatusRepository;
+    private final ZUID                         _ZUID;
 
     @Autowired
-    public MessageService(CacheManager cacheManager, IMessageRepository messageRepository, IRaftConfig raftConfig)
+    public MessageService(IRaftConfig raftConfig,
+                          CacheManager cacheManager,
+                          IMessageRepository messageRepository,
+                          IMsgDeliveryStatusRepository statusRepository)
     {
+        _ZUID = raftConfig.getZUID();
         _CacheManager = cacheManager;
         _MessageRepository = messageRepository;
-        _ZUID = raftConfig.getZUID();
+        _MsgDeliveryStatusRepository = statusRepository;
     }
 
     @PostConstruct
@@ -73,6 +85,12 @@ public class MessageService
                                   String.class,
                                   MessageEntity.class,
                                   Duration.of(2, MINUTES));
+
+        EhcacheConfig.createCache(_CacheManager,
+                                  "delivery_status_cache",
+                                  String.class,
+                                  MsgDeliveryStatus.class,
+                                  Duration.of(4, HOURS));
     }
 
     @Override
@@ -81,42 +99,63 @@ public class MessageService
         return null;
     }
 
+    @Override
     public List<MessageEntity> findAfterId(long id)
     {
-        return null;
-        /*
-        return _MessageRepository.findAll((Specification<MessageEntity>) (root, criteriaQuery, criteriaBuilder)->{
-            return criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"), id))
-                                .getRestriction();
-        });
-         */
+        return _MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->criteriaQuery.where(criteriaBuilder.greaterThan(
+                                                                                                       root.get("id"),
+                                                                                                       id))
+                                                                                               .getRestriction());
+
     }
 
     @Override
     public Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification)
     {
-        return Optional.empty();
+        return _MessageRepository.findOne(specification);
     }
 
     @Override
     public List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable)
     {
-        return null;
-        /*
+
         return _MessageRepository.findAll(specification, pageable)
                                  .toList();
-         */
+
     }
 
     @Override
     public void submit(MessageEntity post)
     {
+        _MessageRepository.save(post);
+    }
 
+    @Override
+    public void submit(List<MessageEntity> contents)
+    {
+        if(contents == null || contents.isEmpty()) return;
+        _MessageRepository.saveAll(contents);
     }
 
     @Override
     public long generateId(long session)
     {
         return _ZUID.moveOn(session);
+    }
+
+    @Cacheable(value = "msg_delivery_status_cache",
+               key = "#p0",
+               condition = "#p0 != null",
+               unless = "#result == null")
+    public MsgDeliveryStatus getDeliveryStatus(String status)
+    {
+        return _MsgDeliveryStatusRepository.findByStatus(status);
+    }
+
+    @Override
+    public void stateInit(MessageEntity content)
+    {
+        Objects.requireNonNull(content);
+        content.setStatus(Set.of(_MsgDeliveryStatusRepository.findByFlag("start")));
     }
 }

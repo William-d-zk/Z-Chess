@@ -29,11 +29,11 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,13 +57,15 @@ public class PersistentHook
     private final TimeWheel        _TimeWheel;
     private final Queue<IoSerial>  _MainQueue;
     private final List<ISubscribe> _Subscribes;
+    private final ZUID             _ZUID;
 
     @Autowired
-    public PersistentHook(TimeWheel timeWheel, List<ISubscribe> subscribes)
+    public PersistentHook(ZRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes)
     {
         _TimeWheel = timeWheel;
         _Subscribes = subscribes;
         _MainQueue = new ConcurrentLinkedQueue<>();
+        _ZUID = raftConfig.getZUID();
     }
 
     @PostConstruct
@@ -86,7 +88,10 @@ public class PersistentHook
                 msgEntity.setNetAt(LocalDateTime.now());
                 msgEntity.setOrigin(x113.session()
                                         .index());
-                _MainQueue.offer(msgEntity);
+                if((msgEntity.origin() & ZUID.PEER_MASK) == _ZUID.getPeerId()) {
+                    //集群扩散消息不再向DB中提交
+                    _MainQueue.offer(msgEntity);
+                }
             }
         }
         else {
@@ -104,11 +109,7 @@ public class PersistentHook
 
     private void batchPush(PersistentHook self)
     {
-        int size = _MainQueue.size();
-        List<IoSerial> cached = new ArrayList<>(size);
-        for(int i = 0; i < size; i++) {
-            cached.add(_MainQueue.poll());
-        }
+        List<IoSerial> cached = List.copyOf(_MainQueue);
         for(ISubscribe subscribe : _Subscribes) {
             subscribe.onBatch(cached);
         }

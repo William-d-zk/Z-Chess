@@ -35,7 +35,6 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.CryptoUtil;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -48,8 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Objects;
-import java.util.TimeZone;
+import java.util.Set;
 
 import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
@@ -76,15 +74,17 @@ public class MessageEntity
     private static final long serialVersionUID = -6502547239976531057L;
 
     @Transient
-    private long          mOrigin;
+    private long                   mOrigin;
     @Transient
-    private String        mTopic;
+    private String                 mTopic;
     @Transient
-    private LocalDateTime mNetAt;
+    private LocalDateTime          mNetAt;
     @Transient
-    private String        mContent;
+    private String                 mContent;
     @Transient
-    private String        mNumber;
+    private String                 mNumber;
+    @Transient
+    private Set<MsgDeliveryStatus> mDeliveryStatus;
 
     public MessageEntity()
     {
@@ -252,4 +252,12 @@ public class MessageEntity
                                    .toEpochMilli())
                     .putUTF(mTopic);
     }
+
+    @ManyToMany
+    @JoinTable(name = "zc_rd_message_r_delivery-status",
+               joinColumns = @JoinColumn(name = "ref_lifecycle"),
+               inverseJoinColumns = @JoinColumn(name = "ref_status"))
+    public Set<MsgDeliveryStatus> getStatus() {return mDeliveryStatus;}
+
+    public void setStatus(Set<MsgDeliveryStatus> status) {mDeliveryStatus = status;}
 }
