@@ -30,7 +30,7 @@ import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.env.ZUID;
-import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import jakarta.annotation.PostConstruct;
@@ -39,7 +39,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -60,12 +59,12 @@ public class PersistentHook
     private final ZUID             _ZUID;
 
     @Autowired
-    public PersistentHook(ZRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes)
+    public PersistentHook(IRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes)
     {
+        _ZUID = raftConfig.getZUID();
         _TimeWheel = timeWheel;
         _Subscribes = subscribes;
         _MainQueue = new ConcurrentLinkedQueue<>();
-        _ZUID = raftConfig.getZUID();
     }
 
     @PostConstruct
