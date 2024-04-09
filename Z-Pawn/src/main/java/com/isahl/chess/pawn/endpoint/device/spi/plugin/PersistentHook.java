@@ -102,6 +102,7 @@ public class PersistentHook
     public void afterConsume(IoSerial content)
     {
         if(content instanceof MessageEntity msg) {
+            msg.genSummary();
             _MainQueue.offer(msg);
         }
     }
