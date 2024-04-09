@@ -84,6 +84,8 @@ public class MessageEntity
     @Transient
     private String                 mNumber;
     @Transient
+    private String                 mSummary;
+    @Transient
     private Set<MsgDeliveryStatus> mDeliveryStatus;
 
     public MessageEntity()
@@ -209,10 +211,20 @@ public class MessageEntity
         mNumber = number;
     }
 
+    @Column(name = "notice")
+    public String getSummary() {return mSummary;}
+
+    public void setSummary(String summary) {mSummary = summary;}
+
+    public void genSummary()
+    {
+        mSummary = format("%d→@%s size:(%d)", mOrigin, getTopic(), length());
+    }
+
     @Override
     public String toString()
     {
-        return format("MessageEntity{ id=%s, origin=%#x, topic:%s,msg:%s,netAt:%s[%s]}",
+        return format("MessageEntity{ id=%s, origin=%#x, topic:%s, msg:%s, netAt:%s[%s]}",
                       getId(),
                       origin(),
                       getTopic(),
