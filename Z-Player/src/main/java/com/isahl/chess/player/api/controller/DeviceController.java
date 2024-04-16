@@ -62,7 +62,7 @@ public class DeviceController
             DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setNotice(deviceDo.getNotice());
+        deviceEntity.setNotice(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
         deviceEntity.setCreatedById(deviceDo.getUid());
@@ -70,6 +70,7 @@ public class DeviceController
         deviceEntity.setUpdatedAt(LocalDateTime.now());
         deviceEntity.setCreatedAt(LocalDateTime.now());
         deviceEntity.setName(deviceDo.getType());
+        deviceEntity.setCode(deviceDo.getName());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
