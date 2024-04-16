@@ -127,7 +127,7 @@ public class DeviceService
         else {
             DeviceEntity exist = null;
             if(!isBlank(device.getNotice())) {
-                exist = _DeviceRepository.findByNumber(device.getNotice());
+                exist = _DeviceRepository.findByNotice(device.getNotice());
             }
             else if(!isBlank(device.getToken())) {
                 exist = _DeviceRepository.findByToken(device.getToken());
@@ -171,9 +171,9 @@ public class DeviceService
     }
 
     @Override
-    public DeviceEntity findByNumber(String number) throws ZException
+    public DeviceEntity findByNotice(String number) throws ZException
     {
-        return _DeviceRepository.findByNumber(number);
+        return _DeviceRepository.findByNotice(number);
     }
 
     @Override
