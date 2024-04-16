@@ -71,7 +71,7 @@ public class DeviceEntity
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Transient
-    private String        mNumber;
+    private String        mCode;
     @Transient
     private String        mPassword;
     @Transient
@@ -167,14 +167,14 @@ public class DeviceEntity
 
     @Column(nullable = false,
             updatable = false)
-    public String getNumber()
+    public String getCode()
     {
-        return mNumber;
+        return mCode;
     }
 
-    public void setNumber(String number)
+    public void setCode(String code)
     {
-        mNumber = number;
+        mCode = code;
     }
 
     @Column(nullable = false)
@@ -236,7 +236,7 @@ public class DeviceEntity
                 getUsername(),
                 getPasswordId(),
                 getPassword(),
-                getNumber(),
+                getNotice(),
                 getProfile(),
                 getCreatedAt(),
                 getUpdatedAt(),
