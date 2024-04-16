@@ -126,8 +126,8 @@ public class DeviceService
         }
         else {
             DeviceEntity exist = null;
-            if(!isBlank(device.getNumber())) {
-                exist = _DeviceRepository.findByNumber(device.getNumber());
+            if(!isBlank(device.getNotice())) {
+                exist = _DeviceRepository.findByNumber(device.getNotice());
             }
             else if(!isBlank(device.getToken())) {
                 exist = _DeviceRepository.findByToken(device.getToken());
@@ -135,7 +135,7 @@ public class DeviceService
             DeviceEntity entity = exist == null ? device : exist;
             if(exist == null) {
                 String source = String.format("sn:%s,random %s%d",
-                                              device.getNumber(),
+                                              device.getNotice(),
                                               _MixConfig.getPasswordRandomSeed(),
                                               Instant.now()
                                                      .toEpochMilli());

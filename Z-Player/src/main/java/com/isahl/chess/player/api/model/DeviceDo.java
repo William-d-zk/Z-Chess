@@ -40,7 +40,7 @@ import org.springframework.lang.NonNull;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceDo
 {
-    private String        mNumber;
+    private String        mNotice;
     private String        mUsername;
     private String        mPassword;
     private String        mToken;
@@ -65,15 +65,15 @@ public class DeviceDo
         mName = name;
     }
 
-    public String getNumber()
+    public String getNotice()
     {
-        return mNumber;
+        return mNotice;
     }
 
-    public void setNumber(String number)
+    public void setNotice(String notice)
     {
-        if(number != null) {
-            mNumber = number.toUpperCase();
+        if(notice != null) {
+            mNotice = notice.toUpperCase();
         }
     }
 
@@ -142,7 +142,7 @@ public class DeviceDo
         DeviceDo deviceDo = new DeviceDo();
         deviceDo.setUsername(entity.getUsername());
         deviceDo.setPassword(entity.getPassword());
-        deviceDo.setNumber(entity.getNumber());
+        deviceDo.setNotice(entity.getNotice());
         deviceDo.setName(entity.getNotice());
         deviceDo.setToken(entity.getToken());
         deviceDo.setProfile(entity.getProfile());
@@ -154,7 +154,7 @@ public class DeviceDo
     {
         DeviceDo deviceDo = new DeviceDo();
         deviceDo.setUsername(client.getUsername());
-        deviceDo.setNumber(client.getNumber());
+        deviceDo.setNotice(client.getNotice());
         return deviceDo;
     }
 

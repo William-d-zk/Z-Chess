@@ -61,7 +61,7 @@ public class DeviceClient
 
     private long                      mDeviceId;
     private String                    mUsername;
-    private String                    mNumber;
+    private String                    mNotice;
     private IThread.Topic             mWillContent;
     private ListSerial<IThread.Topic> mSubscribes;
     private long                      mKeepAlive;
@@ -77,14 +77,14 @@ public class DeviceClient
             long deviceId,
             @JsonProperty("username")
             String username,
-            @JsonProperty("number")
-            String number)
+            @JsonProperty("notice")
+            String notice)
 
     {
         mDeviceId = deviceId;
         mSubscribes = new ListSerial<>(IThread.Topic::new);
         mUsername = username;
-        mNumber = number;
+        mNotice = notice;
     }
 
     public DeviceClient(long deviceId)
@@ -113,9 +113,9 @@ public class DeviceClient
         return mWillContent;
     }
 
-    public String getNumber()
+    public String getNotice()
     {
-        return mNumber;
+        return mNotice;
     }
 
     public String getUsername()
@@ -177,7 +177,7 @@ public class DeviceClient
     public void of(DeviceEntity device)
     {
         mUsername = device.getUsername();
-        mNumber = device.getNumber();
+        mNotice = device.getNotice();
     }
 
     @Override
@@ -190,7 +190,7 @@ public class DeviceClient
                1 + // clean
                mSubscribes.sizeOf() +  // subscribes.size_of
                vSizeOf(mUsername == null ? 0 : mUsername.getBytes(StandardCharsets.UTF_8).length) + // username-length
-               vSizeOf(mNumber == null ? 0 : mNumber.getBytes(StandardCharsets.UTF_8).length) +// sn-length
+               vSizeOf(mNotice == null ? 0 : mNotice.getBytes(StandardCharsets.UTF_8).length) +// sn-length
                (mWillContent == null ? 0 : mWillContent.sizeOf()); // will-content
     }
 
@@ -212,7 +212,7 @@ public class DeviceClient
         mUsername = input.readUTF(ul);
         remain -= vSizeOf(ul);
         int sl = input.vLength();
-        mNumber = input.readUTF(sl);
+        mNotice = input.readUTF(sl);
         remain -= vSizeOf(sl);
         if(remain > 0) {
             mWillContent = new IThread.Topic(input);
@@ -231,7 +231,7 @@ public class DeviceClient
                       .put(mClean ? 1 : 0)
                       .put(mSubscribes.encode())
                       .putUTF(mUsername)
-                      .putUTF(mNumber);
+                      .putUTF(mNotice);
         if(mWillContent != null) {
             output.put(mWillContent.encode());
         }
