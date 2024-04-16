@@ -62,8 +62,7 @@ public class DeviceController
             DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setNumber(deviceDo.getNumber());
-        deviceEntity.setNotice(deviceDo.getName());
+        deviceEntity.setNotice(deviceDo.getNotice());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
         deviceEntity.setCreatedById(deviceDo.getUid());
