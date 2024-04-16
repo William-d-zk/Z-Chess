@@ -37,7 +37,7 @@ public interface IDeviceService
 
     DeviceEntity findByToken(String token) throws ZException;
 
-    DeviceEntity findByNumber(String number) throws ZException;
+    DeviceEntity findByNotice(String number) throws ZException;
 
     List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
 

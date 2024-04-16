@@ -72,7 +72,7 @@ public class MixOpenService
 
     public DeviceEntity findByNumber(String number)
     {
-        return _DeviceService.findByNumber(number);
+        return _DeviceService.findByNotice(number);
     }
 
     @SafeVarargs
