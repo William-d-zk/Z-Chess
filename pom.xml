@@ -220,7 +220,6 @@
         <module>Z-Rook</module>
         <module>Z-Pawn</module>
         <module>Z-Player</module>
-        <module>Z-Referee</module>
         <module>Z-Audience</module>
         <module>Z-Arena</module>
     </modules>
