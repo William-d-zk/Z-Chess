@@ -56,8 +56,6 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
                           columnList = "token,password,password_id"),
                    @Index(name = "device_idx_token_pwd",
                           columnList = "token,password"),
-                   @Index(name = "device_idx_number",
-                          columnList = "number"),
                    @Index(name = "device_idx_token",
                           columnList = "token"),
                    @Index(name = "device_idx_username",

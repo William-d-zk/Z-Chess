@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
