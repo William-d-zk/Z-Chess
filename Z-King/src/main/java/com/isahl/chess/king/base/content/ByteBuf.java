@@ -378,7 +378,7 @@ public class ByteBuf
     private void checkOffset(int offset)
     {
         if(!isOffsetReadable(offset)) {
-            throw new ZException("read out of bounds");
+            throw new ZException("read out of bounds, readable %s < offset %s, capacity: %s", readableBytes(), offset, capacity());
         }
     }
 
