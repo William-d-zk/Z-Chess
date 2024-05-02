@@ -27,6 +27,8 @@ import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * @author william.d.zk
  * @date 2020-1-20
@@ -39,7 +41,5 @@ public interface IDeviceRepository
 
     DeviceEntity findByNotice(String number);
 
-    DeviceEntity findByNoticeOrToken(String sn, String token);
-
-    DeviceEntity findByIdAndUsername(long id, String username);
+    Optional<DeviceEntity> findByDeviceId(long deviceId);
 }

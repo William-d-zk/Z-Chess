@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
-import com.isahl.chess.queen.config.IMixConfig;
+import com.isahl.chess.queen.config.IMixCoreConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "z.chess.pawn.core")
 @PropertySource("classpath:mix.core.properties")
 public class MixCoreConfig
-        implements IMixConfig
+        implements IMixCoreConfig
 {
     private int decoderCountPower;
     private int encoderCountPower;

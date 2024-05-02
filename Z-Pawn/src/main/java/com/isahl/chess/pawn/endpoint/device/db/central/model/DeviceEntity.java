@@ -59,7 +59,10 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
                    @Index(name = "device_idx_token",
                           columnList = "token"),
                    @Index(name = "device_idx_username",
-                          columnList = "username") })
+                          columnList = "username"),
+                   @Index(name = "device_idx_device",
+                          columnList = "device_id",
+                          unique = true) })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class DeviceEntity
@@ -86,20 +89,32 @@ public class DeviceEntity
     private String        mNotice;
     @Transient
     private String        mName;
+    @Transient
+    private long          mId;
 
     @Id
     @JsonIgnore
-    @GeneratedValue(generator = "ZDeviceGenerator")
-    @GenericGenerator(name = "ZDeviceGenerator",
-                      type = com.isahl.chess.pawn.endpoint.device.db.generator.ZDeviceGenerator.class)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId()
     {
-        return pKey;
+        return mId;
     }
 
     public void setId(long id)
     {
-        pKey = id;
+        mId = id;
+    }
+
+
+    @Column(nullable = false)
+    public long getDeviceId()
+    {
+        return pKey;
+    }
+
+    public void setDeviceId(long deviceId)
+    {
+        pKey = deviceId;
     }
 
     @Column(nullable = false)
@@ -218,6 +233,7 @@ public class DeviceEntity
     {
         return mName;
     }
+
     @Column(name = "o_name")
     public void setName(String name)
     {

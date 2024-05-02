@@ -50,6 +50,8 @@ public interface IMessageService
 
     long generateId(long session);
 
+    long generateId();
+
     void submitAll(List<MessageEntity> contents);
 
     void stateInit(MessageEntity content);

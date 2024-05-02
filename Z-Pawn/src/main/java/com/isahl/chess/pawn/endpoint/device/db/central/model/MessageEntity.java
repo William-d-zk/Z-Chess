@@ -63,7 +63,10 @@ import static java.lang.String.format;
 @Table(indexes = { @Index(name = "origin_idx",
                           columnList = "rk_origin"),
                    @Index(name = "topic_idx",
-                          columnList = "topic") })
+                          columnList = "topic"),
+                   @Index(name = "message_idx_uk",
+                          columnList = "message_id",
+                          unique = true) })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class MessageEntity
@@ -87,6 +90,8 @@ public class MessageEntity
     private String                 mSummary;
     @Transient
     private Set<MsgDeliveryStatus> mDeliveryStatus;
+    @Transient
+    private long                   mId;
 
     public MessageEntity()
     {
@@ -100,12 +105,10 @@ public class MessageEntity
 
     @Id
     @JsonIgnore
-    @GeneratedValue(generator = "ZMessageGenerator")
-    @GenericGenerator(name = "ZMessageGenerator",
-                      type = com.isahl.chess.pawn.endpoint.device.db.generator.ZMessageGenerator.class)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long getId()
     {
-        return pKey;
+        return mId;
     }
 
     @Override
@@ -152,7 +155,17 @@ public class MessageEntity
 
     public void setId(long id)
     {
-        pKey = id;
+        mId = id;
+    }
+
+    @Column(nullable = false)
+    public long getMessageId()
+    {
+        return pKey;
+    }
+    public void setMessageId(long _Id)
+    {
+        pKey = _Id;
     }
 
     public void setRkOrigin(long origin)
@@ -224,8 +237,9 @@ public class MessageEntity
     @Override
     public String toString()
     {
-        return format("MessageEntity{ id=%s, origin=%#x, topic:%s, msg:%s, netAt:%s[%s]}",
+        return format("MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s]}",
                       getId(),
+                      primaryKey(),
                       origin(),
                       getTopic(),
                       getContent(),

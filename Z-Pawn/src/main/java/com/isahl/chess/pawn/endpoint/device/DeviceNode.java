@@ -38,7 +38,7 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.IMixConfig;
+import com.isahl.chess.queen.config.IMixCoreConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.model.QEvent;
@@ -88,7 +88,7 @@ public class DeviceNode
                       boolean multiBind,
                       IAioConfig bizIoConfig,
                       IRaftConfig raftConfig,
-                      IMixConfig serverConfig,
+                      IMixCoreConfig serverConfig,
                       TimeWheel timeWheel,
                       IClusterPeer clusterPeer) throws IOException
     {

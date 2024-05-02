@@ -65,7 +65,7 @@ public class MessageService
     private final CacheManager                 _CacheManager;
     private final IMessageRepository           _MessageRepository;
     private final IMsgDeliveryStatusRepository _MsgDeliveryStatusRepository;
-    private final ZUID                         _ZUID;
+    private final IRaftConfig                  _RaftConfig;
 
     @Autowired
     public MessageService(IRaftConfig raftConfig,
@@ -73,7 +73,7 @@ public class MessageService
                           IMessageRepository messageRepository,
                           IMsgDeliveryStatusRepository statusRepository)
     {
-        _ZUID = raftConfig.getZUID();
+        _RaftConfig = raftConfig;
         _CacheManager = cacheManager;
         _MessageRepository = messageRepository;
         _MsgDeliveryStatusRepository = statusRepository;
@@ -114,15 +114,14 @@ public class MessageService
     @Override
     public List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable)
     {
-
         return _MessageRepository.findAll(specification, pageable)
                                  .toList();
-
     }
 
     @Override
     public void submit(MessageEntity post)
     {
+        post.setMessageId(generateId());
         _MessageRepository.save(post);
     }
 
@@ -135,9 +134,15 @@ public class MessageService
     }
 
     @Override
+    public long generateId()
+    {
+        return _RaftConfig.getZUID().getId();
+    }
+
+    @Override
     public long generateId(long session)
     {
-        return _ZUID.moveOn(session);
+        return _RaftConfig.getZUID().moveOn(session);
     }
 
     @Cacheable(value = "msg_delivery_status_cache",
