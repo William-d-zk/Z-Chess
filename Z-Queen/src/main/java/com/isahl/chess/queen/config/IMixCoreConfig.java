@@ -30,7 +30,7 @@ package com.isahl.chess.queen.config;
  * @author william.d.zk
  * @date 2017/02/10
  */
-public interface IMixConfig
+public interface IMixCoreConfig
         extends IClusterConfig
 {
 

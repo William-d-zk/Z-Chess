@@ -27,6 +27,8 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IDeviceRepository;
@@ -68,13 +70,18 @@ public class DeviceService
     private final CacheManager      _CacheManager;
     private final CryptoUtil        _CryptoUtil = new CryptoUtil();
     private final MixConfig         _MixConfig;
+    private final IRaftConfig       _RaftConfig;
 
     @Autowired
-    public DeviceService(IDeviceRepository deviceRepository, CacheManager cacheManager, MixConfig mixConfig)
+    public DeviceService(IDeviceRepository deviceRepository,
+                         CacheManager cacheManager,
+                         MixConfig mixConfig,
+                         IRaftConfig raftConfig)
     {
         _DeviceRepository = deviceRepository;
         _CacheManager = cacheManager;
         _MixConfig = mixConfig;
+        _RaftConfig = raftConfig;
     }
 
     @PostConstruct
@@ -107,7 +114,7 @@ public class DeviceService
                  .getValue() > OP_INSERT.getValue())
         {   // update
             DeviceEntity exist;
-            Optional<DeviceEntity> result = _DeviceRepository.findById(device.primaryKey());
+            Optional<DeviceEntity> result = _DeviceRepository.findByDeviceId(device.primaryKey());
             exist = result.orElseThrow(()->new ZException("entity_not_found_exception %s → %#x",
                                                           device.operation()
                                                                 .name(),
@@ -142,6 +149,7 @@ public class DeviceService
                 _Logger.debug("new device %s ", source);
                 entity.setToken(IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setUpdatedAt(LocalDateTime.now());
+                entity.setDeviceId(_RaftConfig.getZUID().getId(ZUID.TYPE_CONSUMER));
             }
             if(exist == null || exist.getInvalidAt()
                                      .isBefore(LocalDateTime.now()))

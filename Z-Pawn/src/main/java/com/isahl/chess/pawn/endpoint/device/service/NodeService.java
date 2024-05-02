@@ -39,7 +39,7 @@ import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.IMixConfig;
+import com.isahl.chess.queen.config.IMixCoreConfig;
 import com.isahl.chess.queen.events.server.ILinkCustom;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import jakarta.annotation.PostConstruct;
@@ -69,23 +69,23 @@ public class NodeService
     private final ILogicHandler.factory _LogicFactory;
 
     @Autowired
-    public NodeService(MixConfig deviceConfig,
+    public NodeService(MixConfig mixConfig,
                        @Qualifier("pawn_io_config")
                        IAioConfig ioConfig,
                        TimeWheel timeWheel,
-                       IMixConfig mixConfig,
+                       IMixCoreConfig mixCoreConfig,
                        IRaftConfig raftConfig,
                        IRaftMapper raftMapper,
                        ILinkCustom linkCustom,
                        List<IAccessService> accessAdapters,
                        List<IHandleHook> hooks) throws IOException
     {
-        List<ITriple> hosts = deviceConfig.getListeners()
+        List<ITriple> hosts = mixConfig.getListeners()
                                           .stream()
                                           .map(listener->Triple.of(listener.getHost(), listener.getPort(), ZSortHolder._Mapping(listener.getScheme())))
                                           .collect(Collectors.toList());
         _RaftPeer = new RaftPeer(timeWheel, raftConfig, raftMapper);
-        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel, _RaftPeer);
+        _DeviceNode = new DeviceNode(hosts, mixConfig.isMultiBind(), ioConfig, raftConfig, mixCoreConfig, timeWheel, _RaftPeer);
         _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
         _LogicFactory = threadId->new LogicHandler<>(_DeviceNode, threadId, accessAdapters, hooks);

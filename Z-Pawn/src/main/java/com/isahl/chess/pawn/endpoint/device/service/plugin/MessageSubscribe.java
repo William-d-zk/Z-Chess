@@ -51,6 +51,7 @@ public class MessageSubscribe
         _MessageService.submitAll(contents.stream()
                                           .filter(c->c instanceof MessageEntity)
                                           .map(c->(MessageEntity) c)
+                                          .peek(c-> c.setMessageId(_MessageService.generateId()))
                                           .toList());
     }
 }

@@ -28,7 +28,7 @@ import com.isahl.chess.king.base.disruptor.components.Z2Processor;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.config.IMixConfig;
+import com.isahl.chess.queen.config.IMixCoreConfig;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.events.model.QEvent;
@@ -157,7 +157,7 @@ public class ServerCore
     private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
-    public ServerCore(IMixConfig config)
+    public ServerCore(IMixCoreConfig config)
     {
         super(config.getPoolSize(),
               config.getPoolSize(),
