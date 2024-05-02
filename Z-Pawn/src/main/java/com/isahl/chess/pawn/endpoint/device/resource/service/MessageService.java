@@ -155,6 +155,6 @@ public class MessageService
     public void stateInit(MessageEntity content)
     {
         Objects.requireNonNull(content);
-        content.setStatus(Set.of(_MsgDeliveryStatusRepository.findByFlag("start")));
+        content.setDeliveryStatus(_MsgDeliveryStatusRepository.findByFlag("start"));
     }
 }
