@@ -34,6 +34,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
@@ -290,5 +291,17 @@ public class MessageEntity
                inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     public Set<MsgDeliveryStatus> getStatus() {return mDeliveryStatus;}
 
-    public void setStatus(Set<MsgDeliveryStatus> status) {mDeliveryStatus = status;}
+    @Transient
+    public MsgDeliveryStatus getDeliveryStatus()
+    {
+        return mDeliveryStatus.stream()
+                              .findFirst()
+                              .orElseThrow(()->new ZException("DeliveryStatus not found"));
+    }
+
+    public void setDeliveryStatusSet(Set<MsgDeliveryStatus> status) {mDeliveryStatus = status;}
+
+    public void setDeliveryStatus(MsgDeliveryStatus status) {
+        mDeliveryStatus = Set.of(status);
+    }
 }
