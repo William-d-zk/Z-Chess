@@ -25,7 +25,6 @@ package com.isahl.chess.pawn.endpoint.device.resource.service;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MsgDeliveryStatus;
@@ -35,7 +34,6 @@ import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +48,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
