@@ -289,7 +289,7 @@ public class MessageEntity
                inverseJoinColumns = @JoinColumn(name = "ref_status"),
                foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT),
                inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    public Set<MsgDeliveryStatus> getStatus() {return mDeliveryStatus;}
+    public Set<MsgDeliveryStatus> getDeliveryStatusSet() {return mDeliveryStatus;}
 
     @Transient
     public MsgDeliveryStatus getDeliveryStatus()
