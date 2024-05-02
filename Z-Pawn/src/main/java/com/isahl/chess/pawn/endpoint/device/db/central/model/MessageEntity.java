@@ -40,6 +40,8 @@ import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 
 import java.io.Serial;
@@ -163,6 +165,7 @@ public class MessageEntity
     {
         return pKey;
     }
+
     public void setMessageId(long _Id)
     {
         pKey = _Id;
@@ -282,7 +285,9 @@ public class MessageEntity
     @ManyToMany
     @JoinTable(name = "zc_rd_message_r_delivery-status",
                joinColumns = @JoinColumn(name = "ref_lifecycle"),
-               inverseJoinColumns = @JoinColumn(name = "ref_status"))
+               inverseJoinColumns = @JoinColumn(name = "ref_status"),
+               foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT),
+               inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     public Set<MsgDeliveryStatus> getStatus() {return mDeliveryStatus;}
 
     public void setStatus(Set<MsgDeliveryStatus> status) {mDeliveryStatus = status;}
