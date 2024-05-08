@@ -27,6 +27,7 @@ import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -41,5 +42,8 @@ public interface IDeviceRepository
 
     DeviceEntity findByNotice(String number);
 
+
     Optional<DeviceEntity> findByDeviceId(long deviceId);
+
+//    List<DeviceEntity> findAllByDeviceId(List<Long> deviceList);
 }
