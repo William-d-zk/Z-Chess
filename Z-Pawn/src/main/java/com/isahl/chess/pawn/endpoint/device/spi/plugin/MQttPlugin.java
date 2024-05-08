@@ -212,6 +212,7 @@ public class MQttPlugin
                 }
                 long deviceId = ZUID.INVALID_PEER_ID;
                 if(x112.isOk()) {
+                    _Logger.info("Login Client: %s", x111.getClientId());
                     DeviceEntity device = _DeviceService.findByToken(x111.getClientId());
                     if(device == null) {
                         x112.rejectIdentifier();

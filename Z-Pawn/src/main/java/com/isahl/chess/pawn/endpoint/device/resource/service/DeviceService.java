@@ -198,13 +198,14 @@ public class DeviceService
     @Override
     public DeviceEntity getOneDevice(long id)
     {
-        return _DeviceRepository.findById(id)
+        return _DeviceRepository.findByDeviceId(id)
                                 .orElse(null);
     }
 
     @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
-        return _DeviceRepository.findAllById(deviceIdList);
+//        return _DeviceRepository.findAllByDeviceId(deviceIdList);
+        return null;
     }
 }
