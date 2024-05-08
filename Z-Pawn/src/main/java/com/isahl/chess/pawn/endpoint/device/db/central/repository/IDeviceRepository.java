@@ -45,5 +45,5 @@ public interface IDeviceRepository
 
     Optional<DeviceEntity> findByDeviceId(long deviceId);
 
-//    List<DeviceEntity> findAllByDeviceId(List<Long> deviceList);
+    List<DeviceEntity> findAllByDeviceIdIn(List<Long> deviceIds);
 }
