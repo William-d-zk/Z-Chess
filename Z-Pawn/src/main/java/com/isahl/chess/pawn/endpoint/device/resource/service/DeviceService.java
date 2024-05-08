@@ -205,7 +205,6 @@ public class DeviceService
     @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
-//        return _DeviceRepository.findAllByDeviceId(deviceIdList);
-        return null;
+        return _DeviceRepository.findAllByDeviceIdIn(deviceIdList);
     }
 }
