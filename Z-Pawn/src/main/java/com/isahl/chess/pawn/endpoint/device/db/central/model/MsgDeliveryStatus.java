@@ -24,9 +24,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.model;
 
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -34,8 +31,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
+
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
+
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 
 @Entity(name = "zc_rs_message-delivery_status")
 public class MsgDeliveryStatus
