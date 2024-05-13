@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * xxxRepository 会被jpa重载，findByXXX 函数会被处理成根据 xxx 字段去数据库查询
+ *
  * @author william.d.zk
  * @date 2020-1-20
  */

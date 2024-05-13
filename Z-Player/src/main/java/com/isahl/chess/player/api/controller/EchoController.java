@@ -30,7 +30,11 @@ import com.isahl.chess.king.base.model.TextSerial;
 import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.player.api.service.HookOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("echo")
@@ -54,4 +58,5 @@ public class EchoController
         ICode code = _HookOpenService.hookLogic(echo);
         return ZResponse.of(code, echo, "example test");
     }
+
 }
