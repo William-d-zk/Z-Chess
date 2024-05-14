@@ -1,11 +1,12 @@
 package com.isahl.chess.player.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.time.Instant;
 
 /**
  * @author xiaojiang.lxj at 2024-05-10 11:26.
  */
+@JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RpaTaskDO {
 
@@ -17,12 +18,12 @@ public class RpaTaskDO {
     /**
      * 离港日期 e.g. 2024-05-30T16:00:00.000Z
      */
-    private Instant depart_date;
+    private String depart_date;
 
     /**
      * 提箱日期 e.g. 2024-05-25T16:00:00.000Z
      */
-    private Instant pickup_date;
+    private String pickup_date;
 
     /**
      * 拍仓限价
@@ -84,19 +85,19 @@ public class RpaTaskDO {
      */
     private String task_status;
 
-    public Instant getDepart_date() {
+    public String getDepart_date() {
         return depart_date;
     }
 
-    public void setDepart_date(Instant depart_date) {
+    public void setDepart_date(String depart_date) {
         this.depart_date = depart_date;
     }
 
-    public Instant getPickup_date() {
+    public String getPickup_date() {
         return pickup_date;
     }
 
-    public void setPickup_date(Instant pickup_date) {
+    public void setPickup_date(String pickup_date) {
         this.pickup_date = pickup_date;
     }
 

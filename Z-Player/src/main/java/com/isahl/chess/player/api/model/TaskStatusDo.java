@@ -1,10 +1,12 @@
 package com.isahl.chess.player.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author xiaojiang.lxj at 2024-05-10 15:19.
  */
+@JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TaskStatusDo {
 
