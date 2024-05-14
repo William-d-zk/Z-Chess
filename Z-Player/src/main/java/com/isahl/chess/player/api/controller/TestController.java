@@ -1,7 +1,12 @@
 package com.isahl.chess.player.api.controller;
 
+import com.isahl.chess.player.api.model.RpaAuthDo;
+import com.isahl.chess.player.api.model.RpaTaskDO;
 import com.isahl.chess.player.api.service.AliothApiService;
+import com.isahl.chess.player.api.service.BiddingRpaScheduleService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,19 +21,28 @@ public class TestController {
     @Autowired
     private AliothApiService aliothApiService;
 
-    @RequestMapping("get-auth-info")
-    public Object getAuthInfos(){
+    @Autowired
+    private BiddingRpaScheduleService biddingRpaScheduleService;
+
+    @GetMapping("get-auth-info")
+    public List<RpaAuthDo> getAuthInfos(){
         return aliothApiService.fetchAuthInfos();
     }
 
-    @RequestMapping("get-task")
-    public Object fetchTask(){
+    @GetMapping("get-task")
+    public List<RpaTaskDO> fetchTask(){
         return aliothApiService.fetchUnfinishedTaskList();
     }
 
-    @RequestMapping("update-task-status")
+    @GetMapping("update-task-status")
     public Object updateTaskStatus(@RequestParam(name = "taskId") Long taskId, @RequestParam(name = "status") String status){
         aliothApiService.updateTask(taskId,status);
+        return "OK";
+    }
+
+    @GetMapping("trigger-bidding-task")
+    public Object triggerBiddingTask(){
+        biddingRpaScheduleService.queryAndBooking();
         return "OK";
     }
 }

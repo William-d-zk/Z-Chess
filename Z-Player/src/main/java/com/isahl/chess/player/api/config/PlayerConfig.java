@@ -1,54 +1,38 @@
 package com.isahl.chess.player.api.config;
 
-import java.time.Duration;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * @author xiaojiang.lxj at 2024-05-09 14:19.
  */
 @PropertySource("classpath:player.properties")
 @Configuration("player_config")
-public class PlayerConfig implements ApplicationContextAware {
+public class PlayerConfig {
 
     @Value("${noco.api.base.url}")
-    private String baseApi;
+    private String nocoApiBaseUrl;
 
     @Value("${noco.api.visit.token}")
     private String nocoApiToken;
+
+    @Value("${bidding.rpa.api.url}")
+    private String biddingRpaApiUrl;
 
     public String getNocoApiToken() {
         return nocoApiToken;
     }
 
-    public String getBaseApi() {
-        return baseApi;
+    public String getNocoApiBaseUrl() {
+        return nocoApiBaseUrl;
     }
 
-
-    private static final int TIMEOUT = 5 * 1000;
-
-    private RestTemplate restTemplate;
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        restTemplate = applicationContext.getBean(RestTemplateBuilder.class)
-            .setConnectTimeout(Duration.ofMillis(TIMEOUT))
-            .setReadTimeout(Duration.ofMillis(TIMEOUT))
-            .defaultHeader(HttpHeaders.AUTHORIZATION,"Bearer "+this.nocoApiToken)
-            .build();
+    public String getBiddingRpaApiUrl() {
+        return biddingRpaApiUrl;
     }
 
-    @Bean
-    public RestTemplate restTemplate(){
-        return this.restTemplate;
-    }
+    public static final int TIMEOUT = 5 * 1000;
+
+
 }

@@ -30,13 +30,14 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerA
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author william.d.zk
  * @date 2021/02/17
  */
 
-
+@EnableScheduling
 @Configuration
 @ComponentScan(basePackages = { "com.isahl.chess.knight.raft",
     "com.isahl.chess.rook.storage",

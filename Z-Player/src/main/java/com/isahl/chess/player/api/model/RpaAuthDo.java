@@ -1,10 +1,12 @@
 package com.isahl.chess.player.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author xiaojiang.lxj at 2024-05-10 11:49.
  */
+@JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RpaAuthDo {
     private Long id;
