@@ -17,6 +17,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
@@ -54,7 +55,7 @@ public class BiddingRpaScheduleService {
         this.aliothApiService = aliothApiService;
     }
 
-    //@Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "${bidding.task.cron}")
     public void queryAndBooking(){
         List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
         List<RpaAuthDo> rpaAuthDoList = aliothApiService.fetchAuthInfos();
@@ -102,9 +103,15 @@ public class BiddingRpaScheduleService {
                     biddingRpaDO.setStartDate(taskDO.getPickup_date());
                     biddingRpaDO.setMaxPrice(taskDO.getMaxprice());
                     biddingRpaDO.setTaskId(taskDO.getTask_id());
-                    // TODO debug时订舱账户密码为空即可
-                    biddingRpaDO.setOrderNickname("");
-                    biddingRpaDO.setOrderPassword("");
+                    RpaAuthDo bookingAuth = rpaBookingAuthDos.get(0);
+                    if(playerConfig.getDisableBooking()){
+                        // 关闭订舱操作,订舱账户密码为空即可
+                        biddingRpaDO.setOrderNickname("");
+                        biddingRpaDO.setOrderPassword("");
+                    }else{
+                        biddingRpaDO.setOrderNickname(bookingAuth.getAuth_username());
+                        biddingRpaDO.setOrderPassword(bookingAuth.getAuth_password());
+                    }
                     HttpEntity<BiddingRpaDO> requestEntity = new HttpEntity<>(biddingRpaDO, headers);
                     LinkedHashMap<String,Object> result = restTemplate.postForObject(playerConfig.getBiddingRpaApiUrl(),requestEntity,
                         LinkedHashMap.class);
