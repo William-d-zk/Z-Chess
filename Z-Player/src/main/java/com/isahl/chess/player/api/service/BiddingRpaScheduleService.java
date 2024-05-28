@@ -17,7 +17,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
@@ -55,7 +54,7 @@ public class BiddingRpaScheduleService {
         this.aliothApiService = aliothApiService;
     }
 
-    @Scheduled(cron = "0 */5 * * * *")
+    //@Scheduled(cron = "0 */5 * * * *")
     public void queryAndBooking(){
         List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
         List<RpaAuthDo> rpaAuthDoList = aliothApiService.fetchAuthInfos();
