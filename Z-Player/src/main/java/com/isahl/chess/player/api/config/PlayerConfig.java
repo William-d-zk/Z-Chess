@@ -20,6 +20,9 @@ public class PlayerConfig {
     @Value("${bidding.rpa.api.url}")
     private String biddingRpaApiUrl;
 
+    @Value("${bidding.task.booking.disable:true}")
+    private Boolean disableBooking;
+
     public String getNocoApiToken() {
         return nocoApiToken;
     }
@@ -30,6 +33,10 @@ public class PlayerConfig {
 
     public String getBiddingRpaApiUrl() {
         return biddingRpaApiUrl;
+    }
+
+    public Boolean getDisableBooking() {
+        return disableBooking;
     }
 
     public static final int TIMEOUT = 5 * 1000;
