@@ -60,7 +60,7 @@ public enum RaftState
 
     public static boolean isInCongress(int code)
     {
-        return (code & MASK.getCode()) != 0;
+        return (code & MASK.getCode()) != OUTSIDE._Code;
     }
 
     public static RaftState valueOf(int code)
