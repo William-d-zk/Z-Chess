@@ -277,72 +277,6 @@ public class RaftMachine
         mAccept = accept;
     }
 
-    /*
-    @Override
-    public void beLeader(IRaftMapper mapper)
-    {
-        mState = LEADER.getCode();
-        mLeader = peer();
-        mMatchIndex = commit();
-        mapper.updateTerm(term());
-        mCandidate = peer();
-    }
-
-    @Override
-    public void beCandidate(IRaftMapper mapper)
-    {
-        mState = CANDIDATE.getCode();
-        mLeader = INVALID_PEER_ID;
-        mapper.updateTerm(++mTerm);
-        mCandidate = peer();
-    }
-
-    @Override
-    public void beElector(long candidate, long term, IRaftMapper mapper)
-    {
-        mState = ELECTOR.getCode();
-        mLeader = INVALID_PEER_ID;
-        mapper.updateTerm(mTerm = term);
-        mCandidate = candidate;
-    }
-
-    @Override
-    public void beFollower(long term, IRaftMapper mapper)
-    {
-        mState = FOLLOWER.getCode();
-        mLeader = INVALID_PEER_ID;
-        mapper.updateTerm(mTerm = term);
-        mCandidate = INVALID_PEER_ID;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public RaftMachine createCandidate()
-    {
-        RaftMachine candidate = new RaftMachine(peer(), OP_INSERT);
-        candidate.term(mTerm + 1);
-        candidate.index(mIndex);
-        candidate.indexTerm(mIndexTerm);
-        candidate.state(CANDIDATE);
-        candidate.candidate(peer());
-        candidate.leader(INVALID_PEER_ID);
-        candidate.commit(mCommit);
-        return candidate;
-    }
-
-    public RaftMachine createFollower()
-    {
-        RaftMachine follower = new RaftMachine(peer(), OP_MODIFY);
-        follower.term(mTerm);
-        follower.index(mIndex);
-        follower.indexTerm(mIndexTerm);
-        follower.commit(mCommit);
-        follower.candidate(INVALID_PEER_ID);
-        follower.leader(INVALID_PEER_ID);
-        follower.state(FOLLOWER);
-        return follower;
-    }
-*/
     @Override
     public void follow(long term, long leader, IRaftMapper mapper)
     {
@@ -392,19 +326,19 @@ public class RaftMachine
     public String toString()
     {
         return format("""
-                              {
-                              \t\tpeer:%#x
-                              \t\tstate:%s
-                              \t\tterm:%d
-                              \t\tindex:%d
-                              \t\tindex_term:%d
-                              \t\tmatch_index:%d
-                              \t\tcommit:%d
-                              \t\taccept:%d
-                              \t\tleader:%#x
-                              \t\tcandidate:%#x
-                              }
-                              """, peer(), RaftState.roleOf(state()), term(), index(), indexTerm(), matchIndex(), commit(), accept(), leader(), candidate());
+                          {
+                          \t\tpeer:%#x
+                          \t\tstate:%s
+                          \t\tterm:%d
+                          \t\tindex:%d
+                          \t\tindex_term:%d
+                          \t\tmatch_index:%d
+                          \t\tcommit:%d
+                          \t\taccept:%d
+                          \t\tleader:%#x
+                          \t\tcandidate:%#x
+                          }
+                          """, peer(), RaftState.roleOf(state()), term(), index(), indexTerm(), matchIndex(), commit(), accept(), leader(), candidate());
     }
 
     @Override
