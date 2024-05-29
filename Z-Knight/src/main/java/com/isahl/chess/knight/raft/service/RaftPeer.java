@@ -1210,8 +1210,9 @@ public class RaftPeer
                     }
                 }
             }
-            else { // preIndex == 0
+            else {
                 /*
+                 * preIndex == 0
                  * follower是以空数据状态启动。
                  */
                 x72.preIndex(0);
@@ -1328,5 +1329,11 @@ public class RaftPeer
     public IRaftMapper mapper()
     {
         return _RaftMapper;
+    }
+
+    @Override
+    public RaftState raftState()
+    {
+        return RaftState.valueOf(_SelfMachine.state());
     }
 }
