@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.cluster.config.CodeKnight;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
 
@@ -77,4 +78,5 @@ public interface IConsistencyService
 
     ICode modify(String host, String gate, int gatePort);
 
+    RaftState getRaftState();
 }

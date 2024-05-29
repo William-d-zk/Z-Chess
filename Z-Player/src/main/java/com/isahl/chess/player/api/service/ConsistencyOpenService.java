@@ -31,6 +31,7 @@ import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentText;
 import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,5 +99,11 @@ public class ConsistencyOpenService
             _RaftPeer.topology(new RaftNode(host, gate, gatePort));
         }
         return CodeKing.SUCCESS;
+    }
+
+    @Override
+    public RaftState getRaftState()
+    {
+        return _RaftPeer.raftState();
     }
 }
