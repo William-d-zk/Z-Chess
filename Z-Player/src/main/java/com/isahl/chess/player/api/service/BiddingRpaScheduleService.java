@@ -3,6 +3,8 @@ package com.isahl.chess.player.api.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.knight.cluster.features.IConsistencyService;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.player.api.config.PlayerConfig;
 import com.isahl.chess.player.api.model.BiddingRpaApiResponse;
 import com.isahl.chess.player.api.model.BiddingRpaDO;
@@ -40,12 +42,14 @@ public class BiddingRpaScheduleService {
 
     private AliothApiService aliothApiService;
 
+    private IConsistencyService consistencyService;
+
     public BiddingRpaScheduleService(
         RestTemplateBuilder restTemplateBuilder,
         ObjectMapper objectMapper,
         PlayerConfig playerConfig,
-        AliothApiService aliothApiService
-    ) {
+        AliothApiService aliothApiService,
+        IConsistencyService consistencyService) {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.restTemplate = restTemplateBuilder
@@ -53,10 +57,18 @@ public class BiddingRpaScheduleService {
             .setReadTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .build();
         this.aliothApiService = aliothApiService;
+        this.consistencyService = consistencyService;
     }
 
     @Scheduled(cron = "${bidding.task.cron}")
     public void queryAndBooking(){
+        RaftState nodeState = consistencyService.getRaftState();
+        log.info("current node state : "+nodeState.name());
+        if (nodeState != RaftState.LEADER) {
+            log.info("skipping schedule task of queryAndBooking...");
+            return;
+        }
+
         List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
         List<RpaAuthDo> rpaAuthDoList = aliothApiService.fetchAuthInfos();
         List<RpaAuthDo> rpaQueryAuthDos = new ArrayList<>(8);
