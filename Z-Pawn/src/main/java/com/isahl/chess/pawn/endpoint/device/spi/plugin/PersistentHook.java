@@ -114,6 +114,7 @@ public class PersistentHook
         for(ISubscribe subscribe : _Subscribes) {
             subscribe.onBatch(cached);
         }
+        _MainQueue.clear();
     }
 
     @Override
