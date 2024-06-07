@@ -35,17 +35,15 @@ public class BusinessPlugin
     @Override
     public void afterLogic(IoSerial content, List<ITriple> results)
     {
-
+        for (IBusinessSubscribe iBusinessSubscribe : _IBusinessSubscribes) {
+            iBusinessSubscribe.onMessage(content);
+        }
     }
 
     @Override
     public void afterConsume(IoSerial content)
     {
-        if(content instanceof MessageEntity msg) {
-            for(IBusinessSubscribe iBusinessSubscribe : _IBusinessSubscribes) {
-                iBusinessSubscribe.onMessage(msg);
-            }
-        }
+
     }
 
     @Override
