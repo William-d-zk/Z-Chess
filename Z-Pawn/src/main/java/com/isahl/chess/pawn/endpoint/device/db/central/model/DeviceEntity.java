@@ -106,7 +106,7 @@ public class DeviceEntity
     }
 
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "device_id")
     public long getDeviceId()
     {
         return pKey;
@@ -244,8 +244,9 @@ public class DeviceEntity
     public String toString()
     {
         return String.format(
-                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,No.:%s,profile:%s,createdAt:%s,updatedAt:%s,invalidAt:%s}",
+                "device{id:%s,device:%s,token:%s,user:%s,pwdId:%d,pwd:%s,No.:%s,profile:%s,createdAt:%s,updatedAt:%s,invalidAt:%s}",
                 getId(),
+                getDeviceId(),
                 getToken(),
                 getUsername(),
                 getPasswordId(),

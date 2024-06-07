@@ -83,6 +83,7 @@ public class ZUID
     public static final  long           NODE_MASK          = ((1L << NODE_BITS) - 1) << NODE_SHIFT;
     public static final  long           PEER_MASK          = CLUSTER_MASK | NODE_MASK;
     public static final  long           PREFIX_MASK        = -1L << 48;
+    public static final  long           DEVICE_MASK        = -1L >>> TYPE_BITS;
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
     public static final  int            TYPE_PROVIDER_SLOT = 2;

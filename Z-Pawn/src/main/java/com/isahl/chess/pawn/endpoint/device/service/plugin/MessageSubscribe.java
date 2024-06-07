@@ -26,6 +26,8 @@ package com.isahl.chess.pawn.endpoint.device.service.plugin;
 
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
@@ -53,15 +55,13 @@ public class MessageSubscribe
     @Override
     public void onBatch(List<IoSerial> contents)
     {
-        _Logger.info("message subscribe batch");
         _MessageService.submitAll(contents.stream()
                                           .filter(c->c instanceof MessageEntity)
                                           .map(c->(MessageEntity) c)
                                           .peek(c->{
                                               c.setMessageId(_MessageService.generateId());
-                                              _Logger.info(_DeviceService.getOneDevice(c.origin()));
-                                              //                                              c.setRkOrigin(_DeviceService.getOneDevice(c.origin()).getId());
-                                              //                                              _Logger.info(c);
+                                              DeviceEntity device = _DeviceService.getOneDevice(c.origin() & ZUID.DEVICE_MASK);
+                                              if(device != null) c.setRkOrigin(device.getId());
                                           })
                                           .toList());
     }
@@ -69,8 +69,9 @@ public class MessageSubscribe
     @Override
     public void onMessage(IoSerial content)
     {
-        _Logger.info("message subscribe single");
         if(content instanceof MessageEntity msg) {
+            DeviceEntity device = _DeviceService.getOneDevice(msg.origin() & ZUID.DEVICE_MASK);
+            if(device != null) msg.setRkOrigin(device.getId());
             _MessageService.submit(msg);
         }
     }
