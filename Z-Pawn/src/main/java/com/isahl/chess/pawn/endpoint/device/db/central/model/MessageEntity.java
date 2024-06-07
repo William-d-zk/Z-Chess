@@ -95,6 +95,8 @@ public class MessageEntity
     private Set<MsgDeliveryStatus> mDeliveryStatus;
     @Transient
     private long                   mId;
+    @Transient
+    private long                   mRkOrigin;
 
     public MessageEntity()
     {
@@ -115,6 +117,7 @@ public class MessageEntity
     }
 
     @Override
+    @JsonIgnore
     public long origin()
     {
         return mOrigin;
@@ -125,7 +128,7 @@ public class MessageEntity
             nullable = false)
     public long getRkOrigin()
     {
-        return mOrigin;
+        return mRkOrigin;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -172,9 +175,9 @@ public class MessageEntity
         pKey = _Id;
     }
 
-    public void setRkOrigin(long origin)
+    public void setRkOrigin(long rkOrigin)
     {
-        mOrigin = origin;
+        mRkOrigin = rkOrigin;
     }
 
     public void setOrigin(long origin)
@@ -241,13 +244,14 @@ public class MessageEntity
     @Override
     public String toString()
     {
-        return format("MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s]}",
+        return format("MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s], rk_origin=%s}",
                       getId(),
                       primaryKey(),
                       origin(),
                       getTopic(),
                       getContent(),
                       getNetAt(),
+                      getRkOrigin(),
                       super.toString());
     }
 

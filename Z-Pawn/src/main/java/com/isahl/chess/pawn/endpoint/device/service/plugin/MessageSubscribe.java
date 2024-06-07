@@ -27,6 +27,7 @@ package com.isahl.chess.pawn.endpoint.device.service.plugin;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +41,14 @@ public class MessageSubscribe
 {
     private final Logger          _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final IMessageService _MessageService;
+    private final IDeviceService  _DeviceService;
 
     @Autowired
-    public MessageSubscribe(IMessageService messageService) {_MessageService = messageService;}
+    public MessageSubscribe(IMessageService messageService, IDeviceService deviceService)
+    {
+        _MessageService = messageService;
+        _DeviceService = deviceService;
+    }
 
     @Override
     public void onBatch(List<IoSerial> contents)
@@ -51,7 +57,12 @@ public class MessageSubscribe
         _MessageService.submitAll(contents.stream()
                                           .filter(c->c instanceof MessageEntity)
                                           .map(c->(MessageEntity) c)
-                                          .peek(c-> c.setMessageId(_MessageService.generateId()))
+                                          .peek(c->{
+                                              c.setMessageId(_MessageService.generateId());
+                                              _Logger.info(_DeviceService.getOneDevice(c.origin()));
+//                                              c.setRkOrigin(_DeviceService.getOneDevice(c.origin()).getId());
+//                                              _Logger.info(c);
+                                          })
                                           .toList());
     }
 }

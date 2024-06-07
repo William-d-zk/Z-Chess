@@ -240,6 +240,7 @@ public class RaftMachine
     public void outside()
     {
         mState = OUTSIDE.getCode();
+        // raftConfig.zuid 未更新
     }
 
     public void gate()
