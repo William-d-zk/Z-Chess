@@ -64,7 +64,7 @@ public class BiddingRpaScheduleService {
     public void queryAndBooking(){
         RaftState nodeState = consistencyService.getRaftState();
         log.info("current node state : "+nodeState.name());
-        if (nodeState != RaftState.LEADER) {
+        if (nodeState != RaftState.LEADER && nodeState != RaftState.OUTSIDE) {
             log.info("skipping schedule task of queryAndBooking...");
             return;
         }

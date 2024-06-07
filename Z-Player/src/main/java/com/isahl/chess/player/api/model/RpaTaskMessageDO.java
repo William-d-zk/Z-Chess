@@ -2,12 +2,15 @@ package com.isahl.chess.player.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * @author xiaojiang.lxj at 2024-05-10 10:46.
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public class RpaTaskMessageDO {
 
     public RpaTaskMessageDO() {

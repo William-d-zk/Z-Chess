@@ -85,8 +85,7 @@ public class PersistentHook
                 msgEntity.setMessage(contents);
                 msgEntity.setTopic(topic);
                 msgEntity.setNetAt(LocalDateTime.now());
-                msgEntity.setOrigin(x113.session()
-                                        .index());
+                msgEntity.setOrigin(x113.session().index());
                 if((msgEntity.origin() & ZUID.PEER_MASK) == _ZUID.getPeerId()) {
                     //集群扩散消息不再向DB中提交
                     _MainQueue.offer(msgEntity);

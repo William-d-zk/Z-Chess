@@ -1,7 +1,7 @@
 package com.isahl.chess.player.api.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.player.api.config.PlayerConfig;
 import com.isahl.chess.player.api.model.NocoListResponse;
 import com.isahl.chess.player.api.model.NocoListResponse.ListResponseMeta;
@@ -9,8 +9,9 @@ import com.isahl.chess.player.api.model.NocoSingleRecordResponse;
 import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
 import com.isahl.chess.player.api.model.TaskStatusDo;
-import java.lang.reflect.Type;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class AliothApiService {
+    private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     /**
      * 竞拍视图
@@ -41,7 +43,7 @@ public class AliothApiService {
     /**
      * 合约状态表
      */
-    private static final String MD_CONTRACT_STATUS_TABLE = "zc_md_contract_status";
+    private static final String MD_CONTRACT_STATUS_TABLE = "zc_ms_contract_status";
 
     /**
      * 合约与状态关系表
@@ -80,7 +82,7 @@ public class AliothApiService {
 
     public List<RpaTaskDO> fetchUnfinishedTaskList() {
         String filters = "{\"task_status\" : \"履约\"}";
-        NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,1,100);
+        NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,1,100,RpaTaskDO.class);
         if(listResponse == null){
             return Collections.emptyList();
         }else{
@@ -89,16 +91,38 @@ public class AliothApiService {
             int currentPage = meta.getPage();
             int pageSize = meta.getPageSize();
             while(currentPage < meta.getTotalPage() ){
-                listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,++currentPage,pageSize);
+                listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,++currentPage,pageSize,RpaTaskDO.class);
                 mergeList.addAll(listResponse != null && listResponse.getData()!= null ? listResponse.getData() : Collections.emptyList());
             }
-            return mergeList;
+            return validateTasks(mergeList);
         }
+    }
+
+    /**
+     * 过滤掉日期不满足的任务，并将其状态变更为"止保"
+     *
+     * @param tasks
+     * @return
+     */
+    private List<RpaTaskDO> validateTasks(List<RpaTaskDO> tasks){
+        List<RpaTaskDO> validTasks = new ArrayList<>(tasks.size());
+        for(RpaTaskDO task : tasks){
+            Instant current = Instant.now();
+            Instant pickupDate = Instant.parse(task.getPickup_date()+"T23:59:59+08:00");
+            Instant departDate = Instant.parse(task.getDepart_date()+"T23:59:59+08:00");
+            if(pickupDate.isBefore(current) || departDate.isBefore(current)){
+                log.warning("订舱任务已过期，自动更新状态。task info :"+task);
+                updateTask(task.getTask_id(),"止保");
+            }else{
+                validTasks.add(task);
+            }
+        }
+        return validTasks;
     }
 
     public List<RpaAuthDo> fetchAuthInfos() {
         String filters = "{\"auth_config_title\" : \"msk\"}";
-        NocoListResponse<RpaAuthDo> listResponse = listCollectionItems(RPA_AUTH_INFO_VIEW,filters,1,100);
+        NocoListResponse<RpaAuthDo> listResponse = listCollectionItems(RPA_AUTH_INFO_VIEW,filters,1,100,RpaAuthDo.class);
         if(listResponse == null){
             return Collections.emptyList();
         }else{
@@ -107,7 +131,7 @@ public class AliothApiService {
             int currentPage = meta.getPage();
             int pageSize = meta.getPageSize();
             while(currentPage < meta.getTotalPage() ){
-                listResponse = listCollectionItems(RPA_AUTH_INFO_VIEW,filters,++currentPage,pageSize);
+                listResponse = listCollectionItems(RPA_AUTH_INFO_VIEW,filters,++currentPage,pageSize,RpaAuthDo.class);
                 mergeList.addAll(listResponse != null && listResponse.getData()!= null ? listResponse.getData() : Collections.emptyList());
             }
             return mergeList;
@@ -116,7 +140,7 @@ public class AliothApiService {
 
     public TaskStatusDo queryStatus(String status) {
         String filters = "{\"notice\" : \"" + status + "\"}";
-        NocoSingleRecordResponse<TaskStatusDo> singleRecordResponse = getCollectionItem(MD_CONTRACT_STATUS_TABLE,filters);
+        NocoSingleRecordResponse<TaskStatusDo> singleRecordResponse = getCollectionItem(MD_CONTRACT_STATUS_TABLE,filters,TaskStatusDo.class);
         if(singleRecordResponse != null){
             return singleRecordResponse.getData();
         }
@@ -146,7 +170,7 @@ public class AliothApiService {
     }
 
 
-    private <T> NocoSingleRecordResponse<T> getCollectionItem(String collectionName,String jsonFilters){
+    private NocoSingleRecordResponse getCollectionItem(String collectionName,String jsonFilters,Class<?> dataClazz){
         Map<String, Object> uriVariables = new HashMap<>();
         uriVariables.put("collectionName", collectionName);
         uriVariables.put("filters", jsonFilters);
@@ -155,25 +179,16 @@ public class AliothApiService {
             HashMap.class,
             uriVariables);
         if (result != null) {
-            return objectMapper.convertValue(result,
-                new TypeReference<>() {
-                    @Override
-                    public Type getType() {
-                        return super.getType();
-                    }
-
-                    @Override
-                    public int compareTo(
-                        TypeReference<NocoSingleRecordResponse<T>> o) {
-                        return super.compareTo(
-                            o);
-                    }
-                });
+            NocoSingleRecordResponse response= objectMapper.convertValue(result, NocoSingleRecordResponse.class);
+            if(response.getData() != null){
+                response.setData(objectMapper.convertValue(response.getData(),dataClazz));
+            }
+            return response;
         }
         return null;
     }
 
-    private <T> NocoListResponse<T> listCollectionItems(String collectionName,String jsonFilters, int page,int pageSize){
+    private NocoListResponse listCollectionItems(String collectionName,String jsonFilters, int page,int pageSize,Class<?> dataClazz){
         Map<String, Object> uriVariables = new HashMap<>();
         uriVariables.put("collectionName", collectionName);
         uriVariables.put("filters", jsonFilters);
@@ -184,17 +199,13 @@ public class AliothApiService {
             HashMap.class,
             uriVariables);
         if (result != null) {
-            return objectMapper.convertValue(result, new TypeReference<>() {
-                @Override
-                public Type getType() {
-                    return super.getType();
-                }
-
-                @Override
-                public int compareTo(TypeReference<NocoListResponse<T>> o) {
-                    return super.compareTo(o);
-                }
-            });
+            NocoListResponse response = objectMapper.convertValue(result, NocoListResponse.class);
+            List dataList = new ArrayList();
+            for(int i = 0;response.getData() != null && i< response.getData().size();i++){
+                dataList.add(objectMapper.convertValue(response.getData().get(i),dataClazz));
+            }
+            response.setData(dataList);
+            return response;
         }
         return null;
     }

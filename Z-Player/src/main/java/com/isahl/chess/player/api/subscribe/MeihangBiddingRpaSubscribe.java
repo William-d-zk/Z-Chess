@@ -1,10 +1,11 @@
 package com.isahl.chess.player.api.subscribe;
 
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
 import com.isahl.chess.player.api.component.BusinessPlugin.IBusinessSubscribe;
 import com.isahl.chess.player.api.service.BiddingRpaMessageService;
+import java.nio.charset.StandardCharsets;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,11 +28,12 @@ public class MeihangBiddingRpaSubscribe implements IBusinessSubscribe {
 
     @Override
     public void onMessage(IoSerial content) {
-        if(content instanceof MessageEntity msg){
+        if(content.serial() == 0x113) {
+            X113_QttPublish msg = (X113_QttPublish) content;
             log.info("[business process]接收到mqtt消息: "+msg);
-            if(TOPIC_BIDDING_RPA.equals(msg.getTopic())){
+            if(TOPIC_BIDDING_RPA.equals(msg.topic())){
                 try{
-                    biddingRpaMessageService.processRpaMessage(msg.getContent());
+                    biddingRpaMessageService.processRpaMessage(new String(msg.payload(), StandardCharsets.UTF_8));
                 }catch (Throwable t){
                     log.fetal("receive mqtt message encounter exception. topic="+TOPIC_BIDDING_RPA,t);
                 }
