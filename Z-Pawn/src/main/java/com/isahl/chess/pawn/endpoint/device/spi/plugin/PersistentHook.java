@@ -53,27 +53,24 @@ public class PersistentHook
         implements IHandleHook,
                    ICancelable
 {
-    private final Logger           _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
+    private final static int BATCH_SIZE = 2;
+
     private final TimeWheel        _TimeWheel;
     private final Queue<IoSerial>  _MainQueue;
     private final List<ISubscribe> _Subscribes;
-    private final ZUID             _ZUID;
 
     @Autowired
     public PersistentHook(IRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes)
     {
-        _ZUID = raftConfig.getZUID();
         _TimeWheel = timeWheel;
         _Subscribes = subscribes;
         _MainQueue = new ConcurrentLinkedQueue<>();
-        startTimer();
     }
 
-//    @PostConstruct
+    @PostConstruct
     void startTimer()
     {
         _TimeWheel.acquire(this, new ScheduleHandler<>(Duration.ofSeconds(5), true, this::batchPush));
-        _Logger.debug("PersistentHook PostConstruct!");
     }
 
     @Override
@@ -115,10 +112,19 @@ public class PersistentHook
     {
         if(_MainQueue.isEmpty()) return;
         List<IoSerial> cached = List.copyOf(_MainQueue);
-        for(ISubscribe subscribe : _Subscribes) {
-            subscribe.onBatch(cached);
+        if(cached.size() > BATCH_SIZE) {
+            for(ISubscribe subscribe : _Subscribes) {
+                subscribe.onBatch(cached);
+            }
         }
-        _MainQueue.clear();
+        else {
+            for(int i = 0; i < cached.size(); i++) {
+                for(ISubscribe subscribe : _Subscribes) {
+                    subscribe.onMessage(_MainQueue.poll());
+                }
+            }
+        }
+
     }
 
     @Override
@@ -130,6 +136,8 @@ public class PersistentHook
     public interface ISubscribe
     {
         void onBatch(List<IoSerial> contents);
+
+        void onMessage(IoSerial content);
     }
 
     @Override
