@@ -183,8 +183,7 @@ public class AioSession<C extends IPContext>
     @Override
     public long prefix(long index)
     {
-        return index | _Sort.getType()
-                            .prefix();
+        return index | _Sort.getType().prefix();
     }
 
     @Override
