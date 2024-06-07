@@ -214,9 +214,21 @@ public class ZUID
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
-    public boolean isTheGate(long id)
+    public boolean isTheGate()
     {
-        return (id & CLUSTER_MASK) != _ClusterId && _NodeId == 0;
+        return _Type == TYPE_CLUSTER && _NodeId == 0;
+    }
+
+    public boolean isTheProvider(){
+        return  _Type == TYPE_PROVIDER && _NodeId >= 0;
+    }
+
+    public boolean isTheSenator(){
+        return _Type == TYPE_CLUSTER && _NodeId > 0;
+    }
+
+    public static boolean isClusterType(long id){
+        return  (id & TYPE_MASK) == TYPE_CLUSTER;
     }
 
     public final static long INVALID_PEER_ID = 0;
@@ -224,13 +236,7 @@ public class ZUID
     @Override
     public String toString()
     {
-        return "ZUID{" + "IdcId=" + _IdcId + ", ClusterId=" + _ClusterId + ", NodeId=" + _NodeId + ", Type=" + _Type +
-               ", sequence=" + mSequence + '}';
-    }
-
-    public static boolean isTypeOfCluster(long id)
-    {
-        return (id & TYPE_MASK) == TYPE_CLUSTER;
+        return "ZUID{" + "IdcId=" + _IdcId + ", ClusterId=" + _ClusterId + ", NodeId=" + _NodeId + ", Type=" + _Type + ", sequence=" + mSequence + '}';
     }
 
     public static int getNodeId(long id)

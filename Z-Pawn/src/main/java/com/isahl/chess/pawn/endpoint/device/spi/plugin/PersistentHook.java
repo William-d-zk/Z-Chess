@@ -29,6 +29,7 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
@@ -52,7 +53,7 @@ public class PersistentHook
         implements IHandleHook,
                    ICancelable
 {
-
+    private final Logger           _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
     private final TimeWheel        _TimeWheel;
     private final Queue<IoSerial>  _MainQueue;
     private final List<ISubscribe> _Subscribes;
@@ -65,12 +66,14 @@ public class PersistentHook
         _TimeWheel = timeWheel;
         _Subscribes = subscribes;
         _MainQueue = new ConcurrentLinkedQueue<>();
+        startTimer();
     }
 
-    @PostConstruct
+//    @PostConstruct
     void startTimer()
     {
         _TimeWheel.acquire(this, new ScheduleHandler<>(Duration.ofSeconds(5), true, this::batchPush));
+        _Logger.debug("PersistentHook PostConstruct!");
     }
 
     @Override
@@ -85,9 +88,11 @@ public class PersistentHook
                 msgEntity.setMessage(contents);
                 msgEntity.setTopic(topic);
                 msgEntity.setNetAt(LocalDateTime.now());
-                msgEntity.setOrigin(x113.session().index());
-                if((msgEntity.origin() & ZUID.PEER_MASK) == _ZUID.getPeerId()) {
+                msgEntity.setOrigin(x113.session()
+                                        .index());
+                if(!ZUID.isClusterType(msgEntity.origin())) {
                     //集群扩散消息不再向DB中提交
+                    msgEntity.genSummary();
                     _MainQueue.offer(msgEntity);
                 }
             }
@@ -113,6 +118,7 @@ public class PersistentHook
         for(ISubscribe subscribe : _Subscribes) {
             subscribe.onBatch(cached);
         }
+        _MainQueue.clear();
     }
 
     @Override
@@ -130,5 +136,11 @@ public class PersistentHook
     public boolean isExpect(IoSerial content)
     {
         return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof MessageEntity;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName() + "{for handle MessageEntity persistent}";
     }
 }
