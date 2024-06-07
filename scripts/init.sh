@@ -25,6 +25,7 @@
 env_dir=$(pwd)
 cd ~ || exit
 rm -rf Z-Chess
+rm -rf .m2/repository/com/isahl/chess
 mkdir -p Z-Chess/raft00
 mkdir -p Z-Chess/raft01
 mkdir -p Z-Chess/raft02

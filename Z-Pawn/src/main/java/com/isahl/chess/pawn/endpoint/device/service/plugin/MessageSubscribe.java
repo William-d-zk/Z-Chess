@@ -53,16 +53,25 @@ public class MessageSubscribe
     @Override
     public void onBatch(List<IoSerial> contents)
     {
-        _Logger.debug("message subscribe batch");
+        _Logger.info("message subscribe batch");
         _MessageService.submitAll(contents.stream()
                                           .filter(c->c instanceof MessageEntity)
                                           .map(c->(MessageEntity) c)
                                           .peek(c->{
                                               c.setMessageId(_MessageService.generateId());
                                               _Logger.info(_DeviceService.getOneDevice(c.origin()));
-//                                              c.setRkOrigin(_DeviceService.getOneDevice(c.origin()).getId());
-//                                              _Logger.info(c);
+                                              //                                              c.setRkOrigin(_DeviceService.getOneDevice(c.origin()).getId());
+                                              //                                              _Logger.info(c);
                                           })
                                           .toList());
+    }
+
+    @Override
+    public void onMessage(IoSerial content)
+    {
+        _Logger.info("message subscribe single");
+        if(content instanceof MessageEntity msg) {
+            _MessageService.submit(msg);
+        }
     }
 }
