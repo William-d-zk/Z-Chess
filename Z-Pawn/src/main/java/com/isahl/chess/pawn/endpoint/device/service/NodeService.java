@@ -89,6 +89,7 @@ public class NodeService
         _RaftCustom = new RaftCustom(_RaftPeer);
         _LinkCustom = linkCustom;
         _LogicFactory = threadId->new LogicHandler<>(_DeviceNode, threadId, accessAdapters, hooks);
+        _Logger.debug("NodeService created %s", hooks);
     }
 
     @PostConstruct
