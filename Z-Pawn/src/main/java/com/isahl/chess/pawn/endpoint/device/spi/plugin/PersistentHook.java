@@ -85,11 +85,10 @@ public class PersistentHook
                 msgEntity.setMessage(contents);
                 msgEntity.setTopic(topic);
                 msgEntity.setNetAt(LocalDateTime.now());
-                msgEntity.setOrigin(x113.session()
-                                        .index());
-                if(!ZUID.isClusterType(msgEntity.origin())) {
+                if(!ZUID.isClusterType(x113.session().index())) {
                     //集群扩散消息不再向DB中提交
                     msgEntity.genSummary();
+                    msgEntity.setOrigin(x113.session().index());
                     _MainQueue.offer(msgEntity);
                 }
             }
@@ -115,6 +114,9 @@ public class PersistentHook
         if(cached.size() > BATCH_SIZE) {
             for(ISubscribe subscribe : _Subscribes) {
                 subscribe.onBatch(cached);
+            }
+            for(int i = 0; i < cached.size(); i++) {
+                _MainQueue.poll();
             }
         }
         else {
