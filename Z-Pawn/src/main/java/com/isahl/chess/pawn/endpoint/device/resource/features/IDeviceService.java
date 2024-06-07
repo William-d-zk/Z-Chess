@@ -43,6 +43,6 @@ public interface IDeviceService
 
     List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
 
-    DeviceEntity getOneDevice(long id);
+    DeviceEntity getOneDevice(long deviceId);
 
 }

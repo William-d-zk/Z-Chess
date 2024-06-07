@@ -196,9 +196,9 @@ public class DeviceService
                condition = "#p0 != 0",
                unless = "#result == null")
     @Override
-    public DeviceEntity getOneDevice(long id)
+    public DeviceEntity getOneDevice(long deviceId)
     {
-        return _DeviceRepository.findByDeviceId(id)
+        return _DeviceRepository.findByDeviceId(deviceId)
                                 .orElse(null);
     }
 

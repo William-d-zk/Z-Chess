@@ -319,7 +319,7 @@ public class X111_QttConnect
             input.get(mWillMessage);
         }
         if(hasUserName()) {
-            int userNameLength = input.getShort() & 0xFFFF;
+            int userNameLength = input.getUnsignedShort();
             if(userNameLength < 1 || userNameLength > MAX_USER_NAME_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format("client:[%s] { user name length within [0 < length ≤ %d], error:[%d] }",
                         mClientId,
@@ -329,7 +329,7 @@ public class X111_QttConnect
             mUserName = input.readUTF(userNameLength);
         }
         if(hasPassword()) {
-            int passwordLength = input.getShort() & 0xFFFF;
+            int passwordLength = input.getUnsignedShort();
             if(passwordLength < 1 || passwordLength > MAX_PASSWORD_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format("client:[%s] { password length within [0 < length ≤ %d], error:[%d] }",
                                                                   mClientId,

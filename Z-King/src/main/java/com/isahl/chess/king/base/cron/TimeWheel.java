@@ -263,6 +263,7 @@ public class TimeWheel
         {
             _Item.lock();
             try {
+                _Logger.debug("Call %s", _Item);
                 V attach = _Item.get();
                 _Item.beforeCall();
                 if(isValid() && (attach == null || attach.isValid())) {
