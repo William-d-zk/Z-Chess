@@ -87,6 +87,7 @@ public class BiddingRpaScheduleService {
 
         for (RpaTaskDO taskDO : rpaTaskDOList) {
             try {
+                Thread.sleep(30000);
                 MultiValueMap<String, String> headers = new HttpHeaders();
                 headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
                 // fixme 这里后续可以根据多账户进行任务分配，目前采取随机选择方式
@@ -101,11 +102,6 @@ public class BiddingRpaScheduleService {
                 } else {
                     sendingAddress = taskDO.getPickup_place();
                 }
-                // 马士基查询港口无法完整匹配地址名，可以匹配到英文逗号
-                int commaIndex = sendingAddress.indexOf(",");
-                if(commaIndex > 0){
-                    sendingAddress = sendingAddress.substring(0,commaIndex) + ",";
-                }
                 biddingRpaDO.setSendingAddress(sendingAddress);
                 String deliveryAddress;
                 if ("msk".equals(taskDO.getDestination_place_alias_title()) && !ObjectUtils.isEmpty(
@@ -113,10 +109,6 @@ public class BiddingRpaScheduleService {
                     deliveryAddress = taskDO.getDestination_place_alias();
                 } else {
                     deliveryAddress = taskDO.getDestination_place();
-                }
-                int commaIndex2 = deliveryAddress.indexOf(",");
-                if(commaIndex2 > 0){
-                    deliveryAddress = deliveryAddress.substring(0,commaIndex2) + ",";
                 }
                 biddingRpaDO.setDeliveryAddress(deliveryAddress);
                 biddingRpaDO.setProductName(taskDO.getCargo_type());
