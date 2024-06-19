@@ -5,6 +5,8 @@ import com.isahl.chess.player.api.model.RpaTaskDO;
 import com.isahl.chess.player.api.service.AliothApiService;
 import com.isahl.chess.player.api.service.BiddingRpaScheduleService;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("test")
 public class TestController {
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired
     private AliothApiService aliothApiService;
@@ -35,14 +39,17 @@ public class TestController {
     }
 
     @GetMapping("update-task-status")
-    public Object updateTaskStatus(@RequestParam(name = "taskId") Long taskId, @RequestParam(name = "status") String status){
-        aliothApiService.updateTask(taskId,status);
+    public Object updateTaskStatus(@RequestParam(name = "taskId") String taskId, @RequestParam(name = "status") String status){
+        for(String tid : taskId.split(",")){
+            aliothApiService.updateTask(Long.parseLong(tid),status);
+        }
+
         return "OK";
     }
 
     @GetMapping("trigger-bidding-task")
     public Object triggerBiddingTask(){
-        biddingRpaScheduleService.queryAndBooking();
+        executorService.submit(() -> biddingRpaScheduleService.queryAndBooking());
         return "OK";
     }
 }
