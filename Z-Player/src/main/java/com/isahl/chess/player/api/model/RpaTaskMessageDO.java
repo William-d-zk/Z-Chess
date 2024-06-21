@@ -26,6 +26,11 @@ public class RpaTaskMessageDO {
      */
     private String status;
 
+    /**
+     * 订舱成功单号
+     */
+    private Long orderId;
+
     public Long getTaskId() {
         return taskId;
     }
@@ -42,11 +47,20 @@ public class RpaTaskMessageDO {
         this.status = status;
     }
 
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
     @Override
     public String toString() {
         return "RpaTaskMessageDO{" +
             "taskId=" + taskId +
             ", status='" + status + '\'' +
+            ", orderId=" + orderId +
             '}';
     }
 }
