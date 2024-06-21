@@ -2,6 +2,7 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
+import com.isahl.chess.player.api.model.RpaTaskMessageDO;
 import com.isahl.chess.player.api.service.AliothApiService;
 import com.isahl.chess.player.api.service.BiddingRpaScheduleService;
 import java.util.List;
@@ -41,7 +42,10 @@ public class TestController {
     @GetMapping("update-task-status")
     public Object updateTaskStatus(@RequestParam(name = "taskId") String taskId, @RequestParam(name = "status") String status){
         for(String tid : taskId.split(",")){
-            aliothApiService.updateTask(Long.parseLong(tid),status);
+            RpaTaskMessageDO message = new RpaTaskMessageDO();
+            message.setTaskId(Long.parseLong(tid));
+            message.setStatus(status);
+            aliothApiService.updateTask(message);
         }
 
         return "OK";

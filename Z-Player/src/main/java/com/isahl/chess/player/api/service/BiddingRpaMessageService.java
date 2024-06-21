@@ -35,7 +35,7 @@ public class BiddingRpaMessageService
             RpaTaskMessageDO rpaMessage = JsonUtil.readValue(msg, RpaTaskMessageDO.class);
             log.info("收到rpa结果状态信息: " + rpaMessage);
             if(!ObjectUtils.isEmpty(rpaMessage)) {
-                aliothApiService.updateTask(rpaMessage.getTaskId(), rpaMessage.getStatus());
+                aliothApiService.updateTask(rpaMessage);
                 log.info("rpa结果状态已更新: " + rpaMessage);
             }
         }
