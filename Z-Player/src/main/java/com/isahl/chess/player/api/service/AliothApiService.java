@@ -8,6 +8,7 @@ import com.isahl.chess.player.api.model.NocoListResponse.ListResponseMeta;
 import com.isahl.chess.player.api.model.NocoSingleRecordResponse;
 import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
+import com.isahl.chess.player.api.model.RpaTaskMessageDO;
 import com.isahl.chess.player.api.model.TaskStatusDo;
 import java.time.Duration;
 import java.time.Instant;
@@ -51,6 +52,11 @@ public class AliothApiService {
     private static final String CONTRACT_R_STATUS = "zc_md_obj_r_status";
 
     /**
+     * 主权数据-合约-舱位竞拍
+     */
+    private static final String FREIGHT_BIDDING = "zc_md_contract_freight-bidding";
+
+    /**
      * 认证信息视图
      */
     public static final String RPA_AUTH_INFO_VIEW = "rdv_contact_authority";
@@ -73,10 +79,13 @@ public class AliothApiService {
             .build();
     }
 
-    public void updateTask(long taskId, String status) {
-        TaskStatusDo statusDo = queryStatus(status);
-        if (status != null) {
-            updateTaskStatusById(taskId, statusDo.getId());
+    public void updateTask(RpaTaskMessageDO message) {
+        TaskStatusDo statusDo = queryStatus(message.getStatus());
+        if (message.getTaskId()!= null && statusDo != null) {
+            updateTaskStatusById(message.getTaskId(), statusDo.getId());
+        }
+        if(message.getTaskId()!= null && message.getOrderId() != null){
+            saveOrderId(message.getTaskId(),message.getOrderId());
         }
     }
 
@@ -112,7 +121,10 @@ public class AliothApiService {
             Instant departDate = Instant.parse(task.getDepart_date()+"T23:59:59+08:00");
             if(pickupDate.isBefore(current) || departDate.isBefore(current)){
                 log.warning("订舱任务已过期，自动更新状态。task info :"+task);
-                updateTask(task.getTask_id(),"止保");
+                RpaTaskMessageDO message = new RpaTaskMessageDO();
+                message.setTaskId(task.getTask_id());
+                message.setStatus("止保");
+                updateTask(message);
             }else{
                 validTasks.add(task);
             }
@@ -152,6 +164,13 @@ public class AliothApiService {
         Map<String, Object> updates = new HashMap<>();
         updates.put("ref_status", statusId);
         updateCollectionItem(CONTRACT_R_STATUS,filters,updates);
+    }
+
+    public void saveOrderId(long taskId, long orderId) {
+        String filters = "{\"id\":" + taskId + "}";
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("booking_order_number", String.valueOf(orderId));
+        updateCollectionItem(FREIGHT_BIDDING,filters,updates);
     }
 
 
