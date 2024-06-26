@@ -117,9 +117,8 @@ public class AliothApiService {
         List<RpaTaskDO> validTasks = new ArrayList<>(tasks.size());
         for(RpaTaskDO task : tasks){
             Instant current = Instant.now();
-            Instant pickupDate = Instant.parse(task.getPickup_date()+"T23:59:59+08:00");
             Instant departDate = Instant.parse(task.getDepart_date()+"T23:59:59+08:00");
-            if(pickupDate.isBefore(current) || departDate.isBefore(current)){
+            if(departDate.isBefore(current)){
                 log.warning("订舱任务已过期，自动更新状态。task info :"+task);
                 RpaTaskMessageDO message = new RpaTaskMessageDO();
                 message.setTaskId(task.getTask_id());
