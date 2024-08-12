@@ -41,6 +41,7 @@ public class BiddingRpaMessageService
             if(!ObjectUtils.isEmpty(rpaMessage)) {
                 if("售后".equals(rpaMessage.getStatus())){
                     // 表示rpa浏览器进程已关闭，需要重新触发rpa任务
+                    log.info("收到rpa发送的'售后'状态消息，对任务id="+rpaMessage.getTaskId()+" 重新触发拍舱任务");
                     biddingRpaScheduleService.queryAndBooking(rpaMessage.getTaskId());
                 }else{
                     aliothApiService.updateTask(rpaMessage);
