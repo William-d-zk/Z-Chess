@@ -68,9 +68,11 @@ public class AliothApiService {
 
     private ObjectMapper objectMapper;
 
-    public AliothApiService(RestTemplateBuilder restTemplateBuilder,
+    public AliothApiService(
+        RestTemplateBuilder restTemplateBuilder,
         PlayerConfig playerConfig,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper
+    ) {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
@@ -143,6 +145,7 @@ public class AliothApiService {
         List<RpaTaskDO> validTasks = new ArrayList<>(tasks.size());
         for(RpaTaskDO task : tasks){
             if(!"履约".equals(task.getTask_status())){
+                log.info("任务id="+task.getTask_id()+" 当前状态为["+task.getTask_status()+"], 非履约状态，忽略...");
                 continue;
             }
             Instant current = Instant.now();
