@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
@@ -89,6 +90,11 @@ public class AliothApiService {
         }
     }
 
+    /**
+     * 获取所有还在履约状态的任务
+     *
+     * @return
+     */
     public List<RpaTaskDO> fetchUnfinishedTaskList() {
         String filters = "{\"task_status\" : \"履约\"}";
         NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,1,100,RpaTaskDO.class);
@@ -108,14 +114,37 @@ public class AliothApiService {
     }
 
     /**
-     * 过滤掉日期不满足的任务，并将其状态变更为"止保"
+     * 获取指定任务
+     *
+     * @param taskId
+     * @return
+     */
+    public List<RpaTaskDO> fetchSpecificTask(Long taskId) {
+        String filters = "{\"task_id\" : " + taskId + "}";
+        NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,1,100,RpaTaskDO.class);
+        if(listResponse == null){
+            return Collections.emptyList();
+        }else{
+            return validateTasks(listResponse.getData());
+        }
+    }
+
+    /**
+     * 对于还在履约状态的任务，过滤掉日期不满足的任务，并将其状态变更为"止保"
      *
      * @param tasks
      * @return
      */
     private List<RpaTaskDO> validateTasks(List<RpaTaskDO> tasks){
+        if(CollectionUtils.isEmpty(tasks)){
+            return Collections.emptyList();
+        }
+
         List<RpaTaskDO> validTasks = new ArrayList<>(tasks.size());
         for(RpaTaskDO task : tasks){
+            if(!"履约".equals(task.getTask_status())){
+                continue;
+            }
             Instant current = Instant.now();
             Instant departDate = Instant.parse(task.getDepart_date()+"T23:59:59+08:00");
             if(departDate.isBefore(current)){

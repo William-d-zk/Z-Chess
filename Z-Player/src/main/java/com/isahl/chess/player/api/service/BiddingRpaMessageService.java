@@ -19,9 +19,13 @@ public class BiddingRpaMessageService
 
     private final AliothApiService aliothApiService;
 
-    public BiddingRpaMessageService(AliothApiService aliothApiService)
+    private final BiddingRpaScheduleService biddingRpaScheduleService;
+
+    public BiddingRpaMessageService(AliothApiService aliothApiService,
+        BiddingRpaScheduleService biddingRpaScheduleService)
     {
         this.aliothApiService = aliothApiService;
+        this.biddingRpaScheduleService = biddingRpaScheduleService;
     }
 
     /**
@@ -35,8 +39,13 @@ public class BiddingRpaMessageService
             RpaTaskMessageDO rpaMessage = JsonUtil.readValue(msg, RpaTaskMessageDO.class);
             log.info("收到rpa结果状态信息: " + rpaMessage);
             if(!ObjectUtils.isEmpty(rpaMessage)) {
-                aliothApiService.updateTask(rpaMessage);
-                log.info("rpa结果状态已更新: " + rpaMessage);
+                if("售后".equals(rpaMessage.getStatus())){
+                    // 表示rpa浏览器进程已关闭，需要重新触发rpa任务
+                    biddingRpaScheduleService.queryAndBooking(rpaMessage.getTaskId());
+                }else{
+                    aliothApiService.updateTask(rpaMessage);
+                    log.info("rpa结果状态已更新: " + rpaMessage);
+                }
             }
         }
         catch(Throwable t) {
