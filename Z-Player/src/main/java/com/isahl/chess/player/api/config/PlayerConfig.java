@@ -23,13 +23,6 @@ public class PlayerConfig {
     @Value("${bidding.task.booking.disable:true}")
     private Boolean disableBooking;
 
-    @Value("${bidding.task.schedule}")
-    private Boolean biddingTaskSchedule;
-
-    public Boolean getBiddingTaskSchedule() {
-        return biddingTaskSchedule;
-    }
-
     public String getNocoApiToken() {
         return nocoApiToken;
     }
