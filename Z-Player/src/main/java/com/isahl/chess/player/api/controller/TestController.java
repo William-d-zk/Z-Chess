@@ -53,7 +53,7 @@ public class TestController {
 
     @GetMapping("trigger-bidding-task")
     public Object triggerBiddingTask(){
-        executorService.submit(() -> biddingRpaScheduleService.queryAndBooking());
+        executorService.submit(() -> biddingRpaScheduleService.queryAndBooking(null));
         return "OK";
     }
 }

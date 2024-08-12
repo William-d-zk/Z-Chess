@@ -16,7 +16,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
@@ -56,13 +55,17 @@ public class BiddingRpaScheduleService {
         this.aliothApiService = aliothApiService;
     }
 
-    @Scheduled(cron = "${bidding.task.cron}")
-    public void queryAndBooking() {
-        if (!playerConfig.getBiddingTaskSchedule()) {
-            log.info("skipping schedule task of queryAndBooking...");
-            return;
+    /**
+     * 查询并订舱
+     * @param taskId : 需要处理的任务id，为空则表示处理所有履约状态的任务
+     */
+    public void queryAndBooking(Long taskId) {
+        List<RpaTaskDO> rpaTaskDOList;
+        if(taskId != null){
+            rpaTaskDOList = aliothApiService.fetchSpecificTask(taskId);
+        }else{
+            rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
         }
-        List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
         if (CollectionUtils.isEmpty(rpaTaskDOList)) {
             log.info("有效订舱任务列表为空，skipping");
             return;
