@@ -83,8 +83,8 @@ public class BiddingRpaScheduleService {
                 }
             }
         }
-        if (CollectionUtils.isEmpty(rpaQueryAuthDos) || CollectionUtils.isEmpty(rpaBookingAuthDos)) {
-            log.warning("rpa auth info for query or booking is empty, please check!");
+        if (CollectionUtils.isEmpty(rpaQueryAuthDos)) {
+            log.warning("rpa auth info for query is empty, please check!");
             return;
         }
 
@@ -122,14 +122,19 @@ public class BiddingRpaScheduleService {
                 biddingRpaDO.setStartDate(taskDO.getPickup_date());
                 biddingRpaDO.setMaxPrice(taskDO.getMaxprice());
                 biddingRpaDO.setTaskId(taskDO.getTask_id());
-                RpaAuthDo bookingAuth = rpaBookingAuthDos.get(random.nextInt(rpaBookingAuthDos.size()));
-                if (playerConfig.getDisableBooking()) {
-                    // 关闭订舱操作,订舱账户密码为空即可
+                if(CollectionUtils.isEmpty(rpaBookingAuthDos)){
                     biddingRpaDO.setOrderNickname("");
                     biddingRpaDO.setOrderPassword("");
-                } else {
-                    biddingRpaDO.setOrderNickname(bookingAuth.getAuth_username());
-                    biddingRpaDO.setOrderPassword(bookingAuth.getAuth_password());
+                }else{
+                    RpaAuthDo bookingAuth = rpaBookingAuthDos.get(random.nextInt(rpaBookingAuthDos.size()));
+                    if (playerConfig.getDisableBooking()) {
+                        // 关闭订舱操作,订舱账户密码为空即可
+                        biddingRpaDO.setOrderNickname("");
+                        biddingRpaDO.setOrderPassword("");
+                    } else {
+                        biddingRpaDO.setOrderNickname(bookingAuth.getAuth_username());
+                        biddingRpaDO.setOrderPassword(bookingAuth.getAuth_password());
+                    }
                 }
                 HttpEntity<BiddingRpaDO> requestEntity = new HttpEntity<>(biddingRpaDO, headers);
                 LinkedHashMap<String, Object> result = restTemplate.postForObject(playerConfig.getBiddingRpaApiUrl(),
