@@ -88,7 +88,7 @@ public class AliothApiService {
             updateTaskStatusById(message.getTaskId(), statusDo.getId());
         }
         if(message.getTaskId()!= null && message.getOrderId() != null){
-            saveOrderId(message.getTaskId(),message.getOrderId());
+            saveOrderInfo(message.getTaskId(),message.getOrderId(),message.getOrderPrice());
         }
     }
 
@@ -197,10 +197,13 @@ public class AliothApiService {
         updateCollectionItem(CONTRACT_R_STATUS,filters,updates);
     }
 
-    public void saveOrderId(long taskId, long orderId) {
+    public void saveOrderInfo(long taskId, long orderId,Double orderPrice) {
         String filters = "{\"id\":" + taskId + "}";
         Map<String, Object> updates = new HashMap<>();
         updates.put("booking_order_number", String.valueOf(orderId));
+        if(orderPrice != null){
+            updates.put("booking_order_price", String.valueOf(orderPrice));
+        }
         updateCollectionItem(FREIGHT_BIDDING,filters,updates);
     }
 

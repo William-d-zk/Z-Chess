@@ -31,6 +31,11 @@ public class RpaTaskMessageDO {
      */
     private Long orderId;
 
+    /**
+     * 订舱成功时的价格
+     */
+    private Double orderPrice;
+
     public Long getTaskId() {
         return taskId;
     }
@@ -55,12 +60,21 @@ public class RpaTaskMessageDO {
         this.orderId = orderId;
     }
 
+    public Double getOrderPrice() {
+        return orderPrice;
+    }
+
+    public void setOrderPrice(Double orderPrice) {
+        this.orderPrice = orderPrice;
+    }
+
     @Override
     public String toString() {
         return "RpaTaskMessageDO{" +
             "taskId=" + taskId +
             ", status='" + status + '\'' +
             ", orderId=" + orderId +
+            ", orderPrice=" + orderPrice +
             '}';
     }
 }
