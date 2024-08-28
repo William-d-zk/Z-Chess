@@ -20,6 +20,9 @@ public class PlayerConfig {
     @Value("${bidding.rpa.api.url}")
     private String biddingRpaApiUrl;
 
+    @Value("${bidding.cancel.api.url}")
+    private String cancelRpaApiUrl;
+
     @Value("${bidding.task.booking.disable:true}")
     private Boolean disableBooking;
 
@@ -33,6 +36,10 @@ public class PlayerConfig {
 
     public String getBiddingRpaApiUrl() {
         return biddingRpaApiUrl;
+    }
+
+    public String getCancelRpaApiUrl() {
+        return cancelRpaApiUrl;
     }
 
     public Boolean getDisableBooking() {

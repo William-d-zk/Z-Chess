@@ -9,8 +9,10 @@ import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -53,6 +55,50 @@ public class BiddingRpaScheduleService {
             .setReadTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .build();
         this.aliothApiService = aliothApiService;
+    }
+
+    /**
+     * 取消订舱
+     *
+     * @param bookingTaskId: 需要取消的订舱任务id，为空则表示取消所有任务
+     */
+    public void cancelBooking(Long bookingTaskId){
+        if(bookingTaskId != null){
+            cancelTask(bookingTaskId);
+        }else{
+            List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
+            for(RpaTaskDO rpaTaskDO : rpaTaskDOList){
+                cancelTask(rpaTaskDO.getTask_id());
+            }
+        }
+    }
+
+    /**
+     * 取消订舱任务
+     * @param taskId
+     */
+    private void cancelTask(Long taskId){
+        if(taskId == null){
+            log.warning("taskId is empty, skipping cancel task!");
+            return;
+        }
+        MultiValueMap<String, String> headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        Map<String,Long> bodyMap = new HashMap<>();
+        bodyMap.put("taskId",taskId);
+        try{
+            HttpEntity<Map<String,Long>> requestEntity = new HttpEntity<>(bodyMap, headers);
+            LinkedHashMap<String, Object> result = restTemplate.postForObject(playerConfig.getCancelRpaApiUrl(),
+                requestEntity,
+                LinkedHashMap.class);
+            if (result != null) {
+                BiddingRpaApiResponse biddingRpaApiResponse = objectMapper.convertValue(result,
+                    BiddingRpaApiResponse.class);
+                log.info("调用取消竞拍api结果: " + biddingRpaApiResponse);
+            }
+        }catch (Throwable t){
+            log.fetal("执行取消订舱任务遇到异常, task = " + taskId, t);
+        }
     }
 
     /**
