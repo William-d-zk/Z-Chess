@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,8 +53,26 @@ public class TestController {
     }
 
     @GetMapping("trigger-bidding-task")
-    public Object triggerBiddingTask(){
-        executorService.submit(() -> biddingRpaScheduleService.queryAndBooking(null));
+    public Object triggerBiddingTask(@RequestParam(name = "taskId",required = false) Long taskId){
+        Long tid;
+        if(ObjectUtils.isEmpty(taskId)){
+            tid = null;
+        }else{
+            tid = taskId;
+        }
+        executorService.submit(() -> biddingRpaScheduleService.queryAndBooking(tid));
+        return "OK";
+    }
+
+    @GetMapping("cancel-bidding-task")
+    public Object cancelBiddingTask(@RequestParam(name = "taskId",required = false) Long taskId){
+        Long tid;
+        if(ObjectUtils.isEmpty(taskId)){
+            tid = null;
+        }else{
+            tid = taskId;
+        }
+        executorService.submit(() -> biddingRpaScheduleService.cancelBooking(tid));
         return "OK";
     }
 }
