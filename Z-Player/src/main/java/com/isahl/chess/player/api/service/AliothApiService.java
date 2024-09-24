@@ -89,7 +89,7 @@ public class AliothApiService {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
-            .setReadTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+            .setReadTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
             .defaultHeader(HttpHeaders.AUTHORIZATION,
                 "Bearer " + playerConfig.getNocoApiToken())
             .build();

@@ -50,7 +50,7 @@ public class LcApiService {
         this.playerConfig = playerConfig;
         this.aliothApiService = aliothApiService;
         this.restTemplate = restTemplateBuilder
-            .setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+            .setConnectTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
             .setReadTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
             .build();
         this.objectMapper = objectMapper;
@@ -68,6 +68,7 @@ public class LcApiService {
         Integer totalPage = (totalCount % PAGE_SIZE == 0) ? totalCount / PAGE_SIZE : (totalCount / PAGE_SIZE) + 1;
         int page = 1;
         while(++page <=  totalPage){
+            log.info("appToken = "+appToken+" totalPage = "+totalPage+" currentPage = "+page);
             apiListResponse = fetchOrderList(appToken,appKey,page,PAGE_SIZE);
             saveOrderList(apiListResponse.getData());
         }
