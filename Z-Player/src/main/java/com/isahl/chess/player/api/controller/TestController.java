@@ -1,6 +1,7 @@
 package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.player.api.model.LcApiListResponse;
+import com.isahl.chess.player.api.model.LcApiTokenDO;
 import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
 import com.isahl.chess.player.api.model.RpaTaskMessageDO;
@@ -8,9 +9,12 @@ import com.isahl.chess.player.api.service.AliothApiService;
 import com.isahl.chess.player.api.service.BiddingRpaScheduleService;
 import com.isahl.chess.player.api.service.LcApiService;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("test")
 public class TestController {
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private ExecutorService executorService = new ThreadPoolExecutor(10, 100,
+        60L, TimeUnit.SECONDS,
+        new ArrayBlockingQueue<>(50));;
 
     @Autowired
     private AliothApiService aliothApiService;
@@ -101,6 +107,18 @@ public class TestController {
     @GetMapping("import-lc-order-list")
     public Object importLcOrderList(@RequestParam(name = "appToken") String appToken,@RequestParam(name = "appKey") String appKey){
         executorService.submit(() -> lcApiService.importOrderListFromLc(appToken,appKey));
+        return "OK";
+    }
+
+    @GetMapping("import-lc-order-list-all")
+    public Object importLcOrderListAll(){
+        List<LcApiTokenDO> tokenList = aliothApiService.fetchLcAppTokenList();
+        if(CollectionUtils.isEmpty(tokenList)){
+            return "appToken list is empty, please check!";
+        }
+        for(LcApiTokenDO tokenDO : tokenList){
+            executorService.submit(() -> lcApiService.importOrderListFromLc(tokenDO.getApp_token(),tokenDO.getApp_key()));
+        }
         return "OK";
     }
 }
