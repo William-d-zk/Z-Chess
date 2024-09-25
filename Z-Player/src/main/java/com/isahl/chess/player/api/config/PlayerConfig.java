@@ -54,5 +54,5 @@ public class PlayerConfig {
 
     public static final int TIMEOUT = 5 * 1000;
 
-
+    public static final int SLEEP_INTERVAL = 30 * 1000;
 }
