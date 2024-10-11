@@ -23,6 +23,9 @@ public class PlayerConfig {
     @Value("${bidding.cancel.api.url}")
     private String cancelRpaApiUrl;
 
+    @Value("${lc_web_api_url}")
+    private String lcWebApiUrl;
+
     @Value("${bidding.task.booking.disable:true}")
     private Boolean disableBooking;
 
@@ -41,6 +44,9 @@ public class PlayerConfig {
     public String getCancelRpaApiUrl() {
         return cancelRpaApiUrl;
     }
+    public String getLcWebApiUrl() {
+        return lcWebApiUrl;
+    }
 
     public Boolean getDisableBooking() {
         return disableBooking;
@@ -48,5 +54,5 @@ public class PlayerConfig {
 
     public static final int TIMEOUT = 5 * 1000;
 
-
+    public static final int SLEEP_INTERVAL = 30 * 1000;
 }

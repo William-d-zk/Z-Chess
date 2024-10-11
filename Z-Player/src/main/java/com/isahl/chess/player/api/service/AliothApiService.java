@@ -2,7 +2,10 @@ package com.isahl.chess.player.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.player.api.config.PlayerConfig;
+import com.isahl.chess.player.api.model.LcApiTokenDO;
+import com.isahl.chess.player.api.model.LcOrderDO;
 import com.isahl.chess.player.api.model.NocoListResponse;
 import com.isahl.chess.player.api.model.NocoListResponse.ListResponseMeta;
 import com.isahl.chess.player.api.model.NocoSingleRecordResponse;
@@ -36,6 +39,16 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class AliothApiService {
     private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
+    /**
+     * LC api token
+     */
+    private static final String LC_API_TOKEN_LIST = "zc_ex_form_lc_api_token_list";
+
+    /**
+     * 外部表单-LC-订单列表
+     */
+    private static final String LC_API_ORDER_LIST = "zc_ex_form_lc_order_list";
 
     /**
      * 竞拍视图
@@ -76,7 +89,7 @@ public class AliothApiService {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
-            .setReadTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+            .setReadTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
             .defaultHeader(HttpHeaders.AUTHORIZATION,
                 "Bearer " + playerConfig.getNocoApiToken())
             .build();
@@ -114,6 +127,52 @@ public class AliothApiService {
             return validateTasks(mergeList);
         }
     }
+
+    /**
+     * 获取所有LC api token
+     *
+     * @return
+     */
+    public List<LcApiTokenDO> fetchLcAppTokenList() {
+        String filters = "{}";
+        NocoListResponse<LcApiTokenDO> listResponse = listCollectionItems(LC_API_TOKEN_LIST,filters,1,200, LcApiTokenDO.class);
+        if(listResponse == null){
+            return Collections.emptyList();
+        }else{
+            List<LcApiTokenDO> mergeList =  listResponse.getData();
+            ListResponseMeta meta = listResponse.getMeta();
+            int currentPage = meta.getPage();
+            int pageSize = meta.getPageSize();
+            while(currentPage < meta.getTotalPage() ){
+                listResponse = listCollectionItems(LC_API_TOKEN_LIST,filters,++currentPage,pageSize,LcApiTokenDO.class);
+                mergeList.addAll(listResponse != null && listResponse.getData()!= null ? listResponse.getData() : Collections.emptyList());
+            }
+            return validateTokens(mergeList);
+        }
+    }
+
+    /**
+     * 过滤掉已过期掉app token
+     *
+     */
+    private List<LcApiTokenDO> validateTokens(List<LcApiTokenDO> tokenDOList){
+        if(CollectionUtils.isEmpty(tokenDOList)){
+            return Collections.emptyList();
+        }
+
+        List<LcApiTokenDO> validTokenList = new ArrayList<>(tokenDOList.size());
+        for(LcApiTokenDO tokenDO : tokenDOList){
+            Instant current = Instant.now();
+            if(tokenDO.getExpire_time().isBefore(current)){
+                log.warning("Api Token 已过期，自动更新状态。token info :"+tokenDO);
+            }else{
+                validTokenList.add(tokenDO);
+            }
+        }
+        return validTokenList;
+    }
+
+
 
     /**
      * 获取指定任务
@@ -205,6 +264,30 @@ public class AliothApiService {
             updates.put("booking_order_price", String.valueOf(orderPrice));
         }
         updateCollectionItem(FREIGHT_BIDDING,filters,updates);
+    }
+
+    /**
+     * 将lc订单数据写回系统
+     * @param lcOrderList
+     */
+    public void saveLcOrderList(List<LcOrderDO> lcOrderList) {
+        if(CollectionUtils.isEmpty(lcOrderList)){
+            return;
+        }
+        createCollectionItem(LC_API_ORDER_LIST,JsonUtil.writeValueAsString(lcOrderList));
+    }
+
+    private void createCollectionItem(String collectionName,String body){
+        Map<String, Object> uriVariables = new HashMap<>();
+        uriVariables.put("collectionName", collectionName);
+        MultiValueMap headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
+        restTemplate.exchange(playerConfig.getNocoApiBaseUrl() + "{collectionName}:create",
+            HttpMethod.POST,
+            requestEntity,
+            HashMap.class,
+            uriVariables);
     }
 
 
