@@ -118,6 +118,20 @@ public class TestController {
         return "OK";
     }
 
+    @GetMapping("save-lc-order-list-v2")
+    public Object getAndSaveLcOrderListV2(
+        @RequestParam(name = "appToken") String appToken,
+        @RequestParam(name = "appKey") String appKey,
+        @RequestParam(name = "page",defaultValue = "1")Integer page,
+        @RequestParam(name = "pageSize",defaultValue = "1") Integer pageSize,
+        @RequestParam(name = "createFrom",required = false) String createFrom,
+        @RequestParam(name = "createTo",required = false) String createTo
+    ){
+        LcApiListResponse response = lcApiService.fetchOrderList(appToken,appKey,page,pageSize,createFrom,createTo);
+        lcApiService.saveOrderListV2(response.getData());
+        return "OK";
+    }
+
     @GetMapping("import-lc-order-list")
     public Object importLcOrderList(
         @RequestParam(name = "appToken") String appToken,
