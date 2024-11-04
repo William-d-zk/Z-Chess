@@ -66,6 +66,7 @@
         <!--Commons-IO-->
         <commons-io.version>2.15.1</commons-io.version>
         <commons-codec.version>1.16.1</commons-codec.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
         <commons-compress.version>1.26.1</commons-compress.version>
         <!--DB-->
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
@@ -297,6 +298,11 @@
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

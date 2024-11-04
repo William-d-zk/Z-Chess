@@ -22,20 +22,34 @@
  */
 package com.isahl.chess.king.base.util;
 
+import com.isahl.chess.king.base.log.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
+import javax.crypto.Cipher;
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * @author William.d.zk
  */
 public class CryptoUtil
 {
+    private static final Logger _Logger = Logger.getLogger(CryptoUtil.class.getSimpleName());
 
     private final static String        _CHARS         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     private final static char          _PAD           = '=';
@@ -406,6 +420,14 @@ public class CryptoUtil
 
     private final static CryptoUtil _Instance = new CryptoUtil();
 
+    static{
+        try{
+            Security.addProvider(new BouncyCastleProvider());
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public static String SHA256(String input)
     {
         return _Instance.sha256(input);
@@ -429,5 +451,167 @@ public class CryptoUtil
     public static String Password(int min, int max)
     {
         return _Instance.randomPassword(min, max, false);
+    }
+
+    public static final String EC_ALGORITHM = "EC";
+
+    public static final String ECIES_ALGORITHM = "ECIES";
+
+    public static final String EC_PROVIDER = "BC";
+
+    public static final String SIGNATURE ="SHA3-256withECDSA";
+
+    /**
+     * KeyPairGeneratorSpi，从中可以看出支持的 keySize 就这么几个：192、239、256、224、384、521。
+     *
+     * @param keySize
+     * @return
+     */
+    public static ASymmetricKeyPair generateEccKeyPair(int keySize) {
+        try {
+            // 获取指定算法的密钥对生成器
+            KeyPairGenerator generator = KeyPairGenerator.getInstance(EC_ALGORITHM, EC_PROVIDER);
+            // 初始化密钥对生成器（指定密钥长度, 使用默认的安全随机数源）
+            generator.initialize(keySize);
+            // 随机生成一对密钥（包含公钥和私钥）
+            KeyPair keyPair = generator.generateKeyPair();
+            PublicKey publicKey = keyPair.getPublic();
+            PrivateKey privateKey = keyPair.getPrivate();
+            String publicKeyString = Base64.encodeBase64String(publicKey.getEncoded());
+            String privateKeyString = Base64.encodeBase64String(privateKey.getEncoded());
+            return new ASymmetricKeyPair("EC",publicKeyString, privateKeyString);
+        } catch (Throwable t) {
+            _Logger.fetal("生成ecc密钥对出现异常, keySize = "+keySize,t);
+        }
+        return null;
+    }
+
+    /**
+     * ECC 加密
+     *
+     * @param publicKeyText 公钥
+     * @param data      原文
+     * @return　密文
+     */
+    public static String eccEncrypt(String publicKeyText, String data) {
+        try {
+            X509EncodedKeySpec x509EncodedKeySpec2 = new X509EncodedKeySpec(Base64.decodeBase64(publicKeyText));
+            KeyFactory keyFactory = KeyFactory.getInstance(EC_ALGORITHM,EC_PROVIDER);
+            PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec2);
+            Cipher cipher = Cipher.getInstance(ECIES_ALGORITHM, EC_PROVIDER);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] result = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            return Base64.encodeBase64String(result);
+        } catch (Throwable t) {
+            _Logger.fetal("ecc encryption encounter exception.",t);
+        }
+        return null;
+    }
+
+    /**
+     * ECC 解密
+     *
+     * @param privateKeyText 私钥
+     * @param data  　       密文
+     * @return　原文
+     */
+    public static String eccDecrypt(String privateKeyText, String data) {
+        try {
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec5 = new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKeyText));
+            KeyFactory keyFactory = KeyFactory.getInstance(EC_ALGORITHM,EC_PROVIDER);
+            PrivateKey privateKey = keyFactory.generatePrivate(pkcs8EncodedKeySpec5);
+            Cipher cipher = Cipher.getInstance(ECIES_ALGORITHM, EC_PROVIDER);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] result = cipher.doFinal(Base64.decodeBase64(data));
+            return new String(result);
+        } catch (Throwable t) {
+            _Logger.fetal("ecc decryption encounter exception.",t);
+        }
+        return null;
+    }
+
+    /**
+     * ecc私钥签名
+     *
+     * @param privateKey 私钥
+     * @param data       原文
+     * @return 签名
+     */
+    public static String eccSign(String privateKey, String data) {
+        try {
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec5 = new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKey));
+            KeyFactory keyFactory = KeyFactory.getInstance(EC_ALGORITHM);
+            PrivateKey key = keyFactory.generatePrivate(pkcs8EncodedKeySpec5);
+            Signature signature = Signature.getInstance(SIGNATURE);
+            signature.initSign(key);
+            signature.update(data.getBytes());
+            return new String(Base64.encodeBase64(signature.sign()));
+        } catch (Throwable t) {
+            _Logger.fetal("ecc sign encounter exception.",t);
+        }
+        return null;
+    }
+
+    /**
+     * ecc公钥验签
+     *
+     * @param publicKey 公钥
+     * @param srcData   原文
+     * @param sign      签名
+     * @return
+     */
+    public static boolean eccVerify(String publicKey, String srcData, String sign) {
+        try {
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.decodeBase64(publicKey));
+            KeyFactory keyFactory = KeyFactory.getInstance(EC_ALGORITHM);
+            PublicKey key = keyFactory.generatePublic(keySpec);
+            Signature signature = Signature.getInstance(SIGNATURE);
+            signature.initVerify(key);
+            signature.update(srcData.getBytes());
+            return signature.verify(Base64.decodeBase64(sign.getBytes()));
+        } catch (Throwable t) {
+            _Logger.fetal("ecc signature verify encounter exception.",t);
+        }
+        return false;
+    }
+
+
+    public static class ASymmetricKeyPair {
+        private String algorithm;
+        private String publicKey;
+        private String privateKey;
+
+        public ASymmetricKeyPair() {
+        }
+
+        public ASymmetricKeyPair(String algorithm,String publicKey, String privateKey) {
+            this.algorithm = algorithm;
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
+        }
+
+        public String getPublicKey() {
+            return publicKey;
+        }
+
+        public void setPublicKey(String publicKey) {
+            this.publicKey = publicKey;
+        }
+
+        public String getPrivateKey() {
+            return privateKey;
+        }
+
+        public void setPrivateKey(String privateKey) {
+            this.privateKey = privateKey;
+        }
+
+        public String getAlgorithm() {
+            return algorithm;
+        }
+
+        public void setAlgorithm(String algorithm) {
+            this.algorithm = algorithm;
+        }
     }
 }
