@@ -50,9 +50,8 @@ public class EchoController
     @GetMapping("hook")
     public @ResponseBody
     ZResponse<?> hook(
-            @RequestParam
-                    String input)
-    {
+            @RequestParam(name = "input") String input
+    ) {
         EchoDo echo = new EchoDo();
         echo.withSub(new TextSerial(input));
         ICode code = _HookOpenService.hookLogic(echo);
