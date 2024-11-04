@@ -23,12 +23,20 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.model;
 
+import static jakarta.persistence.TemporalType.TIMESTAMP;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import jakarta.persistence.Temporal;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -43,6 +51,162 @@ public class DeviceProfile
     private String bluetoothMac;
     private String imei;
     private String imsi;
+    private KeyPairProfile keyPairProfile;
+    private ExpirationProfile expirationProfile;
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class ExpirationProfile implements Serializable {
+        /*
+            expireInDays/expireInMonths/expireInYears 可同时非空，也可任意一个非空，
+            过期日期 = 首次激活日期 + expireInDays + expireInMonths + expireInYear
+         */
+        @Serial
+        private static final long serialVersionUID = 4453066710608521455L;
+        /**
+         * 首次激活时间
+         */
+        private LocalDateTime activationAt;
+        /**
+         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInDays
+         */
+        private int expireInDays;
+        /**
+         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInMonths
+         */
+        private int expireInMonths;
+        /**
+         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInYears
+         */
+        private int expireInYears;
+
+        public ExpirationProfile() {
+            expireInDays = 0;
+            expireInMonths = 0;
+            expireInYears = 0;
+        }
+
+        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays) {
+            this.activationAt = activationDateTime;
+            this.expireInDays = expireInDays;
+            this.expireInMonths = 0;
+            this.expireInYears = 0;
+        }
+
+        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays, int expireInMonths) {
+            this.activationAt = activationDateTime;
+            this.expireInDays = expireInDays;
+            this.expireInMonths = expireInMonths;
+            this.expireInYears = 0;
+        }
+
+        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays, int expireInMonths, int expireInYears) {
+            this.activationAt = activationDateTime;
+            this.expireInDays = expireInDays;
+            this.expireInMonths = expireInMonths;
+            this.expireInYears = expireInYears;
+        }
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @Temporal(TIMESTAMP)
+        public LocalDateTime getActivationAt() {
+            return activationAt;
+        }
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        public void setActivationAt(LocalDateTime activationAt) {
+            this.activationAt = activationAt;
+        }
+
+        public int getExpireInDays() {
+            return expireInDays;
+        }
+
+        public void setExpireInDays(int expireInDays) {
+            this.expireInDays = expireInDays;
+        }
+
+        public int getExpireInMonths() {
+            return expireInMonths;
+        }
+
+        public void setExpireInMonths(int expireInMonths) {
+            this.expireInMonths = expireInMonths;
+        }
+
+        public int getExpireInYears() {
+            return expireInYears;
+        }
+
+        public void setExpireInYears(int expireInYears) {
+            this.expireInYears = expireInYears;
+        }
+
+        @Override
+        public String toString() {
+            return "ExpirationProfile{" +
+                "activationDate=" + activationAt +
+                ", expireInDays=" + expireInDays +
+                ", expireInMonths=" + expireInMonths +
+                ", expireInYears=" + expireInYears +
+                '}';
+        }
+    }
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class KeyPairProfile implements Serializable {
+        @Serial
+        private static final long serialVersionUID = -413771969356174480L;
+
+        private String keyPairAlgorithm;
+        private String publicKey;
+        private String privateKey;
+
+        public KeyPairProfile() {
+        }
+
+        public KeyPairProfile(String keyPairAlgorithm, String publicKey, String privateKey) {
+            this.keyPairAlgorithm = keyPairAlgorithm;
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
+        }
+
+        public String getKeyPairAlgorithm() {
+            return keyPairAlgorithm;
+        }
+
+        public void setKeyPairAlgorithm(String keyPairAlgorithm) {
+            this.keyPairAlgorithm = keyPairAlgorithm;
+        }
+
+        public String getPublicKey() {
+            return publicKey;
+        }
+
+        public void setPublicKey(String publicKey) {
+            this.publicKey = publicKey;
+        }
+
+        public String getPrivateKey() {
+            return privateKey;
+        }
+
+        public void setPrivateKey(String privateKey) {
+            this.privateKey = privateKey;
+        }
+
+        @Override
+        public String toString() {
+            return "KeyPairProfile{" +
+                "keyPairAlgorithm='" + keyPairAlgorithm + '\'' +
+                ", publicKey='" + publicKey + '\'' +
+                ", privateKey='" + privateKey + '\'' +
+                '}';
+        }
+    }
 
     public String getWifiMac()
     {
@@ -94,4 +258,33 @@ public class DeviceProfile
         this.imsi = imsi;
     }
 
+    public KeyPairProfile getKeyPairProfile() {
+        return keyPairProfile;
+    }
+
+    public void setKeyPairProfile(
+        KeyPairProfile keyPairProfile) {
+        this.keyPairProfile = keyPairProfile;
+    }
+
+    public ExpirationProfile getExpirationProfile() {
+        return expirationProfile;
+    }
+
+    public void setExpirationProfile(
+        ExpirationProfile expirationProfile) {
+        this.expirationProfile = expirationProfile;
+    }
+
+    @Override
+    public String toString() {
+        return "DeviceProfile{" +
+            "wifiMac='" + wifiMac + '\'' +
+            ", ethernetMac='" + ethernetMac + '\'' +
+            ", bluetoothMac='" + bluetoothMac + '\'' +
+            ", imei='" + imei + '\'' +
+            ", imsi='" + imsi + '\'' +
+            ", keyPairProfile=" + keyPairProfile +
+            '}';
+    }
 }

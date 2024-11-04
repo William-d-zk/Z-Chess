@@ -23,6 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.service;
 
+import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
@@ -35,7 +39,13 @@ import com.isahl.chess.pawn.endpoint.device.db.central.repository.IDeviceReposit
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
-
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -43,18 +53,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import javax.cache.CacheManager;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
@@ -105,6 +103,11 @@ public class DeviceService
     public DeviceEntity saveDevice(DeviceEntity device)
     {
         return _DeviceRepository.save(device);
+    }
+
+    @Override
+    public DeviceEntity updateDevice(DeviceEntity device) throws ZException {
+        return saveDevice(device);
     }
 
     @Override
