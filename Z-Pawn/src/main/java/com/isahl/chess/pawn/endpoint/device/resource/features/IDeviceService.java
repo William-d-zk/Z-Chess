@@ -33,10 +33,40 @@ import java.util.List;
 public interface IDeviceService
 {
 
+    /**
+     * 新增设备信息
+     *
+     * @param device
+     * @return
+     * @throws ZException
+     */
     DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
+    /**
+     * 更新设备信息
+     *
+     * @param device
+     * @return
+     * @throws ZException
+     */
+    DeviceEntity updateDevice(DeviceEntity device) throws ZException;
+
+    /**
+     * 根据设备令牌查找
+     *
+     * @param token
+     * @return
+     * @throws ZException
+     */
     DeviceEntity findByToken(String token) throws ZException;
 
+    /**
+     * 根据设备编号查找
+     *
+     * @param number
+     * @return
+     * @throws ZException
+     */
     DeviceEntity findByNotice(String number) throws ZException;
 
     List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;

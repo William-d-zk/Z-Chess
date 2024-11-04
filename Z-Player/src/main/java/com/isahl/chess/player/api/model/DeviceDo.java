@@ -158,4 +158,17 @@ public class DeviceDo
         return deviceDo;
     }
 
+    @Override
+    public String toString() {
+        return "DeviceDo{" +
+            "mNumber='" + mNumber + '\'' +
+            ", mUsername='" + mUsername + '\'' +
+            ", mPassword='" + mPassword + '\'' +
+            ", mToken='" + mToken + '\'' +
+            ", mProfile=" + mProfile +
+            ", mUid=" + mUid +
+            ", mName='" + mName + '\'' +
+            ", mType='" + mType + '\'' +
+            '}';
+    }
 }
