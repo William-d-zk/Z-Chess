@@ -37,7 +37,9 @@ import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile.Expirat
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile.KeyPairProfile;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -45,6 +47,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -120,12 +123,17 @@ public class DeviceController {
     /**
      * 仓娲项目定制，用户首次验证
      *
+     * 添加 expireAt 参数是为了运维方便，客户端使用该接口是不带这个参数的
+     *
+     * @param token : 设备令牌
+     * @param expireAt : e.g. 2024-12-25
      * @param body : 用ecc公钥加密过的数据
      * @return 返回 md5(serial|expireDate|publicKey)
      */
     @PostMapping("verify")
     public ZResponse<?> verifyDevice(
         @RequestParam(name = "token") String token,
+        @RequestParam(name = "expireAt",required = false) String expireAt,
         @RequestBody String body
     ) {
         if (!isBlank(token)) {
@@ -142,16 +150,33 @@ public class DeviceController {
                     existedDeviceProfile.getEthernetMac()) && ObjectUtils.nullSafeEquals(
                     requestDeviceProfile.getWifiMac(), existedDeviceProfile.getWifiMac()) && ObjectUtils.nullSafeEquals(
                     requestDeviceProfile.getBluetoothMac(), existedDeviceProfile.getBluetoothMac())) {
-                    // 更新激活日期及有效期(默认有效期1年外加一个月)
-                    ExpirationProfile expirationProfile = new ExpirationProfile(LocalDateTime.now(), 0, 1, 1);
-                    existedDeviceProfile.setExpirationProfile(expirationProfile);
-                    _MixOpenService.updateDevice(exist);
+                    // 更新激活日期/失效日期
+                    LocalDate expirationAt = null;
+                    if(StringUtils.hasLength(expireAt)){
+                        try{
+                            expirationAt = LocalDate.parse(expireAt,DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        }catch (Exception e){
+                            _Logger.fetal("convert expiration encounter exception.",e);
+                            return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
+                        }
+                    }
+                    if (existedDeviceProfile.getExpirationProfile() == null || existedDeviceProfile.getExpirationProfile().getActivationAt() == null) {
+                        LocalDateTime activationAt = LocalDateTime.now();
+                        if(expirationAt == null){
+                            expirationAt = activationAt.plusYears(1).plusMonths(1).toLocalDate();
+                        }
+                        ExpirationProfile expirationProfile = new ExpirationProfile(activationAt, LocalDateTime.of(expirationAt,LocalTime.now()));
+                        existedDeviceProfile.setExpirationProfile(expirationProfile);
+                        _MixOpenService.updateDevice(exist);
+                    }else{
+                        if(expirationAt != null){
+                            existedDeviceProfile.getExpirationProfile().setExpireAt(LocalDateTime.of(expirationAt,LocalTime.now()));
+                            _MixOpenService.updateDevice(exist);
+                        }
+                    }
 
                     Map<String, String> data = new HashMap<>();
-                    LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getActivationAt()
-                        .plusYears(existedDeviceProfile.getExpirationProfile().getExpireInYears())
-                        .plusMonths(existedDeviceProfile.getExpirationProfile().getExpireInMonths())
-                        .plusDays(existedDeviceProfile.getExpirationProfile().getExpireInDays());
+                    LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getExpireAt();
                     String expireInfo =
                         exist.getNotice() + "|" + expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "|"
                             + existedDeviceProfile.getKeyPairProfile().getPublicKey();
@@ -169,19 +194,17 @@ public class DeviceController {
      * 仓娲项目定制，用户首次验证激活v2版本
      * 软件有效期(默认有效期1年外加一个月)
      *
-     * 加上 expireInYears/expireInMonths/expireInDays 参数，方便运维使用
-     * 加上 overrideActivateDate 参数，表示是否用当前日期覆盖已有的激活日期
+     * 添加 expireAt 参数是为了运维方便，客户端使用该接口是不带这个参数的
      *
+     * @param expireAt : e.g. 2024-12-25
+     * @param token : 设备令牌
      * @param body : 用ecc公钥md5的数据 md5(ethernetMac|wifiMac|bluetoothMac|publicKey)
      * @return 返回 md5(serial|expireDate|publicKey)
      */
     @PostMapping("verify-v2")
     public ZResponse<?> verifyDeviceV2(
         @RequestParam(name = "token") String token,
-        @RequestParam(name = "expireInYears",required = false, defaultValue = "1") Integer expireInYears,
-        @RequestParam(name = "expireInMonths",required = false, defaultValue = "1") Integer expireInMonths,
-        @RequestParam(name = "expireInDays",required = false, defaultValue = "0") Integer expireInDays,
-        @RequestParam(name="overrideActivateDate",required = false,defaultValue = "false") Boolean overrideActivateDate,
+        @RequestParam(name = "expireAt",required = false) String expireAt,
         @RequestBody String body
     ) {
         if (!isBlank(token)) {
@@ -196,18 +219,33 @@ public class DeviceController {
                     existedMd5.toLowerCase())) {
                     return ZResponse.error(CodeKing.ERROR.getCode(), "设备档案验证失败，激活信息与初始注册信息不匹配。");
                 }
-                // 更新激活日期
-                ExpirationProfile expirationProfile = new ExpirationProfile(LocalDateTime.now(), expireInDays, expireInMonths, expireInYears);
-                if(existedDeviceProfile.getExpirationProfile() != null && existedDeviceProfile.getExpirationProfile().getActivationAt() != null && ! overrideActivateDate){
-                    expirationProfile.setActivationAt(existedDeviceProfile.getExpirationProfile().getActivationAt());
+
+                // 更新激活日期/失效日期
+                LocalDate expirationAt = null;
+                if(StringUtils.hasLength(expireAt)){
+                    try{
+                        expirationAt = LocalDate.parse(expireAt,DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    }catch (Exception e){
+                        _Logger.fetal("convert expiration encounter exception.",e);
+                        return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
+                    }
                 }
-                existedDeviceProfile.setExpirationProfile(expirationProfile);
-                _MixOpenService.updateDevice(exist);
+                if (existedDeviceProfile.getExpirationProfile() == null || existedDeviceProfile.getExpirationProfile().getActivationAt() == null) {
+                    LocalDateTime activationAt = LocalDateTime.now();
+                    if(expirationAt == null){
+                        expirationAt = activationAt.plusYears(1).plusMonths(1).toLocalDate();
+                    }
+                    ExpirationProfile expirationProfile = new ExpirationProfile(activationAt, LocalDateTime.of(expirationAt,LocalTime.now()));
+                    existedDeviceProfile.setExpirationProfile(expirationProfile);
+                    _MixOpenService.updateDevice(exist);
+                }else{
+                    if(expirationAt != null){
+                        existedDeviceProfile.getExpirationProfile().setExpireAt(LocalDateTime.of(expirationAt,LocalTime.now()));
+                        _MixOpenService.updateDevice(exist);
+                    }
+                }
                 Map<String, String> data = new HashMap<>();
-                LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getActivationAt()
-                    .plusYears(existedDeviceProfile.getExpirationProfile().getExpireInYears())
-                    .plusMonths(existedDeviceProfile.getExpirationProfile().getExpireInMonths())
-                    .plusDays(existedDeviceProfile.getExpirationProfile().getExpireInDays());
+                LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getExpireAt();
                 String expireInfo =
                     exist.getNotice() + "|" + expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "|"
                         + existedDeviceProfile.getKeyPairProfile().getPublicKey();
@@ -222,41 +260,39 @@ public class DeviceController {
 
     /**
      * 仓娲项目定制接口，更新授权有效期 <br>
-     * 失效日期 = 激活日期 + expireInYears + expireInMonths + expireInDays
      *
      * @param serial : 序列号
-     * @param expireInYears
-     * @param expireInMonths
-     * @param expireInDays
-     * @param overrideActivateDate: 是否以当前日期覆盖已有激活日期
+     * @param expireAt: 失效日期 yyyy-MM-dd
      * @return
      */
     @GetMapping("renew")
     public ZResponse<?> renew(
         @RequestParam(name = "serial") String serial,
-        @RequestParam(name = "expireInYears",required = false, defaultValue = "0") Integer expireInYears,
-        @RequestParam(name = "expireInMonths",required = false, defaultValue = "0") Integer expireInMonths,
-        @RequestParam(name = "expireInDays",required = false, defaultValue = "0") Integer expireInDays,
-        @RequestParam(name="overrideActivateDate",required = false,defaultValue = "false") Boolean overrideActivateDate
-    ){
-        if((expireInDays == 0 && expireInMonths == 0 && expireInYears == 0) || expireInDays < 0 || expireInMonths < 0 || expireInYears < 0){
-            return ZResponse.error(CodeKing.ILLEGAL_PARAM.getCode(), "更新有效期失败，无效参数");
-        }
+        @RequestParam(name = "expireAt") String expireAt
+        ){
         if (!isBlank(serial)) {
             DeviceEntity exist = _MixOpenService.findByNumber(serial);
             if (exist != null) {
                 DeviceProfile existedDeviceProfile = exist.getProfile();
-                // 更新激活日期
-                ExpirationProfile expirationProfile = new ExpirationProfile(LocalDateTime.now(), expireInDays, expireInMonths, expireInYears);
-                if(existedDeviceProfile.getExpirationProfile() != null && existedDeviceProfile.getExpirationProfile().getActivationAt() != null && ! overrideActivateDate){
-                    expirationProfile.setActivationAt(existedDeviceProfile.getExpirationProfile().getActivationAt());
+                if(existedDeviceProfile.getExpirationProfile() == null ){
+                    return ZResponse.error(CodeKing.ERROR.getCode(), "设备失效信息不存在，请确认设备是否已激活");
                 }
-                existedDeviceProfile.setExpirationProfile(expirationProfile);
+                // 更新失效日期
+                LocalDate expirationAt;
+                if(StringUtils.hasLength(expireAt)){
+                    try{
+                        expirationAt = LocalDate.parse(expireAt,DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    }catch (Exception e){
+                        _Logger.fetal("convert expiration encounter exception.",e);
+                        return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
+                    }
+                }else{
+                    return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期为空");
+                }
+                existedDeviceProfile.getExpirationProfile().setExpireAt(LocalDateTime.of(expirationAt,LocalTime.now()));
+                existedDeviceProfile.getExpirationProfile().setLastRenewAt(LocalDateTime.now());
                 _MixOpenService.updateDevice(exist);
-                LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getActivationAt()
-                    .plusYears(existedDeviceProfile.getExpirationProfile().getExpireInYears())
-                    .plusMonths(existedDeviceProfile.getExpirationProfile().getExpireInMonths())
-                    .plusDays(existedDeviceProfile.getExpirationProfile().getExpireInDays());
+                LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getExpireAt();
                 String renewInfo =
                     exist.getNotice() + "|" + expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 _Logger.info("serial = " + serial + " , renewInfo = " + renewInfo);
