@@ -57,54 +57,40 @@ public class DeviceProfile
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class ExpirationProfile implements Serializable {
-        /*
-            expireInDays/expireInMonths/expireInYears 可同时非空，也可任意一个非空，
-            过期日期 = 首次激活日期 + expireInDays + expireInMonths + expireInYear
-         */
         @Serial
         private static final long serialVersionUID = 4453066710608521455L;
         /**
          * 首次激活时间
          */
         private LocalDateTime activationAt;
+
         /**
-         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInDays
+         * 失效时间
          */
-        private int expireInDays;
+        private LocalDateTime expireAt;
+
         /**
-         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInMonths
+         * 最近一次刷新有效期
          */
-        private int expireInMonths;
-        /**
-         * 激活后多久过期，即过期日期 = 首次激活日期 + expireInYears
-         */
-        private int expireInYears;
+        private LocalDateTime lastRenewAt;
+
 
         public ExpirationProfile() {
-            expireInDays = 0;
-            expireInMonths = 0;
-            expireInYears = 0;
         }
 
-        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays) {
+        public ExpirationProfile(LocalDateTime activationDateTime) {
             this.activationAt = activationDateTime;
-            this.expireInDays = expireInDays;
-            this.expireInMonths = 0;
-            this.expireInYears = 0;
         }
 
-        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays, int expireInMonths) {
+        public ExpirationProfile(LocalDateTime activationDateTime, LocalDateTime expireAt) {
             this.activationAt = activationDateTime;
-            this.expireInDays = expireInDays;
-            this.expireInMonths = expireInMonths;
-            this.expireInYears = 0;
+            this.expireAt = expireAt;
         }
 
-        public ExpirationProfile(LocalDateTime activationDateTime, int expireInDays, int expireInMonths, int expireInYears) {
+        public ExpirationProfile(LocalDateTime activationDateTime, LocalDateTime expireAt, LocalDateTime lastRenewAt) {
             this.activationAt = activationDateTime;
-            this.expireInDays = expireInDays;
-            this.expireInMonths = expireInMonths;
-            this.expireInYears = expireInYears;
+            this.expireAt = expireAt;
+            this.lastRenewAt = lastRenewAt;
         }
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -120,37 +106,38 @@ public class DeviceProfile
             this.activationAt = activationAt;
         }
 
-        public int getExpireInDays() {
-            return expireInDays;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @Temporal(TIMESTAMP)
+        public LocalDateTime getExpireAt() {
+            return expireAt;
         }
 
-        public void setExpireInDays(int expireInDays) {
-            this.expireInDays = expireInDays;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        public void setExpireAt(LocalDateTime expireAt) {
+            this.expireAt = expireAt;
         }
 
-        public int getExpireInMonths() {
-            return expireInMonths;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @Temporal(TIMESTAMP)
+        public LocalDateTime getLastRenewAt() {
+            return lastRenewAt;
         }
 
-        public void setExpireInMonths(int expireInMonths) {
-            this.expireInMonths = expireInMonths;
-        }
-
-        public int getExpireInYears() {
-            return expireInYears;
-        }
-
-        public void setExpireInYears(int expireInYears) {
-            this.expireInYears = expireInYears;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        public void setLastRenewAt(LocalDateTime lastRenewAt) {
+            this.lastRenewAt = lastRenewAt;
         }
 
         @Override
         public String toString() {
             return "ExpirationProfile{" +
-                "activationDate=" + activationAt +
-                ", expireInDays=" + expireInDays +
-                ", expireInMonths=" + expireInMonths +
-                ", expireInYears=" + expireInYears +
+                "activationAt=" + activationAt +
+                ", expireAt=" + expireAt +
+                ", lastRenewAt=" + lastRenewAt +
                 '}';
         }
     }
