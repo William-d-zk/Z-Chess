@@ -177,12 +177,13 @@ public class DeviceController {
 
                     Map<String, String> data = new HashMap<>();
                     LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getExpireAt();
+                    String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String expireInfo =
-                        exist.getNotice() + "|" + expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "|"
-                            + existedDeviceProfile.getKeyPairProfile().getPublicKey();
+                        exist.getNotice() + "|" + expireDateString + "|" + existedDeviceProfile.getKeyPairProfile().getPublicKey();
                     _Logger.info("token = " + token + " , expireInfo = " + expireInfo);
                     // 返回经过md5的有效期信息(serial|date|publicKey)
                     data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                    data.put("expire_date",expireDateString);
                     return ZResponse.success(data);
                 }
             }
@@ -246,12 +247,13 @@ public class DeviceController {
                 }
                 Map<String, String> data = new HashMap<>();
                 LocalDateTime expireDate = existedDeviceProfile.getExpirationProfile().getExpireAt();
+                String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String expireInfo =
-                    exist.getNotice() + "|" + expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "|"
-                        + existedDeviceProfile.getKeyPairProfile().getPublicKey();
+                    exist.getNotice() + "|" + expireDateString + "|" + existedDeviceProfile.getKeyPairProfile().getPublicKey();
                 _Logger.info("token = " + token + " , expireInfo = " + expireInfo);
                 // 返回经过md5的有效期信息(serial|date|publicKey)
                 data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                data.put("expire_date",expireDateString);
                 return ZResponse.success(data);
             }
         }
