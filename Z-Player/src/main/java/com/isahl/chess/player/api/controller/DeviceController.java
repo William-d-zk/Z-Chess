@@ -41,7 +41,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,20 +74,34 @@ public class DeviceController {
 
     /**
      * 仓娲项目定制，出厂初始化
+     * 
+     * docker版本初始化会将初始化及验证过程合并，额外返回验证接口的信息
+     * 
+     * @param docker: 是否为docker版本初始化
      */
     @PostMapping("init")
     public ZResponse<?> initDevice(
+        @RequestParam(name = "docker",required = false,defaultValue = "false") Boolean docker,
         @RequestBody DeviceDo deviceDo
     ) {
         if (ObjectUtils.isEmpty(deviceDo.getProfile().getWifiMac()) || ObjectUtils.isEmpty(
             deviceDo.getProfile().getEthernetMac()) || ObjectUtils.isEmpty(deviceDo.getProfile().getBluetoothMac())) {
             return ZResponse.error(CodeKing.ERROR.getCode(), "wifi/ethernet/bluetooth 硬件地址不能为空");
         }
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         String serialNo = CryptoUtil.MD5(
             deviceDo.getProfile().getEthernetMac() + "|" + deviceDo.getProfile().getWifiMac() + "|"
-                + deviceDo.getProfile().getBluetoothMac()) + "-" + year + week;
+                + deviceDo.getProfile().getBluetoothMac());
+        // 查询是否已经注册过该设备
+        DeviceEntity existDevice = _MixOpenService.findByNumber(serialNo);
+        if(existDevice != null){
+            // 已经注册过设备，返回算法名称及公钥等信息
+            Map<String, String> data = new HashMap<>();
+            data.put("token", existDevice.getToken());
+            data.put("serial", serialNo);
+            data.put("algorithm", existDevice.getProfile().getKeyPairProfile().getKeyPairAlgorithm());
+            data.put("publicKey", existDevice.getProfile().getKeyPairProfile().getPublicKey());
+            return ZResponse.success(data);
+        }
         deviceDo.setNumber(serialNo);
         // 这里使用256位密钥长度，是因为后续需要签名及校验，192位长度曲线签名校验不支持
         ASymmetricKeyPair keyPair = CryptoUtil.generateEccKeyPair(256);
@@ -102,13 +115,20 @@ public class DeviceController {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setNotice(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
-        deviceEntity.setProfile(deviceDo.getProfile());
         deviceEntity.setCreatedById(deviceDo.getUid());
         deviceEntity.setUpdatedById(deviceDo.getUid());
         deviceEntity.setUpdatedAt(LocalDateTime.now());
         deviceEntity.setCreatedAt(LocalDateTime.now());
         deviceEntity.setName(deviceDo.getType());
         deviceEntity.setCode(deviceDo.getName());
+        if(docker){
+            LocalDateTime activationAt = LocalDateTime.now();
+            LocalDate expirationAt = activationAt.plusYears(1).plusMonths(1).toLocalDate();
+            ExpirationProfile expirationProfile = new ExpirationProfile(activationAt, LocalDateTime.of(expirationAt,LocalTime.now()));
+            deviceDo.getProfile().setExpirationProfile(expirationProfile);
+        }
+        deviceEntity.setProfile(deviceDo.getProfile());
+
         _Logger.info("设备初始化信息:\n" + deviceDo);
         DeviceEntity entity = _MixOpenService.newDevice(deviceEntity);
         // 设备初始化成功，返回算法名称及公钥
@@ -117,6 +137,15 @@ public class DeviceController {
         data.put("serial", serialNo);
         data.put("algorithm", keyPair.getAlgorithm());
         data.put("publicKey", keyPair.getPublicKey());
+        if(docker){
+            LocalDateTime expireDate = entity.getProfile().getExpirationProfile().getExpireAt();
+            String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String expireInfo =
+                    entity.getNotice() + "|" + expireDateString + "|" + entity.getProfile().getKeyPairProfile().getPublicKey();
+            // 返回经过md5的有效期信息(serial|date|publicKey)
+            data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+            data.put("expire_date",expireDateString);
+        }
         return ZResponse.success(data);
     }
 
