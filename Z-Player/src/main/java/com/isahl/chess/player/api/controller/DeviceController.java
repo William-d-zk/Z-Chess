@@ -36,6 +36,7 @@ import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile.ExpirationProfile;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile.KeyPairProfile;
 import com.isahl.chess.player.api.model.DeviceDo;
+import com.isahl.chess.player.api.service.AliothApiService;
 import com.isahl.chess.player.api.service.MixOpenService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,9 +67,15 @@ public class DeviceController {
 
     private final MixOpenService _MixOpenService;
 
+    private final AliothApiService aliothApiService;
+
     @Autowired
-    public DeviceController(MixOpenService mixOpenService) {
+    public DeviceController(
+        MixOpenService mixOpenService,
+        AliothApiService aliothApiService
+        ) {
         _MixOpenService = mixOpenService;
+        this.aliothApiService = aliothApiService;
     }
 
 
@@ -335,6 +342,41 @@ public class DeviceController {
             }
         }
         return ZResponse.error(CodeKing.ERROR.getCode(), "更新有效期失败，不存在该设备");
+    }
+
+    /**
+     * 生成验证码
+     * @param serialNo 设备序列号
+     * @return
+     */
+    @GetMapping("gvcode")
+    public ZResponse<?> generateVcode(
+        @RequestParam(name = "serialNo") String serialNo
+    ) {
+        if(!StringUtils.hasText(serialNo)){
+            return ZResponse.error(CodeKing.ERROR.getCode(), "设备序列号为空");
+        }
+        return ZResponse.success(aliothApiService.generateVcode(serialNo));
+    }
+
+    /**
+     * 校验验证码
+     * @param serialNo 设备序列号
+     * @param vcode 验证码
+     * @return
+     */
+    @PostMapping("vvcode")
+    public ZResponse<?>  validateVcode(
+        @RequestParam(name = "serialNo") String serialNo,
+        @RequestBody String vcode
+    ) {
+        if(!StringUtils.hasText(serialNo)){
+            return ZResponse.error(CodeKing.ERROR.getCode(), "设备序列号为空");
+        }
+        if(!StringUtils.hasText(vcode)){
+            return ZResponse.error(CodeKing.ERROR.getCode(), "验证码为空");
+        }
+        return ZResponse.success(aliothApiService.validateVcode(serialNo, vcode));
     }
 
     /**
