@@ -360,13 +360,13 @@ public class DeviceController {
     }
 
     /**
-     * 校验验证码
+     * 验证重置出厂初始化
      * @param serialNo 设备序列号
      * @param vcode 验证码
      * @return
      */
-    @PostMapping("vvcode")
-    public ZResponse<?>  validateVcode(
+    @PostMapping("vreinit")
+    public ZResponse<?>  validateReinit(
         @RequestParam(name = "serialNo") String serialNo,
         @RequestBody String vcode
     ) {
@@ -376,7 +376,7 @@ public class DeviceController {
         if(!StringUtils.hasText(vcode)){
             return ZResponse.error(CodeKing.ERROR.getCode(), "验证码为空");
         }
-        return ZResponse.success(aliothApiService.validateVcode(serialNo, vcode));
+        return ZResponse.success(aliothApiService.validateReinit(serialNo, vcode));
     }
 
     /**
