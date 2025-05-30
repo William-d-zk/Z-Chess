@@ -3,6 +3,8 @@ package com.isahl.chess.player.api.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.player.api.config.PlayerConfig;
 import com.isahl.chess.player.api.model.LcApiTokenDO;
 import com.isahl.chess.player.api.model.LcOrderDO;
@@ -15,14 +17,13 @@ import com.isahl.chess.player.api.model.RpaTaskMessageDO;
 import com.isahl.chess.player.api.model.TaskStatusDo;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -84,19 +85,23 @@ public class AliothApiService {
      */
     private static final String REINIT_VCODE_TABLE = "zc_meta_vcode";
 
-    private PlayerConfig playerConfig;
+    private final PlayerConfig playerConfig;
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+
+    private final IDeviceService deviceService;
 
     public AliothApiService(
         RestTemplateBuilder restTemplateBuilder,
         PlayerConfig playerConfig,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        IDeviceService deviceService
     ) {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
+        this.deviceService = deviceService;
         this.restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .setReadTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
             .defaultHeader(HttpHeaders.AUTHORIZATION,
@@ -269,10 +274,11 @@ public class AliothApiService {
         // 查询最新验证码是否仍然有效，如果有效(创建时间起5分钟内)，则继续使用
         String filters = "{\"serialNo\" : \"" + serialNo + "\",\"valid\" : " + true + "}";
         NocoListResponse<HashMap> listResponse = listCollectionItems(REINIT_VCODE_TABLE,filters,1,1,"-createdAt",HashMap.class);
-        if(listResponse != null && listResponse.getData() != null){
+        if(listResponse != null && !CollectionUtils.isEmpty(listResponse.getData())){
             HashMap<String,Object> record = listResponse.getData().get(0);
-            LocalDateTime createdAt = LocalDateTime.parse(String.valueOf(record.get("createdAt")));
-            if(createdAt.plusMinutes(5).isBefore(LocalDateTime.now())){
+            Instant createdAt = Instant.parse(String.valueOf(record.get("createdAt")));
+            Instant expireAt = createdAt.plus(5,ChronoUnit.MINUTES);
+            if(Instant.now().compareTo(expireAt) <= 0){
                 // 不超过5分钟，直接返回
                 return true;
             }
@@ -287,24 +293,30 @@ public class AliothApiService {
     }
 
     /**
-     * 校验验证码
+     * 验证重置出厂初始化
      * @param serialNo
      * @param vcode
      * @return
      */
-    public boolean validateVcode(String serialNo, String vcode) {
+    public boolean validateReinit(String serialNo, String vcode) {
         // 查询最新验证码是否仍然有效，如果有效(创建时间起5分钟内)，则继续使用
         String filters = "{\"serialNo\" : \"" + serialNo + "\",\"vcode\" : \"" + vcode + "\"}";
         NocoListResponse<HashMap> listResponse = listCollectionItems(REINIT_VCODE_TABLE,filters,1,1,"-createdAt",HashMap.class);
-        if(listResponse != null && listResponse.getData() != null){
+        if(listResponse != null && !CollectionUtils.isEmpty(listResponse.getData())){
             HashMap<String,Object> record = listResponse.getData().get(0);
-            LocalDateTime createdAt = LocalDateTime.parse(String.valueOf(record.get("createdAt")));
-            if(createdAt.plusMinutes(5).isBefore(LocalDateTime.now()) && Boolean.valueOf(String.valueOf(record.get("valid")))){
+            Instant createdAt = Instant.parse(String.valueOf(record.get("createdAt")));
+            Instant expireAt = createdAt.plus(5,ChronoUnit.MINUTES);
+            if(Instant.now().compareTo(expireAt) <= 0 && Boolean.parseBoolean(String.valueOf(record.get("valid")))){
                 // 验证码在5分钟内并且没有被使用过
                 String idFilter = "{\"id\":" + record.get("id") + "}";
                 Map<String, Object> updates = new HashMap<>();
                 updates.put("valid", false);
                 updateCollectionItem(REINIT_VCODE_TABLE,idFilter,updates);
+                // 删除旧设备注册信息
+                DeviceEntity existEntity = deviceService.findByNotice(serialNo);
+                if(existEntity != null){
+                    deviceService.deleteDevice(existEntity.getId());
+                }
                 return true;
             }
         }
