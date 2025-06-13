@@ -40,9 +40,6 @@ import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 
 import java.io.Serial;
@@ -62,9 +59,9 @@ import static java.lang.String.format;
  * @version 2024-03-18
  * @since 2019-07-22
  */
-@Entity(name = "zc_rd_message")
+@Entity(name = "zc_id_msgs-zchat")
 @Table(indexes = { @Index(name = "origin_idx",
-                          columnList = "rk_origin"),
+                          columnList = "fk_origin"),
                    @Index(name = "topic_idx",
                           columnList = "topic"),
                    @Index(name = "message_idx_uk",
@@ -82,21 +79,24 @@ public class MessageEntity
     @Transient
     private long                   mOrigin;
     @Transient
+    private long                   mOrigin_;
+    @Transient
     private String                 mTopic;
     @Transient
     private LocalDateTime          mNetAt;
     @Transient
-    private String                 mContent;
+    private String                 mComments;
     @Transient
     private String                 mNumber;
     @Transient
-    private String                 mSummary;
+    private String                 mNotice;
+    @Transient
+    private String                 mVNotice;
     @Transient
     private Set<MsgDeliveryStatus> mDeliveryStatus;
     @Transient
     private long                   mId;
-    @Transient
-    private long                   mRkOrigin;
+
 
     public MessageEntity()
     {
@@ -123,17 +123,17 @@ public class MessageEntity
         return mOrigin;
     }
 
-    @Column(name = "rk_origin",
+    @Column(name = "fk_origin",
             updatable = false,
             nullable = false)
-    public long getRkOrigin()
+    public long getOrigin()
     {
-        return mRkOrigin;
+        return mOrigin_;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @Column(name = "net_at",
+    @Column(name = "v_net_at",
             nullable = false,
             updatable = false)
     @Temporal(TIMESTAMP)
@@ -175,14 +175,14 @@ public class MessageEntity
         pKey = _Id;
     }
 
-    public void setRkOrigin(long rkOrigin)
-    {
-        mRkOrigin = rkOrigin;
-    }
-
     public void setOrigin(long origin)
     {
         mOrigin = origin;
+    }
+
+    public void setOrigin_(long origin_)
+    {
+        mOrigin_ = origin_;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -201,29 +201,26 @@ public class MessageEntity
     {
         withSub(data);
         if(data == null) return;
-        setContent(new String(data, StandardCharsets.UTF_8));
+        setComments(new String(data, StandardCharsets.UTF_8));
     }
 
-    @Column(name = "content",
+    @Column(name = "comments",
             columnDefinition = "text")
-    public String getContent()
+    public String getComments()
     {
-        return mContent;
+        return mComments;
     }
 
-    public void setContent(String content)
+    public void setComments(String comments)
     {
-        mContent = content;
+        mComments = comments;
     }
 
     @Column(name = "number",
             updatable = false)
     public String getNumber()
     {
-        return mNumber == null ? mNumber = CryptoUtil.SHA1(format("%s-%s",
-                                                                  mNetAt.toInstant(ZoneOffset.UTC)
-                                                                        .toEpochMilli(),
-                                                                  mOrigin)) : mNumber;
+        return mNumber;
     }
 
     public void setNumber(String number)
@@ -232,14 +229,17 @@ public class MessageEntity
     }
 
     @Column(name = "notice")
-    public String getSummary() {return mSummary;}
+    public String getSummary() {return mNotice;}
 
-    public void setSummary(String summary) {mSummary = summary;}
+    public void setSummary(String summary) {mNotice = summary;}
 
     public void genSummary()
     {
-        mSummary = format("%d→@%s size:(%d)", mOrigin, getTopic(), length());
+        mVNotice = format("%d→@%s size:(%d)", mOrigin_, getTopic(), length());
     }
+
+    @Column(name = "v_notice")
+    public String getVNotice() {return mVNotice;}
 
     @Override
     public String toString()
@@ -249,9 +249,9 @@ public class MessageEntity
                       primaryKey(),
                       origin(),
                       getTopic(),
-                      getContent(),
+                      getComments(),
                       getNetAt(),
-                      getRkOrigin(),
+                      origin(),
                       super.toString());
     }
 
@@ -288,9 +288,9 @@ public class MessageEntity
     }
 
     @ManyToMany
-    @JoinTable(name = "zc_rd_message_r_delivery-status",
-               joinColumns = @JoinColumn(name = "ref_lifecycle"),
-               inverseJoinColumns = @JoinColumn(name = "ref_status"),
+    @JoinTable(name = "zc_id_lifecycle_r_primary-status",
+               joinColumns = @JoinColumn(name = "ref_left"),
+               inverseJoinColumns = @JoinColumn(name = "ref_right"),
                foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT),
                inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     public Set<MsgDeliveryStatus> getDeliveryStatusSet() {return mDeliveryStatus;}

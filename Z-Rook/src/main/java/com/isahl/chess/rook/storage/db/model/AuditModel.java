@@ -177,12 +177,8 @@ public abstract class AuditModel
     public ByteBuf suffix(ByteBuf output)
     {
         return super.suffix(output)
-                    .putLong(createdAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
-                                                                     .getId()))
-                                      .toEpochMilli())
-                    .putLong(updatedAt.toInstant(ZoneOffset.of(ZoneId.systemDefault()
-                                                                     .getId()))
-                                      .toEpochMilli())
+                    .putLong(createdAt.toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli())
+                    .putLong(updatedAt.toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli())
                     .putLong(createdById)
                     .putLong(updatedById);
     }
