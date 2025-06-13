@@ -61,7 +61,7 @@ public class MessageSubscribe
                                           .peek(c->{
                                               c.setMessageId(_MessageService.generateId());
                                               DeviceEntity device = _DeviceService.getOneDevice(c.origin() & ZUID.DEVICE_MASK);
-                                              if(device != null) c.setRkOrigin(device.getId());
+                                              if(device != null) c.setOrigin_(device.getId());
                                           })
                                           .toList());
     }
@@ -71,7 +71,7 @@ public class MessageSubscribe
     {
         if(content instanceof MessageEntity msg) {
             DeviceEntity device = _DeviceService.getOneDevice(msg.origin() & ZUID.DEVICE_MASK);
-            if(device != null) msg.setRkOrigin(device.getId());
+            if(device != null) msg.setOrigin_(device.getId());
             _MessageService.submit(msg);
         }
     }

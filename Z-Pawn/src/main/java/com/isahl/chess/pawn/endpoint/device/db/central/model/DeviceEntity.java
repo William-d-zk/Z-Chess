@@ -39,7 +39,6 @@ import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 
@@ -51,7 +50,7 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
 /**
  * @author william.d.zk
  */
-@Entity(name = "zc_rd_ent-device")
+@Entity(name = "zc_id_devi-chess")
 @Table(indexes = { @Index(name = "device_idx_token_pwd_id",
                           columnList = "token,password,password_id"),
                    @Index(name = "device_idx_token_pwd",

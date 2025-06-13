@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
 import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 
-@Entity(name = "zc_rs_message-delivery_status")
+@Entity(name = "zc_id_stus-message")
 public class MsgDeliveryStatus
         extends AuditModel
 {
