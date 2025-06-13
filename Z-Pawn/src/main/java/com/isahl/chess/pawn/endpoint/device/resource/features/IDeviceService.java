@@ -75,4 +75,10 @@ public interface IDeviceService
 
     DeviceEntity getOneDevice(long deviceId);
 
+    /**
+     * 根据设备ID删除设备
+     * @param id
+     */
+    void deleteDevice(long id);
+
 }

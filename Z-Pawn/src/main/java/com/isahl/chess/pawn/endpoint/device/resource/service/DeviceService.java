@@ -206,6 +206,11 @@ public class DeviceService
     }
 
     @Override
+    public void deleteDevice(long id) {
+        _DeviceRepository.deleteById(id);
+    }
+
+    @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
         return _DeviceRepository.findAllByDeviceIdIn(deviceIdList);
