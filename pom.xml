@@ -58,16 +58,16 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>2.0.12</slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.13</logback.version>
-        <logback-access.version>1.4.14</logback-access.version>
+        <logback-access.version>2.0.6</logback-access.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>3.2.4</spring-boot.version>
+        <spring-boot.version>3.5.0</spring-boot.version>
         <!--Commons-IO-->
-        <commons-io.version>2.15.1</commons-io.version>
-        <commons-codec.version>1.16.1</commons-codec.version>
-        <bouncycastle.version>1.70</bouncycastle.version>
-        <commons-compress.version>1.26.1</commons-compress.version>
+        <commons-io.version>2.19.0</commons-io.version>
+        <commons-codec.version>1.18.0</commons-codec.version>
+        <bouncycastle.version>1.81</bouncycastle.version>
+        <commons-compress.version>1.27.1</commons-compress.version>
         <!--DB-->
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
 
@@ -76,26 +76,26 @@
         <!--TOOLS-->
         <httpcore-nio.version>4.4.16</httpcore-nio.version>
         <!--TEST TOOLS VERSION-->
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
-        <junit.platform.verssion>1.8.2</junit.platform.verssion>
-        <mockito.version>4.6.1</mockito.version>
+        <junit.jupiter.version>5.13.1</junit.jupiter.version>
+        <junit.platform.verssion>1.13.1</junit.platform.verssion>
+        <mockito.version>5.18.0</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.10.8</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.17.0</jackson.version>
-        <json-schema-validator.version>1.3.3</json-schema-validator.version>
+        <jackson.version>2.19.0</jackson.version>
+        <json-schema-validator.version>1.5.7</json-schema-validator.version>
         <!--PLUGINS-->
-        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
-        <maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
-        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
-        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
-        <maven-gpg-plugin.version>3.2.0</maven-gpg-plugin.version>
-        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
-        <hibernate-enhance-maven-plugin.version>6.4.4.Final</hibernate-enhance-maven-plugin.version>
-        <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
+        <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
+        <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+        <hibernate-enhance-maven-plugin.version>6.6.17.Final</hibernate-enhance-maven-plugin.version>
+        <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven.compiler.debug>true</maven.compiler.debug>
     </properties>
     <profiles>
@@ -240,8 +240,8 @@
             <artifactId>logback-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-access</artifactId>
+            <groupId>ch.qos.logback.access</groupId>
+            <artifactId>logback-access-common</artifactId>
         </dependency>
         <!--Test-->
         <dependency>
@@ -284,8 +284,8 @@
                 <version>${logback.version}</version>
             </dependency>
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-access</artifactId>
+                <groupId>ch.qos.logback.access</groupId>
+                <artifactId>logback-access-common</artifactId>
                 <version>${logback-access.version}</version>
             </dependency>
             <!--IO-->
@@ -301,7 +301,7 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
+                <artifactId>bcprov-jdk18on</artifactId>
                 <version>${bouncycastle.version}</version>
             </dependency>
             <dependency>

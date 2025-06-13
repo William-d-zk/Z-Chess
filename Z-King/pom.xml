@@ -72,7 +72,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
+            <artifactId>bcprov-jdk18on</artifactId>
         </dependency>
         <!--Commons-Io-->
         <dependency>
@@ -90,7 +90,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
