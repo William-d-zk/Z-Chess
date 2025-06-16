@@ -96,7 +96,12 @@ public class MessageEntity
     private Set<MsgDeliveryStatus> mDeliveryStatus;
     @Transient
     private long                   mId;
-
+    @Transient
+    private Long                   dkScene;
+    @Transient
+    private Long                   dkFactor;
+    @Transient
+    private Long                   dkFunction;
 
     public MessageEntity()
     {
@@ -240,6 +245,30 @@ public class MessageEntity
 
     @Column(name = "v_notice")
     public String getVNotice() {return mVNotice;}
+
+    public void setVNotice(String vNotice) {mVNotice = vNotice;}
+
+    @Column(name = "dk_scene")
+    public long getDkScene() {return dkScene;}
+
+    public void setDkScene(long dkScene) {this.dkScene = dkScene;}
+
+    @Column(name = "dk_factor")
+    public long getDkFactor() {return dkFactor;}
+
+    public void setDkFactor(long dkFactor) {this.dkFactor = dkFactor;}
+
+    @Column(name = "dk_function")
+    public long getDkFunction() {return dkFunction;}
+    
+    public void setDkFunction(long dkFunction) {this.dkFunction = dkFunction;}
+    
+    @PrePersist
+    public void dataCoord(){
+        if(dkScene == null) dkScene = 12317L; // 数据传输
+        if(dkFactor == null) dkFactor = 8261L; // 载荷:通讯内容
+        if(dkFunction == null) dkFunction = 9321L; // 数据:信息承载
+    }
 
     @Override
     public String toString()

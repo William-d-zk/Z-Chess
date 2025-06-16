@@ -90,6 +90,12 @@ public class DeviceEntity
     private String        mName;
     @Transient
     private long          mId;
+    @Transient
+    private Long          dkScene;
+    @Transient
+    private Long          dkFactor;
+    @Transient
+    private Long          dkFunction;
 
     @Id
     @JsonIgnore
@@ -237,6 +243,28 @@ public class DeviceEntity
     public void setName(String name)
     {
         mName = name;
+    }
+
+    @Column(name = "dk_scene")
+    public long getDkScene() {return dkScene;}
+
+    public void setDkScene(long dkScene) {this.dkScene = dkScene;}
+
+    @Column(name = "dk_factor")
+    public long getDkFactor() {return dkFactor;}
+
+    public void setDkFactor(long dkFactor) {this.dkFactor = dkFactor;}
+
+    @Column(name = "dk_function")
+    public long getDkFunction() {return dkFunction;}
+    
+    public void setDkFunction(long dkFunction) {this.dkFunction = dkFunction;}
+
+    @PrePersist
+    public void dataCoord(){
+        if(dkScene == null) dkScene = 12329L; // 终端交互
+        if(dkFactor == null) dkFactor = 8262L; // 设备:信息终端
+        if(dkFunction == null) dkFunction = 9278L; // 标识:身份标识
     }
 
     @Override
