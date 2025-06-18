@@ -51,15 +51,15 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
  * @author william.d.zk
  */
 @Entity(name = "zc_id_devi-chess")
-@Table(indexes = { @Index(name = "device_idx_token_pwd_id",
+@Table(indexes = { @Index(name = "idx_zc_id_devi-chess_token_pwd_id",
                           columnList = "token,password,password_id"),
-                   @Index(name = "device_idx_token_pwd",
+                   @Index(name = "idx_zc_id_devi-chess_token_pwd",
                           columnList = "token,password"),
-                   @Index(name = "device_idx_token",
+                   @Index(name = "idx_zc_id_devi-chess_token",
                           columnList = "token"),
-                   @Index(name = "device_idx_username",
+                   @Index(name = "idx_zc_id_devi-chess_username",
                           columnList = "username"),
-                   @Index(name = "device_idx_device",
+                   @Index(name = "idx_zc_id_devi-chess_device",
                           columnList = "device_id",
                           unique = true) })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

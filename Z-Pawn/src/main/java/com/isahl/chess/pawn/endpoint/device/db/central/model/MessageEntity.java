@@ -59,11 +59,11 @@ import static java.lang.String.format;
  * @since 2019-07-22
  */
 @Entity(name = "zc_id_msgs-zchat")
-@Table(indexes = { @Index(name = "fk_origin_idx",
+@Table(indexes = { @Index(name = "idx_zc_id_msgs-zchat_fk_origin",
                           columnList = "fk_origin"),
-                   @Index(name = "topic_idx",
+                   @Index(name = "idx_zc_id_msgs-zchat_topic",
                           columnList = "topic"),
-                   @Index(name = "message_id_idx_uk",
+                   @Index(name = "idx_zc_id_msgs-zchat_message_id_uk",
                           columnList = "message_id",
                           unique = true) })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
