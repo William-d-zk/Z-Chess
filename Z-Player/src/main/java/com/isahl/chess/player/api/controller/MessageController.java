@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.player.api.service.MessageOpenService;
 import org.springframework.beans.factory.annotation.Autowired;

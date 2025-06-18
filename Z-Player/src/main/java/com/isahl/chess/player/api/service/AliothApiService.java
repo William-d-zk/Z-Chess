@@ -83,7 +83,7 @@ public class AliothApiService {
     /**
      * 验证码
      */
-    private static final String REINIT_VCODE_TABLE = "zc_meta_vcode";
+    private static final String REINIT_VCODE_TABLE = "zc_id_devi-chess_vcode";
 
     private final PlayerConfig playerConfig;
 
@@ -102,11 +102,11 @@ public class AliothApiService {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.deviceService = deviceService;
-        this.restTemplate = restTemplateBuilder.setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
-            .setReadTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
-            .defaultHeader(HttpHeaders.AUTHORIZATION,
-                "Bearer " + playerConfig.getNocoApiToken())
-            .build();
+        this.restTemplate = restTemplateBuilder
+                                .connectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+                                .readTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
+                                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + playerConfig.getNocoApiToken())
+                                .build();
     }
 
     public void updateTask(RpaTaskMessageDO message) {

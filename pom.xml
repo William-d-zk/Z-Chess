@@ -74,7 +74,8 @@
         <!--PIPELINE-->
         <disruptor.version>4.0.0</disruptor.version>
         <!--TOOLS-->
-        <httpcore-nio.version>4.4.16</httpcore-nio.version>
+        <httpcore5.version>5.3.4</httpcore5.version>
+        <httpclient5.version>5.5</httpclient5.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <junit.platform.verssion>1.13.1</junit.platform.verssion>
@@ -408,9 +409,15 @@
             </dependency>
             <!--http core-->
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore-nio</artifactId>
-                <version>${httpcore-nio.version}</version>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${httpcore5.version}</version>
+            </dependency>
+            <!-- http client -->
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${httpclient5.version}</version>
             </dependency>
             <!--disruptor-->
             <dependency>
