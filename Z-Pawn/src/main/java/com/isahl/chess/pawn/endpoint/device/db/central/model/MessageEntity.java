@@ -35,7 +35,6 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
@@ -60,11 +59,11 @@ import static java.lang.String.format;
  * @since 2019-07-22
  */
 @Entity(name = "zc_id_msgs-zchat")
-@Table(indexes = { @Index(name = "origin_idx",
+@Table(indexes = { @Index(name = "fk_origin_idx",
                           columnList = "fk_origin"),
                    @Index(name = "topic_idx",
                           columnList = "topic"),
-                   @Index(name = "message_idx_uk",
+                   @Index(name = "message_id_idx_uk",
                           columnList = "message_id",
                           unique = true) })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -78,8 +77,6 @@ public class MessageEntity
 
     @Transient
     private long                   mOrigin;
-    @Transient
-    private long                   mOrigin_;
     @Transient
     private String                 mTopic;
     @Transient
@@ -133,7 +130,7 @@ public class MessageEntity
             nullable = false)
     public long getOrigin()
     {
-        return mOrigin_;
+        return mOrigin;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -183,11 +180,6 @@ public class MessageEntity
     public void setOrigin(long origin)
     {
         mOrigin = origin;
-    }
-
-    public void setOrigin_(long origin_)
-    {
-        mOrigin_ = origin_;
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -240,7 +232,7 @@ public class MessageEntity
 
     public void genSummary()
     {
-        mVNotice = format("%d→@%s size:(%d)", mOrigin_, getTopic(), length());
+        mVNotice = format("%d→@%s size:(%d)", mOrigin, getTopic(), length());
     }
 
     @Column(name = "v_notice")
@@ -274,14 +266,14 @@ public class MessageEntity
     public String toString()
     {
         return format("MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s], rk_origin=%s}",
-                      getId(),
-                      primaryKey(),
-                      origin(),
-                      getTopic(),
-                      getComments(),
-                      getNetAt(),
-                      origin(),
-                      super.toString());
+                    getId(),
+                    primaryKey(),
+                    origin(),
+                    getTopic(),
+                    getComments(),
+                    getNetAt(),
+                    origin(),
+                    super.toString());
     }
 
     @Override
