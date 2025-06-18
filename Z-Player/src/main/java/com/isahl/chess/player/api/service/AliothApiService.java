@@ -103,10 +103,10 @@ public class AliothApiService {
         this.playerConfig = playerConfig;
         this.deviceService = deviceService;
         this.restTemplate = restTemplateBuilder
-                                .connectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
-                                .readTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
-                                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + playerConfig.getNocoApiToken())
-                                .build();
+                            .connectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+                            .readTimeout(Duration.ofMillis(10 * PlayerConfig.TIMEOUT))
+                            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + playerConfig.getNocoApiToken())
+                            .build();
     }
 
     public void updateTask(RpaTaskMessageDO message) {
@@ -126,7 +126,7 @@ public class AliothApiService {
      */
     public List<RpaTaskDO> fetchUnfinishedTaskList() {
         String filters = "{\"task_status\" : \"履约\"}";
-        NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,1,100,null,RpaTaskDO.class);
+        NocoListResponse<RpaTaskDO> listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME, filters, 1, 100, null, RpaTaskDO.class);
         if(listResponse == null){
             return Collections.emptyList();
         }else{
@@ -135,7 +135,7 @@ public class AliothApiService {
             int currentPage = meta.getPage();
             int pageSize = meta.getPageSize();
             while(currentPage < meta.getTotalPage() ){
-                listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME,filters,++currentPage,pageSize,null,RpaTaskDO.class);
+                listResponse = listCollectionItems(RPA_BIDDING_VIEW_NAME, filters, ++currentPage,pageSize, null, RpaTaskDO.class);
                 mergeList.addAll(listResponse != null && listResponse.getData()!= null ? listResponse.getData() : Collections.emptyList());
             }
             return validateTasks(mergeList);
