@@ -288,7 +288,7 @@ public class AliothApiService {
         body.put("serialNo", serialNo);
         String uuidString = UUID.randomUUID().toString();
         body.put("vcode", uuidString.substring(0, 6));
-        createCollectionItem(REINIT_VCODE_TABLE,JsonUtil.writeValueAsString(body));
+        createCollectionItem(REINIT_VCODE_TABLE, JsonUtil.writeValueAsString(body));
         return true;
     }
 
@@ -311,7 +311,7 @@ public class AliothApiService {
                 String idFilter = "{\"id\":" + record.get("id") + "}";
                 Map<String, Object> updates = new HashMap<>();
                 updates.put("valid", false);
-                updateCollectionItem(REINIT_VCODE_TABLE,idFilter,updates);
+                updateCollectionItem(REINIT_VCODE_TABLE, idFilter, updates);
                 // 删除旧设备注册信息
                 DeviceEntity existEntity = deviceService.findByNotice(serialNo);
                 if(existEntity != null){

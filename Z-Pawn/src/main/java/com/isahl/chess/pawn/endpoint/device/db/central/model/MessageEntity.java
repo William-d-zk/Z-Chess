@@ -59,13 +59,10 @@ import static java.lang.String.format;
  * @since 2019-07-22
  */
 @Entity(name = "zc_id_msgs-zchat")
-@Table(indexes = { @Index(name = "idx_zc_id_msgs-zchat_fk_origin",
+@Table(indexes = { @Index(name = "idx_z_chat_fk_origin",
                           columnList = "fk_origin"),
-                   @Index(name = "idx_zc_id_msgs-zchat_topic",
-                          columnList = "topic"),
-                   @Index(name = "idx_zc_id_msgs-zchat_message_id_uk",
-                          columnList = "message_id",
-                          unique = true) })
+                   @Index(name = "idx_z_chat_topic",
+                          columnList = "topic")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class MessageEntity
@@ -166,7 +163,7 @@ public class MessageEntity
         mId = id;
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "message_id")
     public long getMessageId()
     {
         return pKey;
