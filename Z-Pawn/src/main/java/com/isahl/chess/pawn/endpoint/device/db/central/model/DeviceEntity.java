@@ -84,7 +84,7 @@ public class DeviceEntity
     @Transient
     private String        mNotice;
     @Transient
-    private String        mName;
+    private String        mVNotice;
     @Transient
     private long          mId;
     @Transient
@@ -230,16 +230,15 @@ public class DeviceEntity
         mNotice = notice;
     }
 
-    @Column(name = "o_name")
-    public String getName()
+    @Column(nullable = false, name = "v_notice")
+    public String getVNotice()
     {
-        return mName;
+        return mVNotice;
     }
 
-    @Column(name = "o_name")
-    public void setName(String name)
+    public void setVNotice(String notice)
     {
-        mName = name;
+        mVNotice = notice;
     }
 
     @Column(name = "dk_scene")
