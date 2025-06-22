@@ -62,15 +62,15 @@
         <logback.version>1.5.13</logback.version>
         <logback-access.version>2.0.6</logback-access.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>3.5.0</spring-boot.version>
+        <spring-boot.version>3.5.3</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.19.0</commons-io.version>
         <commons-codec.version>1.18.0</commons-codec.version>
         <bouncycastle.version>1.81</bouncycastle.version>
         <commons-compress.version>1.27.1</commons-compress.version>
         <!--DB-->
+        <postgresql.jdbc.version>42.7.7</postgresql.jdbc.version>
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
-
         <!--PIPELINE-->
         <disruptor.version>4.0.0</disruptor.version>
         <!--TOOLS-->
@@ -84,7 +84,7 @@
         <ehcache.version>3.10.8</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.19.0</jackson.version>
+        <jackson.version>2.19.1</jackson.version>
         <json-schema-validator.version>1.5.7</json-schema-validator.version>
         <!--PLUGINS-->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -132,7 +132,7 @@
                 <profiles.active>dev</profiles.active>
             </properties>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <repositories>
                 <repository>
@@ -159,9 +159,9 @@
             </properties>
             <repositories>
                 <repository>
-                    <id>aliyun-maven-repo</id>
-                    <name>aliyun-maven</name>
-                    <url>https://maven.aliyun.com/repository/central</url>
+                    <id>central</id>
+                    <name>central-maven</name>
+                    <url>https://repo1.maven.org/maven2/</url>
                 </repository>
             </repositories>
             <pluginRepositories>
@@ -364,6 +364,12 @@
                 <groupId>com.vladmihalcea</groupId>
                 <artifactId>hibernate-types-60</artifactId>
                 <version>${hibernate-types-60.version}</version>
+            </dependency>
+            <!--DB-->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.jdbc.version}</version>
             </dependency>
             <!--Cache-->
             <dependency>

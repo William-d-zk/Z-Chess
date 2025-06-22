@@ -51,8 +51,8 @@ public class BiddingRpaScheduleService {
         this.objectMapper = objectMapper;
         this.playerConfig = playerConfig;
         this.restTemplate = restTemplateBuilder
-            .setConnectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
-            .setReadTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+            .connectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
+            .readTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .build();
         this.aliothApiService = aliothApiService;
     }
