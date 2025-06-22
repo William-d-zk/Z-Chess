@@ -81,8 +81,6 @@ public class MessageEntity
     @Transient
     private String                 mComments;
     @Transient
-    private String                 mNumber;
-    @Transient
     private String                 mNotice;
     @Transient
     private String                 mVNotice;
@@ -210,22 +208,10 @@ public class MessageEntity
         mComments = comments;
     }
 
-    @Column(name = "number",
-            updatable = false)
-    public String getNumber()
-    {
-        return mNumber;
-    }
-
-    public void setNumber(String number)
-    {
-        mNumber = number;
-    }
-
     @Column(name = "notice")
-    public String getSummary() {return mNotice;}
+    public String getNotice() {return mNotice;}
 
-    public void setSummary(String summary) {mNotice = summary;}
+    public void setNotice(String notice) {mNotice = notice;}
 
     public void genSummary()
     {
