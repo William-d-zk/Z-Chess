@@ -120,13 +120,12 @@ public class DeviceController {
             keyPair.getPrivateKey());
         deviceDo.getProfile().setKeyPairProfile(keyPairProfile);
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setNotice(deviceDo.getNumber());
+        deviceEntity.setVNotice(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setCreatedById(deviceDo.getUid());
         deviceEntity.setUpdatedById(deviceDo.getUid());
         deviceEntity.setUpdatedAt(LocalDateTime.now());
         deviceEntity.setCreatedAt(LocalDateTime.now());
-        deviceEntity.setName(deviceDo.getType());
         deviceEntity.setCode(deviceDo.getName());
         if(docker){
             LocalDateTime activationAt = LocalDateTime.now();
@@ -421,14 +420,13 @@ public class DeviceController {
         @RequestBody DeviceDo deviceDo
     ) {
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setNotice(deviceDo.getNumber());
+        deviceEntity.setVNotice(deviceDo.getNumber());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setProfile(deviceDo.getProfile());
         deviceEntity.setCreatedById(deviceDo.getUid());
         deviceEntity.setUpdatedById(deviceDo.getUid());
         deviceEntity.setUpdatedAt(LocalDateTime.now());
         deviceEntity.setCreatedAt(LocalDateTime.now());
-        deviceEntity.setName(deviceDo.getType());
         deviceEntity.setCode(deviceDo.getName());
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
