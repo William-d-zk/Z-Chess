@@ -238,7 +238,7 @@ public class DeviceEntity
 
     public void setVNotice(String notice)
     {
-        mVNotice = notice;
+        mNotice = mVNotice = notice;
     }
 
     @Column(name = "dk_scene")
