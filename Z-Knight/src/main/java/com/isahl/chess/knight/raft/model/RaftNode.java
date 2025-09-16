@@ -69,13 +69,13 @@ public class RaftNode
         mState = RaftState.FOLLOWER.getCode();
     }
 
-    public RaftNode(String host, String gate, int gPort)
+    public RaftNode(String host, String gate, int gatePort)
     {
         super(Operation.OP_MODIFY, Strategy.RETAIN);
         mHost = host;
-        mPort = -1;
+        mPort = -1;//禁止网关提供标准服务;一般Gate会存在更大的负载
         mGateHost = gate;
-        mGatePort = gPort;
+        mGatePort = gatePort;
         mState = RaftState.GATE.getCode();
     }
 
@@ -205,6 +205,6 @@ public class RaftNode
     @Override
     public String toString()
     {
-        return String.format(" RaftNode{%#x,%s:%d,@ %s | %s:%d }", primaryKey(), mHost, mPort, mState, mGateHost, mGatePort);
+        return String.format(" RaftNode{%#x,%s:%d,@ %s | Gate[%s:%d] }", primaryKey(), mHost, mPort, RaftState.valueOf(mState), mGateHost, mGatePort);
     }
 }
