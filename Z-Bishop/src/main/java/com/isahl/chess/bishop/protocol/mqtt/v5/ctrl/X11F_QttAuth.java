@@ -35,7 +35,6 @@ import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AL
 public class X11F_QttAuth
         extends QttControl
 {
-
     public X11F_QttAuth()
     {
         generateCtrl(false, false, ALMOST_ONCE, QttType.AUTH);

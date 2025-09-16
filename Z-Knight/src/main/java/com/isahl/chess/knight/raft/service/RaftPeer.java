@@ -1310,8 +1310,7 @@ public class RaftPeer
     @Override
     public Collection<RaftNode> topology()
     {
-        return _RaftConfig.getPeers()
-                          .values();
+        return _RaftConfig.getPeers().values();
     }
 
     private X77_RaftNotify createNotify(LogEntry raftLog)

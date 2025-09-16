@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * 2^64 unsigned long data encoding
  * session port-prefix max 2^16
- * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
+ * 00-0000-000-0000000-00000000000000000000000000000000000000-0000000000
  * [02bit] peer-type
  * <p>
  *     {00} Client manager service
@@ -178,8 +178,8 @@ public class ZUID
     {
         type &= TYPE_MASK;
         generateSequence();
-        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) |
-               ((mLastTimestamp - EPOCH_SECOND) << TIMESTAMP_SHIFT) | type | mSequence;
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT)| type |
+               ((mLastTimestamp << TIMESTAMP_SHIFT) | mSequence) & ~PREFIX_MASK;
     }
 
     public long moveOn(long id)
