@@ -62,12 +62,12 @@
         <logback.version>1.5.13</logback.version>
         <logback-access.version>2.0.6</logback-access.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>3.5.3</spring-boot.version>
+        <spring-boot.version>3.5.5</spring-boot.version>
         <!--Commons-IO-->
-        <commons-io.version>2.19.0</commons-io.version>
-        <commons-codec.version>1.18.0</commons-codec.version>
+        <commons-io.version>2.20.0</commons-io.version>
+        <commons-codec.version>1.19.0</commons-codec.version>
         <bouncycastle.version>1.81</bouncycastle.version>
-        <commons-compress.version>1.27.1</commons-compress.version>
+        <commons-compress.version>1.28.0</commons-compress.version>
         <!--DB-->
         <postgresql.jdbc.version>42.7.7</postgresql.jdbc.version>
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
@@ -81,10 +81,10 @@
         <junit.platform.verssion>1.13.1</junit.platform.verssion>
         <mockito.version>5.18.0</mockito.version>
         <!--CACHE-->
-        <ehcache.version>3.10.8</ehcache.version>
+        <ehcache.version>3.11.1</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.19.1</jackson.version>
+        <jackson.version>2.19.2</jackson.version>
         <json-schema-validator.version>1.5.7</json-schema-validator.version>
         <!--PLUGINS-->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -376,12 +376,13 @@
                 <groupId>org.ehcache</groupId>
                 <artifactId>ehcache</artifactId>
                 <version>${ehcache.version}</version>
+                <classifier>jakarta</classifier>
             </dependency>
-            <dependency>
-                <groupId>javax.cache</groupId>
-                <artifactId>cache-api</artifactId>
-                <version>${jcache.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>javax.cache</groupId>-->
+<!--                <artifactId>cache-api</artifactId>-->
+<!--                <version>${jcache.version}</version>-->
+<!--            </dependency>-->
             <!-- Test -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>

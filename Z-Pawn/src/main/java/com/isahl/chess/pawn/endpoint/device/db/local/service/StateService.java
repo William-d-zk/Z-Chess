@@ -45,6 +45,7 @@ import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import javafx.collections.transformation.SortedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -58,7 +59,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.*;
 
 /**
  * @author william.d.zk
@@ -108,6 +109,7 @@ public class StateService
                                   Long.class,
                                   Integer.class,
                                   Duration.of(2, MINUTES));
+
         //        EhcacheConfig.createCache(_CacheManager,
         //                                  "raft_log_entry",
         //                                  Long.class,
@@ -434,5 +436,11 @@ public class StateService
     public Map<Pattern, Subscribe> mappings()
     {
         return _Topic2Subscribe;
+    }
+
+    @Override
+    public List<Pattern> filter(String filter)
+    {
+        return _Topic2Subscribe.keySet().stream().filter(p->p.asMatchPredicate().test(filter)).toList();
     }
 }

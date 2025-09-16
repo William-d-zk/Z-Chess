@@ -33,7 +33,9 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 
 import java.io.Serial;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,6 +87,7 @@ public interface IThread
     @ISerialGenerator(parent = ISerial.ENDPOINT_PAWN_SERIAL)
     class Topic
             extends BinarySerial
+
     {
         @Serial
         private static final long serialVersionUID = -6998834630245751766L;

@@ -54,6 +54,8 @@ public interface IStateService
 
     Map<Pattern, IThread.Subscribe> mappings();
 
+    List<Pattern> filter(String filter);
+
     boolean onLogin(long session, boolean clean, long keepalive);
 
     /**
@@ -69,4 +71,5 @@ public interface IStateService
     DeviceClient getClient(long session);
 
     List<SessionEntity> listStorages(Pageable pageable);
+
 }
