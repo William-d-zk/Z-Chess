@@ -157,13 +157,13 @@ public class StateService
             List<MsgStateEntity> idleMsgHours =
                     self._MsgStateRepository
                         .findAll((root, criteriaQuery, criteriaBuilder)->
-                                        criteriaQuery.where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
+                                        Objects.requireNonNull(criteriaQuery).where(criteriaBuilder.lessThan(root.get("createdAt"), idleTime))
                                                      .getRestriction()
                                 );
             List<SessionEntity> idleSessionHours =
                     self._SessionRepository
                         .findAll((root, criteriaQuery, criteriaBuilder)->
-                                        criteriaQuery.where(criteriaBuilder.lessThan(root.get("updatedAt"), idleTime))
+                                        Objects.requireNonNull(criteriaQuery).where(criteriaBuilder.lessThan(root.get("updatedAt"), idleTime))
                                                      .getRestriction()
                                 );
 
@@ -175,12 +175,26 @@ public class StateService
                             : idleSessionHours.stream()
                                               .filter(entity->self._ClientPool.containsKey(entity.getId()))
                                               .toList()
-                                                  );
+                        );
             }
             //@formatter:on
         }
         catch(Throwable e) {
             self._Logger.warning("cycle cleaner x failed", e);
+        }
+    }
+
+    private void onDismiss(long session)
+    {
+        for(Iterator<Map.Entry<Pattern, IThread.Subscribe>> iterator = _Topic2Subscribe.entrySet()
+                                                                                       .iterator(); iterator.hasNext(); )
+        {
+            Map.Entry<Pattern, IThread.Subscribe> entry = iterator.next();
+            entry.getValue()
+                 .onDismiss(session);
+            if(entry.getValue()
+                    .isEmpty())
+            {iterator.remove();}
         }
     }
 
@@ -202,10 +216,7 @@ public class StateService
         long device = session & ~ZUID.TYPE_MASK;
         client.of(_DeviceService.getOneDevice(device));
         if(clean) {
-            if(!_Topic2Subscribe.isEmpty()) {
-                _Topic2Subscribe.values()
-                                .forEach(map->map.onDismiss(session));
-            }
+            onDismiss(session);
             if(sOptional.isPresent()) {
                 _SessionRepository.deleteById(session);
             }
@@ -227,10 +238,7 @@ public class StateService
     @Override
     public IProtocol dismiss(long session)
     {
-        if(!_Topic2Subscribe.isEmpty()) {
-            _Topic2Subscribe.values()
-                            .forEach(map->map.onDismiss(session));
-        }
+        onDismiss(session);
         _ClientPool.computeIfPresent(session, (k, v)->{
             if(v.isClean()) {
                 v.identifierSendingMap()
@@ -420,6 +428,10 @@ public class StateService
             o.onDismiss(session);
             return o.isEmpty() ? null : o;
         });
+        if(Objects.isNull(_Topic2Subscribe.get(topic.pattern()))) {
+            _Topic2Subscribe.remove(topic.pattern());
+            _Logger.debug("cleanup topic: %", topic);
+        }
     }
 
     @Override
@@ -440,6 +452,10 @@ public class StateService
     @Override
     public List<Pattern> filter(String filter)
     {
-        return _Topic2Subscribe.keySet().stream().filter(p->p.asMatchPredicate().test(filter)).toList();
+        return _Topic2Subscribe.keySet()
+                               .stream()
+                               .filter(p->p.asMatchPredicate()
+                                           .test(filter))
+                               .toList();
     }
 }
