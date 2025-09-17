@@ -168,7 +168,7 @@ public class MQttPlugin
                 register(x116.msgId(), x116);
             }
             case 0x116 -> {
-                //client → x113 → server → x115 → client → x116 → server , 服务端收到 x116,需要注意
+                //client::x113 → server::x115 → client::x116 → server , 服务端收到 x116,需要注意
                 X116_QttPubrel x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.msgId(x116.msgId());
@@ -179,7 +179,7 @@ public class MQttPlugin
                         if(received != null) {
                             X113_QttPublish n113 = new X113_QttPublish();
                             n113.with(session);
-                            n113.withTopic(received.topic());
+                            n113.withTopic(received.getTopic());
                             n113.withSub(received.payload());
                             n113.setLevel(IQoS.Level.EXACTLY_ONCE);
                             brokerTopic(exchanger, n113, broker(n113.topic()), load);

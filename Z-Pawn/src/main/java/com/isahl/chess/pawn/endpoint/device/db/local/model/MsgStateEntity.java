@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -45,6 +46,7 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 @Entity(name = "msg_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class MsgStateEntity
         extends AuditModel
         implements ICancelable
@@ -117,19 +119,19 @@ public class MsgStateEntity
     }
 
     @Column(name = "msg_id")
-    public long getMsgId()
+    public Long getMsgId()
     {
         return mMsgId;
     }
 
     @Column
-    public long getOrigin()
+    public Long getOrigin()
     {
         return mOrigin;
     }
 
     @Column
-    public long getTarget()
+    public Long getTarget()
     {
         return mTarget;
     }
@@ -137,13 +139,13 @@ public class MsgStateEntity
     @Column(length = 511,
             nullable = false,
             updatable = false)
-    public String topic()
+    public String getTopic()
     {
         return mTopic;
     }
 
     @Column(name = "topic_alias")
-    public int getTopicAlias()
+    public Integer getTopicAlias()
     {
         return mTopicAlias;
     }

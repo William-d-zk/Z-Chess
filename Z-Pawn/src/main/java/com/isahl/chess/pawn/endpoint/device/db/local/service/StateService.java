@@ -322,7 +322,6 @@ public class StateService
     {
         String primaryKey = String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId);
         try {
-
             Optional<MsgStateEntity> optional = _MsgStateRepository.findById(primaryKey);
             if(optional.isPresent()) {
                 _MsgStateRepository.deleteById(primaryKey);
