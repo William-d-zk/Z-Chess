@@ -37,9 +37,9 @@ public abstract class BaseSort<C extends IPContext>
         implements IAioSort<C>
 {
     private final AioWriter            _AioWriter     = new AioWriter();
-    private final ICloser        _CloseOperator = new Closer();
-    private final ISessionFailed _ErrorOperator = new SessionFailed();
-    private final IPipeEncoder   _Encoder       = new PipeEncoder(_AioWriter);
+    private final ICloser              _CloseOperator = new Closer();
+    private final ISessionFailed       _ErrorOperator = new SessionFailed();
+    private final IPipeEncoder         _Encoder       = new PipeEncoder(_AioWriter);
     private final IPipeDecoder         _Decoder       = new PipeDecoder();
     private final SessionIgnore        _Ignore        = new SessionIgnore();
     private final Mode                 _Mode;

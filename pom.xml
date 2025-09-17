@@ -62,7 +62,7 @@
         <logback.version>1.5.13</logback.version>
         <logback-access.version>2.0.6</logback-access.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>3.5.5</spring-boot.version>
+        <spring-boot.version>3.5.4</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.20.0</commons-io.version>
         <commons-codec.version>1.19.0</commons-codec.version>

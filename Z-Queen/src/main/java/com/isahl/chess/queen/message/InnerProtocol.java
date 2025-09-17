@@ -34,10 +34,10 @@ public abstract class InnerProtocol
         extends BinarySerial
         implements IStorage
 {
-    final CreatorType _Type;
+    final           CreatorType _Type;
     protected final Operation   _Operation;
     protected final Strategy    _Strategy;
-    protected long pKey, fKey;
+    protected       long        pKey, fKey;
 
     enum CreatorType
     {
