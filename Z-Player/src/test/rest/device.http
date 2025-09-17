@@ -12,8 +12,7 @@ Content-Type: application/json
     "bluetooth_mac": "09:12:02:7F:2D:8E",
     "imei": "766781230788476",
     "imsi": "460011357824680"
-  },
-  "uid": 1
+  }
 }
 
 ###
@@ -21,7 +20,7 @@ POST http://iot.isahl.com:2808/device/register
 Content-Type: application/json
 
 {
-  "sn": "z-chess.device-local-test.00001",
+  "number": "z-chess.device-local-test.00001",
   "username": "isahl.test",
   "profile": {
     "wifi_mac": "09:12:11:3F:2D:8E",
