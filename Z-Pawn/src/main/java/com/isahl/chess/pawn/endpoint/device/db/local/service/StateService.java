@@ -440,6 +440,7 @@ public class StateService
     @Override
     public List<Pattern> filter(String filter)
     {
-        return _Topic2Subscribe.keySet().stream().filter(p->p.asMatchPredicate().test(filter)).toList();
+        Pattern filterPattern = Pattern.compile(filter);
+        return _Topic2Subscribe.keySet().stream().filter(topic ->filterPattern.asMatchPredicate().test(topic.pattern())).toList();
     }
 }

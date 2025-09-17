@@ -107,6 +107,15 @@ public class DeviceController {
             data.put("serial", serialNo);
             data.put("algorithm", existDevice.getProfile().getKeyPairProfile().getKeyPairAlgorithm());
             data.put("publicKey", existDevice.getProfile().getKeyPairProfile().getPublicKey());
+            if(docker){
+                LocalDateTime expireDate = existDevice.getProfile().getExpirationProfile().getExpireAt();
+                String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String expireInfo =
+                        existDevice.getNotice() + "|" + expireDateString + "|" + existDevice.getProfile().getKeyPairProfile().getPublicKey();
+                // 返回经过md5的有效期信息(serial|date|publicKey)
+                data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                data.put("expire_date",expireDateString);
+            }
             return ZResponse.success(data);
         }
         deviceDo.setNumber(serialNo);

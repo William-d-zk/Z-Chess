@@ -28,6 +28,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.KingCode;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.player.api.service.MessageOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +45,18 @@ public class MessageController
     private final Logger             _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final MessageOpenService _MessageService;
     private final IDeviceService     _DeviceService;
+    private final IStateService _IStateService;
 
     @Autowired
-    public MessageController(MessageOpenService messageService, IDeviceService deviceService)
+    public MessageController(
+            MessageOpenService messageService,
+            IDeviceService deviceService,
+            IStateService stateService
+    )
     {
         _MessageService = messageService;
         _DeviceService = deviceService;
+        _IStateService = stateService;
     }
 
     @PostMapping("submit")
@@ -66,4 +73,20 @@ public class MessageController
         _MessageService.submit(device.getId(), body);
         return ZResponse.success("submit succeed");
     }
+
+    @PostMapping("filter")
+    public ZResponse<?> filterTopic(
+            @RequestParam(name = "token")
+            String token,
+            @RequestBody
+            String filterPattern)
+    {
+        DeviceEntity device = _DeviceService.findByToken(token);
+        if(device == null) {
+            return ZResponse.error(KingCode.MISS, "origin device not found");
+        }
+        return ZResponse.success(_IStateService.filter(filterPattern));
+    }
+
+
 }
