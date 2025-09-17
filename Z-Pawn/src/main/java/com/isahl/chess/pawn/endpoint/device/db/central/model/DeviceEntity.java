@@ -23,6 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.model;
 
+import static jakarta.persistence.TemporalType.TIMESTAMP;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -37,28 +39,38 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.Length;
-
 import java.io.Serial;
 import java.time.LocalDateTime;
-
-import static jakarta.persistence.TemporalType.TIMESTAMP;
+import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author william.d.zk
  */
 @Entity(name = "zc_id_devi-chess")
-@Table(indexes = { @Index(name = "idx_z_chess_token_pwd_id",
-                          columnList = "token,password,password_id"),
-                   @Index(name = "idx_z_chess_token_pwd",
-                          columnList = "token,password"),
-                   @Index(name = "idx_z_chess_token",
-                          columnList = "token"),
-                   @Index(name = "idx_z_chess_username",
-                          columnList = "username")})
+@Table(indexes = {
+        @Index(name = "idx_z_chess_token_pwd_id",
+            columnList = "token,password,password_id"),
+        @Index(name = "idx_z_chess_token_pwd",
+            columnList = "token,password"),
+        @Index(name = "idx_z_chess_token",
+            columnList = "token"),
+        @Index(name = "idx_z_chess_username",
+            columnList = "username"),
+        @Index(name = "idx_z_chess_code",
+            columnList = "code")
+    })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
 public class DeviceEntity
