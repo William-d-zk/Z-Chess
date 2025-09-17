@@ -454,8 +454,11 @@ public class StateService
     {
         return _Topic2Subscribe.keySet()
                                .stream()
-                               .filter(p->p.asMatchPredicate()
-                                           .test(filter))
+                               .filter(p->p.pattern()
+                                           .equals(filter) || p.asMatchPredicate()
+                                                               .test(filter) || Pattern.compile(filter)
+                                                                                       .asMatchPredicate()
+                                                                                       .test(p.pattern()))
                                .toList();
     }
 }

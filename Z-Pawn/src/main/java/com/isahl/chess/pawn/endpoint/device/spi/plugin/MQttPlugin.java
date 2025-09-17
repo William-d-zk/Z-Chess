@@ -191,7 +191,10 @@ public class MQttPlugin
                 X117_QttPubcomp x117 = (X117_QttPubcomp) content;
                 ack(x117.msgId(), session.index());
             }
-            case 0x11C -> load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
+            case 0x11C -> {
+                load.add(Triple.of(new X11D_QttPingresp().with(session), session, session.encoder()));
+                _Logger.debug("session: %#x receive heartbeat", session.index());
+            }
         }
     }
 
