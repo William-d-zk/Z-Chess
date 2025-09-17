@@ -36,6 +36,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 })
 public class ApplicationAudience
 {
+
     public static void main(String[] args)
     {
         SpringApplication.run(ApplicationAudience.class, args);

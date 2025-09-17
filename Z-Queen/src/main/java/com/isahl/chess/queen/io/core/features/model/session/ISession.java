@@ -23,6 +23,7 @@
 
 package com.isahl.chess.queen.io.core.features.model.session;
 
+import com.isahl.chess.king.base.features.IStatus;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.IAddress;
@@ -126,7 +127,8 @@ public interface ISession
         getDismissCallback().onDismiss(this);
     }
 
-    /* 最多支持8种状态 -3~4 */ int COUNT_BITS = Integer.SIZE - 3;
+    // 最多支持8种状态 -3~4
+    int COUNT_BITS         = Integer.SIZE - 3;
     int CAPACITY           = (1 << COUNT_BITS) - 1;
     int SESSION_CREATED    = -3 << COUNT_BITS;
     int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */

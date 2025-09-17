@@ -92,17 +92,19 @@ public class AioSession<C extends IPContext>
     @Override
     public String toString()
     {
-        return String.format("@%#x %s->%s index:%#x valid:%s wait_to_write[%d] queue_size[%d],wait_to_handle[%d]",
-                             _HashCode,
-                             _LocalAddress,
-                             _RemoteAddress,
-                             mIndex,
-                             isValid(),
-                             _Context.getWrBuffer()
-                                     .readableBytes(),
-                             size(),
-                             _Context.getRvBuffer()
-                                     .readableBytes());
+        return String.format(
+                "@%#x %s->%s index:%#x valid:%s state:%s wait_to_write[%d] queue_size[%d],wait_to_handle[%d]",
+                _HashCode,
+                _LocalAddress,
+                _RemoteAddress,
+                mIndex,
+                isValid(),
+                getSessionStateStr(_State.get()),
+                _Context.getWrBuffer()
+                        .readableBytes(),
+                size(),
+                _Context.getRvBuffer()
+                        .readableBytes());
     }
 
     public AioSession(AsynchronousSocketChannel channel,
@@ -183,7 +185,8 @@ public class AioSession<C extends IPContext>
     @Override
     public long prefix(long index)
     {
-        return index | _Sort.getType().prefix();
+        return index | _Sort.getType()
+                            .prefix();
     }
 
     @Override
@@ -223,7 +226,8 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix } : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
+        mSessionPrefix = mSessionPrefix == null ? new long[]{ prefix }
+                                                : ArrayUtil.setSortAdd(prefix, mSessionPrefix, PREFIX_MAX);
     }
 
     @Override
