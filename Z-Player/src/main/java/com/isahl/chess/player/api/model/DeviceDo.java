@@ -132,7 +132,7 @@ public class DeviceDo
         mUid = id;
     }
 
-    public long getUid()
+    public Long getUid()
     {
         return mUid;
     }

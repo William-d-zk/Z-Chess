@@ -23,7 +23,9 @@
 
 curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Linux/aarch64/libsqlitejdbc.so -o SQLite-ABI-Linux-Alpine-aarch64/libsqlitejdbc.so
 curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/FreeBSD/x86_64/libsqlitejdbc.so -o SQLite-ABI-FreeBSD-amd64/libsqlitejdbc.so
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/FreeBSD/aarch64/libsqlitejdbc.so -o SQLite-ABI-FreeBSD-aarch64/libsqlitejdbc.so
 curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so -o SQLite-ABI-Linux-Alpine-amd64/libsqlitejdbc.so
 curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Mac/aarch64/libsqlitejdbc.dylib -o SQLite-ABI-Mac-aarch64/libsqlitejdbc.dylib
+curl https://github.com/xerial/sqlite-jdbc/blob/master/src/main/resources/org/sqlite/native/Windows/x86_64/libsqlitejdbc.dylib -o SQLite-ABI-Windows-amd64/sqlitejdbc.dll
 
 
