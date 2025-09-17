@@ -96,7 +96,6 @@ public class DeviceDo
         this.mToken = token.toUpperCase();
     }
 
-    @JsonIgnore
     public String getToken()
     {
         return mToken;
