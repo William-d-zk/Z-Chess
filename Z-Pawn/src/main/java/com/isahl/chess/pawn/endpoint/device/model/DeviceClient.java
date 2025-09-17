@@ -62,6 +62,7 @@ public class DeviceClient
     private long                      mDeviceId;
     private String                    mUsername;
     private String                    mNumber;
+    private String                    mToken;
     private IThread.Topic             mWillContent;
     private ListSerial<IThread.Topic> mSubscribes;
     private long                      mKeepAlive;
@@ -123,6 +124,16 @@ public class DeviceClient
         return mUsername;
     }
 
+    public String getToken()
+    {
+        return mToken;
+    }
+
+    public void setToken(String token)
+    {
+        mToken = token;
+    }
+
     public long getKeepAlive()
     {
         return mKeepAlive;
@@ -178,6 +189,7 @@ public class DeviceClient
     {
         mUsername = device.getUsername();
         mNumber = device.getNotice();
+        mToken = device.getToken();
     }
 
     @Override
