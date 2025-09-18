@@ -84,7 +84,7 @@ public class Mapper
     private final    AtomicBoolean _TakeSnapshot    = new AtomicBoolean(false);
     private final    Lock          _SnapshotLock    = new ReentrantLock();
 
-    @Autowired
+    @Autowired(required = false)
     public Mapper(ZRaftConfig config, CacheManager cacheManager)
     {
         String baseDir = config.getBaseDir();
@@ -98,7 +98,11 @@ public class Mapper
     @PostConstruct
     private void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(30, SECONDS));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "raft_log_entry",
+                                  Long.class,
+                                  LogEntry.class,
+                                  Duration.of(30, SECONDS));
         File file = new File(_LogMetaDir);
         if(!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
@@ -214,8 +218,8 @@ public class Mapper
         }
         Map.Entry<Long, Segment> floor = _Index2SegmentMap.floorEntry(index);
         if(floor != null) {
-            Segment segment = floor.getValue();
-            return segment.getEntry(index);
+            _Logger.debug("index: %#x, segment: %s", index, floor.getValue());
+            return floor.getValue().getEntry(index);
         }
         return null;
     }
@@ -295,8 +299,8 @@ public class Mapper
                                      return new Segment(subFile, start, canWrite);
                                  }
                              }
-                             catch(IOException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | InstantiationException |
-                                   IllegalAccessException e) {
+                             catch(IOException | IllegalArgumentException | InvocationTargetException |
+                                   NoSuchMethodException | InstantiationException | IllegalAccessException e) {
                                  e.printStackTrace();
                              }
                              return null;
@@ -366,7 +370,8 @@ public class Mapper
                         }
                         else {throw new IOException("create file failed");}
                     }
-                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException |
+                          IllegalAccessException e) {
                         _Logger.warning("create segment file failed %s", e, newFileName);
                         return false;
                     }
@@ -419,7 +424,9 @@ public class Mapper
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
         updateLogStart(newActualFirstIndex);
-        _Logger.debug("Truncating log from old first index %d to new first index %d", oldFirstIndex, newActualFirstIndex);
+        _Logger.debug("Truncating log from old first index %d to new first index %d",
+                      oldFirstIndex,
+                      newActualFirstIndex);
     }
 
     @Override
