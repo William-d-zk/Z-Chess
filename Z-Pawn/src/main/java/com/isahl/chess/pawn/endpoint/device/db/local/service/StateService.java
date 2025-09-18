@@ -410,6 +410,7 @@ public class StateService
                 subscribe.onSubscribe(session, topic.level());
             }
         }
+        _Logger.info("session = "+session+" subscribe topic: "+topic.pattern().pattern());
         return subscribe;
     }
 
