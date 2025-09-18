@@ -56,8 +56,8 @@
         </listeners>
         <resources>
             <heap>100000</heap>
-            <offheap unit="MB">100</offheap>
-            <disk persistent="true" unit="MB">100</disk>
+            <offheap unit="MB">128</offheap>
+            <disk persistent="true" unit="MB">256</disk>
         </resources>
     </cache-template>
 </config>
