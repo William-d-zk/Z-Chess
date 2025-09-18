@@ -32,4 +32,5 @@ public interface IMsgStateRepository
         extends BaseStringRepository<MsgStateEntity>
 {
 
+    MsgStateEntity findByOriginAndMsgId(Long origin, Long msgId);
 }
