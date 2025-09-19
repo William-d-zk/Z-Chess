@@ -42,12 +42,9 @@ import com.isahl.chess.queen.io.core.features.model.routes.IThread;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Subscribe;
 import com.isahl.chess.queen.io.core.features.model.routes.IThread.Topic;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
-import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -58,11 +55,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
 
-import static java.time.temporal.ChronoUnit.*;
-
 /**
  * @author william.d.zk
- * @date 2022-01-14
+ * @version 1.0.17
+ * @since 2022-01-14
  */
 @Service
 public class StateService
@@ -74,67 +70,36 @@ public class StateService
     private final IDeviceService                _DeviceService;
     private final ISessionRepository            _SessionRepository;
     private final IMsgStateRepository           _MsgStateRepository;
-    private final CacheManager                  _CacheManager;
     private final TimeWheel                     _TimeWheel;
     private final ScheduleHandler<StateService> _StorageHourCleaner;
     private final ZUID                          _ZUID;
     private final Map<Pattern, Subscribe>       _Topic2Subscribe;
     private final Map<Long, DeviceClient>       _ClientPool;
+    private final MsgStateService               _MsgStateService;
 
     @Autowired
     public StateService(IDeviceService deviceService,
                         ISessionRepository sessionRepository,
                         IMsgStateRepository messageRepository,
-                        CacheManager cacheManager,
                         TimeWheel timeWheel,
-                        IRaftConfig raftConfig)
+                        IRaftConfig raftConfig,
+                        MsgStateService msgStateService)
     {
         _ZUID = raftConfig.getZUID();
         _DeviceService = deviceService;
         _SessionRepository = sessionRepository;
         _MsgStateRepository = messageRepository;
-        _CacheManager = cacheManager;
         _TimeWheel = timeWheel;
         _Topic2Subscribe = new TreeMap<>(Comparator.comparing(Pattern::pattern));
         _ClientPool = new ConcurrentSkipListMap<>();
         _StorageHourCleaner = new ScheduleHandler<>(Duration.ofHours(1), true, StateService::cleanup);
+        _MsgStateService = msgStateService;
     }
 
     @PostConstruct
     void initCache() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "message_cache_msg_id",
-                                  Long.class,
-                                  Integer.class,
-                                  Duration.of(2, MINUTES));
-
-        //        EhcacheConfig.createCache(_CacheManager,
-        //                                  "raft_log_entry",
-        //                                  Long.class,
-        //                                  LogEntry.class,
-        //                                  Duration.of(30, SECONDS));
         _TimeWheel.acquire(this, _StorageHourCleaner);
-    }
-
-    public long getLast16(long key)
-    {
-        return getLast(key) & 0xFFFF;
-    }
-
-    @Cacheable(key = "#p0",
-               condition = "#p0 != 0",
-               value = "message_cache_msg_id")
-    public long getLast(long key)
-    {
-        return _ZUID.getId();
-    }
-
-    @CachePut(key = "#p0",
-              value = "message_cache_msg_id")
-    public long getNew(long key)
-    {
-        return (getLast(key) + 1) & Long.MAX_VALUE;
     }
 
     @PreDestroy
@@ -308,7 +273,7 @@ public class StateService
                 message.setContent(body.payload());
                 message.setId(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
                 try {
-                    _MsgStateRepository.save(message);
+                    _MsgStateService.setMsgStateEntity(message);
                 }
                 catch(Throwable e) {
                     _Logger.warning("local storage received msg %s failed", message.getId(), e);
@@ -322,10 +287,10 @@ public class StateService
     {
         String primaryKey = String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId);
         try {
-            Optional<MsgStateEntity> optional = _MsgStateRepository.findById(primaryKey);
-            if(optional.isPresent()) {
-                _MsgStateRepository.deleteById(primaryKey);
-                return optional.get();
+            MsgStateEntity exist = _MsgStateService.getMsgStateEntity(primaryKey);
+            if(exist != null) {
+                _MsgStateService.deleteMsgStateEntity(primaryKey);
+                return exist;
             }
         }
         catch(Throwable e) {
@@ -355,7 +320,7 @@ public class StateService
                 message.setContent(body.payload());
                 message.setId(String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, body.target(), msgId));
                 try {
-                    _MsgStateRepository.save(message);
+                    _MsgStateService.setMsgStateEntity(message);
                 }
                 catch(Throwable e) {
                     _Logger.warning("local add broker msg %s failed", message.getId(), e);
@@ -376,13 +341,13 @@ public class StateService
         }
         String key = String.format(MsgStateEntity.BROKER_PRIMARY_FORMAT, target, msgId);
         try {
-            _MsgStateRepository.deleteById(key);
+            _MsgStateService.deleteMsgStateEntity(key);
+            return true;
         }
         catch(Throwable e) {
             //ignore no exists key
             return false;
         }
-        return true;
     }
 
     @Override
@@ -438,9 +403,11 @@ public class StateService
     public boolean exists(long origin, long msgId)
     {
         DeviceClient client = getClient(origin);
+        //@formatter:off
         return client == null || client.identifierReceivedMap()
                                        .containsKey(msgId) ||
-               _MsgStateRepository.existsById(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId));
+               _MsgStateService.getMsgStateEntity(String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId)) != null;
+        //@formatter:on
     }
 
     @Override

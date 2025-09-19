@@ -70,7 +70,7 @@ public class DeviceService
     private final MixConfig         _MixConfig;
     private final IRaftConfig       _RaftConfig;
 
-    @Autowired
+    @Autowired(required = false)
     public DeviceService(IDeviceRepository deviceRepository,
                          CacheManager cacheManager,
                          MixConfig mixConfig,
