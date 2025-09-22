@@ -155,7 +155,6 @@ public class DeviceDo
         DeviceDo deviceDo = new DeviceDo();
         deviceDo.setUsername(client.getUsername());
         deviceDo.setNumber(client.getNumber());
-        deviceDo.setToken(client.getToken());
         return deviceDo;
     }
 
