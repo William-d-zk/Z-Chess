@@ -111,12 +111,11 @@ public class DeviceController {
                 LocalDateTime expireDate = existDevice.getProfile().getExpirationProfile().getExpireAt();
                 String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String expireInfo =
-                    existDevice.getNotice() + "|" + expireDateString + "|" + existDevice.getProfile().getKeyPairProfile().getPublicKey();
+                        existDevice.getNotice() + "|" + expireDateString + "|" + existDevice.getProfile().getKeyPairProfile().getPublicKey();
                 // 返回经过md5的有效期信息(serial|date|publicKey)
                 data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
                 data.put("expire_date",expireDateString);
             }
-
             return ZResponse.success(data);
         }
         deviceDo.setNumber(serialNo);
