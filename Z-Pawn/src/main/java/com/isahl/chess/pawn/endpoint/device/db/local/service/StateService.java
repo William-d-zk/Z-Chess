@@ -374,6 +374,7 @@ public class StateService
                 subscribe.onSubscribe(session, topic.level());
             }
         }
+        _Logger.info("session = "+session+" subscribe topic: "+topic.pattern().pattern());
         return subscribe;
     }
 
@@ -418,13 +419,7 @@ public class StateService
     @Override
     public List<Pattern> filter(String filter)
     {
-        return _Topic2Subscribe.keySet()
-                               .stream()
-                               .filter(p->p.pattern()
-                                           .equals(filter) || p.asMatchPredicate()
-                                                               .test(filter) || Pattern.compile(filter)
-                                                                                       .asMatchPredicate()
-                                                                                       .test(p.pattern()))
-                               .toList();
+        Pattern filterPattern = Pattern.compile(filter);
+        return _Topic2Subscribe.keySet().stream().filter(topic ->filterPattern.asMatchPredicate().test(topic.pattern())).toList();
     }
 }
