@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.17</version>
+    <version>1.0.18</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -41,7 +41,7 @@
     <licenses>
         <license>
             <name>The MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
+            <url>https://opensource.org/licenses/MIT</url>
         </license>
     </licenses>
     <scm>
