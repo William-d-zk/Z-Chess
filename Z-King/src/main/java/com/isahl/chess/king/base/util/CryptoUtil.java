@@ -251,7 +251,7 @@ public class CryptoUtil
 
     public static String quoted_print_Encoding(String src, String charSet)
     {
-        if(src == null || src.equals("")) {return null;}
+        if(src == null || src.isEmpty()) {return null;}
         int maxLine = 76;
         try {
             byte[] encodeData = src.getBytes(charSet);
@@ -283,20 +283,20 @@ public class CryptoUtil
 
             }
             buffer.flush();
-            String result = new String(buffer.toByteArray(), charSet);
+            String result = buffer.toString(charSet);
             buffer.close();
             return result;
         }
         catch(IOException e) {
             // #debug error
-            e.printStackTrace();
+            _Logger.warning(e);
         }
         return src;
     }
 
     public static String quoted_print_Decoding(String src, String charSet)
     {
-        if(src == null || src.equals("")) {return null;}
+        if(src == null || src.isEmpty()) {return null;}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int length = src.length();
         try {
@@ -322,7 +322,7 @@ public class CryptoUtil
         }
         catch(Exception e) {
             // #debug error
-            e.printStackTrace();
+            _Logger.warning(e);
         }
         finally {
             try {
@@ -330,7 +330,7 @@ public class CryptoUtil
             }
             catch(IOException e) {
                 // #debug error
-                e.printStackTrace();
+                _Logger.warning(e);
             }
         }
         return null;
@@ -424,7 +424,7 @@ public class CryptoUtil
         try{
             Security.addProvider(new BouncyCastleProvider());
         }catch(Exception e){
-            e.printStackTrace();
+            _Logger.warning(e);
         }
     }
 
