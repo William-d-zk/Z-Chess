@@ -131,7 +131,8 @@ public class DeviceEntity
         pKey = deviceId;
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false,
+            length = 32)
     @Length(min = 17,
             max = 32,
             message = "*Your password must have at least 17 characters less than 33 characters")
@@ -193,7 +194,8 @@ public class DeviceEntity
     }
 
     @Column(nullable = false,
-            updatable = false)
+            updatable = false,
+            length = 128)
     public String getCode()
     {
         return mCode;
