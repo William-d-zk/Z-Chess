@@ -83,7 +83,7 @@
         <!--CACHE-->
         <ehcache.version>3.11.1</ehcache.version>
         <!--JSON-->
-        <jackson.version>2.20.1</jackson.version>
+        <jackson.version>2.21.1</jackson.version>
         <jackson-annotations.version>2.20</jackson-annotations.version>
         <json-schema-validator.version>3.0.0</json-schema-validator.version>
         <!--PLUGINS-->
