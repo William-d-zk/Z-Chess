@@ -78,7 +78,7 @@
         <httpclient5.version>5.6</httpclient5.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
-        <junit.platform.verssion>1.13.1</junit.platform.verssion>
+        <junit.platform.version>1.13.1</junit.platform.version>
         <mockito.version>5.18.0</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.11.1</ehcache.version>
@@ -97,6 +97,9 @@
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <hibernate-enhance-maven-plugin.version>6.6.40.Final</hibernate-enhance-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+        <assertj.version>3.26.3</assertj.version>
+        <awaitility.version>4.2.2</awaitility.version>
         <maven.compiler.debug>true</maven.compiler.debug>
     </properties>
     <profiles>
@@ -195,7 +198,7 @@
                         <plugin>
                             <groupId>org.sonatype.plugins</groupId>
                             <artifactId>nexus-staging-maven-plugin</artifactId>
-                            <version>1.6.13</version>
+                            <version>${nexus-staging-maven-plugin.version}</version>
                             <extensions>true</extensions>
                             <configuration>
                                 <serverId>oss</serverId>
@@ -263,6 +266,21 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -388,7 +406,7 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-launcher</artifactId>
-                <version>${junit.platform.verssion}</version>
+                <version>${junit.platform.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -407,6 +425,24 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
                 <version>${spring-boot.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
             <!--http core-->
@@ -523,7 +559,7 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.8</version>
+                    <version>${nexus-staging-maven-plugin.version}</version>
                     <extensions>true</extensions>
                     <configuration>
                         <serverId>oss</serverId>
