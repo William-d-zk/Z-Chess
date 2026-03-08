@@ -37,7 +37,7 @@ public class TestAccountAuth
     {
         CryptoUtil _CryptoUtil = new CryptoUtil();
         System.out.println(_CryptoUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
-        String src = "+/#/#/+";
+        String src = "\\+/#/#/\\+";
         src = src.replaceAll("\\++", "+");
         src = src.replaceAll("#+", "#");
         src = src.replaceAll("(/#)+", "/#");
