@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.repository;
 
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
@@ -33,29 +33,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface IMessageRepository
-        extends BaseLongRepository<MessageEntity>
+        extends BaseLongRepository<ZChatEntity>
 {
-   /*
-    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
 
-    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
-           nativeQuery = true)
-    List<MessageEntity> listByTopic(
-            @Param("p_topic")
-                    String topic,
-            @Param("p_limit")
-                    int limit);
-
-
-    @Transactional
-    @Modifying
-    @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
-           nativeQuery = true)
-    void deleteAllByDestination(
-            @Param("p_dest")
-                    long destination,
-            @Param("p_owner")
-                    String owner);
-
-     */
 }

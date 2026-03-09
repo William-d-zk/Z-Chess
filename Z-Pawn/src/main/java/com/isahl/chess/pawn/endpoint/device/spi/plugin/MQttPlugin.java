@@ -38,7 +38,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
@@ -93,7 +93,7 @@ public class MQttPlugin
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return (input.serial() >= 0x111 && input.serial() <= 0x11F) || input instanceof MessageEntity;
+        return (input.serial() >= 0x111 && input.serial() <= 0x11F) || input instanceof ZChatEntity;
     }
 
     public boolean isSupported(ISession session)
@@ -538,12 +538,12 @@ public class MQttPlugin
     public void consume(IExchanger exchanger, IoSerial request, List<ITriple> results)
     {
         _Logger.debug("service consume\n\t%s \n→ broker ", request);
-        MessageEntity messageEntity = (MessageEntity) request;
-        _MessageService.stateInit(messageEntity);
-        broker(messageEntity.getTopic()).forEach(mapped->{
+        ZChatEntity zchatEntity = (ZChatEntity) request;
+        _MessageService.stateInit(zchatEntity);
+        broker(zchatEntity.getTopic()).forEach(mapped->{
             long target = mapped.session();
-            X113_QttPublish n113 = new X113_QttPublish().withTopic(messageEntity.getTopic());
-            n113.withSub(messageEntity.getMessage());
+            X113_QttPublish n113 = new X113_QttPublish().withTopic(zchatEntity.getTopic());
+            n113.withSub(zchatEntity.getMessage());
             n113.target(target);
             if(mapped.level()
                      .getValue() > 0)

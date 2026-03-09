@@ -24,7 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.resource.features;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -40,19 +40,19 @@ public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    List<MessageEntity> findAfterId(long id);
+    List<ZChatEntity> findAfterId(long id);
 
-    Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification);
+    Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification);
 
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
+    List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable);
 
-    void submit(MessageEntity content);
+    void submit(ZChatEntity content);
 
     long generateId(long session);
 
     long generateId();
 
-    void submitAll(List<MessageEntity> contents);
+    void submitAll(List<ZChatEntity> contents);
 
-    void stateInit(MessageEntity content);
+    void stateInit(ZChatEntity content);
 }

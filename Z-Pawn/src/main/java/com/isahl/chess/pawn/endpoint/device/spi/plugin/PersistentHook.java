@@ -29,10 +29,9 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +80,7 @@ public class PersistentHook
             if(!x113.isDuplicate()) {
                 String topic = x113.topic();
                 byte[] contents = x113.payload();
-                MessageEntity msgEntity = new MessageEntity();
+                ZChatEntity msgEntity = new ZChatEntity();
                 msgEntity.setMessage(contents);
                 msgEntity.setTopic(topic);
                 msgEntity.setNetAt(LocalDateTime.now());
@@ -101,7 +100,7 @@ public class PersistentHook
     @Override
     public void afterConsume(IoSerial content)
     {
-        if(content instanceof MessageEntity msg) {
+        if(content instanceof ZChatEntity msg) {
             msg.genSummary();
             _MainQueue.offer(msg);
         }
@@ -145,7 +144,7 @@ public class PersistentHook
     @Override
     public boolean isExpect(IoSerial content)
     {
-        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof MessageEntity;
+        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof ZChatEntity;
     }
 
     @Override
