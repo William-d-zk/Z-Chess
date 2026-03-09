@@ -65,7 +65,7 @@ import static java.lang.String.format;
                           columnList = "topic")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
-public class MessageEntity
+public class ZChatEntity
         extends AuditModel
         implements ITraceable
 {
@@ -77,7 +77,7 @@ public class MessageEntity
     @Transient
     private String                 mTopic;
     @Transient
-    private LocalDateTime          mNetAt;
+    private DateEntity             mDate;
     @Transient
     private String                 mComments;
     @Transient
@@ -95,12 +95,12 @@ public class MessageEntity
     @Transient
     private Long                   dkFunction;
 
-    public MessageEntity()
+    public ZChatEntity()
     {
         super(OP_INSERT, Strategy.RETAIN);
     }
 
-    public MessageEntity(ByteBuf input)
+    public ZChatEntity(ByteBuf input)
     {
         super(input);
     }
@@ -128,15 +128,13 @@ public class MessageEntity
         return mOrigin;
     }
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @Column(name = "v_net_at",
-            nullable = false,
-            updatable = false)
-    @Temporal(TIMESTAMP)
-    public LocalDateTime getNetAt()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "qk_date",
+                referencedColumnName = "id",
+                foreignKey = @ForeignKey(name = "qk_date", value = ConstraintMode.NO_CONSTRAINT))
+    public DateEntity getDate()
     {
-        return mNetAt;
+        return mDate;
     }
 
     @Column(name = "topic",
@@ -177,11 +175,28 @@ public class MessageEntity
         mOrigin = origin;
     }
 
+    public void setDate(DateEntity date)
+    {
+        mDate = date;
+    }
+
+    @Transient
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getNetAt()
+    {
+        return mDate != null ? mDate.getDateTime() : null;
+    }
+
+    @Transient
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     public void setNetAt(LocalDateTime netAt)
     {
-        mNetAt = netAt;
+        if (mDate == null) {
+            mDate = new DateEntity();
+        }
+        mDate.setDateTime(netAt);
     }
 
     public void setTopic(String topic)
@@ -264,7 +279,7 @@ public class MessageEntity
     {
         return super.length() + // content.length +  id.length
                8 +// origin.length
-               8 + // net-at.length
+               8 + // date id (fk_date_id)
                vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length); // topic.length
     }
 
@@ -273,7 +288,9 @@ public class MessageEntity
     {
         int remain = super.prefix(input);
         mOrigin = input.getLong();
-        mNetAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(input.getLong()), ZoneOffset.UTC);
+        // DateEntity is loaded by JPA, not serialized directly
+        // The date reference is handled through fk_date_id
+        input.getLong(); // skip 8 bytes reserved for date reference
         remain -= 16;
         int tl = input.vLength();
         mTopic = input.readUTF(tl);
@@ -286,8 +303,7 @@ public class MessageEntity
     {
         return super.suffix(output)
                     .putLong(mOrigin)
-                    .putLong(mNetAt.toInstant(ZoneOffset.UTC)
-                                   .toEpochMilli())
+                    .putLong(mDate != null ? mDate.getId() : 0L)
                     .putUTF(mTopic);
     }
 

@@ -26,9 +26,8 @@ package com.isahl.chess.player.api.service;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.player.api.model.MessageDo;
-import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,7 +52,7 @@ public class MessageOpenService
     public void submit(long deviceId, MessageDo body)
     {
         body.afterEncode();
-        MessageEntity entity = new MessageEntity();
+        ZChatEntity entity = new ZChatEntity();
         entity.setMessage(body.getPayload());
         entity.setTopic(body.getTopic());
         entity.setOrigin(deviceId);

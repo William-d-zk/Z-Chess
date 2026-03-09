@@ -26,7 +26,7 @@ package com.isahl.chess.pawn.endpoint.device.resource.service;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MsgDeliveryStatus;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMessageRepository;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMsgDeliveryStatusRepository;
@@ -92,7 +92,7 @@ public class MessageService
     }
 
     @Override
-    public List<MessageEntity> findAfterId(long id)
+    public List<ZChatEntity> findAfterId(long id)
     {
         return _MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->criteriaQuery.where(criteriaBuilder.greaterThan(
                                                                                                        root.get("id"),
@@ -102,27 +102,27 @@ public class MessageService
     }
 
     @Override
-    public Optional<MessageEntity> findOneMsg(Specification<MessageEntity> specification)
+    public Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification)
     {
         return _MessageRepository.findOne(specification);
     }
 
     @Override
-    public List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable)
+    public List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable)
     {
         return _MessageRepository.findAll(specification, pageable)
                                  .toList();
     }
 
     @Override
-    public void submit(MessageEntity post)
+    public void submit(ZChatEntity post)
     {
         post.setMessageId(generateId());
         _MessageRepository.save(post);
     }
 
     @Override
-    public void submitAll(List<MessageEntity> contents)
+    public void submitAll(List<ZChatEntity> contents)
     {
         if(contents == null || contents.isEmpty()) return;
         _Logger.debug("message service submit [%d]", contents.size());
@@ -151,7 +151,7 @@ public class MessageService
     }
 
     @Override
-    public void stateInit(MessageEntity content)
+    public void stateInit(ZChatEntity content)
     {
         Objects.requireNonNull(content);
         content.setDeliveryStatus(_MsgDeliveryStatusRepository.findByFlag("start"));

@@ -3,7 +3,7 @@ package com.isahl.chess.player.api.component;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class BusinessPlugin
     @Override
     public boolean isExpect(IoSerial content)
     {
-        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof MessageEntity;
+        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof ZChatEntity;
     }
 
     public interface IBusinessSubscribe

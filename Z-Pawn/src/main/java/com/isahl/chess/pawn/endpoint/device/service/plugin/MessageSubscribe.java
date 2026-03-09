@@ -28,7 +28,7 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
@@ -56,8 +56,8 @@ public class MessageSubscribe
     public void onBatch(List<IoSerial> contents)
     {
         _MessageService.submitAll(contents.stream()
-                                          .filter(c->c instanceof MessageEntity)
-                                          .map(c->(MessageEntity) c)
+                                          .filter(c->c instanceof ZChatEntity)
+                                          .map(c->(ZChatEntity) c)
                                           .peek(c->{
                                               c.setMessageId(_MessageService.generateId());
                                               DeviceEntity device = _DeviceService.getOneDevice(c.origin() & ZUID.DEVICE_MASK);
@@ -69,7 +69,7 @@ public class MessageSubscribe
     @Override
     public void onMessage(IoSerial content)
     {
-        if(content instanceof MessageEntity msg) {
+        if(content instanceof ZChatEntity msg) {
             DeviceEntity device = _DeviceService.getOneDevice(msg.origin() & ZUID.DEVICE_MASK);
             if(device != null) msg.setOrigin(device.getId());
             _MessageService.submit(msg);

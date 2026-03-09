@@ -26,16 +26,13 @@ package com.isahl.chess.player.api.component;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
-import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -50,7 +47,7 @@ public class HttpPlugin
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return input instanceof MessageEntity;
+        return input instanceof ZChatEntity;
     }
 
     @Override
