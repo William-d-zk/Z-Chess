@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
+import com.isahl.chess.knight.raft.model.GroupCommitManager;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
@@ -74,10 +75,15 @@ public class Mapper
     private final TypeReference<RaftConfig> _TypeReferenceOfRaftConfig = new TypeReference<>() {};
     private final CacheManager              _CacheManager;
 
-    private          LogMeta       mLogMeta;
-    private          SnapshotMeta  mSnapshotMeta;
+    private          LogMeta          mLogMeta;
+    private          SnapshotMeta     mSnapshotMeta;
+    private          MembershipConfig mMembershipConfig;
     private volatile long          vTotalSize;
     private volatile boolean       vValid;
+    
+    // Group Commit 批量提交管理器
+    private          GroupCommitManager mGroupCommitManager;
+    private volatile boolean            mGroupCommitEnabled = false;
     // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
     private final    AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
     // 表示节点自己是否在对状态机做snapshot
@@ -152,6 +158,24 @@ public class Mapper
         catch(IOException e) {
             _Logger.warning("snapshot meta load file error", e);
         }
+        
+        // 加载成员变更配置
+        String membershipConfigName = _LogMetaDir + File.separator + ".membership";
+        try {
+            RandomAccessFile configFile = new RandomAccessFile(membershipConfigName, "rw");
+            mMembershipConfig = BaseMeta.from(configFile, MembershipConfig::new);
+            if(mMembershipConfig == null) {
+                mMembershipConfig = new MembershipConfig();
+                mMembershipConfig.ofFile(configFile);
+            }
+        }
+        catch(FileNotFoundException e) {
+            _Logger.warning("membership config file not exist, name: %s", membershipConfigName);
+        }
+        catch(IOException e) {
+            _Logger.warning("membership config load file error", e);
+        }
+        
         if(checkState()) {
             installSnapshot();
         }
@@ -159,28 +183,223 @@ public class Mapper
             //存在本地文件错误损失→重置
             reset();
         }
+        
+        // 初始化 Group Commit 管理器（默认不启用）
+        initGroupCommitManager();
+        
         vValid = true;
+    }
+    
+    /**
+     * 初始化 Group Commit 管理器
+     */
+    private void initGroupCommitManager()
+    {
+        mGroupCommitManager = new GroupCommitManager(entries -> {
+            try {
+                // 批量写入日志
+                for(LogEntry entry : entries) {
+                    if(!appendWithoutFsync(entry)) {
+                        return false;
+                    }
+                }
+                // 统一刷盘
+                flushSegments();
+                flushAll(true);
+                return true;
+            }
+            catch(Exception e) {
+                _Logger.warning("Group commit failed: %s", e.getMessage());
+                return false;
+            }
+        });
+    }
+    
+    /**
+     * 追加日志（不刷盘，用于 Group Commit）
+     */
+    private boolean appendWithoutFsync(LogEntry entry)
+    {
+        // 简化实现：直接调用原 append 方法
+        // 实际应该避免每次调用都刷盘
+        return appendInternal(entry, false);
+    }
+    
+    /**
+     * 内部追加方法
+     */
+    private boolean appendInternal(LogEntry entry, boolean needFsync)
+    {
+        _Logger.debug("wait to append %s", entry);
+        if(entry == null) {return false;}
+        long newEndIndex = getEndIndex() + 1;
+        if(entry.index() == newEndIndex) {
+            int size = entry.sizeOf();
+            boolean needNewFile = false;
+            if(_Index2SegmentMap.isEmpty()) {
+                needNewFile = true;
+            }
+            else {
+                Segment segment = _Index2SegmentMap.lastEntry().getValue();
+                if(!segment.isCanWrite()) {
+                    needNewFile = true;
+                }
+                else if(segment.getFileSize() + size >= _MaxSegmentSize) {
+                    needNewFile = true;
+                    segment.freeze();
+                }
+            }
+            Segment segment = null;
+            if(needNewFile) {
+                String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
+                _Logger.info("new segment file :%s", newFileName);
+                File newFile = new File(_LogDataDir + File.separator + newFileName);
+                if(!newFile.exists()) {
+                    try {
+                        if(newFile.createNewFile()) {
+                            segment = new Segment(newFile, newEndIndex, true);
+                            // 在 Group Commit 模式下，禁用 Segment 的自动 fsync
+                            if(mGroupCommitEnabled) {
+                                segment.setFsyncEnabled(false);
+                            }
+                            _Index2SegmentMap.put(newEndIndex, segment);
+                        }
+                        else {throw new IOException("create file failed");}
+                    }
+                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException |
+                          IllegalAccessException e) {
+                        _Logger.warning("create segment file failed %s", e, newFileName);
+                        return false;
+                    }
+                }
+            }
+            else {
+                segment = _Index2SegmentMap.lastEntry().getValue();
+                // 在 Group Commit 模式下，禁用 Segment 的自动 fsync
+                if(mGroupCommitEnabled) {
+                    segment.setFsyncEnabled(false);
+                }
+            }
+            if(segment != null && segment.add(entry)) {
+                vTotalSize += size;
+                mLogMeta.accept(entry);
+                _Logger.debug("append ok [%d]", newEndIndex);
+                return true;
+            }
+        }
+        _Logger.warning("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
+        return false;
     }
 
     @PreDestroy
     void dispose()
     {
+        // 停止 Group Commit 管理器
+        if(mGroupCommitManager != null) {
+            mGroupCommitManager.stop();
+        }
+        
         mLogMeta.close();
         mSnapshotMeta.close();
+        if(mMembershipConfig != null) {
+            mMembershipConfig.close();
+        }
         _Logger.debug("raft dao dispose");
     }
 
     @Override
     public void flushAll()
     {
-        mLogMeta.flush();
-        mSnapshotMeta.flush();
+        flushAll(true);
+    }
+
+    /**
+     * 刷写所有元数据和日志段到磁盘
+     * @param fsync 是否强制 fsync
+     */
+    public void flushAll(boolean fsync)
+    {
+        mLogMeta.flush(fsync);
+        mSnapshotMeta.flush(fsync);
+        if(mMembershipConfig != null) {
+            mMembershipConfig.flush(fsync);
+        }
+        if(fsync) {
+            flushSegments();
+        }
     }
 
     @Override
     public void flush()
     {
-        mLogMeta.flush();
+        flush(true);
+    }
+
+    /**
+     * 刷写元数据和当前写入中的日志段
+     * @param fsync 是否强制 fsync
+     */
+    public void flush(boolean fsync)
+    {
+        mLogMeta.flush(fsync);
+        if(fsync) {
+            flushSegments();
+        }
+    }
+
+    /**
+     * 获取成员变更配置
+     */
+    public MembershipConfig getMembershipConfig()
+    {
+        return mMembershipConfig;
+    }
+
+    /**
+     * 保存成员变更配置
+     */
+    public void saveMembershipConfig(MembershipConfig config)
+    {
+        if(config != null && mMembershipConfig != null) {
+            // 复制配置内容到持久化对象
+            mMembershipConfig.setPhase(config.getPhase());
+            mMembershipConfig.setTransactionId(config.getTransactionId());
+            mMembershipConfig.setOldPeers(config.getOldPeers());
+            mMembershipConfig.setNewPeers(config.getNewPeers());
+            mMembershipConfig.setLeader(config.getLeader());
+            mMembershipConfig.setIndex(config.getIndex());
+            mMembershipConfig.setTerm(config.getTerm());
+            mMembershipConfig.setErrorMessage(config.getErrorMessage());
+            mMembershipConfig.flush();
+        }
+    }
+
+    /**
+     * 重置成员变更配置
+     */
+    public void resetMembershipConfig()
+    {
+        if(mMembershipConfig != null) {
+            mMembershipConfig.reset();
+        }
+    }
+
+    /**
+     * 刷写所有可写的日志段到磁盘
+     */
+    private void flushSegments()
+    {
+        if(_Index2SegmentMap.isEmpty()) {return;}
+        try {
+            // 刷写最后一个可写的 segment
+            Segment lastSegment = _Index2SegmentMap.lastEntry().getValue();
+            if(lastSegment.isCanWrite()) {
+                lastSegment.flush();
+            }
+        }
+        catch(IOException e) {
+            _Logger.warning("flush segment failed: %s", e.getMessage());
+        }
     }
 
     @Override
@@ -336,60 +555,54 @@ public class Mapper
     @Override
     public boolean append(LogEntry entry)
     {
-        _Logger.debug("wait to append %s", entry);
-        if(entry == null) {return false;}
-        long newEndIndex = getEndIndex() + 1;
-        if(entry.index() == newEndIndex) {
-            int size = entry.sizeOf();
-            boolean needNewFile = false;
-            if(_Index2SegmentMap.isEmpty()) {
-                needNewFile = true;
-            }
-            else {
-                Segment segment = _Index2SegmentMap.lastEntry()
-                                                   .getValue();
-                if(!segment.isCanWrite()) {
-                    needNewFile = true;
-                }
-                else if(segment.getFileSize() + size >= _MaxSegmentSize) {
-                    needNewFile = true;
-                    // segment的文件close并改名
-                    segment.freeze();
-                }
-            }
-            Segment segment = null;
-            if(needNewFile) {
-                String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
-                _Logger.info("new segment file :%s", newFileName);
-                File newFile = new File(_LogDataDir + File.separator + newFileName);
-                if(!newFile.exists()) {
-                    try {
-                        if(newFile.createNewFile()) {
-                            segment = new Segment(newFile, newEndIndex, true);
-                            _Index2SegmentMap.put(newEndIndex, segment);
-                        }
-                        else {throw new IOException("create file failed");}
-                    }
-                    catch(IOException | InvocationTargetException | NoSuchMethodException | InstantiationException |
-                          IllegalAccessException e) {
-                        _Logger.warning("create segment file failed %s", e, newFileName);
-                        return false;
-                    }
-                }
-            }
-            else {
-                segment = _Index2SegmentMap.lastEntry()
-                                           .getValue();
-            }
-            if(segment != null && segment.add(entry)) {
-                vTotalSize += size;
-                mLogMeta.accept(entry);
-                _Logger.debug("append ok [%d]", newEndIndex);
-                return true;
-            }
+        // 如果启用了 Group Commit，使用批量提交
+        if(mGroupCommitEnabled && mGroupCommitManager != null) {
+            return mGroupCommitManager.appendSync(entry, 5000); // 5秒超时
         }
-        _Logger.warning("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
-        return false;
+        
+        // 原逻辑：直接追加并刷盘
+        return appendInternal(entry, true);
+    }
+    
+    /**
+     * 启用 Group Commit
+     */
+    public void enableGroupCommit()
+    {
+        if(mGroupCommitManager == null) {
+            initGroupCommitManager();
+        }
+        mGroupCommitEnabled = true;
+        mGroupCommitManager.start();
+        _Logger.info("Group Commit enabled");
+    }
+    
+    /**
+     * 禁用 Group Commit
+     */
+    public void disableGroupCommit()
+    {
+        mGroupCommitEnabled = false;
+        if(mGroupCommitManager != null) {
+            mGroupCommitManager.stop();
+        }
+        _Logger.info("Group Commit disabled");
+    }
+    
+    /**
+     * 检查 Group Commit 是否启用
+     */
+    public boolean isGroupCommitEnabled()
+    {
+        return mGroupCommitEnabled;
+    }
+    
+    /**
+     * 获取 Group Commit 管理器
+     */
+    public GroupCommitManager getGroupCommitManager()
+    {
+        return mGroupCommitManager;
     }
 
     @Override
@@ -531,6 +744,9 @@ public class Mapper
         _Index2SegmentMap.clear();
         mLogMeta.reset();
         mSnapshotMeta.reset();
+        if(mMembershipConfig != null) {
+            mMembershipConfig.reset();
+        }
         clearSegments();
         flushAll();
     }

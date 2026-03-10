@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class Segment
@@ -50,10 +51,12 @@ public class Segment
     private final ListSerial<LogEntry> _Records;
 
     private RandomAccessFile mRandomAccessFile;
+    private FileChannel      mFileChannel;
     private String           mFileName;
     private long             mEndIndex;
     private long             mFileSize;
     private boolean          mCanWrite;
+    private volatile boolean mFsyncEnabled = true; // 默认开启 fsync
 
     public LogEntry getEntry(long index)
     {
@@ -85,6 +88,7 @@ public class Segment
         mFileName = file.getAbsolutePath();
         mCanWrite = canWrite;
         mRandomAccessFile = new RandomAccessFile(file, isCanWrite() ? "rw" : "r");
+        mFileChannel = mRandomAccessFile.getChannel();
         mFileSize = mRandomAccessFile.length();
         loadRecord();
     }
@@ -122,6 +126,52 @@ public class Segment
         return mCanWrite;
     }
 
+    /**
+     * 设置是否启用 fsync
+     * @param fsyncEnabled true 表示每次写入后自动刷盘
+     */
+    public void setFsyncEnabled(boolean fsyncEnabled)
+    {
+        mFsyncEnabled = fsyncEnabled;
+    }
+
+    /**
+     * 获取当前 fsync 设置
+     */
+    public boolean isFsyncEnabled()
+    {
+        return mFsyncEnabled;
+    }
+
+    /**
+     * 强制将内存映射缓冲区的数据刷写到磁盘
+     * @throws IOException 当刷盘失败时抛出
+     */
+    public void flush() throws IOException
+    {
+        if(mFileChannel != null && mFileChannel.isOpen()) {
+            // 强制文件通道刷盘，包含文件元数据
+            mFileChannel.force(true);
+            _Logger.debug("segment flushed [%s], size=%d", mFileName, mFileSize);
+        }
+    }
+
+    /**
+     * 尝试刷盘，不抛出异常
+     * @return true 表示刷盘成功，false 表示失败
+     */
+    public boolean tryFlush()
+    {
+        try {
+            flush();
+            return true;
+        }
+        catch(IOException e) {
+            _Logger.warning("segment flush failed [%s]: %s", e, mFileName, e.getMessage());
+            return false;
+        }
+    }
+
     private void setFileSize(long newFileSize)
     {
         mFileSize = newFileSize;
@@ -136,8 +186,7 @@ public class Segment
     private void loadRecord() throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
     {
         if(mFileSize == 0) {return;}
-        _Records.decode(ByteBuf.wrap(mRandomAccessFile.getChannel()
-                                                      .map(FileChannel.MapMode.READ_ONLY, 0, mFileSize)));
+        _Records.decode(ByteBuf.wrap(mFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, mFileSize)));
         long startIndex = _Records.get(0)
                                   .index();
         if(startIndex != _StartIndex) {
@@ -154,9 +203,14 @@ public class Segment
         File newFile = new File(newAbsolutePath);
         File oldFile = new File(mFileName);
         try {
+            // 关闭前强制刷盘
+            if(mFsyncEnabled && mFileChannel != null && mFileChannel.isOpen()) {
+                mFileChannel.force(true);
+            }
             mRandomAccessFile.close();
             FileUtils.moveFile(oldFile, newFile);
             mRandomAccessFile = new RandomAccessFile(newFile, "r");
+            mFileChannel = mRandomAccessFile.getChannel();
             mCanWrite = false;
         }
         catch(IOException e) {
@@ -169,26 +223,40 @@ public class Segment
         try {
             if(_Records.add(entry)) {
                 byte[] output;
+                MappedByteBuffer mapped;
                 if(_Records.size() > 1) {
                     output = entry.encoded();
-                    ByteBuffer mapped = mRandomAccessFile.getChannel()
-                                                         .map(FileChannel.MapMode.READ_WRITE, mFileSize, output.length);
+                    mapped = mFileChannel.map(FileChannel.MapMode.READ_WRITE, mFileSize, output.length);
                     mapped.put(output);
-                    mapped = mRandomAccessFile.getChannel()
-                                              .map(FileChannel.MapMode.READ_WRITE,
-                                                   _Records.SERIAL_POS,
-                                                   _Records.SIZE_POS + Integer.BYTES);
+                    // 强制刷盘（如果开启）
+                    if(mFsyncEnabled) {
+                        mapped.force();
+                    }
+                    mapped = mFileChannel.map(FileChannel.MapMode.READ_WRITE,
+                                              _Records.SERIAL_POS,
+                                              _Records.SIZE_POS + Integer.BYTES);
                     int oldLength = mapped.getInt(_Records.LENGTH_POS);
                     mapped.putInt(_Records.LENGTH_POS, oldLength + output.length);
                     mapped.putInt(_Records.SIZE_POS, _Records.size());
+                    // 强制刷盘（如果开启）
+                    if(mFsyncEnabled) {
+                        mapped.force();
+                    }
                 }
                 else {
                     output = _Records.encoded();
-                    ByteBuffer mapped = mRandomAccessFile.getChannel()
-                                                         .map(FileChannel.MapMode.READ_WRITE, 0, output.length);
+                    mapped = mFileChannel.map(FileChannel.MapMode.READ_WRITE, 0, output.length);
                     mapped.put(output);
+                    // 强制刷盘（如果开启）
+                    if(mFsyncEnabled) {
+                        mapped.force();
+                    }
                 }
                 mFileSize += output.length;
+                // 最终刷盘确保文件元数据也落盘
+                if(mFsyncEnabled) {
+                    mFileChannel.force(true);
+                }
             }
             mEndIndex = entry.index();
             return true;
@@ -201,6 +269,15 @@ public class Segment
 
     public long drop() throws IOException
     {
+        // 关闭前尝试刷盘
+        if(mFileChannel != null && mFileChannel.isOpen()) {
+            try {
+                mFileChannel.force(true);
+            }
+            catch(IOException e) {
+                _Logger.warning("force before drop failed: %s", e.getMessage());
+            }
+        }
         mRandomAccessFile.close();
         File file = new File(mFileName);
         FileUtils.forceDelete(file);
@@ -219,12 +296,16 @@ public class Segment
             mEndIndex = newEndIndex;
             long newFileSize = _Records.sizeOf();
             long dropSize = mFileSize - newFileSize;
-            ByteBuffer mapped = mRandomAccessFile.getChannel()
-                                                 .map(FileChannel.MapMode.READ_WRITE,
-                                                      _Records.SERIAL_POS,
-                                                      _Records.SIZE_POS + Integer.BYTES);
+            MappedByteBuffer mapped = mFileChannel.map(FileChannel.MapMode.READ_WRITE,
+                                                       _Records.SERIAL_POS,
+                                                       _Records.SIZE_POS + Integer.BYTES);
             mapped.putInt(_Records.LENGTH_POS, _Records.length());
             mapped.putInt(_Records.SIZE_POS, _Records.size());
+            // 强制刷盘
+            if(mFsyncEnabled) {
+                mapped.force();
+            }
+            mFileChannel.force(true);
             mRandomAccessFile.setLength(mFileSize = newFileSize);
             mRandomAccessFile.close();
             // 缩减后一定处于可write状态
@@ -232,6 +313,7 @@ public class Segment
             String newFullFileName = _FileDirectory + File.separator + newFileName;
             if(new File(mFileName).renameTo(new File(newFullFileName))) {
                 mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
+                mFileChannel = mRandomAccessFile.getChannel();
                 mFileName = newFullFileName;
             }
             else {

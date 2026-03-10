@@ -34,6 +34,7 @@ import com.isahl.chess.queen.message.InnerProtocol;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public abstract class BaseMeta
@@ -62,17 +63,36 @@ public abstract class BaseMeta
 
     public void flush()
     {
+        flush(true); // 默认强制 fsync
+    }
+
+    /**
+     * 刷盘操作
+     * @param fsync 是否强制 fsync 到磁盘
+     */
+    public void flush(boolean fsync)
+    {
         try {
             byte[] toWrite = encoded();
-            ByteBuffer mapped = mFile.getChannel()
-                                     .map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
-            _Logger.info("write meta %s,size:%d,{%s}",
+            FileChannel channel = mFile.getChannel();
+            
+            // 使用内存映射写入
+            MappedByteBuffer mapped = channel.map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
+            _Logger.info("write meta %s,size:%d,fsync=%s,{%s}",
                          getClass().getSimpleName(),
                          toWrite.length,
+                         fsync,
                          JsonUtil.writeValueAsString(this));
             mapped.put(toWrite);
+            
+            // 强制刷盘确保数据落盘
+            if(fsync) {
+                mapped.force();
+                channel.force(true); // 强制刷盘，包含文件元数据
+            }
         }
         catch(IOException e) {
+            _Logger.fetal("flush meta failed: %s", e);
             e.printStackTrace();
         }
     }

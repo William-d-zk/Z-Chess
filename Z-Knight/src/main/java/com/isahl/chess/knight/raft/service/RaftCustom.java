@@ -24,6 +24,12 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.*;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X6E_RaftPreVoteResp;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X6F_RaftPreVote;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X7D_RaftSnapshot;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X7E_RaftSnapshotAck;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X7F_RaftReadIndex;
+import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X80_RaftReadIndexResp;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
@@ -70,6 +76,14 @@ public class RaftCustom
          */
         /* 作为 client 收到 notify */
         switch(received.serial()) {
+            // Pre-vote 请求
+            case 0x6F -> {
+                return _RaftPeer.onPreVote((X6F_RaftPreVote) received, manager, session);
+            }
+            // Pre-vote 响应
+            case 0x6E -> {
+                return _RaftPeer.onPreVoteResp((X6E_RaftPreVoteResp) received, manager);
+            }
             // follower → elector
             case 0x70 -> {
                 return _RaftPeer.onVote((X70_RaftVote) received, manager, session);
@@ -109,6 +123,40 @@ public class RaftCustom
             case 0x7C -> {
                 return _RaftPeer.onConfirm((X7B_RaftConfirm) received, manager);
             }
+            // Snapshot 安装
+            case 0x7D -> {
+                return _RaftPeer.onSnapshot((X7D_RaftSnapshot) received, session);
+            }
+            // Snapshot 响应
+            case 0x7E -> {
+                return _RaftPeer.onSnapshotAck((X7E_RaftSnapshotAck) received);
+            }
+            // ReadIndex 请求
+            case 0x7F -> {
+                return _RaftPeer.onReadIndex((X7F_RaftReadIndex) received, manager);
+            }
+            // ReadIndex 响应
+            case 0x80 -> {
+                return _RaftPeer.onReadIndexResp((X80_RaftReadIndexResp) received);
+            }
+            // Leader 转让请求
+            case 0x81 -> {
+                return _RaftPeer.onTransferLeadership((X81_RaftTransferLeadership) received, manager, session);
+            }
+            // Leader 转让响应
+            case 0x82 -> {
+                _RaftPeer.onTransferLeadershipResp((X82_RaftTransferLeadershipResp) received);
+                return null;
+            }
+            // Lease Read 请求
+            case 0x83 -> {
+                return _RaftPeer.onLeaseRead((X83_RaftLeaseRead) received, manager);
+            }
+            // Lease Read 响应
+            case 0x84 -> {
+                _RaftPeer.onLeaseReadResp((X84_RaftLeaseReadResp) received);
+                return null;
+            }
             // peer *, behind in config → previous in config
             case 0x08 -> {
                 X08_Identity x08 = (X08_Identity) received;
@@ -128,8 +176,16 @@ public class RaftCustom
         return machine == null ? null : switch(RaftState.valueOf(machine.state())) {
             // step down → follower
             case FOLLOWER -> _RaftPeer.turnDown(machine);
-            // vote
-            case CANDIDATE -> _RaftPeer.vote4me(machine, manager);
+            // pre-vote (使用 candidate 状态但 term 未增加)
+            case CANDIDATE -> {
+                // 检查是否是 pre-vote 阶段
+                var preVoteResult = _RaftPeer.preVote(machine, manager);
+                if(preVoteResult != null && !preVoteResult.isEmpty()) {
+                    yield preVoteResult;
+                }
+                // 正式选举投票
+                yield _RaftPeer.vote4me(machine, manager);
+            }
             // heartbeat
             case LEADER -> _RaftPeer.logAppend(machine, manager);
             default -> null;
