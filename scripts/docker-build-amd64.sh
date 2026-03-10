@@ -22,5 +22,4 @@
 #
 cd ..
 mvn -P dev clean package -Dmaven.test.skip=true
-cp scripts/SQLite-ABI-Linux-Alpine-amd64/libsqlitejdbc.so ~/Z-Chess/.
 docker build -f scripts/amd64/Dockerfile -t img.z-chess.arena.amd64 ~/Z-Chess

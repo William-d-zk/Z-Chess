@@ -1,0 +1,2 @@
+./e2e-test.sh: line 30: declare: -A: invalid option
+declare: usage: declare [-afFirtx] [-p] [name[=value] ...]

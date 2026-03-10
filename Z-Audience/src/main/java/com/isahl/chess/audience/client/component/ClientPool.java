@@ -299,6 +299,11 @@ public class ClientPool
         _ClientCore.close(type, Pair.of(null, session), session.getCloser());
     }
 
+    public TimeWheel getTimeWheel()
+    {
+        return _TimeWheel;
+    }
+
     @Override
     public IoFactory<IProtocol> findIoFactoryBySerial(int factorySerial)
     {

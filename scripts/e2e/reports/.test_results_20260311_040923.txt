@@ -1,0 +1,13 @@
+step1_cluster_start=PASSED
+step2_test_clients=PASSED
+step3_device_registration=WARNING
+mqtt_connection=SKIPPED
+mqtt_tests=PASSED
+api_health=FAILED
+api_cluster_status=FAILED
+api_devices=FAILED
+api_tests=PARTIAL
+cluster_nodes=WARNING
+consistency_tests=PASSED
+step4_functional_tests=PASSED
+step5_collect_results=PASSED
