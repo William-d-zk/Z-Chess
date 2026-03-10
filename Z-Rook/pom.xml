@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.18</version>
+        <version>1.0.19</version>
     </parent>
     <artifactId>storage.z-rook</artifactId>
     <name>Z-Rook</name>
@@ -70,6 +70,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
+            <version>${sqlite.jdbc.version}</version>
         </dependency>
         <!--Cache-->
         <dependency>

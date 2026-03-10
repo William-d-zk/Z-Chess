@@ -20,69 +20,62 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # ============================================================================
-# Z-Chess Arena Docker Image (AMD64/x86_64)
+# PostgreSQL 17 Custom Image for Z-Chess
 #
-# 升级说明：
-# - 基础镜像：Alpine Linux 3.20 (内核升级)
-# - OpenJDK：17 (Liberica JDK)
-# - SQLite：最新稳定版
+# 特性：
+# - PostgreSQL 17.2 (最新稳定版)
+# - Alpine Linux 3.20 (内核升级)
+# - 预配置中文本地化支持
+# - 性能优化配置
 # ============================================================================
 
-FROM bellsoft/liberica-openjdk-alpine:17.0.12-10
+FROM postgres:17.2-alpine3.20
 
 # 元数据标签
 LABEL maintainer="Z-Chess Team" \
-      version="2.0" \
-      description="Z-Chess Arena Server for AMD64" \
-      base.image="alpine:3.20" \
-      java.version="17"
+      version="17.2" \
+      description="PostgreSQL 17 for Z-Chess" \
+      base.image="alpine:3.20"
 
 # 环境变量
 ENV TZ=Asia/Shanghai \
-    JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" \
-    SPRING_PROFILES_ACTIVE=local
+    LANG=zh_CN.UTF-8 \
+    PGDATA=/var/lib/postgresql/data \
+    POSTGRES_INITDB_ARGS="--encoding=UTF8 --locale=zh_CN.UTF-8"
 
-# 安装系统依赖并配置时区
-# Alpine 3.20 使用更新的 Linux 内核 6.6.x
+# 安装额外扩展和工具
 RUN set -eux && \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
     apk upgrade --no-cache && \
     apk add --no-cache \
-        alpine-conf \
-        sqlite \
+        tzdata \
+        icu-data-full \
+        postgresql17-contrib \
         curl \
         jq \
-        ca-certificates \
-        tzdata && \
-    setup-timezone -z ${TZ} && \
+        htop && \
+    cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    echo "${TZ}" > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/*
 
-# 创建应用目录
-WORKDIR /app
+# 复制初始化脚本和配置
+COPY ./init-scripts/ /docker-entrypoint-initdb.d/
+COPY ./postgresql.conf /etc/postgresql/postgresql.conf
 
-# 构建参数
-ARG JAR_FILE=Z-Arena/target/*.jar
-ARG SQLITE_NATIVE_FILE=scripts/SQLite-ABI-Linux-Alpine-amd64/libsqlitejdbc.so
+# 创建自定义配置目录
+RUN mkdir -p /etc/postgresql/conf.d && \
+    chown -R postgres:postgres /etc/postgresql
 
-# 复制应用文件
-COPY ${JAR_FILE} app.jar
-COPY ${SQLITE_NATIVE_FILE} /usr/lib/libsqlitejdbc.so
-
-# 设置权限
-RUN chmod +x app.jar && \
-    chmod 755 /usr/lib/libsqlitejdbc.so
+# 性能优化配置（通过挂载或环境变量覆盖）
+ENV POSTGRES_CONFIG_OPTIONS=""
 
 # 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres} || exit 1
 
-# 暴露端口
-# 8080: HTTP API
-# 8000: Debug
-# 1883-1891: MQTT ports
-# 5228: Gateway
-# 5300: Internal
-EXPOSE 8080 8000 1883 1884 1885 1886 1887 1888 1889 1890 1891 5228 5300
+# 暴露 PostgreSQL 默认端口
+EXPOSE 5432
 
-# 启动命令
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app/app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE}"]
+# 使用官方入口点
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

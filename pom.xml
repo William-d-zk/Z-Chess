@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.18</version>
+    <version>1.0.19</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -70,6 +70,7 @@
         <commons-compress.version>1.28.0</commons-compress.version>
         <!--DB-->
         <postgresql.jdbc.version>42.7.8</postgresql.jdbc.version>
+        <sqlite.jdbc.version>3.51.2.0</sqlite.jdbc.version>
         <hibernate-types-60.version>2.21.1</hibernate-types-60.version>
         <!--PIPELINE-->
         <disruptor.version>4.0.0</disruptor.version>
@@ -388,6 +389,11 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.jdbc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite.jdbc.version}</version>
             </dependency>
             <!--Cache-->
             <dependency>

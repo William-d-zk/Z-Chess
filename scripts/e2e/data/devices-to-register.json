@@ -1,0 +1,152 @@
+[
+  {
+    "device_id": "TEST-DEVICE-000001",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000002",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000003",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000004",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000005",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000006",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000007",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000008",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000009",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000010",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000011",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000012",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000013",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000014",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000015",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000016",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000017",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000018",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000019",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000020",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000021",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000022",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000023",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000024",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000025",
+    "type": 1,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000026",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000027",
+    "type": 2,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000028",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000029",
+    "type": 3,
+    "status": "inactive"
+  },
+  {
+    "device_id": "TEST-DEVICE-000030",
+    "type": 3,
+    "status": "inactive"
+  }
+]

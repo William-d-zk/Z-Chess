@@ -1,0 +1,53 @@
+# Z-Chess E2E 测试配置
+
+# 集群配置
+cluster:
+  api_endpoint: "http://localhost:8080"
+  mqtt_endpoint: "tcp://localhost:1883"
+  gateway_port: 5300
+  raft_nodes:
+    - raft00:172.30.10.110
+    - raft01:172.30.10.111
+    - raft02:172.30.10.112
+
+# 测试参数
+test:
+  # 设备注册
+  device_count: 100
+  batch_size: 10
+  device_prefix: "TEST-DEVICE"
+  
+  # 测试客户端
+  client_count: 3
+  
+  # 功能测试超时
+  timeout:
+    default: 30
+    mqtt: 10
+    http: 30
+    cluster_ready: 120
+
+# 压力测试配置
+stress:
+  enabled: false
+  duration: 60
+  clients: 100
+  ramp_up: 10
+  
+  # 连接测试
+  connections:
+    max: 1000
+    rate: 50
+  
+  # 消息测试
+  messages:
+    rate: 1000
+    size: 256
+    qos: 1
+
+# 报告配置
+report:
+  format: json
+  include_logs: true
+  include_metrics: true
+  retention_days: 7
