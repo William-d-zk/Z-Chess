@@ -247,6 +247,12 @@ public class RaftMachine
     {
         mState |= GATE.getCode();
     }
+    
+    @Override
+    public void learner()
+    {
+        mState = LEARNER.getCode();
+    }
 
     @Override
     public void confirm()

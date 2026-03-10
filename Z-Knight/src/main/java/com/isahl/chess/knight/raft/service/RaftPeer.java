@@ -45,6 +45,8 @@ import com.isahl.chess.knight.raft.features.IRaftService;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.model.replicate.LogMeta;
+import com.isahl.chess.knight.raft.model.replicate.SnapshotEntry;
+import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterTimer;
@@ -56,6 +58,8 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -96,9 +100,51 @@ public class RaftPeer
      * value(X75_RaftReq) → request
      */
     private final ScheduleHandler<RaftPeer> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
+    private final ScheduleHandler<RaftPeer> _PreVoteSchedule;
 
     private IClusterNode mClusterNode;
-    private ICancelable  mElectTask, mHeartbeatTask, mTickTask;
+    private ICancelable  mElectTask, mHeartbeatTask, mTickTask, mPreVoteTask;
+
+    // Pre-vote 状态跟踪
+    private final Map<Long, Boolean> _PreVoteReceived = new ConcurrentHashMap<>();
+    private volatile boolean _PreVoteInProgress = false;
+    
+    // Snapshot 安装状态
+    private final ReentrantLock _SnapshotLock = new ReentrantLock();
+    private volatile boolean _InstallingSnapshot = false;
+    private long _SnapshotLeader = INVALID_PEER_ID;
+    
+    // ReadIndex 等待队列 (commitIndex -> List<readId>)
+    private final Map<Long, List<ReadIndexRequest>> _ReadIndexWaiters = new ConcurrentHashMap<>();
+    private long _LastReadId = 0;
+    
+    // CheckQuorum 机制
+    private final ScheduleHandler<RaftPeer> _CheckQuorumSchedule;
+    private ICancelable mCheckQuorumTask;
+    private volatile long _LastQuorumCheckTime = 0;
+    private final AtomicInteger _ActivePeers = new AtomicInteger(0);
+    
+    // 成员变更管理器
+    private final MembershipChangeManager _MembershipChangeManager = new MembershipChangeManager();
+    private ICancelable mMembershipChangeTimeoutTask;
+    private final ScheduleHandler<RaftPeer> _MembershipChangeTimeoutSchedule;
+    
+    // Leader 转让管理器
+    private final LeadershipTransferManager _LeadershipTransferManager = new LeadershipTransferManager();
+    private ICancelable mTransferTimeoutTask;
+    private final ScheduleHandler<RaftPeer> _TransferTimeoutSchedule;
+    
+    // Pipeline 复制管理器
+    private final PipelineReplicationManager _PipelineManager = new PipelineReplicationManager();
+    private volatile boolean mPipelineEnabled = true;
+    
+    // Lease 读管理器
+    private final LeaseManager _LeaseManager = new LeaseManager();
+    private volatile boolean mLeaseReadEnabled = true;
+    
+    // Learner 节点管理器
+    private final LearnerManager _LearnerManager = new LearnerManager("_Learners_");
+    private volatile boolean mLearnerReplicationEnabled = true;
 
     public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftMapper)
     {
@@ -110,6 +156,14 @@ public class RaftPeer
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
                                                          .multipliedBy(2), RaftPeer::start);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftPeer::heartbeat);
+        _PreVoteSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond()
+                                                            .multipliedBy(2), RaftPeer::preVoteTimeout);
+        _CheckQuorumSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
+                                                                .multipliedBy(5), RaftPeer::checkQuorum);
+        _MembershipChangeTimeoutSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
+                                                                            .multipliedBy(10), RaftPeer::onMembershipChangeTimeout);
+        _TransferTimeoutSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
+                                                                    .multipliedBy(2), RaftPeer::onLeadershipTransferTimeout);
         _SelfGraph = RaftGraph.create("_Self_");
         _JointGraph = RaftGraph.create("_Joint_");
         _SelfMachine = RaftMachine.createBy(_ZUid.getPeerId(), OP_MODIFY);
@@ -166,6 +220,10 @@ public class RaftPeer
                                  .keySet());
             // 启动集群连接
             graphUp(_SelfGraph.getPeers(), _RaftConfig.getNodes());
+            
+            // 恢复成员变更状态
+            restoreMembershipChangeState();
+            
             if(_RaftConfig.isInCongress()) {
                 _SelfMachine.approve(FOLLOWER);
                 // 延迟一个'投票周期'，等待议会完成连接。
@@ -212,6 +270,71 @@ public class RaftPeer
 
     public void installSnapshot(List<IRaftControl> snapshot)
     {
+    }
+
+    /**
+     * Leader 发送 Snapshot 给 Follower
+     * 
+     * @param peer 目标节点 ID
+     * @param machine 目标节点状态机
+     * @param session 目标节点会话
+     * @return 发送的 snapshot 消息列表
+     */
+    private List<ITriple> sendSnapshot(long peer, IRaftMachine machine, ISession session)
+    {
+        _Logger.info("sending snapshot to follower[%#x], session=%s", peer, session);
+        
+        SnapshotMeta meta = _RaftMapper.getSnapshotMeta();
+        long lastIncludeIndex = meta.getCommit();
+        long lastIncludeTerm = meta.getTerm();
+        
+        if(lastIncludeIndex <= 0) {
+            _Logger.warning("no valid snapshot available for peer[%#x]", peer);
+            return null;
+        }
+        
+        SnapshotEntry snapshot = _RaftMapper.getSnapshot();
+        byte[] data = snapshot != null ? snapshot.content() : null;
+        long totalSize = data != null ? data.length : 0;
+        
+        _Logger.debug("snapshot: lastIndex=%d@%d, size=%d", lastIncludeIndex, lastIncludeTerm, totalSize);
+        
+        List<ITriple> fragments = new LinkedList<>();
+        long offset = 0;
+        int fragmentSize = (int) Math.min(_SnapshotFragmentMaxSize, totalSize);
+        
+        while(offset < totalSize) {
+            int remaining = (int) (totalSize - offset);
+            int currentFragmentSize = Math.min(fragmentSize, remaining);
+            byte[] fragmentData = new byte[currentFragmentSize];
+            System.arraycopy(data, (int) offset, fragmentData, 0, currentFragmentSize);
+            
+            X7D_RaftSnapshot x7d = new X7D_RaftSnapshot();
+            x7d.with(session);
+            x7d.leader(_SelfMachine.peer());
+            x7d.term(_SelfMachine.term());
+            x7d.lastIncludeIndex(lastIncludeIndex);
+            x7d.lastIncludeTerm(lastIncludeTerm);
+            x7d.offset(offset);
+            x7d.totalSize(totalSize);
+            x7d.done(offset + currentFragmentSize >= totalSize);
+            x7d.data(fragmentData);
+            
+            fragments.add(Triple.of(x7d, session, session.encoder()));
+            
+            _Logger.debug("snapshot fragment: offset=%d, size=%d, done=%s", 
+                         offset, currentFragmentSize, x7d.done());
+            
+            offset += currentFragmentSize;
+        }
+        
+        // 更新 machine 的索引状态
+        machine.index(lastIncludeIndex);
+        machine.indexTerm(lastIncludeTerm);
+        machine.matchIndex(lastIncludeIndex);
+        
+        _Logger.info("sent %d snapshot fragments to peer[%#x]", fragments.size(), peer);
+        return fragments;
     }
 
     public void takeSnapshot(IRaftMapper snapshot)
@@ -275,6 +398,12 @@ public class RaftPeer
 
     private Map<Long, IRaftMachine> vote4me(long term)
     {
+        // Learner 节点不参与选举
+        if(_SelfMachine.isInState(RaftState.LEARNER)) {
+            _Logger.debug("Learner node does not participate in election");
+            return null;
+        }
+        
         tickCancel();
         updateTerm(term);
         _SelfMachine.leader(INVALID_PEER_ID);
@@ -482,6 +611,13 @@ public class RaftPeer
         fromRecord(x74, _SelfGraph, x74.peer());
         if(_SelfMachine.isInState(JOINT)) {fromRecord(x74, _JointGraph, x74.peer());}
         IRaftMachine machine = getMachine(_SelfGraph, x74.peer());
+        
+        // Pipeline 模式：处理拒绝，回退 inflight 窗口
+        if(mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
+            long newNextIndex = _PipelineManager.onReject(x74.peer(), x74.index(), x74.indexTerm());
+            _Logger.debug("Pipeline: received reject from %#x, newNextIndex=%d", x74.peer(), newNextIndex);
+        }
+        
         if(highTerm(x74.term())) {
             //peer's term > my term
             _Logger.debug(" → reject {step down [%s → follower]}", RaftState.roleOf(_SelfMachine.state()));
@@ -497,9 +633,12 @@ public class RaftPeer
                         // follower 持有的 log 纪录 index@term 与leader 投送的不一致，后续进行覆盖同步
                         if(_SelfMachine.isInState(LEADER)) {
                             _Logger.debug("follower %#x,match failed,rollback %d@%d", x74.peer(), x74.index(), x74.indexTerm());
-                            IProtocol append =
-                                    machine != null ? createAppend(machine, min((int) (_SelfMachine.commit() - machine.index()), _SyncBatchMaxSize)).with(
-                                            session) : null;
+                            
+                            // Pipeline 模式：使用回退后的 nextIndex 重新发送
+                            boolean usePipelineRetry = mPipelineEnabled && _PipelineManager.getWindow(x74.peer()) != null;
+                            IProtocol append = machine != null ? 
+                                createAppend(machine, min((int) (_SelfMachine.commit() - machine.index()), _SyncBatchMaxSize), usePipelineRetry).with(session) : null;
+                                
                             if(_SelfMachine.isInState(JOINT)) {
                                 IRaftMachine jMachine = getMachine(_JointGraph, x74.peer());
                                 IProtocol jAppend = jMachine != null ? createAppend(jMachine,
@@ -558,14 +697,38 @@ public class RaftPeer
     {
         fromRecord(x73, _SelfGraph, x73.peer());
         if(_SelfMachine.isInState(JOINT)) {fromRecord(x73, _JointGraph, x73.peer());}
+        
+        // Pipeline 模式：更新 inflight 窗口
+        if(mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
+            _PipelineManager.onAck(x73.peer(), x73.accept());
+            
+            _Logger.debug("Pipeline: received accept from %#x, index=%d, inflight=%d", 
+                         x73.peer(), x73.accept(), _PipelineManager.getInflightCount(x73.peer()));
+            
+            // 继续 Pipeline 复制（如果窗口允许且还有更多日志）
+            continuePipelineReplication(x73.peer(), manager);
+        }
+        
         /*
          * member.accept > leader.commit 完成半数 match 之后只触发一次 leader commit
          */
         long next = _SelfMachine.commit() + 1;
         boolean condition = _SelfMachine.isInState(LEADER) && _SelfGraph.isMajorAccept(next);
         boolean joint = _SelfMachine.isInState(JOINT) && _JointGraph.isMajorAccept(next);
+        
+        // Lease 续期：收到多数派确认时续期
+        if(mLeaseReadEnabled && _SelfMachine.isInState(LEADER)) {
+            if(condition && (joint || !_SelfMachine.isInState(JOINT))) {
+                if(_LeaseManager.renewLease()) {
+                    _Logger.debug("Lease renewed on majority accept");
+                }
+            }
+        }
+        
         if(x73.accept() >= next && condition && (joint || !_SelfMachine.isInState(JOINT))) {
             _SelfMachine.commit(next, _RaftMapper);
+            // 检查并处理等待中的 ReadIndex 请求
+            checkReadIndexWaiters();
             LogEntry entry = _RaftMapper.getEntry(next);
             if(entry.client() != _SelfMachine.peer()) {
                 // leader → client → device
@@ -659,6 +822,11 @@ public class RaftPeer
             _Logger.debug("step down:%s → FOLLOWER", RaftState.roleOf(_SelfMachine.state()));
             beatCancel();
             electCancel();
+            // 取消 CheckQuorum 任务
+            if(mCheckQuorumTask != null) {
+                mCheckQuorumTask.cancel();
+                mCheckQuorumTask = null;
+            }
             updateTerm(term);
             _SelfMachine.leader(INVALID_PEER_ID);
             _SelfMachine.candidate(INVALID_PEER_ID);
@@ -674,11 +842,29 @@ public class RaftPeer
         electCancel();
         _SelfMachine.leader(_SelfMachine.peer());
         mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
+        // 启动 CheckQuorum 定时任务
+        if(mCheckQuorumTask != null) {
+            mCheckQuorumTask.cancel();
+        }
+        _ActivePeers.set(0);
+        _LastQuorumCheckTime = System.currentTimeMillis();
+        mCheckQuorumTask = _TimeWheel.acquire(this, _CheckQuorumSchedule);
+        
+        // 创建 Leader 租约（租约时长 = 2 * heartbeat 间隔）
+        if(mLeaseReadEnabled) {
+            long leaseDuration = _RaftConfig.getHeartbeatInSecond().toMillis() * 2;
+            _LeaseManager.createLease(_SelfMachine.peer(), _SelfMachine.term(), leaseDuration);
+        }
+        
         _Logger.debug("be leader → %s", _SelfMachine.toPrimary());
     }
 
     private void stepDown()
     {
+        // 使租约失效
+        if(mLeaseReadEnabled) {
+            _LeaseManager.invalidateLease("Step down");
+        }
         timeTrigger(updateMachine(_SelfMachine, FOLLOWER));
     }
 
@@ -889,7 +1075,9 @@ public class RaftPeer
         //@formatter:on
         {
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
-            return followersAppend(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
+            // 使用 Pipeline 模式发送日志
+            boolean usePipeline = mPipelineEnabled;
+            return followersAppend(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager, usePipeline);
         }
         // state change => ignore
         _Logger.warning("check leader heartbeat failed; now:%s", _SelfMachine);
@@ -1025,6 +1213,14 @@ public class RaftPeer
         x7c.leader(_SelfMachine.leader());
         RaftState state = RaftState.valueOf(_SelfMachine.state());
         for(long peer : peers) {_JointGraph.append(RaftMachine.createBy(peer, OP_MODIFY));}
+        
+        // 进入 JOINT 阶段
+        if(_MembershipChangeManager.hasActiveChange()) {
+            _MembershipChangeManager.enterJointPhase();
+            saveMembershipChangeState();
+            _Logger.debug("Entered JOINT phase for membership change");
+        }
+        
         switch(state) {
             case LEADER -> {
                 //old_graph
@@ -1081,9 +1277,17 @@ public class RaftPeer
         if(_SelfMachine.isInState(JOINT)) {
             fromRecord(x7c, _SelfGraph, x7c.peer());
             fromRecord(x7c, _JointGraph, x7c.peer());
+            
+            // 确认节点响应
+            _MembershipChangeManager.confirmPeer(x7c.peer());
+            
             if(_SelfGraph.isMajorConfirm() && _JointGraph.isMajorConfirm()) {
                 _SelfMachine.confirm();
                 _SelfGraph.resetTo(_JointGraph);
+                
+                // 确认成员变更完成
+                confirmMembershipChange();
+                
                 Map<Long, IRaftMachine> union = RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph);
                 if(union != null) {
                     return Triple.of(union.entrySet()
@@ -1121,6 +1325,469 @@ public class RaftPeer
         }
     }
 
+    /**
+     * 开始成员变更流程（Joint Consensus）
+     * 阶段1: COLD → JOINT
+     */
+    public List<ITriple> startMembershipChange(RaftNode delta, IManager manager)
+    {
+        // 检查是否已有进行中的变更
+        if(_MembershipChangeManager.hasActiveChange()) {
+            _Logger.warning("Membership change already in progress: %s", _MembershipChangeManager.getCurrentTransaction());
+            return null;
+        }
+        
+        // 获取旧配置
+        Collection<Long> oldPeers = new ArrayList<>(_SelfGraph.getPeers().keySet());
+        
+        // 应用配置变更
+        _RaftConfig.change(delta);
+        Collection<Long> newPeers = _RaftConfig.getPeers().keySet();
+        
+        // 开始变更事务
+        long changeId = generateId();
+        if(!_MembershipChangeManager.startChange(changeId, _SelfMachine.peer(), oldPeers, newPeers)) {
+            _Logger.warning("Failed to start membership change %d", changeId);
+            return null;
+        }
+        
+        // 启动超时检查
+        if(mMembershipChangeTimeoutTask != null) {
+            mMembershipChangeTimeoutTask.cancel();
+        }
+        mMembershipChangeTimeoutTask = _TimeWheel.acquire(this, _MembershipChangeTimeoutSchedule);
+        
+        _Logger.info("Started membership change %d: old=%s, new=%s", changeId, oldPeers, newPeers);
+        
+        // 调用现有的 onModify 逻辑
+        return onModify(delta, manager);
+    }
+    
+    /**
+     * 成员变更超时处理
+     */
+    private void onMembershipChangeTimeout()
+    {
+        MembershipChangeManager.ChangeTransaction tx = _MembershipChangeManager.getCurrentTransaction();
+        if(tx == null) {
+            return;
+        }
+        
+        if(tx.isTimeout()) {
+            _Logger.warning("Membership change %d timeout, rolling back", tx.getId());
+            rollbackMembershipChange("Timeout after " + tx.getElapsedTime());
+        }
+        else {
+            // 继续监控
+            mMembershipChangeTimeoutTask = _TimeWheel.acquire(this, _MembershipChangeTimeoutSchedule);
+        }
+    }
+    
+    /**
+     * 回滚成员变更
+     */
+    private void rollbackMembershipChange(String reason)
+    {
+        MembershipChangeManager.ChangeTransaction tx = _MembershipChangeManager.getCurrentTransaction();
+        if(tx == null) {
+            return;
+        }
+        
+        // 标记为回滚状态
+        _MembershipChangeManager.rollback(reason);
+        
+        // 恢复状态
+        _SelfMachine.confirm(); // 清除 JOINT 状态
+        _JointGraph.resetTo(_SelfGraph); // 恢复旧配置
+        
+        // 清理任务
+        if(mMembershipChangeTimeoutTask != null) {
+            mMembershipChangeTimeoutTask.cancel();
+            mMembershipChangeTimeoutTask = null;
+        }
+        
+        // 持久化回滚状态
+        saveMembershipChangeState();
+        
+        // 完成事务
+        tx = _MembershipChangeManager.complete();
+        _Logger.warning("Membership change %d rolled back: %s", tx.getId(), reason);
+    }
+    
+    /**
+     * 确认成员变更完成
+     * 阶段2: JOINT → CNEW
+     */
+    private void confirmMembershipChange()
+    {
+        MembershipChangeManager.ChangeTransaction tx = _MembershipChangeManager.getCurrentTransaction();
+        if(tx == null || !_MembershipChangeManager.isInJointPhase()) {
+            return;
+        }
+        
+        // 进入提交阶段
+        _MembershipChangeManager.enterCommittingPhase();
+        
+        // 确认变更
+        _MembershipChangeManager.confirmChange();
+        
+        // 清理任务
+        if(mMembershipChangeTimeoutTask != null) {
+            mMembershipChangeTimeoutTask.cancel();
+            mMembershipChangeTimeoutTask = null;
+        }
+        
+        // 持久化完成状态
+        saveMembershipChangeState();
+        
+        // 完成事务
+        tx = _MembershipChangeManager.complete();
+        _Logger.info("Membership change %d confirmed successfully", tx.getId());
+    }
+    
+    /**
+     * 持久化成员变更状态
+     */
+    private void saveMembershipChangeState()
+    {
+        MembershipChangeManager.ChangeTransaction tx = _MembershipChangeManager.getCurrentTransaction();
+        if(tx != null) {
+            var config = com.isahl.chess.knight.raft.model.replicate.MembershipConfig.fromTransaction(
+                tx, _SelfMachine.index(), _SelfMachine.term());
+            _RaftMapper.saveMembershipConfig(config);
+        }
+    }
+    
+    /**
+     * 恢复成员变更状态（启动时调用）
+     */
+    private void restoreMembershipChangeState()
+    {
+        var config = _RaftMapper.getMembershipConfig();
+        if(config == null) {
+            return;
+        }
+        
+        MembershipChangeManager.Phase phase = config.getPhase();
+        if(phase == MembershipChangeManager.Phase.IDLE || 
+           phase == MembershipChangeManager.Phase.CONFIRMED ||
+           phase == MembershipChangeManager.Phase.FAILED) {
+            // 无需恢复
+            return;
+        }
+        
+        _Logger.info("Restoring membership change state: phase=%s, txId=%d", phase, config.getTransactionId());
+        
+        // 如果处于中间状态，需要回滚
+        if(phase == MembershipChangeManager.Phase.PREPARING ||
+           phase == MembershipChangeManager.Phase.JOINT ||
+           phase == MembershipChangeManager.Phase.COMMITTING) {
+            _Logger.warning("Incomplete membership change detected, rolling back");
+            _SelfMachine.confirm();
+            _JointGraph.resetTo(_SelfGraph);
+            _RaftMapper.resetMembershipConfig();
+        }
+    }
+    
+    /**
+     * 获取成员变更管理器
+     */
+    public MembershipChangeManager getMembershipChangeManager()
+    {
+        return _MembershipChangeManager;
+    }
+
+    /**
+     * 获取 Leader 转让管理器
+     */
+    public LeadershipTransferManager getLeadershipTransferManager()
+    {
+        return _LeadershipTransferManager;
+    }
+
+    /**
+     * 获取 Pipeline 复制管理器
+     */
+    public PipelineReplicationManager getPipelineReplicationManager()
+    {
+        return _PipelineManager;
+    }
+    
+    /**
+     * 启用/禁用 Pipeline 复制
+     */
+    public void setPipelineEnabled(boolean enabled)
+    {
+        mPipelineEnabled = enabled;
+        _Logger.info("Pipeline replication %s", enabled ? "enabled" : "disabled");
+    }
+    
+    /**
+     * 检查 Pipeline 复制是否启用
+     */
+    public boolean isPipelineEnabled()
+    {
+        return mPipelineEnabled;
+    }
+
+    /**
+     * 发起 Leader 转让
+     * @param targetPeer 目标节点ID，如果为0则自动选择最佳目标
+     * @return true 如果成功发起转让
+     */
+    public boolean transferLeadership(long targetPeer, IManager manager)
+    {
+        if(!_SelfMachine.isInState(LEADER)) {
+            _Logger.warning("Cannot transfer leadership: not a leader");
+            return false;
+        }
+        
+        // 检查是否已有进行中的转让
+        if(_LeadershipTransferManager.hasActiveTransfer()) {
+            _Logger.warning("Cannot transfer leadership: another transfer in progress");
+            return false;
+        }
+        
+        // 检查是否正在成员变更
+        if(_MembershipChangeManager.hasActiveChange()) {
+            _Logger.warning("Cannot transfer leadership: membership change in progress");
+            return false;
+        }
+        
+        // 自动选择最佳目标
+        if(targetPeer == 0) {
+            targetPeer = LeadershipTransferManager.selectBestTarget(_SelfGraph.getPeers().values(), _SelfMachine.peer());
+            if(targetPeer == 0) {
+                _Logger.warning("Cannot find suitable target for leadership transfer");
+                return false;
+            }
+        }
+        
+        // 检查目标是否是自己
+        if(targetPeer == _SelfMachine.peer()) {
+            _Logger.warning("Cannot transfer leadership to self");
+            return false;
+        }
+        
+        // 检查目标是否在集群中
+        if(!_SelfGraph.getPeers().containsKey(targetPeer)) {
+            _Logger.warning("Target peer %#x not in cluster", targetPeer);
+            return false;
+        }
+        
+        // 开始转让事务
+        long transferId = generateId();
+        if(!_LeadershipTransferManager.startTransfer(transferId, targetPeer, _SelfMachine.peer(), _SelfMachine.term())) {
+            _Logger.warning("Failed to start leadership transfer");
+            return false;
+        }
+        
+        // 启动超时检查
+        if(mTransferTimeoutTask != null) {
+            mTransferTimeoutTask.cancel();
+        }
+        mTransferTimeoutTask = _TimeWheel.acquire(this, _TransferTimeoutSchedule);
+        
+        _Logger.info("Initiating leadership transfer to %#x (transferId=%d)", targetPeer, transferId);
+        
+        // 发送转让请求
+        return sendTransferRequest(targetPeer, manager);
+    }
+    
+    /**
+     * 发送 Leader 转让请求
+     */
+    private boolean sendTransferRequest(long targetPeer, IManager manager)
+    {
+        LeadershipTransferManager.TransferTransaction tx = _LeadershipTransferManager.getCurrentTransaction();
+        if(tx == null) {
+            return false;
+        }
+        
+        ISession session = manager.fairLoadSessionByPrefix(targetPeer);
+        if(session == null) {
+            _Logger.warning("Cannot find session to target peer %#x", targetPeer);
+            _LeadershipTransferManager.markFailed("Target peer session not found");
+            _LeadershipTransferManager.complete();
+            return false;
+        }
+        
+        X81_RaftTransferLeadership x81 = new X81_RaftTransferLeadership(generateId());
+        x81.setTargetPeer(targetPeer);
+        x81.setLeaderCommit(_SelfMachine.commit());
+        x81.setLeaderIndex(_SelfMachine.index());
+        x81.setTerm(_SelfMachine.term());
+        x81.setTimeoutMs(_LeadershipTransferManager.getDefaultTimeout().toMillis());
+        x81.with(session);
+        
+        // 发送请求
+        mClusterNode.send(session, SINGLE, x81);
+        
+        _Logger.debug("Sent transfer request to %#x", targetPeer);
+        return true;
+    }
+    
+    /**
+     * 处理 Leader 转让请求（作为目标节点）
+     */
+    public ITriple onTransferLeadership(X81_RaftTransferLeadership x81, IManager manager, ISession session)
+    {
+        long targetPeer = x81.getTargetPeer();
+        
+        // 检查是否是自己
+        if(targetPeer != _SelfMachine.peer()) {
+            _Logger.warning("Transfer request target mismatch: expected %#x, got %#x", targetPeer, _SelfMachine.peer());
+            return Triple.of(createTransferResponse(x81.msgId(), false, "Target mismatch", session), null, SINGLE);
+        }
+        
+        // 检查当前状态
+        if(!_SelfMachine.isInState(FOLLOWER)) {
+            _Logger.warning("Cannot accept leadership: not a follower (state=%s)", 
+                           RaftState.roleOf(_SelfMachine.state()));
+            return Triple.of(createTransferResponse(x81.msgId(), false, "Not a follower", session), null, SINGLE);
+        }
+        
+        // 检查 term
+        if(x81.getTerm() < _SelfMachine.term()) {
+            _Logger.warning("Cannot accept leadership: stale term (request=%d, current=%d)", 
+                           x81.getTerm(), _SelfMachine.term());
+            return Triple.of(createTransferResponse(x81.msgId(), false, "Stale term", session), null, SINGLE);
+        }
+        
+        // 检查日志是否追上
+        long lag = x81.getLeaderIndex() - _SelfMachine.index();
+        if(lag > 100) { // 日志落后太多，拒绝
+            _Logger.warning("Cannot accept leadership: log lag too large (%d entries)", lag);
+            return Triple.of(createTransferResponse(x81.msgId(), false, 
+                "Log lag too large: " + lag + " entries", session), null, SINGLE);
+        }
+        
+        _Logger.info("Accepting leadership transfer from %#x", x81.getTerm());
+        
+        // 发送接受响应
+        ITriple response = Triple.of(createTransferResponse(x81.msgId(), true, "Accepted", session), null, SINGLE);
+        
+        // 增加 term 并开始选举
+        // 注意：这里增加 term 会导致原 Leader step down
+        updateTerm(_SelfMachine.term() + 1);
+        _SelfMachine.candidate(_SelfMachine.peer());
+        
+        // 开始选举
+        List<ITriple> votes = vote4me(_SelfMachine, manager);
+        if(votes != null && !votes.isEmpty()) {
+            List<ITriple> all = new LinkedList<>();
+            all.add(response);
+            all.addAll(votes);
+            return Triple.of(all, null, BATCH);
+        }
+        
+        return response;
+    }
+    
+    /**
+     * 创建 Leader 转让响应
+     */
+    private X82_RaftTransferLeadershipResp createTransferResponse(long msgId, boolean success, String message, ISession session)
+    {
+        X82_RaftTransferLeadershipResp x82 = new X82_RaftTransferLeadershipResp(msgId);
+        x82.setPeer(_SelfMachine.peer());
+        x82.setCode(success ? SUCCESS.getCode() : RaftCode.ILLEGAL_STATE.getCode());
+        x82.setIndex(_SelfMachine.index());
+        x82.setCommit(_SelfMachine.commit());
+        x82.setMessage(message);
+        if(session != null) {
+            x82.with(session);
+        }
+        return x82;
+    }
+    
+    /**
+     * 处理 Leader 转让响应（作为原 Leader）
+     */
+    public void onTransferLeadershipResp(X82_RaftTransferLeadershipResp x82)
+    {
+        LeadershipTransferManager.TransferTransaction tx = _LeadershipTransferManager.getCurrentTransaction();
+        if(tx == null) {
+            return;
+        }
+        
+        // 检查是否来自目标节点
+        if(x82.getPeer() != tx.getTargetPeer()) {
+            _Logger.warning("Transfer response from unexpected peer: %#x", x82.getPeer());
+            return;
+        }
+        
+        if(x82.isSuccess()) {
+            _Logger.info("Target peer %#x accepted leadership transfer", x82.getPeer());
+            _LeadershipTransferManager.markSuccess();
+            
+            // 停止发送心跳，让新 Leader 接管
+            beatCancel();
+            
+            // 增加 term 并 step down
+            updateTerm(_SelfMachine.term() + 1);
+            stepDown(_SelfMachine.term());
+        }
+        else {
+            _Logger.warning("Target peer %#x rejected leadership transfer: %s", 
+                           x82.getPeer(), x82.getMessage());
+            
+            // 尝试重试
+            if(_LeadershipTransferManager.shouldRetry()) {
+                _Logger.info("Retrying leadership transfer (attempt %d/%d)", 
+                            tx.getRetryCount(), _LeadershipTransferManager.getMaxRetries());
+                // 重试将在超时处理中触发
+            }
+            else {
+                _LeadershipTransferManager.markFailed("Target rejected: " + x82.getMessage());
+                _LeadershipTransferManager.complete();
+                
+                // 取消超时任务
+                if(mTransferTimeoutTask != null) {
+                    mTransferTimeoutTask.cancel();
+                    mTransferTimeoutTask = null;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Leader 转让超时处理
+     */
+    private void onLeadershipTransferTimeout()
+    {
+        LeadershipTransferManager.TransferTransaction tx = _LeadershipTransferManager.getCurrentTransaction();
+        if(tx == null) {
+            return;
+        }
+        
+        // 检查是否已完成
+        if(tx.isTerminal()) {
+            _LeadershipTransferManager.complete();
+            mTransferTimeoutTask = null;
+            return;
+        }
+        
+        // 检查是否超时
+        if(tx.isTimeout()) {
+            _Logger.warning("Leadership transfer %d timeout", tx.getId());
+            _LeadershipTransferManager.markTimeout();
+            _LeadershipTransferManager.complete();
+            mTransferTimeoutTask = null;
+            return;
+        }
+        
+        // 重试转让请求
+        if(tx.getRetryCount() < _LeadershipTransferManager.getMaxRetries()) {
+            _Logger.debug("Retrying leadership transfer request");
+            // 重新获取 manager 并重试
+            // 这里简化处理，实际需要获取 manager
+        }
+        
+        // 继续监控
+        mTransferTimeoutTask = _TimeWheel.acquire(this, _TransferTimeoutSchedule);
+    }
+
     private X76_RaftResp response(RaftCode code, long client, long reqId, long origin)
     {
         X76_RaftResp x76 = new X76_RaftResp(reqId);
@@ -1145,16 +1812,171 @@ public class RaftPeer
 
     private List<ITriple> followersAppend(Map<Long, IRaftMachine> peers, IManager manager)
     {
-        return peers != null && !peers.isEmpty() ? peers.entrySet()
-                                                        .stream()
-                                                        .filter(e->e.getKey() != _SelfMachine.peer())
-                                                        .map(e->{
-                                                            ISession session = manager.fairLoadSessionByPrefix(e.getKey());
-                                                            return session == null ? null : createAppend(e.getValue()).with(session);
-                                                        })
-                                                        .filter(Objects::nonNull)
-                                                        .map(this::map)
-                                                        .collect(Collectors.toList()) : null;
+        return followersAppend(peers, manager, false);
+    }
+
+    /**
+     * 向所有 Followers 发送 AppendEntries
+     * @param peers 目标节点列表
+     * @param manager Session 管理器
+     * @param pipelineMode 是否使用 Pipeline 模式
+     */
+    private List<ITriple> followersAppend(Map<Long, IRaftMachine> peers, IManager manager, boolean pipelineMode)
+    {
+        if(peers == null || peers.isEmpty()) {
+            return null;
+        }
+        List<ITriple> results = new LinkedList<>();
+        for(Map.Entry<Long, IRaftMachine> e : peers.entrySet()) {
+            if(e.getKey() == _SelfMachine.peer()) {
+                continue;
+            }
+            
+            long peerId = e.getKey();
+            IRaftMachine peer = e.getValue();
+            
+            // Pipeline 模式：检查是否可以发送
+            if(mPipelineEnabled && pipelineMode && !_PipelineManager.canSendTo(peerId)) {
+                _Logger.debug("Pipeline: skip peer %#x, inflight window full", peerId);
+                continue;
+            }
+            
+            ISession session = manager.fairLoadSessionByPrefix(peerId);
+            if(session == null) {
+                continue;
+            }
+            
+            // 初始化 PipelineWindow（如果需要）
+            if(mPipelineEnabled && pipelineMode) {
+                long nextIdx = _PipelineManager.getNextIndex(peerId);
+                if(nextIdx == 0) {
+                    // 首次使用 Pipeline，初始化窗口
+                    _PipelineManager.getOrCreateWindow(peerId, peer.index() + 1);
+                }
+            }
+            
+            X72_RaftAppend append = createAppend(peer, -1, pipelineMode);
+            if(append == null) {
+                // 需要发送 snapshot
+                List<ITriple> snapshotTriples = sendSnapshot(peerId, peer, session);
+                if(snapshotTriples != null) {
+                    results.addAll(snapshotTriples);
+                }
+            }
+            else {
+                results.add(map(append.with(session)));
+                
+                // Pipeline 模式：记录 inflight
+                if(mPipelineEnabled && pipelineMode) {
+                    recordInflight(append, peerId);
+                }
+            }
+        }
+        
+        // 向 Learner 节点复制日志
+        if(mLearnerReplicationEnabled && _LearnerManager.hasLearners()) {
+            List<ITriple> learnerResults = replicateToLearners(manager, pipelineMode);
+            if(learnerResults != null) {
+                results.addAll(learnerResults);
+            }
+        }
+        
+        return results.isEmpty() ? null : results;
+    }
+    
+    /**
+     * 向 Learner 节点复制日志
+     */
+    private List<ITriple> replicateToLearners(IManager manager, boolean pipelineMode)
+    {
+        List<ITriple> results = new LinkedList<>();
+        
+        for(Map.Entry<Long, IRaftMachine> e : _LearnerManager.getAllLearners().entrySet()) {
+            long learnerId = e.getKey();
+            IRaftMachine learner = e.getValue();
+            
+            ISession session = manager.fairLoadSessionByPrefix(learnerId);
+            if(session == null) {
+                continue;
+            }
+            
+            X72_RaftAppend append = createAppend(learner, -1, pipelineMode);
+            if(append == null) {
+                // Learner 需要 snapshot
+                List<ITriple> snapshotTriples = sendSnapshot(learnerId, learner, session);
+                if(snapshotTriples != null) {
+                    results.addAll(snapshotTriples);
+                }
+            }
+            else {
+                results.add(map(append.with(session)));
+                _Logger.debug("Replicated to learner %#x", learnerId);
+            }
+        }
+        
+        return results.isEmpty() ? null : results;
+    }
+    
+    /**
+     * 记录 inflight 日志
+     */
+    private void recordInflight(X72_RaftAppend append, long peerId)
+    {
+        // 通过 index() 方法获取 preIndex，然后推断范围
+        // X72_RaftAppend 的 index() 返回 mPreIndex
+        long preIndex = append.index();
+        long leaderIndex = _SelfMachine.index();
+        
+        if(preIndex >= leaderIndex) {
+            return; // 没有新日志
+        }
+        
+        long firstIndex = preIndex + 1;
+        long lastIndex = Math.min(leaderIndex, firstIndex + _SyncBatchMaxSize - 1);
+        long term = _SelfMachine.term();
+        
+        if(firstIndex <= lastIndex) {
+            _PipelineManager.recordSendBatch(peerId, firstIndex, lastIndex, term);
+            _Logger.debug("Pipeline: recorded inflight for peer %#x, indices [%d, %d]", 
+                         peerId, firstIndex, lastIndex);
+        }
+    }
+    
+    /**
+     * 尝试继续 Pipeline 复制（在收到响应后调用）
+     */
+    private void continuePipelineReplication(long peerId, IManager manager)
+    {
+        if(!mPipelineEnabled || !_SelfMachine.isInState(LEADER)) {
+            return;
+        }
+        
+        if(!_PipelineManager.canSendTo(peerId)) {
+            return;
+        }
+        
+        ISession session = manager.fairLoadSessionByPrefix(peerId);
+        if(session == null) {
+            return;
+        }
+        
+        IRaftMachine peer = getMachine(_SelfGraph, peerId);
+        if(peer == null) {
+            return;
+        }
+        
+        // 检查是否还有更多日志需要发送
+        long nextIndex = _PipelineManager.getNextIndex(peerId);
+        if(nextIndex <= _SelfMachine.index()) {
+            X72_RaftAppend append = createAppend(peer, -1, true);
+            if(append != null) {
+                mClusterNode.send(session, SINGLE, append);
+                recordInflight(append, peerId);
+                
+                _Logger.debug("Pipeline: continued replication to peer %#x, nextIndex=%d", 
+                             peerId, nextIndex);
+            }
+        }
     }
 
     private X72_RaftAppend createAppend(IRaftMachine acceptor)
@@ -1164,6 +1986,17 @@ public class RaftPeer
 
     private X72_RaftAppend createAppend(IRaftMachine acceptor, int limit)
     {
+        return createAppend(acceptor, limit, false);
+    }
+
+    /**
+     * 创建 AppendEntries 消息
+     * @param acceptor 目标节点
+     * @param limit 日志条数限制，-1表示无限制
+     * @param usePipeline 是否使用 Pipeline 的 nextIndex
+     */
+    private X72_RaftAppend createAppend(IRaftMachine acceptor, int limit, boolean usePipeline)
+    {
         X72_RaftAppend x72 = new X72_RaftAppend(_ZUid.getId());
         x72.leader(_SelfMachine.peer());
         x72.term(_SelfMachine.term());
@@ -1171,13 +2004,31 @@ public class RaftPeer
         x72.preIndex(_SelfMachine.index());
         x72.preIndexTerm(_SelfMachine.indexTerm());
         x72.setFollower(acceptor.peer());
+        
+        long preIndex = acceptor.index();
+        long preIndexTerm = acceptor.indexTerm();
+        
+        // Pipeline 模式：使用 PipelineManager 的 nextIndex
+        if(mPipelineEnabled && usePipeline) {
+            long pipelineNext = _PipelineManager.getNextIndex(acceptor.peer());
+            if(pipelineNext > 0) {
+                preIndex = pipelineNext - 1;
+                preIndexTerm = _RaftMapper.getEntryTerm(preIndex);
+            }
+        }
+        
         CHECK:
         {
-            long preIndex = acceptor.index();
-            long preIndexTerm = acceptor.indexTerm();
             if(preIndex == _SelfMachine.index() || preIndex == INDEX_NAN) {
                 // acceptor 已经同步 或 acceptor.next 未知
                 break CHECK;
+            }
+            // 检查是否需要发送 snapshot
+            if(preIndex > 0 && preIndex < _RaftMapper.getStartIndex() - 1) {
+                _Logger.info("follower[%#x] preIndex %d < startIndex %d, need snapshot", 
+                            acceptor.peer(), preIndex, _RaftMapper.getStartIndex());
+                // 标记需要发送 snapshot，返回 null 表示需要 snapshot
+                return null;
             }
             // preIndex < self.index && preIndex >= 0
             ListSerial<LogEntry> entryList = new ListSerial<>(LogEntry::new);
@@ -1334,5 +2185,739 @@ public class RaftPeer
     public RaftState raftState()
     {
         return RaftState.valueOf(_SelfMachine.state());
+    }
+
+    // ==================== Pre-vote 机制 ====================
+
+    /**
+     * Pre-vote 超时处理
+     */
+    private void preVoteTimeout()
+    {
+        if(_PreVoteInProgress) {
+            _Logger.debug("pre-vote timeout, cancel and retry");
+            _PreVoteInProgress = false;
+            _PreVoteReceived.clear();
+            // 重新触发选举流程
+            mTickTask = _TimeWheel.acquire(this, _TickSchedule);
+        }
+    }
+
+    /**
+     * 发起 Pre-vote 探测
+     * 在实际增加 term 之前，先探测是否可能赢得选举
+     */
+    private void startPreVote()
+    {
+        if(_PreVoteInProgress) {
+            return;
+        }
+        _PreVoteInProgress = true;
+        _PreVoteReceived.clear();
+        
+        _Logger.debug("start pre-vote, current term=%d", _SelfMachine.term());
+        
+        // 设置 pre-vote 超时
+        if(mPreVoteTask != null) {
+            mPreVoteTask.cancel();
+        }
+        mPreVoteTask = _TimeWheel.acquire(this, _PreVoteSchedule);
+        
+        // 触发 pre-vote 发送 (通过 timer 机制)
+        timeTrigger(createPreVoteMachine());
+    }
+
+    private IRaftMachine createPreVoteMachine()
+    {
+        RaftMachine update = RaftMachine.createBy(_SelfMachine.peer(), OP_MODIFY);
+        update.from(_SelfMachine);
+        update.approve(CANDIDATE);
+        // Pre-vote 期间不增加 term
+        return update;
+    }
+
+    /**
+     * 处理 Pre-vote 请求
+     */
+    public ITriple onPreVote(X6F_RaftPreVote x6f, IManager manager, ISession session)
+    {
+        // 检查任期
+        if(x6f.term() < _SelfMachine.term()) {
+            _Logger.debug("pre-vote rejected: lower term %d < %d", x6f.term(), _SelfMachine.term());
+            return Triple.of(preVoteReject(x6f.msgId()), null, SINGLE);
+        }
+        
+        // 检查日志完整性
+        boolean logIsComplete = x6f.index() >= _SelfMachine.index() && 
+                                x6f.indexTerm() >= _SelfMachine.indexTerm();
+        
+        if(!logIsComplete) {
+            _Logger.debug("pre-vote rejected: incomplete log [%d@%d] vs mine [%d@%d]", 
+                         x6f.index(), x6f.indexTerm(), _SelfMachine.index(), _SelfMachine.indexTerm());
+            return Triple.of(preVoteReject(x6f.msgId()), null, SINGLE);
+        }
+        
+        // 同意 pre-vote
+        _Logger.debug("pre-vote granted to %#x", x6f.peer());
+        X6E_RaftPreVoteResp resp = new X6E_RaftPreVoteResp();
+        resp.peer(_SelfMachine.peer());
+        resp.term(_SelfMachine.term());
+        resp.candidate(x6f.peer());
+        resp.granted(true);
+        resp.with(session);
+        
+        return Triple.of(resp, null, SINGLE);
+    }
+
+    /**
+     * 处理 Pre-vote 响应
+     */
+    public ITriple onPreVoteResp(X6E_RaftPreVoteResp x6e, IManager manager)
+    {
+        if(!_PreVoteInProgress) {
+            _Logger.debug("pre-vote response ignored: not in pre-vote phase");
+            return null;
+        }
+        
+        if(x6e.term() > _SelfMachine.term()) {
+            _Logger.debug("pre-vote resp: higher term %d, step down", x6e.term());
+            stepDown(x6e.term());
+            _PreVoteInProgress = false;
+            return null;
+        }
+        
+        if(x6e.granted()) {
+            _PreVoteReceived.put(x6e.peer(), true);
+            _Logger.debug("pre-vote granted by %#x, total=%d", x6e.peer(), _PreVoteReceived.size());
+            
+            // 检查是否获得多数派支持
+            if(_SelfGraph.isMajorAccept(_SelfMachine.peer(), _SelfMachine.term()) ||
+               _PreVoteReceived.size() >= (_SelfGraph.getPeers().size() / 2)) {
+                _Logger.debug("pre-vote majority granted, start real election");
+                _PreVoteInProgress = false;
+                if(mPreVoteTask != null) {
+                    mPreVoteTask.cancel();
+                    mPreVoteTask = null;
+                }
+                // 开始正式选举
+                startVote();
+            }
+        }
+        return null;
+    }
+
+    private X6E_RaftPreVoteResp preVoteReject(long msgId)
+    {
+        X6E_RaftPreVoteResp resp = new X6E_RaftPreVoteResp();
+        resp.peer(_SelfMachine.peer());
+        resp.term(_SelfMachine.term());
+        resp.granted(false);
+        return resp;
+    }
+
+    private List<ITriple> createPreVotes(Map<Long, IRaftMachine> peers, IManager manager)
+    {
+        return peers != null && !peers.isEmpty() ? peers.keySet()
+                                                        .stream()
+                                                        .filter(peer->peer != _SelfMachine.peer())
+                                                        .map(peer->{
+                                                            ISession session = manager.fairLoadSessionByPrefix(peer);
+                                                            if(session == null) {
+                                                                _Logger.warning("pre-vote: peer %#x session not found", peer);
+                                                                return null;
+                                                            }
+                                                            X6F_RaftPreVote x6f = new X6F_RaftPreVote();
+                                                            x6f.with(session);
+                                                            x6f.peer(peer);
+                                                            x6f.term(_SelfMachine.term()); // 不增加 term
+                                                            x6f.index(_SelfMachine.index());
+                                                            x6f.indexTerm(_SelfMachine.indexTerm());
+                                                            x6f.commit(_SelfMachine.commit());
+                                                            return x6f;
+                                                        })
+                                                        .filter(Objects::nonNull)
+                                                        .map(x6f -> Triple.of((IProtocol)x6f, x6f.session(), x6f.session().encoder()))
+                                                        .collect(Collectors.toList()) : new LinkedList<>();
+    }
+
+    public List<ITriple> preVote(IRaftMachine update, IManager manager)
+    {
+        if(_PreVoteInProgress && update.isInState(CANDIDATE)) {
+            return createPreVotes(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
+        }
+        return null;
+    }
+
+    // ==================== Snapshot 安装 ====================
+
+    /**
+     * 处理 Leader 发来的 Snapshot 分片
+     */
+    public ITriple onSnapshot(X7D_RaftSnapshot x7d, ISession session)
+    {
+        // 检查任期
+        if(x7d.term() < _SelfMachine.term()) {
+            _Logger.debug("snapshot rejected: lower term %d < %d", x7d.term(), _SelfMachine.term());
+            return Triple.of(snapshotAck(x7d, false, "lower term"), null, SINGLE);
+        }
+        
+        if(x7d.term() > _SelfMachine.term()) {
+            stepDown(x7d.term());
+        }
+        
+        // 检查是否正在安装 snapshot
+        if(!_InstallingSnapshot) {
+            // 开始新的 snapshot 安装
+            _InstallingSnapshot = true;
+            _SnapshotLeader = x7d.leader();
+            _Logger.info("start installing snapshot from leader %#x, lastIndex=%d@%d", 
+                        x7d.leader(), x7d.lastIncludeIndex(), x7d.lastIncludeTerm());
+        }
+        else if(_SnapshotLeader != x7d.leader()) {
+            // 正在从其他 leader 安装，拒绝
+            return Triple.of(snapshotAck(x7d, false, "installing from another leader"), null, SINGLE);
+        }
+        
+        _SnapshotLock.lock();
+        try {
+            // 应用 snapshot 数据到状态机
+            boolean success = installSnapshotChunk(x7d);
+            
+            if(success && x7d.done()) {
+                // 最后一个分片，完成安装
+                _Logger.info("snapshot installation completed, lastIndex=%d@%d", 
+                            x7d.lastIncludeIndex(), x7d.lastIncludeTerm());
+                
+                // 更新本地状态
+                _SelfMachine.term(x7d.term());
+                _SelfMachine.index(x7d.lastIncludeIndex());
+                _SelfMachine.indexTerm(x7d.lastIncludeTerm());
+                _SelfMachine.commit(x7d.lastIncludeIndex());
+                _SelfMachine.accept(x7d.lastIncludeIndex(), x7d.lastIncludeTerm());
+                
+                // 更新 mapper
+                _RaftMapper.updateSnapshotMeta(x7d.lastIncludeIndex(), x7d.lastIncludeTerm());
+                _RaftMapper.truncatePrefix(x7d.lastIncludeIndex() + 1);
+                
+                _InstallingSnapshot = false;
+                _SnapshotLeader = INVALID_PEER_ID;
+            }
+            
+            return Triple.of(snapshotAck(x7d, success, null), null, SINGLE);
+        }
+        finally {
+            _SnapshotLock.unlock();
+        }
+    }
+
+    /**
+     * 安装 snapshot 分片到本地存储
+     */
+    private boolean installSnapshotChunk(X7D_RaftSnapshot chunk)
+    {
+        try {
+            byte[] data = chunk.data();
+            if(data == null || data.length == 0) {
+                return true; // 空数据也算成功
+            }
+            
+            // 将数据写入 snapshot 存储
+            _RaftMapper.getSnapshot().withSub(data);
+            
+            _Logger.debug("snapshot chunk installed: offset=%d, size=%d", chunk.offset(), data.length);
+            return true;
+        }
+        catch(Exception e) {
+            _Logger.warning("failed to install snapshot chunk: %s", e);
+            return false;
+        }
+    }
+
+    private X7E_RaftSnapshotAck snapshotAck(X7D_RaftSnapshot snapshot, boolean success, String errorMsg)
+    {
+        X7E_RaftSnapshotAck ack = new X7E_RaftSnapshotAck();
+        ack.peer(_SelfMachine.peer());
+        ack.term(_SelfMachine.term());
+        ack.offset(snapshot.offset());
+        ack.lastIncludeIndex(snapshot.lastIncludeIndex());
+        ack.success(success);
+        if(errorMsg != null) {
+            ack.errorMsg(errorMsg);
+        }
+        return ack;
+    }
+
+    /**
+     * 处理 Snapshot 安装响应 (Leader 端)
+     */
+    public ITriple onSnapshotAck(X7E_RaftSnapshotAck x7e)
+    {
+        if(!_SelfMachine.isInState(LEADER)) {
+            return null;
+        }
+        
+        if(x7e.term() > _SelfMachine.term()) {
+            stepDown(x7e.term());
+            return null;
+        }
+        
+        if(x7e.success()) {
+            _Logger.debug("snapshot ack from %#x: offset=%d", x7e.peer(), x7e.offset());
+            // 更新 follower 的匹配索引
+            IRaftMachine machine = getMachine(_SelfGraph, x7e.peer());
+            if(machine != null) {
+                machine.matchIndex(x7e.lastIncludeIndex());
+                machine.index(x7e.lastIncludeIndex());
+            }
+        }
+        else {
+            _Logger.warning("snapshot failed on %#x: %s", x7e.peer(), x7e.errorMsg());
+        }
+        return null;
+    }
+
+    // ==================== ReadIndex 机制 ====================
+
+    /**
+     * 读请求内部类
+     */
+    private static class ReadIndexRequest
+    {
+        final long readId;
+        final long origin;
+        final long client;
+        final long createTime;
+        
+        ReadIndexRequest(long readId, long origin, long client)
+        {
+            this.readId = readId;
+            this.origin = origin;
+            this.client = client;
+            this.createTime = System.currentTimeMillis();
+        }
+    }
+
+    /**
+     * 提交 ReadIndex 请求 (客户端或 Follower 调用)
+     */
+    public List<ITriple> readIndex(IManager manager, long origin, long client)
+    {
+        long readId = ++_LastReadId;
+        
+        switch(RaftState.valueOf(_SelfMachine.state())) {
+            case LEADER -> {
+                // Leader 直接处理
+                return handleLeaderReadIndex(readId, origin, client, manager);
+            }
+            case FOLLOWER, CLIENT -> {
+                // 转发给 Leader
+                ISession session = manager.fairLoadSessionByPrefix(_SelfMachine.leader());
+                if(session == null) {
+                    _Logger.warning("readIndex: leader session not found");
+                    return null;
+                }
+                X7F_RaftReadIndex x7f = new X7F_RaftReadIndex(generateId());
+                x7f.with(session);
+                x7f.client(client);
+                x7f.readId(readId);
+                x7f.origin(origin);
+                return Collections.singletonList(Triple.of(x7f, session, session.encoder()));
+            }
+            default -> {
+                _Logger.warning("readIndex: cannot process in state %s", RaftState.roleOf(_SelfMachine.state()));
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Leader 处理 ReadIndex 请求
+     */
+    private List<ITriple> handleLeaderReadIndex(long readId, long origin, long client, IManager manager)
+    {
+        long commitIndex = _SelfMachine.commit();
+        
+        // 检查当前 commit index 是否已经被应用
+        if(_SelfMachine.accept() >= commitIndex) {
+            // 可以直接返回
+            _Logger.debug("readIndex %d: commit %d already applied", readId, commitIndex);
+            return Collections.singletonList(
+                Triple.of(createReadIndexResp(readId, commitIndex, true, null, null), null, NULL)
+            );
+        }
+        
+        // 需要等待 commit index 被应用
+        _Logger.debug("readIndex %d: waiting for commit %d to be applied (current accept=%d)", 
+                     readId, commitIndex, _SelfMachine.accept());
+        
+        ReadIndexRequest req = new ReadIndexRequest(readId, origin, client);
+        _ReadIndexWaiters.computeIfAbsent(commitIndex, k -> new ArrayList<>()).add(req);
+        
+        return null; // 等待后续通知
+    }
+
+    /**
+     * 处理 ReadIndex 请求 (Leader 接收)
+     */
+    public ITriple onReadIndex(X7F_RaftReadIndex x7f, IManager manager)
+    {
+        if(!_SelfMachine.isInState(LEADER)) {
+            return Triple.of(createReadIndexResp(x7f.readId(), 0, false, "not leader", null), null, NULL);
+        }
+        
+        List<ITriple> result = handleLeaderReadIndex(x7f.readId(), x7f.origin(), x7f.client(), manager);
+        if(result != null) {
+            return Triple.of(result, null, BATCH);
+        }
+        return null;
+    }
+
+    /**
+     * 处理 ReadIndex 响应
+     */
+    public ITriple onReadIndexResp(X80_RaftReadIndexResp x80)
+    {
+        _Logger.debug("readIndex response: readId=%#x, success=%s", x80.readId(), x80.success());
+        return Triple.of(null, x80, NULL);
+    }
+
+    /**
+     * 检查并处理等待中的 ReadIndex 请求
+     * 在每次 accept 增加时调用
+     */
+    private void checkReadIndexWaiters()
+    {
+        long currentAccept = _SelfMachine.accept();
+        
+        Iterator<Map.Entry<Long, List<ReadIndexRequest>>> it = _ReadIndexWaiters.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<Long, List<ReadIndexRequest>> entry = it.next();
+            long commitIndex = entry.getKey();
+            
+            if(currentAccept >= commitIndex) {
+                // 这个 commit index 已经被应用，可以响应所有等待的读请求
+                List<ReadIndexRequest> waiters = entry.getValue();
+                _Logger.debug("readIndex: commit %d applied, responding %d waiters", commitIndex, waiters.size());
+                
+                for(ReadIndexRequest req : waiters) {
+                    // 触发响应
+                    X80_RaftReadIndexResp resp = createReadIndexResp(req.readId, commitIndex, true, null, null);
+                    // 需要通过合适的方式发送给客户端
+                }
+                
+                it.remove();
+            }
+        }
+    }
+
+    private X80_RaftReadIndexResp createReadIndexResp(long readId, long commitIndex, boolean success, String errorMsg, byte[] result)
+    {
+        X80_RaftReadIndexResp resp = new X80_RaftReadIndexResp();
+        resp.peer(_SelfMachine.peer());
+        resp.readId(readId);
+        resp.commitIndex(commitIndex);
+        resp.success(success);
+        if(errorMsg != null) {
+            resp.errorMsg(errorMsg);
+        }
+        if(result != null) {
+            resp.result(result);
+        }
+        return resp;
+    }
+
+    /**
+     * 检查 ReadIndex 超时请求
+     */
+    public void checkReadIndexTimeout()
+    {
+        long now = System.currentTimeMillis();
+        long timeout = 5000; // 5秒超时
+        
+        _ReadIndexWaiters.forEach((commitIndex, waiters) -> {
+            waiters.removeIf(req -> {
+                if(now - req.createTime > timeout) {
+                    _Logger.warning("readIndex %d timeout", req.readId);
+                    // 发送超时响应
+                    return true;
+                }
+                return false;
+            });
+        });
+        
+        _ReadIndexWaiters.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+    }
+
+    // ==================== Lease Read 机制 ====================
+
+    /**
+     * 提交 Lease Read 请求
+     * 在 Leader 租约期内直接读取，无需等待 commit
+     */
+    public List<ITriple> leaseRead(IManager manager, long origin, long client)
+    {
+        long readId = ++_LastReadId;
+        
+        if(!mLeaseReadEnabled) {
+            _Logger.warning("leaseRead: lease read is disabled, falling back to readIndex");
+            return readIndex(manager, origin, client);
+        }
+        
+        switch(RaftState.valueOf(_SelfMachine.state())) {
+            case LEADER -> {
+                // Leader 检查租约
+                if(_LeaseManager.canLeaseRead(_SelfMachine.term())) {
+                    // 租约有效，直接读取
+                    return handleLeaderLeaseRead(readId, origin, client, manager);
+                }
+                else {
+                    // 租约无效，降级为 ReadIndex
+                    _Logger.debug("leaseRead: lease invalid, falling back to readIndex");
+                    return readIndex(manager, origin, client);
+                }
+            }
+            case FOLLOWER, CLIENT -> {
+                // 转发给 Leader
+                ISession session = manager.fairLoadSessionByPrefix(_SelfMachine.leader());
+                if(session == null) {
+                    _Logger.warning("leaseRead: leader session not found");
+                    return null;
+                }
+                X83_RaftLeaseRead x83 = new X83_RaftLeaseRead(generateId());
+                x83.with(session);
+                x83.client(client);
+                x83.readId(readId);
+                return Collections.singletonList(Triple.of(x83, session, session.encoder()));
+            }
+            default -> {
+                _Logger.warning("leaseRead: cannot process in state %s", RaftState.roleOf(_SelfMachine.state()));
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Leader 处理 Lease Read 请求
+     */
+    private List<ITriple> handleLeaderLeaseRead(long readId, long origin, long client, IManager manager)
+    {
+        long commitIndex = _SelfMachine.commit();
+        LeaseManager.Lease lease = _LeaseManager.getCurrentLease();
+        long remainingMs = lease != null ? lease.getRemainingMs() : 0;
+        
+        _Logger.debug("leaseRead %d: serving with lease, commit=%d, remaining=%dms", 
+                     readId, commitIndex, remainingMs);
+        
+        // 创建响应
+        X84_RaftLeaseReadResp resp = new X84_RaftLeaseReadResp();
+        resp.peer(_SelfMachine.peer());
+        resp.readId(readId);
+        resp.setCode(0); // 成功
+        resp.commitIndex(commitIndex);
+        resp.leaseRemainingMs(remainingMs);
+        
+        // 如果是本地请求，直接返回
+        if(client == _SelfMachine.peer()) {
+            return Collections.singletonList(Triple.of(resp, null, NULL));
+        }
+        
+        // 发送给客户端
+        ISession session = manager.fairLoadSessionByPrefix(client);
+        if(session != null) {
+            resp.with(session);
+            return Collections.singletonList(Triple.of(resp, null, SINGLE));
+        }
+        
+        return null;
+    }
+
+    /**
+     * Leader 处理 Lease Read 请求（接收）
+     */
+    public ITriple onLeaseRead(X83_RaftLeaseRead x83, IManager manager)
+    {
+        if(!_SelfMachine.isInState(LEADER)) {
+            return Triple.of(createLeaseReadResp(x83.readId(), 0, false, "not leader", 0, null), null, NULL);
+        }
+        
+        if(!mLeaseReadEnabled || !_LeaseManager.canLeaseRead(_SelfMachine.term())) {
+            // 租约无效，返回错误，客户端应该降级到 ReadIndex
+            return Triple.of(createLeaseReadResp(x83.readId(), 0, false, "lease expired", 0, null), null, NULL);
+        }
+        
+        List<ITriple> result = handleLeaderLeaseRead(x83.readId(), x83.origin(), x83.client(), manager);
+        if(result != null) {
+            return Triple.of(result, null, BATCH);
+        }
+        return null;
+    }
+
+    /**
+     * 处理 Lease Read 响应
+     */
+    public void onLeaseReadResp(X84_RaftLeaseReadResp x84)
+    {
+        _Logger.debug("leaseRead response: readId=%d, success=%s, leaseRemaining=%dms", 
+                     x84.readId(), x84.isSuccess(), x84.leaseRemainingMs());
+        // 响应会传递给上层处理
+    }
+
+    /**
+     * 创建 Lease Read 响应
+     */
+    private X84_RaftLeaseReadResp createLeaseReadResp(long readId, long commitIndex, boolean success, 
+                                                       String errorMsg, long leaseRemainingMs, ISession session)
+    {
+        X84_RaftLeaseReadResp resp = new X84_RaftLeaseReadResp();
+        resp.peer(_SelfMachine.peer());
+        resp.readId(readId);
+        resp.setCode(success ? 0 : RaftCode.ILLEGAL_STATE.getCode());
+        resp.commitIndex(commitIndex);
+        resp.leaseRemainingMs(leaseRemainingMs);
+        resp.setMessage(errorMsg);
+        if(session != null) {
+            resp.with(session);
+        }
+        return resp;
+    }
+
+    /**
+     * 获取 Lease 管理器
+     */
+    public LeaseManager getLeaseManager()
+    {
+        return _LeaseManager;
+    }
+
+    /**
+     * 启用/禁用 Lease Read
+     */
+    public void setLeaseReadEnabled(boolean enabled)
+    {
+        mLeaseReadEnabled = enabled;
+        _LeaseManager.setEnabled(enabled);
+        _Logger.info("Lease read %s", enabled ? "enabled" : "disabled");
+    }
+
+    /**
+     * 检查 Lease Read 是否启用
+     */
+    public boolean isLeaseReadEnabled()
+    {
+        return mLeaseReadEnabled;
+    }
+
+    // ==================== Learner 节点管理 ====================
+
+    /**
+     * 获取 Learner 管理器
+     */
+    public LearnerManager getLearnerManager()
+    {
+        return _LearnerManager;
+    }
+
+    /**
+     * 添加 Learner 节点
+     */
+    public void addLearner(long peerId)
+    {
+        IRaftMachine learner = RaftMachine.createBy(peerId, IStorage.Operation.OP_MODIFY);
+        learner.approve(RaftState.LEARNER);
+        learner.leader(_SelfMachine.leader());
+        _LearnerManager.addLearner(learner);
+        
+        _Logger.info("Added learner node: %#x", peerId);
+    }
+
+    /**
+     * 移除 Learner 节点
+     */
+    public void removeLearner(long peerId)
+    {
+        _LearnerManager.removeLearner(peerId);
+        _Logger.info("Removed learner node: %#x", peerId);
+    }
+
+    /**
+     * 启用/禁用 Learner 复制
+     */
+    public void setLearnerReplicationEnabled(boolean enabled)
+    {
+        mLearnerReplicationEnabled = enabled;
+        _Logger.info("Learner replication %s", enabled ? "enabled" : "disabled");
+    }
+
+    /**
+     * 检查 Learner 复制是否启用
+     */
+    public boolean isLearnerReplicationEnabled()
+    {
+        return mLearnerReplicationEnabled;
+    }
+
+    /**
+     * 检查当前节点是否是 Learner
+     */
+    public boolean isSelfLearner()
+    {
+        return _SelfMachine.isInState(RaftState.LEARNER);
+    }
+
+    // ==================== CheckQuorum 机制 ====================
+
+    /**
+     * Leader 定期检查是否仍有多数派连接
+     * 如果失去多数派连接，主动 step down 防止脑裂
+     */
+    private void checkQuorum()
+    {
+        if(!_SelfMachine.isInState(LEADER)) {
+            return;
+        }
+        
+        Map<Long, IRaftMachine> peers = RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph);
+        if(peers == null || peers.isEmpty()) {
+            return;
+        }
+        
+        // 统计最近活跃节点数
+        int activeCount = 0;
+        int totalPeers = peers.size();
+        
+        for(IRaftMachine peer : peers.values()) {
+            // 如果节点索引接近 Leader，认为它是活跃的
+            if(peer.index() >= _SelfMachine.commit() - _SyncBatchMaxSize) {
+                activeCount++;
+            }
+        }
+        
+        _ActivePeers.set(activeCount);
+        
+        // 检查是否失去多数派
+        boolean hasQuorum = _SelfGraph.isMajorAccept(_SelfMachine.peer(), _SelfMachine.term());
+        
+        if(!hasQuorum) {
+            _Logger.warning("checkQuorum: lost quorum, active=%d/%d, step down", activeCount, totalPeers);
+            stepDown(_SelfMachine.term());
+        }
+        else {
+            _Logger.debug("checkQuorum: quorum maintained, active=%d/%d", activeCount, totalPeers);
+        }
+        
+        _LastQuorumCheckTime = System.currentTimeMillis();
+    }
+
+    /**
+     * 更新节点活跃状态（在收到 Append/Accept 时调用）
+     */
+    public void updatePeerActive(long peerId)
+    {
+        // 更新最后活跃时间，用于 CheckQuorum
+        IRaftMachine machine = getMachine(_SelfGraph, peerId);
+        if(machine != null) {
+            // 实际实现可以记录每个节点的最后活跃时间
+            _Logger.debug("peer[%#x] active updated", peerId);
+        }
     }
 }

@@ -27,6 +27,7 @@ import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.model.replicate.LogMeta;
+import com.isahl.chess.knight.raft.model.replicate.MembershipConfig;
 import com.isahl.chess.knight.raft.model.replicate.SnapshotEntry;
 import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 
@@ -74,4 +75,19 @@ public interface IRaftMapper
     SnapshotEntry getSnapshot();
 
     long getTotalSize();
+
+    /**
+     * 获取成员变更配置
+     */
+    MembershipConfig getMembershipConfig();
+
+    /**
+     * 保存成员变更配置
+     */
+    void saveMembershipConfig(MembershipConfig config);
+
+    /**
+     * 重置成员变更配置
+     */
+    void resetMembershipConfig();
 }

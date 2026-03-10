@@ -38,8 +38,10 @@ public enum RaftState
     CANDIDATE(1 << 3),
     LEADER(1 << 4),
     GATE(1 << 5),
+    
+    LEARNER(1 << 6),
 
-    JOINT(1 << 6),
+    JOINT(1 << 7),
 
     BOUNDARY(1 << 7),
 
@@ -93,7 +95,8 @@ public enum RaftState
             case 0 -> OUTSIDE;
             case 1 -> CLIENT;
             case 1 << 5 -> GATE;
-            case 1 << 6 -> JOINT;
+            case 1 << 6 -> LEARNER;
+            case 1 << 7 -> JOINT;
             default -> throw new IllegalArgumentException();
         };
     }

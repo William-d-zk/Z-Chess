@@ -117,6 +117,11 @@ public interface IRaftMachine
     void outside();
 
     void gate();
+    
+    /**
+     * 设置为 Learner 状态（非投票成员）
+     */
+    void learner();
 
     /**
      * 确认集群变更完成
