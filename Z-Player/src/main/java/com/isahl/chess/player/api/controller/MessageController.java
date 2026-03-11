@@ -45,14 +45,10 @@ public class MessageController
     private final Logger             _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final MessageOpenService _MessageService;
     private final IDeviceService     _DeviceService;
-    private final IStateService _IStateService;
+    private final IStateService      _IStateService;
 
     @Autowired
-    public MessageController(
-            MessageOpenService messageService,
-            IDeviceService deviceService,
-            IStateService stateService
-    )
+    public MessageController(MessageOpenService messageService, IDeviceService deviceService, IStateService stateService)
     {
         _MessageService = messageService;
         _DeviceService = deviceService;
@@ -87,6 +83,5 @@ public class MessageController
         }
         return ZResponse.success(_IStateService.filter(filterPattern));
     }
-
 
 }

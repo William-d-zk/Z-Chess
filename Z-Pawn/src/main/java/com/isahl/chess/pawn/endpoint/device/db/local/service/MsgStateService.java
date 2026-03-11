@@ -49,7 +49,7 @@ public class MsgStateService
     private final IMsgStateRepository _MsgStateRepository;
     private final CacheManager        _CacheManager;
 
-    @Autowired(required = false)
+    @Autowired
     public MsgStateService(IMsgStateRepository msgStateRepository, CacheManager cacheManager)
     {
         _MsgStateRepository = msgStateRepository;

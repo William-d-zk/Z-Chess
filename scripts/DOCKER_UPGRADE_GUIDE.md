@@ -51,8 +51,8 @@ docker-compose down
 # 备份 PostgreSQL 数据目录
 cp -r ~/Services/db/postgresql ~/Services/db/postgresql-backup-$(date +%Y%m%d)
 
-# 导出数据库
-docker exec db-pg pg_dumpall -U postgres > zchess-backup.sql
+# 导出数据库（使用与 application.properties 一致的用户名）
+docker exec db-pg pg_dumpall -U chess > zchess-backup.sql
 ```
 
 ### 2. 更新目录结构
@@ -107,13 +107,13 @@ docker-compose up -d
 ### 5. 验证升级
 
 ```bash
-# 检查 PostgreSQL 版本
-docker exec db-pg psql -U postgres -c "SELECT version();"
+# 检查 PostgreSQL 版本（使用与配置一致的用户名）
+docker exec db-pg psql -U chess -d isahl_9.x -c "SELECT version();"
 
 # 预期输出：PostgreSQL 17.2 on ...
 
 # 检查数据库状态
-docker exec db-pg pg_isready
+docker exec db-pg pg_isready -U chess -d isahl_9.x
 
 # 查看应用日志
 docker logs -f raft00

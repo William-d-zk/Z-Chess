@@ -29,19 +29,26 @@
 # - 性能优化配置
 # ============================================================================
 
-FROM postgres:17.2-alpine3.20
+FROM postgres:17.8-alpine3.23
 
 # 元数据标签
 LABEL maintainer="Z-Chess Team" \
-      version="17.2" \
+      version="17.8" \
       description="PostgreSQL 17 for Z-Chess" \
-      base.image="alpine:3.20"
+      base.image="alpine:3.23"
 
 # 环境变量
+# 与 application.properties 和 db.properties 保持一致
+# - postgresql.username=chess
+# - postgresql.database=isahl_9.x
+# - hibernate.default_schema=isahl
 ENV TZ=Asia/Shanghai \
     LANG=zh_CN.UTF-8 \
     PGDATA=/var/lib/postgresql/data \
-    POSTGRES_INITDB_ARGS="--encoding=UTF8 --locale=zh_CN.UTF-8"
+    POSTGRES_INITDB_ARGS="--encoding=UTF8 --locale=zh_CN.UTF-8" \
+    POSTGRES_USER=chess \
+    POSTGRES_PASSWORD=isahl_2025 \
+    POSTGRES_DB=isahl_9.x
 
 # 安装额外扩展和工具
 RUN set -eux && \
@@ -61,6 +68,7 @@ RUN set -eux && \
 # 复制初始化脚本和配置
 COPY ./init-scripts/ /docker-entrypoint-initdb.d/
 COPY ./postgresql.conf /etc/postgresql/postgresql.conf
+COPY ./pg_hba.conf /etc/postgresql/pg_hba.conf
 
 # 创建自定义配置目录
 RUN mkdir -p /etc/postgresql/conf.d && \

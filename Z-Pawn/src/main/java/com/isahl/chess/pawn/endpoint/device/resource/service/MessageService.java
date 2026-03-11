@@ -63,7 +63,7 @@ public class MessageService
     private final IMsgDeliveryStatusRepository _MsgDeliveryStatusRepository;
     private final IRaftConfig                  _RaftConfig;
 
-    @Autowired(required = false)
+    @Autowired
     public MessageService(IRaftConfig raftConfig,
                           CacheManager cacheManager,
                           IMessageRepository messageRepository,

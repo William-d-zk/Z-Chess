@@ -94,6 +94,7 @@ public class StateService
         _ClientPool = new ConcurrentSkipListMap<>();
         _StorageHourCleaner = new ScheduleHandler<>(Duration.ofHours(1), true, StateService::cleanup);
         _MsgStateService = msgStateService;
+        _Logger.info("StateService initialized");
     }
 
     @PostConstruct

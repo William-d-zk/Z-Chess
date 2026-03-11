@@ -28,24 +28,14 @@
 # - SQLite：最新稳定版
 # ============================================================================
 
-# 使用 Alpine 3.20 作为基础构建镜像
-FROM alpine:3.20 AS builder
-
-# 安装必要的构建工具
-RUN set -eux && \
-    sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
-    apk add --no-cache \
-        ca-certificates \
-        tzdata
-
 # 生产环境镜像
-FROM bellsoft/liberica-openjdk-alpine:17.0.12-10
+FROM isahl-liberica-jdk17:17.0.18-arm64
 
 # 元数据标签
 LABEL maintainer="Z-Chess Team" \
       version="2.0" \
       description="Z-Chess Arena Server for ARM64" \
-      base.image="alpine:3.20" \
+      base.image="alpine:3.23" \
       java.version="17"
 
 # 环境变量
@@ -54,18 +44,17 @@ ENV TZ=Asia/Shanghai \
     SPRING_PROFILES_ACTIVE=online
 
 # 安装系统依赖并配置时区
-# Alpine 3.20 使用更新的 Linux 内核 6.6.x
+# Alpine 3.23 使用更新的 Linux 内核 6.6.x
 RUN set -eux && \
-    sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
     apk upgrade --no-cache && \
     apk add --no-cache \
-        alpine-conf \
         sqlite \
         curl \
         jq \
         ca-certificates \
         tzdata && \
-    setup-timezone -z ${TZ} && \
+    cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    echo ${TZ} > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/*
 
 # 创建应用目录
@@ -78,7 +67,8 @@ ARG JAR_FILE=Z-Arena/target/*.jar
 COPY ${JAR_FILE} app.jar
 
 # 设置权限
-RUN chmod +x app.jar
+# 设置权限
+RUN chmod 644 /app/app.jar
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

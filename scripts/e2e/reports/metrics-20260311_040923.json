@@ -1,13 +1,9 @@
 {
   "timestamp": "20260311_040923",
   "containers": {
-    "raft00": "
-unknown",
-    "raft01": "
-unknown",
-    "raft02": "
-unknown",
-    "db-pg": "
-unknown"
+    "raft00": "unknown",
+    "raft01": "unknown",
+    "raft02": "unknown",
+    "db-pg": "unknown"
   }
 }
