@@ -90,7 +90,7 @@ public class Mapper
     private final    AtomicBoolean _TakeSnapshot    = new AtomicBoolean(false);
     private final    Lock          _SnapshotLock    = new ReentrantLock();
 
-    @Autowired(required = false)
+    @Autowired
     public Mapper(ZRaftConfig config, CacheManager cacheManager)
     {
         String baseDir = config.getBaseDir();

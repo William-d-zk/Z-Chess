@@ -28,13 +28,13 @@
 # - SQLite：最新稳定版
 # ============================================================================
 
-FROM bellsoft/liberica-openjdk-alpine:17.0.12-10
+FROM bellsoft/liberica-openjdk-alpine:17.0.18-10
 
 # 元数据标签
 LABEL maintainer="Z-Chess Team" \
       version="2.0" \
       description="Z-Chess Arena Server for AMD64" \
-      base.image="alpine:3.20" \
+      base.image="alpine:3.23" \
       java.version="17"
 
 # 环境变量
@@ -43,7 +43,7 @@ ENV TZ=Asia/Shanghai \
     SPRING_PROFILES_ACTIVE=local
 
 # 安装系统依赖并配置时区
-# Alpine 3.20 使用更新的 Linux 内核 6.6.x
+# Alpine 3.23 使用更新的 Linux 内核 6.6.x
 RUN set -eux && \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
     apk upgrade --no-cache && \
@@ -69,7 +69,7 @@ COPY ${JAR_FILE} app.jar
 COPY ${SQLITE_NATIVE_FILE} /usr/lib/libsqlitejdbc.so
 
 # 设置权限
-RUN chmod +x app.jar && \
+RUN chmod 644 /app/app.jar && \
     chmod 755 /usr/lib/libsqlitejdbc.so
 
 # 健康检查

@@ -160,7 +160,7 @@ volumes:
 
 ```yaml
 healthcheck:
-  test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+  test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -180,13 +180,19 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 
 ### 7.1 数据库连接
 
+与 `application.properties` 和 `db.properties` 保持一致：
+
 ```yaml
 environment:
+  # 应用连接配置
   - DB_HOST=db-pg.isahl.com    # 或 db-pg (amd64)
   - DB_PORT=5432
-  - DB_NAME=zchess
-  - POSTGRES_USER=postgres
-  - POSTGRES_PASSWORD=postgres
+  - DB_NAME=isahl_9.x          # 与 postgresql.database 一致
+  
+  # PostgreSQL 初始化配置
+  - POSTGRES_USER=chess        # 与 postgresql.username 一致
+  - POSTGRES_PASSWORD=isahl_2025
+  - POSTGRES_DB=isahl_9.x      # 与 postgresql.database 一致
 ```
 
 ### 7.2 JVM 参数
@@ -231,19 +237,26 @@ environment:
 | 问题 | 严重程度 | 说明 | 建议 |
 |------|----------|------|------|
 | **密码硬编码** | 中 | docker-compose 中明文密码 | 使用 Docker Secrets 或环境变量文件 |
-| **amd64 密码不一致** | 高 | amd64 使用 `postgress`（拼写错误？）| 统一为 `postgres` |
 | **无资源限制** | 中 | Java 应用无内存限制 | 添加 `mem_limit` 配置 |
 | **日志未轮转** | 低 | 依赖 docker 日志驱动 | 确认 `max-file` 配置有效 |
-| **缺少重启策略** | 低 | raft01/raft02 未配置 restart | 添加 `unless-stopped` |
+
+**已修复问题：**
+- ✅ 数据库配置统一为 `chess`/`isahl_9.x`（与 `application.properties` 一致）
+- ✅ 健康检查使用正确的用户名和数据库名
+- ✅ 所有节点配置 `restart: unless-stopped` |
 
 ### 9.2 配置差异（aarch64 vs amd64）
 
 | 配置项 | aarch64 | amd64 | 建议 |
 |--------|---------|-------|------|
 | 数据库域名 | `db-pg.isahl.com` | `db-pg` | 统一使用域名 |
-| 数据库密码 | `postgres` | `postgress` | 修正拼写 |
 | 配置文件 | `online` | `local` | 生产环境统一 `online` |
 | 卷挂载 | 有 logs 卷 | 无 logs 卷 | 统一添加日志卷 |
+
+**数据库配置（已统一）：**
+- 用户名: `chess`（与 `postgresql.username` 一致）
+- 数据库: `isahl_9.x`（与 `postgresql.database` 一致）
+- Schema: `isahl`（与 `hibernate.default_schema` 一致）
 
 ---
 

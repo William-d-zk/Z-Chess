@@ -28,14 +28,13 @@
 # - 优化网络和存储配置
 # ============================================================================
 
-version: '3.9'
 
 services:
   # ==========================================================================
   # PostgreSQL 17 数据库服务
   # ==========================================================================
   db-pg:
-    image: postgres:17.2-alpine3.20
+    image: z-chess-postgres:17.8-arm64
     container_name: db-pg
     hostname: db-pg
     domainname: isahl.com
@@ -58,35 +57,29 @@ services:
         ipv4_address: 172.30.10.254
     
     volumes:
-      - type: bind
-        source: ~/Services/db/postgresql17
-        target: /var/lib/postgresql/data
-      - type: bind
-        source: ~/Services/db/postgresql17/log
-        target: /var/lib/postgresql/log
-      - type: bind
-        source: /tmp/01-init-zchess.sql
-        target: /docker-entrypoint-initdb.d/01-init-zchess.sql
-        read_only: true
+      - postgres_data:/var/lib/postgresql/data
     
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      # 与 application.properties 和 db.properties 保持一致
+      # postgresql.username=chess
+      # postgresql.database=isahl_9.x
+      - POSTGRES_USER=chess
+      - POSTGRES_PASSWORD=isahl_2025
+      - POSTGRES_DB=isahl_9.x
+      # PGDATA 默认为 /var/lib/postgresql/data，与卷挂载路径一致
       - TZ=Asia/Shanghai
       - PGTZ=Asia/Shanghai
     
     # 健康检查
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     
     # 重启策略
-    restart: unless-stopped
+    restart: no
     
     # 日志配置
     logging:
@@ -104,7 +97,7 @@ services:
       dockerfile: scripts/aarch64/Dockerfile
       platforms:
         - linux/arm64
-    image: img.z-chess.arena.aarch64:2.0
+    image: z-chess-arena:2.0-arm64
     container_name: raft00
     hostname: raft00
     
@@ -113,7 +106,7 @@ services:
         condition: service_healthy
     
     ports:
-      - "8080:8080"    # HTTP API
+      - "8080:2808"    # HTTP API
       - "8000:8000"    # Debug
       - "1883:1883"    # MQTT
     
@@ -146,16 +139,14 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=online
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -Djava.library.path=/usr/lib
+      # 数据库配置与 application.properties 保持一致
+      # postgresql.host=db-pg.isahl.com
+      # postgresql.port=5432
+      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
       - DB_PORT=5432
-      - DB_NAME=zchess
+      - DB_NAME=isahl_9.x
       - TZ=Asia/Shanghai
-      - postgresql.host=db-pg.isahl.com
-      - postgresql.port=5432
-      - postgresql.database=postgres
-      - postgresql.username=postgres
-      - postgresql.password=postgres
-      - z.rook.dss[0].datasource.password=postgres
     
     entrypoint: >
       sh -c "java $${JAVA_OPTS} 
@@ -163,7 +154,7 @@ services:
       -jar /app/app.jar 
       --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
     
-    restart: unless-stopped
+    restart: no
     
     logging:
       driver: "json-file"
@@ -175,12 +166,7 @@ services:
   # Z-Chess Arena 节点 1
   # ==========================================================================
   raft11:
-    build:
-      context: ../..
-      dockerfile: scripts/aarch64/Dockerfile
-      platforms:
-        - linux/arm64
-    image: img.z-chess.arena.aarch64:2.0
+    image: z-chess-arena:2.0-arm64
     container_name: raft01
     hostname: raft01
     
@@ -191,6 +177,7 @@ services:
         condition: service_started
     
     ports:
+      - "8081:2808"    # HTTP API
       - "1884:1883"    # MQTT
       - "8100:8000"    # Debug
     
@@ -216,14 +203,14 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=online
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      # 数据库配置与 application.properties 保持一致
+      # postgresql.host=db-pg.isahl.com
+      # postgresql.port=5432
+      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
       - TZ=Asia/Shanghai
-      - postgresql.host=db-pg.isahl.com
-      - postgresql.port=5432
-      - postgresql.database=postgres
-      - postgresql.username=postgres
-      - postgresql.password=postgres
-      - z.rook.dss[0].datasource.password=postgres
     
     entrypoint: >
       sh -c "java $${JAVA_OPTS} 
@@ -231,18 +218,13 @@ services:
       -jar /app/app.jar 
       --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
     
-    restart: unless-stopped
+    restart: no
 
   # ==========================================================================
   # Z-Chess Arena 节点 2
   # ==========================================================================
   raft12:
-    build:
-      context: ../..
-      dockerfile: scripts/aarch64/Dockerfile
-      platforms:
-        - linux/arm64
-    image: img.z-chess.arena.aarch64:2.0
+    image: z-chess-arena:2.0-arm64
     container_name: raft02
     hostname: raft02
     
@@ -253,6 +235,7 @@ services:
         condition: service_started
     
     ports:
+      - "8082:2808"    # HTTP API
       - "1885:1883"    # MQTT
       - "8200:8000"    # Debug
     
@@ -278,14 +261,14 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=online
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      # 数据库配置与 application.properties 保持一致
+      # postgresql.host=db-pg.isahl.com
+      # postgresql.port=5432
+      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
       - TZ=Asia/Shanghai
-      - postgresql.host=db-pg.isahl.com
-      - postgresql.port=5432
-      - postgresql.database=postgres
-      - postgresql.username=postgres
-      - postgresql.password=postgres
-      - z.rook.dss[0].datasource.password=postgres
     
     entrypoint: >
       sh -c "java $${JAVA_OPTS} 
@@ -293,7 +276,7 @@ services:
       -jar /app/app.jar 
       --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
     
-    restart: unless-stopped
+    restart: no
 
 # ============================================================================
 # 网络配置
