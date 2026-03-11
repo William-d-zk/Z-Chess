@@ -91,27 +91,45 @@ public class DeviceController {
         @RequestParam(name = "docker",required = false,defaultValue = "false") Boolean docker,
         @RequestBody DeviceDo deviceDo
     ) {
-        if (ObjectUtils.isEmpty(deviceDo.getProfile().getWifiMac()) || ObjectUtils.isEmpty(
-            deviceDo.getProfile().getEthernetMac()) || ObjectUtils.isEmpty(deviceDo.getProfile().getBluetoothMac())) {
+        // NPE 防护：检查 profile 及 MAC 地址字段
+        if (deviceDo == null || deviceDo.getProfile() == null) {
+            return ZResponse.error(CodeKing.ERROR.getCode(), "设备信息不能为空");
+        }
+        DeviceProfile profile = deviceDo.getProfile();
+        if (ObjectUtils.isEmpty(profile.getWifiMac()) || 
+            ObjectUtils.isEmpty(profile.getEthernetMac()) || 
+            ObjectUtils.isEmpty(profile.getBluetoothMac())) {
             return ZResponse.error(CodeKing.ERROR.getCode(), "wifi/ethernet/bluetooth 硬件地址不能为空");
         }
         String serialNo = CryptoUtil.MD5(
-            deviceDo.getProfile().getEthernetMac() + "|" + deviceDo.getProfile().getWifiMac() + "|"
-                + deviceDo.getProfile().getBluetoothMac());
+            profile.getEthernetMac() + "|" + profile.getWifiMac() + "|" + profile.getBluetoothMac());
         // 查询是否已经注册过该设备
         DeviceEntity existDevice = _MixOpenService.findByNumber(serialNo);
         if(existDevice != null){
             // 已经注册过设备，返回算法名称及公钥等信息
+            // NPE 防护：检查嵌套对象
+            DeviceProfile existProfile = existDevice.getProfile();
+            if (existProfile == null) {
+                return ZResponse.error(CodeKing.ERROR.getCode(), "设备配置信息不完整");
+            }
+            KeyPairProfile keyPairProfile = existProfile.getKeyPairProfile();
+            if (keyPairProfile == null) {
+                return ZResponse.error(CodeKing.ERROR.getCode(), "设备密钥信息不完整");
+            }
             Map<String, String> data = new HashMap<>();
             data.put("token", existDevice.getToken());
             data.put("serial", serialNo);
-            data.put("algorithm", existDevice.getProfile().getKeyPairProfile().getKeyPairAlgorithm());
-            data.put("publicKey", existDevice.getProfile().getKeyPairProfile().getPublicKey());
+            data.put("algorithm", keyPairProfile.getKeyPairAlgorithm());
+            data.put("publicKey", keyPairProfile.getPublicKey());
             if(docker){
-                LocalDateTime expireDate = existDevice.getProfile().getExpirationProfile().getExpireAt();
+                ExpirationProfile expirationProfile = existProfile.getExpirationProfile();
+                if (expirationProfile == null || expirationProfile.getExpireAt() == null) {
+                    return ZResponse.error(CodeKing.ERROR.getCode(), "设备有效期信息不完整");
+                }
+                LocalDateTime expireDate = expirationProfile.getExpireAt();
                 String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String expireInfo =
-                        existDevice.getNotice() + "|" + expireDateString + "|" + existDevice.getProfile().getKeyPairProfile().getPublicKey();
+                        existDevice.getNotice() + "|" + expireDateString + "|" + keyPairProfile.getPublicKey();
                 // 返回经过md5的有效期信息(serial|date|publicKey)
                 data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
                 data.put("expire_date",expireDateString);
@@ -224,7 +242,10 @@ public class DeviceController {
                     String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String expireInfo =
                         exist.getNotice() + "|" + expireDateString + "|" + existedDeviceProfile.getKeyPairProfile().getPublicKey();
-                    _Logger.info("token = " + token + " , expireInfo = " + expireInfo);
+                    // 安全修复: 不再日志输出敏感 token
+                    if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                        _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
+                    }
                     // 返回经过md5的有效期信息(serial|date|publicKey)
                     data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
                     data.put("expire_date",expireDateString);
@@ -294,7 +315,10 @@ public class DeviceController {
                 String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String expireInfo =
                     exist.getNotice() + "|" + expireDateString + "|" + existedDeviceProfile.getKeyPairProfile().getPublicKey();
-                _Logger.info("token = " + token + " , expireInfo = " + expireInfo);
+                // 安全修复: 不再日志输出敏感 token
+                    if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                        _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
+                    }
                 // 返回经过md5的有效期信息(serial|date|publicKey)
                 data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
                 data.put("expire_date",expireDateString);

@@ -72,9 +72,9 @@ COPY ${SQLITE_NATIVE_FILE} /usr/lib/libsqlitejdbc.so
 RUN chmod 644 /app/app.jar && \
     chmod 755 /usr/lib/libsqlitejdbc.so
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+# 健康检查 - 使用实际暴露的 HTTP 端口 2808
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
+    CMD curl -sf http://localhost:2808/echo/hook?input=health -H "Accept: application/json" || exit 1
 
 # 暴露端口
 # 8080: HTTP API

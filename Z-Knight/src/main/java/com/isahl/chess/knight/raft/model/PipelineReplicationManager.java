@@ -294,8 +294,27 @@ public class PipelineReplicationManager
     }
 
     private final Map<Long, InflightWindow> mWindows = new ConcurrentHashMap<>();
-    private volatile int mDefaultMaxInflight = 100;
-    private volatile long mInflightTimeoutMs = 5000;
+    private volatile int mDefaultMaxInflight;
+    private volatile long mInflightTimeoutMs;
+
+    /**
+     * 默认构造函数，使用默认配置值
+     */
+    public PipelineReplicationManager()
+    {
+        this(100, 5000);
+    }
+
+    /**
+     * 带配置的构造函数
+     * @param maxInflight 最大 inflight 数
+     * @param inflightTimeoutMs inflight 超时时间（毫秒）
+     */
+    public PipelineReplicationManager(int maxInflight, long inflightTimeoutMs)
+    {
+        this.mDefaultMaxInflight = maxInflight;
+        this.mInflightTimeoutMs = inflightTimeoutMs;
+    }
 
     /**
      * 获取或创建 InflightWindow

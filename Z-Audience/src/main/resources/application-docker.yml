@@ -1,0 +1,79 @@
+#
+# MIT License
+#
+# Copyright (c) 2016~2024. Z-Chess
+#
+# Z-Audience Docker 测试环境配置
+#
+
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: online
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_empty
+
+# 压力测试配置
+z:
+  chess:
+    pressure:
+      # 目标服务器配置
+      target:
+        host: ${Z_CHESS_PRESSURE_TARGET_HOST:raft00}
+        port: ${Z_CHESS_PRESSURE_TARGET_PORT:1883}
+      
+      # 并发连接数
+      concurrency: ${Z_CHESS_PRESSURE_CONCURRENCY:100}
+      
+      # 每个连接每秒请求数
+      requests-per-second-per-client: 10
+      
+      # 测试持续时间
+      duration: ${Z_CHESS_PRESSURE_DURATION:PT60S}
+      
+      # 连接建立速率（每秒新建连接数）
+      connection-rate: 100
+      
+      # 连接建立超时
+      connect-timeout: PT10S
+      
+      # 请求超时
+      request-timeout: PT5S
+      
+      # 是否启用心跳
+      keep-alive: true
+      
+      # 心跳间隔（秒）
+      heartbeat-interval: 30
+      
+      # 协议类型：mqtt, websocket, zchat
+      protocol: ${Z_CHESS_PRESSURE_PROTOCOL:mqtt}
+      
+      # 消息 payload 大小（字节）
+      payload-size: 256
+      
+      # 是否打印详细日志
+      verbose: false
+      
+      # 统计采样间隔（秒）
+      stats-interval: 5
+      
+      # 预热时间（秒）
+      warm-up-seconds: 5
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.isahl.chess: DEBUG
+    com.isahl.chess.audience: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/audience.log
+    max-size: 100MB
+    max-history: 7

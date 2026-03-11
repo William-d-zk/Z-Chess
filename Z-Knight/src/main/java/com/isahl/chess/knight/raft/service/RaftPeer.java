@@ -135,7 +135,7 @@ public class RaftPeer
     private final ScheduleHandler<RaftPeer> _TransferTimeoutSchedule;
     
     // Pipeline 复制管理器
-    private final PipelineReplicationManager _PipelineManager = new PipelineReplicationManager();
+    private final PipelineReplicationManager _PipelineManager;
     private volatile boolean mPipelineEnabled = true;
     
     // Lease 读管理器
@@ -171,6 +171,10 @@ public class RaftPeer
         _JointGraph.append(_SelfMachine);
         _SnapshotFragmentMaxSize = _RaftConfig.getSnapshotFragmentMaxSize();
         _SyncBatchMaxSize = _RaftConfig.getSyncBatchMaxSize();
+        _PipelineManager = new PipelineReplicationManager(
+            _RaftConfig.getPipelineMaxInflight(),
+            _RaftConfig.getPipelineInflightTimeoutMs()
+        );
     }
 
     private RaftMachine updateMachine(IRaftMachine machine, RaftState state)
@@ -491,19 +495,23 @@ public class RaftPeer
     private ITriple checkTerm(IRaftRecord record, long msgId, ISession session)
     {
         if(lowTerm(record.term())) {
-            _Logger.debug("{low term: reject %#x, mine:[%d@%d(%d)] from:[%d@%d(%d)]}",
-                          record.peer(),
-                          _SelfMachine.index(),
-                          _SelfMachine.indexTerm(),
-                          _SelfMachine.term(),
-                          record.index(),
-                          record.indexTerm(),
-                          record.term());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("{low term: reject %#x, mine:[%d@%d(%d)] from:[%d@%d(%d)]}",
+                              record.peer(),
+                              _SelfMachine.index(),
+                              _SelfMachine.indexTerm(),
+                              _SelfMachine.term(),
+                              record.index(),
+                              record.indexTerm(),
+                              record.term());
+            }
             return Triple.of(reject(LOWER_TERM, record.peer(), msgId).with(session), null, SINGLE);
         }
         if(highTerm(record.term())) {
             // term > my term
-            _Logger.debug("{step down [%#x → follower] high term [ %d > %d ]}", _SelfMachine.peer(), record.term(), _SelfMachine.term());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("{step down [%#x → follower] high term [ %d > %d ]}", _SelfMachine.peer(), record.term(), _SelfMachine.term());
+            }
             stepDown(record.term());
         }
         return null;
@@ -526,33 +534,41 @@ public class RaftPeer
             )
             //@formatter:on
             {
-                _Logger.debug("less than me; reject[%s]  mine:[ %d@%d,a:%d | c:%d ] > candidate:[ %d@%d, a:%d | c:%d ] then vote4me[ follower → candidate ] ",
-                              OBSOLETE,
-                              _SelfMachine.index(),
-                              _SelfMachine.indexTerm(),
-                              _SelfMachine.accept(),
-                              _SelfMachine.commit(),
-                              x70.index(),
-                              x70.indexTerm(),
-                              x70.accept(),
-                              x70.commit());
+                if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                    _Logger.debug("less than me; reject[%s]  mine:[ %d@%d,a:%d | c:%d ] > candidate:[ %d@%d, a:%d | c:%d ] then vote4me[ follower → candidate ] ",
+                                  OBSOLETE,
+                                  _SelfMachine.index(),
+                                  _SelfMachine.indexTerm(),
+                                  _SelfMachine.accept(),
+                                  _SelfMachine.commit(),
+                                  x70.index(),
+                                  x70.indexTerm(),
+                                  x70.accept(),
+                                  x70.commit());
+                }
                 return Triple.of(rejectThenVote(x70.candidate(), x70.msgId(), manager, session), null, BATCH);
             }
             else {
                 //投票给候选人
-                _Logger.debug("new term [ %d ] follower [ %#x ] → elector | candidate:[ %#x ]", x70.term(), _SelfMachine.peer(), x70.candidate());
+                if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                    _Logger.debug("new term [ %d ] follower [ %#x ] → elector | candidate:[ %#x ]", x70.term(), _SelfMachine.peer(), x70.candidate());
+                }
                 IProtocol ballot = stepUp(x70.term(), x70.candidate(), x70.msgId());
                 return Triple.of(ballot.with(session), null, SINGLE);
             }
         }
         // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
         else if(_SelfMachine.candidate() != x70.candidate()) {
-            _Logger.debug("already vote [elector ×] | vote for:[ %#x not ♂ %#x ]", _SelfMachine.candidate(), x70.candidate());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("already vote [elector ×] | vote for:[ %#x not ♂ %#x ]", _SelfMachine.candidate(), x70.candidate());
+            }
             return Triple.of(reject(ALREADY_VOTE, x70.candidate(), x70.msgId()).with(session), null, SINGLE);
         }
         else {
             // 重复投票给相同的候选人
-            _Logger.debug("same vote [elector x] | vote for:[%#x ♂ %#x]", _SelfMachine.candidate(), x70.candidate());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("same vote [elector x] | vote for:[%#x ♂ %#x]", _SelfMachine.candidate(), x70.candidate());
+            }
             IProtocol ballot = ballot(x70.msgId());
             return Triple.of(ballot.with(session), null, SINGLE);
         }
@@ -615,12 +631,16 @@ public class RaftPeer
         // Pipeline 模式：处理拒绝，回退 inflight 窗口
         if(mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
             long newNextIndex = _PipelineManager.onReject(x74.peer(), x74.index(), x74.indexTerm());
-            _Logger.debug("Pipeline: received reject from %#x, newNextIndex=%d", x74.peer(), newNextIndex);
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("Pipeline: received reject from %#x, newNextIndex=%d", x74.peer(), newNextIndex);
+            }
         }
         
         if(highTerm(x74.term())) {
             //peer's term > my term
-            _Logger.debug(" → reject {step down [%s → follower]}", RaftState.roleOf(_SelfMachine.state()));
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug(" → reject {step down [%s → follower]}", RaftState.roleOf(_SelfMachine.state()));
+            }
             stepDown(x74.term());
         }
         else {
@@ -632,7 +652,9 @@ public class RaftPeer
                     case CONFLICT -> {
                         // follower 持有的 log 纪录 index@term 与leader 投送的不一致，后续进行覆盖同步
                         if(_SelfMachine.isInState(LEADER)) {
-                            _Logger.debug("follower %#x,match failed,rollback %d@%d", x74.peer(), x74.index(), x74.indexTerm());
+                            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                                _Logger.debug("follower %#x,match failed,rollback %d@%d", x74.peer(), x74.index(), x74.indexTerm());
+                            }
                             
                             // Pipeline 模式：使用回退后的 nextIndex 重新发送
                             boolean usePipelineRetry = mPipelineEnabled && _PipelineManager.getWindow(x74.peer()) != null;
@@ -662,7 +684,9 @@ public class RaftPeer
                     }
                     case SPLIT_CLUSTER -> {
                         if(_SelfMachine.isInState(LEADER)) {
-                            _Logger.debug("other leader:[%#x]", x74.leader());
+                            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                                _Logger.debug("other leader:[%#x]", x74.leader());
+                            }
                         }
                     }
                     case ALREADY_VOTE -> {
@@ -702,8 +726,10 @@ public class RaftPeer
         if(mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
             _PipelineManager.onAck(x73.peer(), x73.accept());
             
-            _Logger.debug("Pipeline: received accept from %#x, index=%d, inflight=%d", 
-                         x73.peer(), x73.accept(), _PipelineManager.getInflightCount(x73.peer()));
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("Pipeline: received accept from %#x, index=%d, inflight=%d", 
+                             x73.peer(), x73.accept(), _PipelineManager.getInflightCount(x73.peer()));
+            }
             
             // 继续 Pipeline 复制（如果窗口允许且还有更多日志）
             continuePipelineReplication(x73.peer(), manager);
@@ -743,11 +769,15 @@ public class RaftPeer
             }
         }
         else if(x73.accept() < next) {// machine.accept < next → 已经执行过 self commit 过, 无须重复 commit
-            _Logger.debug("already commit %d, follow[ %#x ] accept: %d commit: %d", _SelfMachine.commit(), x73.peer(), x73.accept(), x73.commit());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("already commit %d, follow[ %#x ] accept: %d commit: %d", _SelfMachine.commit(), x73.peer(), x73.accept(), x73.commit());
+            }
         }
         else {
             // !_SelfGraph.isMajorAccept(next) → 未满足 commit 条件, 不执行 commit
-            _Logger.debug("member %#x, catchup:%d → %d", x73.peer(), x73.accept(), _SelfMachine.accept());
+            if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+                _Logger.debug("member %#x, catchup:%d → %d", x73.peer(), x73.accept(), _SelfMachine.accept());
+            }
         }
         return null;
     }
