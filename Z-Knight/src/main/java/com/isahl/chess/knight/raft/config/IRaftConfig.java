@@ -90,6 +90,10 @@ public interface IRaftConfig
 
     int getSyncBatchMaxSize();
 
+    int getPipelineMaxInflight();
+
+    long getPipelineInflightTimeoutMs();
+
     class Uid
             implements IReset
     {

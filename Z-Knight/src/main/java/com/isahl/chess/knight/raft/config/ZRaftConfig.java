@@ -393,4 +393,16 @@ public class ZRaftConfig
     {
         return mConfig.getSyncBatchMaxSize();
     }
+
+    @Override
+    public int getPipelineMaxInflight()
+    {
+        return mConfig.getPipelineMaxInflight();
+    }
+
+    @Override
+    public long getPipelineInflightTimeoutMs()
+    {
+        return mConfig.getPipelineInflightTimeoutMs();
+    }
 }

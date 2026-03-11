@@ -187,6 +187,10 @@ public class Segment
     {
         if(mFileSize == 0) {return;}
         _Records.decode(ByteBuf.wrap(mFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, mFileSize)));
+        // NPE 防护：检查列表是否为空
+        if(_Records.isEmpty()) {
+            throw new ZException("segment records is empty after decode, file: %s", mFileName);
+        }
         long startIndex = _Records.get(0)
                                   .index();
         if(startIndex != _StartIndex) {

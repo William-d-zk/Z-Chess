@@ -58,6 +58,10 @@ public class RaftConfig
 
     private int syncBatchMaxSize;
 
+    // Pipeline replication configuration
+    private int pipelineMaxInflight = 100;
+    private long pipelineInflightTimeoutMs = 5000;
+
     public Map<Integer, String> getPeers()
     {
         return peers;
@@ -176,6 +180,26 @@ public class RaftConfig
     public void setSyncBatchMaxSize(int syncBatchMaxSize)
     {
         this.syncBatchMaxSize = syncBatchMaxSize;
+    }
+
+    public int getPipelineMaxInflight()
+    {
+        return pipelineMaxInflight;
+    }
+
+    public void setPipelineMaxInflight(int pipelineMaxInflight)
+    {
+        this.pipelineMaxInflight = pipelineMaxInflight;
+    }
+
+    public long getPipelineInflightTimeoutMs()
+    {
+        return pipelineInflightTimeoutMs;
+    }
+
+    public void setPipelineInflightTimeoutMs(long pipelineInflightTimeoutMs)
+    {
+        this.pipelineInflightTimeoutMs = pipelineInflightTimeoutMs;
     }
 }
 

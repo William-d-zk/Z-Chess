@@ -201,12 +201,14 @@ public class FullPolynomial
      */
     public boolean equals(Object o)
     {
-        try {
-            FullPolynomial other = (FullPolynomial) o;
-            return java.util.Arrays.equals(p, other.p);
+        if(this == o) {
+            return true;
         }
-        catch(Exception ignored) {}
-        return false;
+        if(!(o instanceof FullPolynomial)) {
+            return false;
+        }
+        FullPolynomial other = (FullPolynomial) o;
+        return java.util.Arrays.equals(p, other.p);
     }
 
     /**

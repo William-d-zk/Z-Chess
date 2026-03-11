@@ -1,3 +1,26 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2016~2024. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.isahl.chess.player.api.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -5,17 +28,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * @author xiaojiang.lxj at 2024-05-09 14:19.
+ * Player 模块配置类
  */
 @PropertySource("classpath:player.properties")
 @Configuration("player_config")
 public class PlayerConfig {
-
-    @Value("${noco.api.base.url}")
-    private String nocoApiBaseUrl;
-
-    @Value("${noco.api.visit.token}")
-    private String nocoApiToken;
 
     @Value("${bidding.rpa.api.url}")
     private String biddingRpaApiUrl;
@@ -25,14 +42,6 @@ public class PlayerConfig {
 
     @Value("${bidding.task.booking.disable:true}")
     private Boolean disableBooking;
-
-    public String getNocoApiToken() {
-        return nocoApiToken;
-    }
-
-    public String getNocoApiBaseUrl() {
-        return nocoApiBaseUrl;
-    }
 
     public String getBiddingRpaApiUrl() {
         return biddingRpaApiUrl;

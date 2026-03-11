@@ -1,0 +1,400 @@
+# MIT License
+#
+# Copyright (c) 2016~2024. Z-Chess
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# ============================================================================
+# Z-Chess Docker Compose - 测试集群版本 (ARM64)
+# 
+# 包含：
+# - PostgreSQL 17 数据库
+# - 3个 Z-Chess Arena 节点 (Raft集群)
+# - Z-Chess Audience 测试客户端
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # PostgreSQL 17 数据库服务
+  # ==========================================================================
+  db-pg:
+    image: z-chess-postgres:17.8-arm64
+    container_name: db-pg
+    hostname: db-pg
+    domainname: isahl.com
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    
+    ports:
+      - "5432:5432"
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.254
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    environment:
+      - POSTGRES_USER=chess
+      - POSTGRES_PASSWORD=isahl_2025
+      - POSTGRES_DB=isahl_9.x
+      - TZ=Asia/Shanghai
+      - PGTZ=Asia/Shanghai
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    restart: no
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 0 (主节点)
+  # ==========================================================================
+  raft00:
+    build:
+      context: ../../..
+      dockerfile: scripts/build/aarch64/Dockerfile
+      platforms:
+        - linux/arm64
+    image: z-chess-arena:2.0-arm64
+    container_name: raft00
+    hostname: raft00
+    
+    depends_on:
+      db-pg:
+        condition: service_healthy
+    
+    ports:
+      - "8080:2808"    # HTTP API
+      - "8000:8000"    # Debug
+      - "1883:1883"    # MQTT
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.110
+      gate:
+        ipv4_address: 172.30.11.110
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft00
+        target: /root/Z-Chess
+      - type: bind
+        source: ~/Z-Chess/logs/raft00
+        target: /app/logs
+      - type: bind
+        source: ~/Z-Chess/sqlite
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -Djava.library.path=/usr/lib
+      - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
+      - TZ=Asia/Shanghai
+    
+    entrypoint: >
+      sh -c "java $${JAVA_OPTS} 
+      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 
+      -jar /app/app.jar 
+      --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
+    
+    restart: no
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 1
+  # ==========================================================================
+  raft01:
+    image: z-chess-arena:2.0-arm64
+    container_name: raft01
+    hostname: raft01
+    
+    depends_on:
+      db-pg:
+        condition: service_healthy
+      raft00:
+        condition: service_started
+    
+    ports:
+      - "8081:2808"    # HTTP API
+      - "1884:1883"    # MQTT
+      - "8100:8000"    # Debug
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.111
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft01
+        target: /root/Z-Chess
+      - type: bind
+        source: ~/Z-Chess/logs/raft01
+        target: /app/logs
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
+      - TZ=Asia/Shanghai
+    
+    entrypoint: >
+      sh -c "java $${JAVA_OPTS} 
+      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 
+      -jar /app/app.jar 
+      --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
+    
+    restart: no
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 2
+  # ==========================================================================
+  raft02:
+    image: z-chess-arena:2.0-arm64
+    container_name: raft02
+    hostname: raft02
+    
+    depends_on:
+      db-pg:
+        condition: service_healthy
+      raft00:
+        condition: service_started
+    
+    ports:
+      - "8082:2808"    # HTTP API
+      - "1885:1883"    # MQTT
+      - "8200:8000"    # Debug
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.112
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.11.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft02
+        target: /root/Z-Chess
+      - type: bind
+        source: ~/Z-Chess/logs/raft02
+        target: /app/logs
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
+      - TZ=Asia/Shanghai
+    
+    entrypoint: >
+      sh -c "java $${JAVA_OPTS} 
+      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 
+      -jar /app/app.jar 
+      --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
+    
+    restart: no
+
+  # ==========================================================================
+  # Z-Chess Audience 测试客户端
+  # ==========================================================================
+  audience:
+    build:
+      context: ../../..
+      dockerfile: scripts/build/aarch64/Dockerfile.audience
+      platforms:
+        - linux/arm64
+    image: z-chess-audience:2.0-arm64
+    container_name: audience
+    hostname: audience
+    
+    depends_on:
+      raft00:
+        condition: service_started
+      raft01:
+        condition: service_started
+      raft02:
+        condition: service_started
+    
+    ports:
+      - "8090:8080"    # HTTP API (测试控制)
+      - "8300:8000"    # Debug
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.120
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/logs/audience
+        target: /app/logs
+        bind:
+          create_host_path: true
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0
+      # 测试目标配置
+      - Z_CHESS_PRESSURE_TARGET_HOST=raft00
+      - Z_CHESS_PRESSURE_TARGET_PORT=1883
+      # 测试参数
+      - Z_CHESS_PRESSURE_CONCURRENCY=100
+      - Z_CHESS_PRESSURE_DURATION=PT60S
+      - Z_CHESS_PRESSURE_PROTOCOL=mqtt
+      - TZ=Asia/Shanghai
+    
+    entrypoint: >
+      sh -c "echo '等待集群就绪...' && 
+             sleep 30 && 
+             echo '启动 Audience 测试客户端...' && 
+             java $${JAVA_OPTS} 
+             -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 
+             -jar /app/app.jar 
+             --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
+    
+    restart: no
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ==========================================================================
+  # TLS 测试客户端 (用于验证 TLS 加密连接)
+  # ==========================================================================
+  tls-tester:
+    build:
+      context: ../../..
+      dockerfile: scripts/build/aarch64/Dockerfile.audience
+      platforms:
+        - linux/arm64
+    image: z-chess-audience:2.0-arm64
+    container_name: tls-tester
+    hostname: tls-tester
+    
+    profiles:
+      - tls-test
+    
+    depends_on:
+      raft00:
+        condition: service_started
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.121
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+    
+    volumes:
+      - type: bind
+        source: ./cert
+        target: /app/cert
+        read_only: true
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=25.0
+      # TLS 测试配置
+      - TEST_MODE=tls
+      - TEST_TARGET_HOST=raft00
+      - TEST_TARGET_PORT=1883
+      - SSL_ENABLED=true
+      - SSL_TRUSTSTORE_PATH=/app/cert/trust.p12
+      - SSL_TRUSTSTORE_PASSWORD=changeit
+      - TZ=Asia/Shanghai
+    
+    command: >
+      sh -c "echo 'TLS 测试客户端就绪' && 
+             echo '使用命令: java -jar app.jar 启动测试' && 
+             tail -f /dev/null"
+    
+    restart: no
+
+# ============================================================================
+# 网络配置
+# ============================================================================
+networks:
+  endpoint:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
+          gateway: 172.30.10.1
+  
+  gate:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.11.0/24
+          gateway: 172.30.11.1
+
+# ============================================================================
+# 共享卷
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  postgres_logs:
+    driver: local
