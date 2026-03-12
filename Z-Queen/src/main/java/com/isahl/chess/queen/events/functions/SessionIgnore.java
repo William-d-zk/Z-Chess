@@ -46,5 +46,5 @@ public class SessionIgnore
         return "operator.ignore";
     }
 
-    public static SessionIgnore INSTANCE = new SessionIgnore();
+    public static final SessionIgnore INSTANCE = new SessionIgnore();
 }

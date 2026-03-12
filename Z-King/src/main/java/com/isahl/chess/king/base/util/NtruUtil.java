@@ -22,9 +22,11 @@
  */
 package com.isahl.chess.king.base.util;
 
+import com.isahl.chess.king.base.log.Logger;
 import com.securityinnovation.jNeo.*;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 import com.securityinnovation.jNeo.ntruencrypt.NtruEncryptKey;
+import java.security.SecureRandom;
 
 /**
  * @author William.d.zk
@@ -79,10 +81,12 @@ public class NtruUtil
         };
     }
 
+    private static final Logger _Logger = Logger.getLogger(NtruUtil.class.getSimpleName());
+
     public byte[] encrypt(byte[] message, byte[] pubKey)
     {// 客户端用的
         byte[] seed = new byte[32];
-        java.util.Random rs = new java.util.Random();
+        SecureRandom rs = new SecureRandom();
         rs.nextBytes(seed);
         Random prng = new Random(seed);
 
@@ -91,7 +95,7 @@ public class NtruUtil
             return ntruKey.encrypt(message, prng);
         }
         catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | PlaintextBadLengthException e) {
-            e.printStackTrace();
+            _Logger.error("NTRU encryption failed: %s", e.getMessage());
             return null;
         }
     }
@@ -103,7 +107,7 @@ public class NtruUtil
             return ntruKey.decrypt(cipher);
         }
         catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | NoPrivateKeyException | CiphertextBadLengthException | DecryptionFailureException e) {
-            e.printStackTrace();
+            _Logger.error("NTRU decryption failed: %s", e.getMessage());
             return null;
         }
     }

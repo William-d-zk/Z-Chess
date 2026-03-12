@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.20</version>
+        <version>1.0.21</version>
     </parent>
     <artifactId>test.z-audience</artifactId>
     <name>Z-Audience</name>
@@ -37,6 +37,16 @@
         <dependency>
             <groupId>com.isahl.chess</groupId>
             <artifactId>cluster.z-knight</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.isahl.chess</groupId>
+            <artifactId>endpoint.z-pawn</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.isahl.chess</groupId>
+            <artifactId>biz.z-player</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

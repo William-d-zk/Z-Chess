@@ -25,6 +25,7 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
@@ -35,6 +36,8 @@ import com.isahl.chess.queen.io.core.net.socket.AioPacket;
  */
 public class X07_SslHandShakeSend extends X07_SslHandShake
 {
+    private static final Logger _Logger = Logger.getLogger(X07_SslHandShakeSend.class.getSimpleName());
+    
     private transient IPacket mHandShakePacket;
     private transient SSLZContext mSslContext;
 
@@ -59,20 +62,20 @@ public class X07_SslHandShakeSend extends X07_SslHandShake
         super.with(session);
         // Send handshake data directly using session.write()
         if(mHandShakePacket != null && mHandShakePacket.getBuffer().isReadable()) {
-            System.out.println("[DEBUG] X07_SslHandShakeSend: sending handshake data via session.write(), bytes=" + mHandShakePacket.getBuffer().readableBytes());
+            _Logger.debug("X07_SslHandShakeSend: sending handshake data via session.write(), bytes=%d", mHandShakePacket.getBuffer().readableBytes());
             try {
                 session.write(mHandShakePacket, new java.nio.channels.CompletionHandler<Integer, ISession>() {
                     @Override
                     public void completed(Integer result, ISession attachment) {
-                        System.out.println("[DEBUG] X07_SslHandShakeSend: handshake data sent, bytes=" + result);
+                        _Logger.debug("X07_SslHandShakeSend: handshake data sent, bytes=%d", result);
                     }
                     @Override
                     public void failed(Throwable exc, ISession attachment) {
-                        System.err.println("[ERROR] X07_SslHandShakeSend: send failed: " + exc.getMessage());
+                        _Logger.error("X07_SslHandShakeSend: send failed: %s", exc.getMessage());
                     }
                 });
             } catch(Exception e) {
-                System.err.println("[ERROR] X07_SslHandShakeSend: session.write() failed: " + e.getMessage());
+                _Logger.error("X07_SslHandShakeSend: session.write() failed: %s", e.getMessage());
             }
             // Clear carrier to avoid sending twice
             if(mSslContext != null) {

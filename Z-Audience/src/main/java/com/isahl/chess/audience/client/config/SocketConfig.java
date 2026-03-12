@@ -160,10 +160,11 @@ public class SocketConfig
     private KeyStore loadKeyStore(String path,
                                   String password) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException
     {
-        FileInputStream fis = new FileInputStream(path);
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(fis, password.toCharArray());
-        return keyStore;
+        try (FileInputStream fis = new FileInputStream(path)) {
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(fis, password.toCharArray());
+            return keyStore;
+        }
     }
 
     public void setTrustKeyStorePath(String trustKeyStorePath)

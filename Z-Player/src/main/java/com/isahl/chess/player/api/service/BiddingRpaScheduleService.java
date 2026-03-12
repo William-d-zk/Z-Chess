@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.security.SecureRandom;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +40,7 @@ public class BiddingRpaScheduleService {
 
     private AliothApiService aliothApiService;
 
-    private Random random = new Random();
+    private SecureRandom random = new SecureRandom();
 
 
     public BiddingRpaScheduleService(
@@ -96,8 +96,8 @@ public class BiddingRpaScheduleService {
                     BiddingRpaApiResponse.class);
                 log.info("调用取消竞拍api结果: " + biddingRpaApiResponse);
             }
-        }catch (Throwable t){
-            log.fetal("执行取消订舱任务遇到异常, task = " + taskId, t);
+        } catch (Exception e) {
+            log.fetal("执行取消订舱任务遇到异常, task = " + taskId, e);
         }
     }
 
@@ -191,8 +191,8 @@ public class BiddingRpaScheduleService {
                         BiddingRpaApiResponse.class);
                     log.info("调用查询及竞拍api结果: " + biddingRpaApiResponse);
                 }
-            } catch (Throwable t) {
-                log.fetal("执行查询并订舱任务遇到异常, task = " + taskDO.toString(), t);
+            } catch (Exception e) {
+                log.fetal("执行查询并订舱任务遇到异常, task = " + taskDO.toString(), e);
             }
         }
     }

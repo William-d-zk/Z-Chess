@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.king.base.util;
 
+import com.isahl.chess.king.base.log.Logger;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -33,6 +34,7 @@ import java.util.regex.Pattern;
  */
 public class IPParser
 {
+    private static final Logger _Logger = Logger.getLogger(IPParser.class.getSimpleName());
     /*
      * Using regex to ensure that the address is a valid one. This allows for separating by format and
      * ensures that the operations done on a
@@ -114,7 +116,7 @@ public class IPParser
                 return new Pair<>(Inet4Address.getByName(address), 0);
             }
             catch(UnknownHostException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to parse IPv4 address: %s", address);
             }
 
         }
@@ -128,7 +130,7 @@ public class IPParser
                 return new Pair<>(Inet4Address.getByName(address), port);
             }
             catch(UnknownHostException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to parse IPv4 address with port: %s", address);
             }
         }
         else if(Pattern.matches("^" + ipv6address + "$", address)) {
@@ -137,7 +139,7 @@ public class IPParser
                 return new Pair<>(Inet6Address.getByName(address), 0);
             }
             catch(UnknownHostException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to parse IPv6 address: %s", address);
             }
         }
         else if(Pattern.matches("^" + ipv6addressWithPort + "$", address)) {
@@ -149,7 +151,7 @@ public class IPParser
                 return new Pair<>(Inet6Address.getByName(address), Integer.parseInt(parts[parts.length - 1]));
             }
             catch(UnknownHostException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to parse IPv6 address with port: %s", address);
             }
         }
         else {
@@ -158,7 +160,7 @@ public class IPParser
                 return new Pair<>(Inet6Address.getByName(parts[0]), Integer.parseInt(parts[parts.length - 1]));
             }
             catch(UnknownHostException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to parse address: %s", address);
             }
         }
         return null;

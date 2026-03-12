@@ -313,19 +313,40 @@ public class ZRaftConfig
     private RaftNode toNode(String content)
     {
         String[] split = content.split(":", 2);
+        if (split.length != 2) {
+            throw new IllegalArgumentException("Invalid node format: " + content + ", expected host:port");
+        }
         String host = split[0];
-        int port = Integer.parseInt(split[1]);
+        int port = parsePort(split[1]);
         return new RaftNode(host, port);
+    }
+    
+    private int parsePort(String portStr) {
+        try {
+            int port = Integer.parseInt(portStr);
+            if (port < 1 || port > 65535) {
+                throw new IllegalArgumentException("Port out of range: " + port + ", expected 1-65535");
+            }
+            return port;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid port number: " + portStr);
+        }
     }
 
     private RaftNode toGateNode(String content)
     {
         String[] split0 = content.split("/", 2);
+        if (split0.length != 2) {
+            throw new IllegalArgumentException("Invalid gate node format: " + content);
+        }
         String host = split0[0];
         String gate = split0[1];
         String[] split1 = gate.split(":", 2);
+        if (split1.length != 2) {
+            throw new IllegalArgumentException("Invalid gate format: " + gate);
+        }
         String gateHost = split1[0];
-        int gatePort = Integer.parseInt(split1[1]);
+        int gatePort = parsePort(split1[1]);
         return new RaftNode(host, gateHost, gatePort);
     }
 

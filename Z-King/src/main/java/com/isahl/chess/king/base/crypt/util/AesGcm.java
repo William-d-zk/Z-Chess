@@ -28,10 +28,12 @@ import com.isahl.chess.king.base.crypt.features.ISymmetric;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.security.spec.KeySpec;
 
 /**
  * AES-GCM 对称加密实现（线程安全版本）
@@ -71,19 +73,30 @@ public class AesGcm implements ISymmetric {
         }
     }
 
+    // 默认 PBKDF2 迭代次数（100,000 次是 OWASP 推荐的最小值）
+    private static final int PBKDF2_ITERATIONS = 100000;
+    // 随机盐值长度
+    private static final int SALT_LENGTH = 16;
+
     @Override
     public byte[] createKey(String seed) {
         if (seed == null || seed.isEmpty()) {
             throw new IllegalArgumentException("Seed cannot be null or empty");
         }
         try {
-            // 使用 SHA-256 生成固定长度的密钥
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(seed.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            // 生成随机盐值
+            byte[] salt = new byte[SALT_LENGTH];
+            _Random.nextBytes(salt);
             
-            // 取前 32 字节作为 AES-256 密钥
-            byte[] key = new byte[AES_KEY_SIZE];
-            System.arraycopy(hash, 0, key, 0, AES_KEY_SIZE);
+            // 使用 PBKDF2 密钥派生（比简单 SHA-256 更安全）
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(seed.toCharArray(), salt, PBKDF2_ITERATIONS, AES_KEY_SIZE * 8);
+            SecretKey tmp = factory.generateSecret(spec);
+            
+            // 返回格式: salt(16 bytes) + key(32 bytes)
+            byte[] key = new byte[SALT_LENGTH + AES_KEY_SIZE];
+            System.arraycopy(salt, 0, key, 0, SALT_LENGTH);
+            System.arraycopy(tmp.getEncoded(), 0, key, SALT_LENGTH, AES_KEY_SIZE);
             return key;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create key from seed", e);
