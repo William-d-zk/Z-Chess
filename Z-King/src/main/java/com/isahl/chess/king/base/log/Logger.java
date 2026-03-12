@@ -157,6 +157,22 @@ public class Logger
         if(_Logger.isErrorEnabled()) {_Logger.error(formatter, params);}
     }
 
+    // error methods (alias for fetal)
+    public void error(String msg)
+    {
+        if(_Logger.isErrorEnabled()) {_Logger.error(msg);}
+    }
+
+    public void error(String msg, Throwable throwable)
+    {
+        if(_Logger.isErrorEnabled()) {_Logger.error(msg, throwable);}
+    }
+
+    public void error(String formatter, Object... params)
+    {
+        if(_Logger.isErrorEnabled()) {_Logger.error(formatter, params);}
+    }
+
     public boolean isEnable(Level level)
     {
         return switch(level) {

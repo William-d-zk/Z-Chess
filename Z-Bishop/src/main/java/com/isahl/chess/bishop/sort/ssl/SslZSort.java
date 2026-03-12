@@ -67,7 +67,7 @@ public class SslZSort<T extends IPContext>
         try {
             return new SSLZContext<>((ISslOption) option, getMode(), getType(), _ActingSort.newContext(option));
         }
-        catch(NoSuchAlgorithmException e) {
+        catch(Exception e) {
             _Logger.warning("SSL context creation failed: %s", e.getMessage());
         }
         return null;

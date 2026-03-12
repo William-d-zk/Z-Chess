@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.19</version>
+        <version>1.0.20</version>
     </parent>
     <artifactId>protocol.z-bishop</artifactId>
     <name>Z-Bishop</name>
@@ -39,6 +39,9 @@
             <artifactId>io.z-queen</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!--SSL Providers: loaded via reflection at runtime-->
+        <!--WolfSSL: download from https://www.wolfssl.com/download/ -->
+        <!--OpenSSL (Netty TCNative): will be loaded if present in classpath -->
     </dependencies>
     <build>
         <plugins>

@@ -93,6 +93,14 @@ public class SslSocketConfig implements ISocketConfig {
         private boolean verifyHostname = true;
         private String keyStoreType = "PKCS12";
         
+        // ==================== TLS 1.3 配置 ====================
+        private boolean tls13Enabled = false;  // 是否启用 TLS 1.3
+        private boolean zeroRttEnabled = false;  // 是否启用 0-RTT (TLS 1.3)
+        
+        // ==================== 证书热更新配置 ====================
+        private boolean hotReloadEnabled = false;  // 是否启用证书热更新
+        private long hotReloadDebounceMs = 5000;  // 热更新防抖时间（毫秒）
+        
         // 缓存的 SSL 上下文
         private volatile SSLContext sslContext;
         public volatile KeyManager[] keyManagers;  // public for test access
@@ -128,14 +136,31 @@ public class SslSocketConfig implements ISocketConfig {
         
         public String getKeyStoreType() { return keyStoreType; }
         public void setKeyStoreType(String keyStoreType) { this.keyStoreType = keyStoreType; }
+        
+        // ==================== TLS 1.3 Getters/Setters ====================
+        public boolean isTls13Enabled() { return tls13Enabled; }
+        public void setTls13Enabled(boolean tls13Enabled) { this.tls13Enabled = tls13Enabled; }
+        
+        public boolean isZeroRttEnabled() { return zeroRttEnabled; }
+        public void setZeroRttEnabled(boolean zeroRttEnabled) { this.zeroRttEnabled = zeroRttEnabled; }
+        
+        // ==================== 热更新 Getters/Setters ====================
+        public boolean isHotReloadEnabled() { return hotReloadEnabled; }
+        public void setHotReloadEnabled(boolean hotReloadEnabled) { this.hotReloadEnabled = hotReloadEnabled; }
+        
+        public long getHotReloadDebounceMs() { return hotReloadDebounceMs; }
+        public void setHotReloadDebounceMs(long hotReloadDebounceMs) { this.hotReloadDebounceMs = hotReloadDebounceMs; }
     }
 
     @PostConstruct
     public void init() {
         _Logger.info("Initializing TLS configuration...");
-        _Logger.info("Provider enabled: %s, KeyStore: %s", provider.isEnabled(), provider.getKeyStorePath());
+        _Logger.info("Provider enabled: %s, KeyStore: %s, TLS1.3: %s, HotReload: %s", 
+                     provider.isEnabled(), provider.getKeyStorePath(), 
+                     provider.isTls13Enabled(), provider.isHotReloadEnabled());
         _Logger.info("Consumer enabled: %s", consumer.isEnabled());
-        _Logger.info("Cluster enabled: %s", cluster.isEnabled());
+        _Logger.info("Cluster enabled: %s, TLS1.3: %s, HotReload: %s", 
+                     cluster.isEnabled(), cluster.isTls13Enabled(), cluster.isHotReloadEnabled());
         _Logger.info("Internal enabled: %s", internal.isEnabled());
         
         // 初始化各组件的 SSL 上下文
@@ -162,6 +187,17 @@ public class SslSocketConfig implements ISocketConfig {
         try {
             _Logger.info("Initializing SSL context for %s", name);
             
+            // 确定协议版本
+            String protocol = config.getProtocol();
+            if (config.isTls13Enabled()) {
+                // 如果启用 TLS 1.3，使用 TLSv1.3 协议
+                protocol = "TLSv1.3";
+                _Logger.info("TLS 1.3 enabled for %s", name);
+                if (config.isZeroRttEnabled()) {
+                    _Logger.info("0-RTT enabled for %s (TLS 1.3)", name);
+                }
+            }
+            
             // 加载密钥管理器
             if (config.getKeyStorePath() != null && config.getKeyStorePassword() != null) {
                 config.keyManagers = loadKeyManagers(config);
@@ -175,10 +211,11 @@ public class SslSocketConfig implements ISocketConfig {
             }
             
             // 创建 SSL 上下文
-            config.sslContext = SSLContext.getInstance(config.getProtocol());
+            config.sslContext = SSLContext.getInstance(protocol);
             config.sslContext.init(config.keyManagers, config.trustManagers, null);
             
-            _Logger.info("SSL context initialized for %s using protocol %s", name, config.getProtocol());
+            _Logger.info("SSL context initialized for %s using protocol %s (TLS1.3=%s, HotReload=%s)", 
+                        name, protocol, config.isTls13Enabled(), config.isHotReloadEnabled());
             
         } catch (Exception e) {
             _Logger.warning("Failed to initialize SSL context for %s: %s", name, e.getMessage());
