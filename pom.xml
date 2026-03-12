@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.20</version>
+    <version>1.0.21</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -87,8 +87,8 @@
         <!--CACHE-->
         <ehcache.version>3.11.1</ehcache.version>
         <!--JSON-->
-        <jackson.version>2.20.1</jackson.version>
-        <jackson-annotations.version>2.20</jackson-annotations.version>
+        <jackson.version>2.18.6</jackson.version>
+        <jackson-annotations.version>2.18.6</jackson-annotations.version>
         <json-schema-validator.version>3.0.0</json-schema-validator.version>
         <!--PLUGINS-->
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
@@ -533,6 +533,17 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${json-schema-validator.version}</version>
+                <exclusions>
+                    <!-- 排除 tools.jackson 避免与 com.fasterxml.jackson 冲突 -->
+                    <exclusion>
+                        <groupId>tools.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>tools.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

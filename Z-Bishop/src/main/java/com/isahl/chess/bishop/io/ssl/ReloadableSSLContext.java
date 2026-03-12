@@ -34,8 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 /**
@@ -55,7 +54,8 @@ public class ReloadableSSLContext {
 
     private static final Logger _Logger = Logger.getLogger("io.bishop.ssl.ReloadableSSLContext");
 
-    // 使用 AtomicStampedReference 避免 ABA 问题，同时记录版本号
+    // 使用 AtomicStampedReference 避免 ABA 问题
+    // stamp 仅用于 CAS 操作序列，不存储业务版本号
     private final AtomicStampedReference<SSLContextHolder> _ContextRef;
     
     // 配置信息（final，线程安全）
@@ -66,8 +66,11 @@ public class ReloadableSSLContext {
     private final String _TrustStorePassword;
     private final String _KeyStoreType;
     
-    // 版本号，每次更新递增
-    private volatile long _Version = 0;
+    // 版本号生成器，原子递增
+    private final AtomicLong _VersionGenerator = new AtomicLong(0);
+    
+    // CAS 操作序列号，用于 ABA 保护
+    private final AtomicLong _StampGenerator = new AtomicLong(0);
     
     // 证书监视器
     private CertificateWatcher _CertificateWatcher;
@@ -136,7 +139,7 @@ public class ReloadableSSLContext {
         
         // 初始加载
         SSLContextHolder initialHolder = createContextHolder();
-        _ContextRef = new AtomicStampedReference<>(initialHolder, (int) initialHolder.version);
+        _ContextRef = new AtomicStampedReference<>(initialHolder, (int) _StampGenerator.incrementAndGet());
         
         // 如果启用热更新，启动证书监视器
         if (_EnableHotReload && _KeyStorePath != null) {
@@ -196,7 +199,7 @@ public class ReloadableSSLContext {
         // 初始化 SSLContext
         sslContext.init(keyManagers, trustManagers, null);
         
-        long version = ++_Version;
+        long version = _VersionGenerator.incrementAndGet();
         _Logger.info("SSLContext created [version=%d, protocol=%s]", version, _Protocol);
         return new SSLContextHolder(sslContext, version);
     }
@@ -255,13 +258,14 @@ public class ReloadableSSLContext {
             // 创建新的 ContextHolder
             SSLContextHolder newHolder = createContextHolder();
             
-            // 获取当前版本号
+            // 获取当前 holder 和 stamp
             int[] stampHolder = new int[1];
             SSLContextHolder oldHolder = _ContextRef.get(stampHolder);
             int currentStamp = stampHolder[0];
+            int newStamp = (int) _StampGenerator.incrementAndGet();
             
             // 原子性更新（使用 CAS）
-            if (_ContextRef.compareAndSet(oldHolder, newHolder, currentStamp, (int) newHolder.version)) {
+            if (_ContextRef.compareAndSet(oldHolder, newHolder, currentStamp, newStamp)) {
                 _Logger.info("SSLContext reloaded successfully [oldVersion=%d, newVersion=%d]", 
                             oldHolder != null ? oldHolder.version : -1, newHolder.version);
                 

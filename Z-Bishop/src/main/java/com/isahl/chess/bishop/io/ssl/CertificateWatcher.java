@@ -125,8 +125,6 @@ public class CertificateWatcher {
             return;
         }
         
-        _Running = true;
-        
         try {
             // 注册 KeyStore 目录监视
             Path keyStoreDir = _KeyStorePath.getParent();
@@ -148,6 +146,9 @@ public class CertificateWatcher {
                 }
             }
             
+            // 标记为运行状态（必须在启动线程前设置）
+            _Running = true;
+            
             // 启动监视线程
             Thread watchThread = new Thread(this::watchLoop, "cert-watch-loop");
             watchThread.setDaemon(true);
@@ -155,10 +156,24 @@ public class CertificateWatcher {
             
             _Logger.info("CertificateWatcher started successfully");
         } catch (IOException e) {
-            _Running = false;
+            // 启动失败，清理资源
+            cleanup();
             _Logger.error("Failed to start CertificateWatcher: %s", e.getMessage());
             throw new RuntimeException("Failed to start certificate watcher", e);
         }
+    }
+    
+    /**
+     * 清理资源
+     */
+    private void cleanup() {
+        _Running = false;
+        try {
+            _WatchService.close();
+        } catch (IOException e) {
+            _Logger.debug("Error closing WatchService during cleanup: %s", e.getMessage());
+        }
+        _Scheduler.shutdownNow();
     }
 
     /**
@@ -169,14 +184,22 @@ public class CertificateWatcher {
             return;
         }
         
-        _Running = false;
-        
+        // 先关闭 WatchService，这会中断 watchLoop 中的 poll 操作
         try {
             _WatchService.close();
         } catch (IOException e) {
             _Logger.warning("Error closing WatchService: %s", e.getMessage());
         }
         
+        // 标记为非运行状态
+        _Running = false;
+        
+        // 取消待处理的重载任务
+        if (_PendingReload != null && !_PendingReload.isDone()) {
+            _PendingReload.cancel(true);
+        }
+        
+        // 关闭调度器
         _Scheduler.shutdown();
         try {
             if (!_Scheduler.awaitTermination(5, TimeUnit.SECONDS)) {

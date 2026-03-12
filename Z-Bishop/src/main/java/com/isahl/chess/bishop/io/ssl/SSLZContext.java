@@ -64,7 +64,8 @@ public class SSLZContext<A extends IPContext>
     ));
     
     // 缓存支持的 TLS 1.3 套件，避免每次创建时重新计算
-    private static volatile String[] _CachedTls13Suites = null;
+    // 使用 SoftReference 允许 GC 在内存紧张时回收
+    private static volatile java.lang.ref.SoftReference<String[]> _CachedTls13Suites = null;
 
     private final SSLEngine  _SslEngine;
     private final SSLContext _SslContext;
@@ -194,8 +195,9 @@ public class SSLZContext<A extends IPContext>
      */
     private String[] getTls13CipherSuites(SSLEngine engine) {
         // 检查缓存
-        if (_CachedTls13Suites != null) {
-            return _CachedTls13Suites;
+        String[] cached = _CachedTls13Suites != null ? _CachedTls13Suites.get() : null;
+        if (cached != null) {
+            return cached;
         }
         
         // 计算并缓存
@@ -205,7 +207,7 @@ public class SSLZContext<A extends IPContext>
             .toList();
         
         String[] result = enabled.toArray(new String[0]);
-        _CachedTls13Suites = result;
+        _CachedTls13Suites = new java.lang.ref.SoftReference<>(result);
         return result;
     }
     
@@ -279,11 +281,15 @@ public class SSLZContext<A extends IPContext>
     public void close()
     {
         try {
-            _SslEngine.closeInbound();
+            // 先关闭 outbound 发送 close_notify，再关闭 inbound 接收 close_notify
+            // 这是 SSL/TLS 标准关闭顺序
             _SslEngine.closeOutbound();
+            _SslEngine.closeInbound();
         }
         catch(SSLException e) {
-            _Logger.debug("SSL close error: %s", e.getMessage());
+            // closeInbound 可能抛出异常如果对等端没有发送 close_notify
+            // 这是正常的，特别是在连接异常断开时
+            _Logger.debug("SSL close error (normal if peer didn't send close_notify): %s", e.getMessage());
         }
         
         // 停止证书监视器

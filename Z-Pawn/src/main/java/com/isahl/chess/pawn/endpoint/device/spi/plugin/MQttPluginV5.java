@@ -99,8 +99,9 @@ public class MQttPluginV5
             return false;
         }
 
+        // 使用 constantTimeEquals 防止时序攻击
         if (!device.getUsername().equalsIgnoreCase(x111.getUserName()) ||
-            !device.getPassword().equals(x111.getPassword())) {
+            !com.isahl.chess.king.base.util.CryptoUtil.constantTimeEquals(device.getPassword(), x111.getPassword())) {
             x112.rejectNotAuthorized();
             return false;
         }

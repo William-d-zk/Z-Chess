@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.util.NtruUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * @author William.d.zk
@@ -49,7 +49,7 @@ public class Encryptor
     private final        int        _VersionWidth             = 12;
     private final        int        _VersionMask              = ((1 << _VersionWidth) - 1) << _TotalSizeWidth;
     private final        NtruUtil   _Ntru                     = new NtruUtil();
-    private final        Random     _Random                   = new Random();
+    private final        SecureRandom _Random                 = new SecureRandom();
     private final        byte[][][] _PublicKeyPair            = new byte[_PairSize][][];
     private final        CryptoUtil cryptoUtil                = new CryptoUtil();
     private              int        mIndexAdd;
@@ -59,7 +59,7 @@ public class Encryptor
         return _ReqPubKeyId >= 0;
     }
 
-    private Pair<Integer, byte[][]> createPair(Random random, int _PubKeyId)
+    private Pair<Integer, byte[][]> createPair(SecureRandom random, int _PubKeyId)
     {
         int saltWidth = _TotalSizeWidth + _VersionWidth;
         int saltMask = (0xFFFFFFFF << saltWidth) ^ 0x80000000;

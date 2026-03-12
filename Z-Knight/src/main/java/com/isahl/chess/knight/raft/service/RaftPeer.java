@@ -57,6 +57,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,7 +92,7 @@ public class RaftPeer
     private final IRaftMachine    _SelfMachine;
     private final RaftGraph       _JointGraph;
     private final Queue<LogEntry> _RecvLogQueue = new LinkedList<>();
-    private final Random          _Random       = new Random();
+    private final SecureRandom    _Random       = new SecureRandom();
     private final long            _SnapshotFragmentMaxSize;
     private final int             _SyncBatchMaxSize;
 
@@ -395,7 +396,8 @@ public class RaftPeer
             _Logger.debug("random wait for %d mills, then vote", wait);
         }
         catch(InterruptedException e) {
-            // ignore
+            Thread.currentThread().interrupt(); // 恢复中断状态
+            _Logger.warning("Thread interrupted during random wait");
         }
         timeTrigger(beCandidate());
     }

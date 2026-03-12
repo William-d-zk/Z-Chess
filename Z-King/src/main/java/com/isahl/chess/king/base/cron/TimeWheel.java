@@ -78,7 +78,9 @@ public class TimeWheel
                         sleep(sleep - correction);
                     }
                     catch(InterruptedException e) {
-                        // ignore 没有地方执行interrupt操作
+                        Thread.currentThread().interrupt();
+                        _Logger.debug("Timer wheel thread interrupted");
+                        break;
                     }
                 }
                 vCurrentMillisecond = System.currentTimeMillis();

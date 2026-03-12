@@ -56,7 +56,7 @@ public class AioReader
                     session.readNext(this);
                 }
                 catch(Exception e) {
-                    // ignore
+                    _Logger.debug("Failed to read next: %s", e.getMessage());
                 }
             }
             default -> {

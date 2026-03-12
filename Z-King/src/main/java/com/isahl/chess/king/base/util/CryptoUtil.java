@@ -37,9 +37,8 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.time.Instant;
+import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.Random;
 import javax.crypto.Cipher;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -53,11 +52,10 @@ public class CryptoUtil
 
     private final static String        _CHARS         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     private final static char          _PAD           = '=';
-    private final        MessageDigest _MD5           = create("MD5");
+    // MD5 已移除（存在碰撞攻击漏洞）
     private final        MessageDigest _SHA_1         = create("SHA-1");
     private final        MessageDigest _SHA_256       = create("SHA-256");
-    private final        Random        _Random        = new Random(((long) Math.E) ^ Instant.now()
-                                                                                            .toEpochMilli());
+    private final        SecureRandom  _Random        = new SecureRandom();
     private final        byte[]        _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(
             StandardCharsets.US_ASCII);
     private final        byte[]        _PasswordWords = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890".getBytes(StandardCharsets.UTF_8);
@@ -346,10 +344,10 @@ public class CryptoUtil
         if(input == null || digestName == null) {throw new NullPointerException();}
         if(input.length < len || offset < 0 || offset >= len) {throw new ArrayIndexOutOfBoundsException();}
         MessageDigest md = switch(digestName.toUpperCase()) {
-            case "MD5" -> _MD5;
+            // MD5 已移除（存在碰撞攻击漏洞）
             case "SHA-1" -> _SHA_1;
             case "SHA-256" -> _SHA_256;
-            default -> throw new IllegalArgumentException();
+            default -> throw new IllegalArgumentException("不支持的算法: " + digestName + "，请使用 SHA-256");
         };
         Objects.requireNonNull(md)
                .reset();
@@ -367,20 +365,7 @@ public class CryptoUtil
         }
     }
 
-    public final byte[] md5(byte[] input, int offset, int len)
-    {
-        return digest("MD5", input, offset, len);
-    }
-
-    public final byte[] md5(byte[] input)
-    {
-        return digest("MD5", input);
-    }
-
-    public final String md5(String input)
-    {
-        return IoUtil.bin2Hex(md5(input.getBytes(StandardCharsets.UTF_8)));
-    }
+    // MD5 方法已移除（存在碰撞攻击漏洞），请使用 sha256() 替代
 
     public final byte[] sha1(byte[] input, int offset, int len)
     {
@@ -448,6 +433,27 @@ public class CryptoUtil
     public static String Password(int min, int max)
     {
         return _Instance.randomPassword(min, max, false);
+    }
+
+    /**
+     * 时序安全的字符串比较（防止时序攻击）
+     * 
+     * 与 String.equals() 不同，此方法总是比较所有字符，
+     * 不会因早期不匹配而提前返回，从而防止时序攻击。
+     * 
+     * @param a 第一个字符串
+     * @param b 第二个字符串
+     * @return 如果相等返回 true
+     */
+    public static boolean constantTimeEquals(String a, String b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        
+        byte[] aBytes = a.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] bBytes = b.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        
+        return MessageDigest.isEqual(aBytes, bBytes);
     }
 
     public static final String EC_ALGORITHM = "EC";
