@@ -1,0 +1,221 @@
+# MIT License
+# Copyright (c) 2016~2024. Z-Chess
+#
+# Z-Chess TLS MQTT 测试集群
+# 
+# 功能：
+# - 启用 TLS 加密的 MQTT 服务 (端口 8883)
+# - 压力测试验证器 (Audience) 使用 TLS 连接
+# - 证书自动挂载
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # PostgreSQL 17 数据库
+  # ==========================================================================
+  db-pg:
+    image: z-chess-postgres:17.8-arm64
+    container_name: db-pg
+    hostname: db-pg
+    domainname: isahl.com
+    
+    ports:
+      - "5432:5432"
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.254
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    # ⚠️ 安全警告: 使用 .env 文件或环境变量设置密码
+    # 创建 .env 文件: echo "POSTGRES_PASSWORD=$(openssl rand -base64 32)" > .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-chess}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?错误: 必须设置 POSTGRES_PASSWORD 环境变量}
+      - POSTGRES_DB=${POSTGRES_DB:-isahl_9.x}
+      - TZ=Asia/Shanghai
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    restart: no
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 0 (启用 TLS)
+  # ==========================================================================
+  raft00:
+    image: z-chess-arena:2.0-arm64
+    container_name: raft00
+    hostname: raft00
+    
+    depends_on:
+      db-pg:
+        condition: service_healthy
+    
+    ports:
+      - "8080:2808"     # HTTP API
+      - "1883:1883"     # MQTT (明文)
+      - "8883:8883"     # MQTT over TLS ⭐
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.110
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft00
+        target: /root/Z-Chess
+      - type: bind
+        source: ~/Z-Chess/logs/raft00
+        target: /app/logs
+      # 挂载 TLS 证书
+      - type: bind
+        source: ./cert
+        target: /app/cert
+        read_only: true
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=online
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      - DB_HOST=db-pg.isahl.com
+      - DB_PORT=5432
+      - DB_NAME=isahl_9.x
+      - TZ=Asia/Shanghai
+      # TLS 配置 - ⚠️ 使用环境变量设置密码，切勿硬编码
+      - SSL_ENABLED=${SSL_ENABLED:-true}
+      - SSL_KEYSTORE_PATH=${SSL_KEYSTORE_PATH:-/app/cert/server.p12}
+      - SSL_KEYSTORE_PASSWORD=${SSL_KEYSTORE_PASSWORD:?错误: 必须设置 SSL_KEYSTORE_PASSWORD}
+      - SSL_TRUSTSTORE_PATH=${SSL_TRUSTSTORE_PATH:-/app/cert/trust.p12}
+      - SSL_TRUSTSTORE_PASSWORD=${SSL_TRUSTSTORE_PASSWORD:?错误: 必须设置 SSL_TRUSTSTORE_PASSWORD}
+    
+    restart: no
+
+  # ==========================================================================
+  # Z-Audience TLS 压力测试客户端
+  # ==========================================================================
+  audience-tls:
+    image: z-chess-audience:2.0-arm64
+    container_name: audience-tls
+    hostname: audience-tls
+    
+    profiles:
+      - tls-test
+    
+    depends_on:
+      raft00:
+        condition: service_started
+    
+    ports:
+      - "8090:8080"
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.120
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/logs/audience-tls
+        target: /app/logs
+        bind:
+          create_host_path: true
+      # 挂载 TLS 证书
+      - type: bind
+        source: ./cert
+        target: /app/cert
+        read_only: true
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0
+      # TLS MQTT 测试配置
+      - Z_CHESS_PRESSURE_TARGET_HOST=raft00
+      - Z_CHESS_PRESSURE_TARGET_PORT=8883
+      - Z_CHESS_PRESSURE_CONCURRENCY=50
+      - Z_CHESS_PRESSURE_DURATION=PT120S
+      - Z_CHESS_PRESSURE_PROTOCOL=mqtt
+      - Z_CHESS_PRESSURE_SSL_ENABLED=true
+      - Z_CHESS_PRESSURE_SSL_TRUSTSTORE_PATH=/app/cert/trust.p12
+      - Z_CHESS_PRESSURE_SSL_TRUSTSTORE_PASSWORD=${SSL_TRUSTSTORE_PASSWORD:?错误: 必须设置 SSL_TRUSTSTORE_PASSWORD}
+      - TZ=Asia/Shanghai
+    
+    entrypoint: >
+      sh -c "echo '========================================' &&
+             echo 'Z-Audience TLS 压力测试客户端' &&
+             echo '========================================' &&
+             echo '目标: raft00:8883 (TLS)' &&
+             echo '并发: 50 连接' &&
+             echo '时长: 120 秒' &&
+             echo '========================================' &&
+             sleep 10 &&
+             java $${JAVA_OPTS} 
+             -jar /app/app.jar 
+             --spring.profiles.active=$${SPRING_PROFILES_ACTIVE}"
+    
+    restart: no
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ==========================================================================
+  # TLS 验证工具容器
+  # ==========================================================================
+  tls-verifier:
+    image: eclipse-mosquitto:2
+    container_name: tls-verifier
+    hostname: tls-verifier
+    
+    profiles:
+      - tls-verify
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.121
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+    
+    volumes:
+      - type: bind
+        source: ./cert
+        target: /mosquitto/certs
+        read_only: true
+    
+    command: >
+      sh -c "echo 'TLS MQTT 验证工具' &&
+             echo '使用 mosquitto_pub/sub 测试 TLS 连接' &&
+             echo '' &&
+             echo '测试命令:' &&
+             echo '  mosquitto_pub -h raft00 -p 8883 -t test/topic -m hello --cafile /mosquitto/certs/ca-cert.pem' &&
+             echo '  mosquitto_sub -h raft00 -p 8883 -t test/topic --cafile /mosquitto/certs/ca-cert.pem' &&
+             tail -f /dev/null"
+    
+    restart: no
+
+networks:
+  endpoint:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
+          gateway: 172.30.10.1
+
+volumes:
+  postgres_data:
+    driver: local

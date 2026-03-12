@@ -69,12 +69,16 @@ public class RpaAuthDo {
         this.auth_url = auth_url;
     }
 
+    /**
+     * 安全注意: 此方法用于日志输出，已排除敏感字段(auth_password)
+     * 如需访问密码，请使用 getAuth_password() 方法
+     */
     @Override
     public String toString() {
         return "RpaAuthDo{" +
             "id=" + id +
             ", auth_username='" + auth_username + '\'' +
-            ", auth_password='" + auth_password + '\'' +
+            ", auth_password='***'" +  // 敏感信息脱敏
             ", auth_config_title='" + auth_config_title + '\'' +
             ", auth_config_notice='" + auth_config_notice + '\'' +
             ", auth_url='" + auth_url + '\'' +

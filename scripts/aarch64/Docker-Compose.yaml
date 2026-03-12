@@ -59,13 +59,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     
+    # ⚠️ 安全警告: 使用 .env 文件或环境变量设置密码
+    # 创建 .env 文件: echo "POSTGRES_PASSWORD=$(openssl rand -base64 32)" > .env
     environment:
-      # 与 application.properties 和 db.properties 保持一致
-      # postgresql.username=chess
-      # postgresql.database=isahl_9.x
-      - POSTGRES_USER=chess
-      - POSTGRES_PASSWORD=isahl_2025
-      - POSTGRES_DB=isahl_9.x
+      - POSTGRES_USER=${POSTGRES_USER:-chess}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?错误: 必须设置 POSTGRES_PASSWORD 环境变量}
+      - POSTGRES_DB=${POSTGRES_DB:-isahl_9.x}
       # PGDATA 默认为 /var/lib/postgresql/data，与卷挂载路径一致
       - TZ=Asia/Shanghai
       - PGTZ=Asia/Shanghai
@@ -237,6 +236,7 @@ services:
     ports:
       - "8082:2808"    # HTTP API
       - "1885:1883"    # MQTT
+      - "2883:2883"    # TLS-MQTT
       - "8200:8000"    # Debug
     
     networks:

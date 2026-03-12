@@ -52,7 +52,7 @@ public class SessionWrote
                           write_status);
         }
         catch(Exception e) {
-            e.printStackTrace();
+            _Logger.warning("session write error", e);
             return new Triple<>(e, session, session.getError());
         }
         return null;

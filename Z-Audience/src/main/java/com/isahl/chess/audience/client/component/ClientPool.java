@@ -276,7 +276,7 @@ public class ClientPool
                                    connect(c);
                                }
                                catch(IOException e) {
-                                   e.printStackTrace();
+                                   _Logger.error("retry connect failed", e);
                                }
                            }));
     }

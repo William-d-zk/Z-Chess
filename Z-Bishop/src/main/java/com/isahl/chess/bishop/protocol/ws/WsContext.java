@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
 import java.util.Base64;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * @author William.d.zk
@@ -53,14 +53,16 @@ public class WsContext
         super(option, mode, type);
         _MaxPayloadSize = option.getSnfByte() - 2;
         if(_Type == ISort.Type.CLIENT) {
-            Random r = new Random(System.nanoTime());
+            // 使用 SecureRandom 替代 Random (安全修复)
+            SecureRandom sr = new SecureRandom();
             byte[] seed = new byte[17];
-            r.nextBytes(seed);
+            sr.nextBytes(seed);
+            // WebSocket RFC 6455 规定必须使用 SHA1 计算 Sec-WebSocket-Key
             _SecKey = Base64.getEncoder()
                             .encodeToString(CryptoUtil.SHA1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
             _Mask = new byte[4];
-            r.nextBytes(_Mask);
+            sr.nextBytes(_Mask);
         }
         else {
             _SecKey = _SecAcceptExpect = null;

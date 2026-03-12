@@ -158,13 +158,17 @@ public class DeviceDo
         return deviceDo;
     }
 
+    /**
+     * 安全注意: 此方法用于日志输出，已排除敏感字段(mPassword, mToken)
+     * 如需访问敏感字段，请使用相应的 getter 方法
+     */
     @Override
     public String toString() {
         return "DeviceDo{" +
             "mNumber='" + mNumber + '\'' +
             ", mUsername='" + mUsername + '\'' +
-            ", mPassword='" + mPassword + '\'' +
-            ", mToken='" + mToken + '\'' +
+            ", mPassword='***'" +  // 敏感信息脱敏
+            ", mToken='***'" +      // 敏感信息脱敏
             ", mProfile=" + mProfile +
             ", mUid=" + mUid +
             ", mName='" + mName + '\'' +

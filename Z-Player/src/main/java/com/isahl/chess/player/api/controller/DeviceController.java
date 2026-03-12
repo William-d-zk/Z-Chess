@@ -101,7 +101,8 @@ public class DeviceController {
             ObjectUtils.isEmpty(profile.getBluetoothMac())) {
             return ZResponse.error(CodeKing.ERROR.getCode(), "wifi/ethernet/bluetooth 硬件地址不能为空");
         }
-        String serialNo = CryptoUtil.MD5(
+        // 使用 SHA-256 替代 MD5 (安全修复)
+        String serialNo = CryptoUtil.SHA256(
             profile.getEthernetMac() + "|" + profile.getWifiMac() + "|" + profile.getBluetoothMac());
         // 查询是否已经注册过该设备
         DeviceEntity existDevice = _MixOpenService.findByNumber(serialNo);
@@ -130,8 +131,8 @@ public class DeviceController {
                 String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String expireInfo =
                         existDevice.getNotice() + "|" + expireDateString + "|" + keyPairProfile.getPublicKey();
-                // 返回经过md5的有效期信息(serial|date|publicKey)
-                data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
+                data.put("expire_info", CryptoUtil.SHA256(expireInfo).toLowerCase());
                 data.put("expire_date",expireDateString);
             }
             return ZResponse.success(data);
@@ -175,8 +176,8 @@ public class DeviceController {
             String expireDateString = expireDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String expireInfo =
                     entity.getNotice() + "|" + expireDateString + "|" + entity.getProfile().getKeyPairProfile().getPublicKey();
-            // 返回经过md5的有效期信息(serial|date|publicKey)
-            data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+            // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
+            data.put("expire_info", CryptoUtil.SHA256(expireInfo).toLowerCase());
             data.put("expire_date",expireDateString);
         }
         return ZResponse.success(data);
@@ -190,7 +191,7 @@ public class DeviceController {
      * @param token : 设备令牌
      * @param expireAt : e.g. 2024-12-25
      * @param body : 用ecc公钥加密过的数据
-     * @return 返回 md5(serial|expireDate|publicKey)
+     * @return 返回 SHA-256(serial|expireDate|publicKey) [安全修复: 从 MD5 升级]
      */
     @PostMapping("verify")
     public ZResponse<?> verifyDevice(
@@ -246,8 +247,8 @@ public class DeviceController {
                     if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
                         _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
                     }
-                    // 返回经过md5的有效期信息(serial|date|publicKey)
-                    data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                    // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
+                    data.put("expire_info", CryptoUtil.SHA256(expireInfo).toLowerCase());
                     data.put("expire_date",expireDateString);
                     return ZResponse.success(data);
                 }
@@ -277,12 +278,13 @@ public class DeviceController {
             DeviceEntity exist = _MixOpenService.findByToken(token);
             if (exist != null) {
                 DeviceProfile existedDeviceProfile = exist.getProfile();
-                String existedMd5 = CryptoUtil.MD5(
+                // 使用 SHA-256 替代 MD5 (安全修复)
+                String existedHash = CryptoUtil.SHA256(
                     existedDeviceProfile.getEthernetMac() + "|" + existedDeviceProfile.getWifiMac() + "|"
                         + existedDeviceProfile.getBluetoothMac() + "|" + existedDeviceProfile.getKeyPairProfile()
                         .getPublicKey());
-                if (!ObjectUtils.nullSafeEquals(existedMd5, body) && !ObjectUtils.nullSafeEquals(body,
-                    existedMd5.toLowerCase())) {
+                if (!ObjectUtils.nullSafeEquals(existedHash, body) && !ObjectUtils.nullSafeEquals(body,
+                    existedHash.toLowerCase())) {
                     return ZResponse.error(CodeKing.ERROR.getCode(), "设备档案验证失败，激活信息与初始注册信息不匹配。");
                 }
 
@@ -319,8 +321,8 @@ public class DeviceController {
                     if(_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
                         _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
                     }
-                // 返回经过md5的有效期信息(serial|date|publicKey)
-                data.put("expire_info", CryptoUtil.MD5(expireInfo).toLowerCase());
+                // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
+                data.put("expire_info", CryptoUtil.SHA256(expireInfo).toLowerCase());
                 data.put("expire_date",expireDateString);
                 return ZResponse.success(data);
             }
@@ -411,41 +413,17 @@ public class DeviceController {
         return ZResponse.success(aliothApiService.validateReinit(serialNo, vcode));
     }
 
-    /**
-     * ecc加密测试
-     */
-    @PostMapping("test/eccEncrypt")
-    public Object eccEncrypt(
-        @RequestParam(name = "publicKey") String publicKey,
-        @RequestBody String data
-    ) {
-        return ZResponse.success(CryptoUtil.eccEncrypt(publicKey, data));
-    }
-
-    @PostMapping("test/eccDecrypt")
-    public Object eccDecrypt(
-        @RequestParam(name = "privateKey") String privateKey,
-        @RequestBody String data
-    ) {
-        return ZResponse.success(CryptoUtil.eccDecrypt(privateKey, data));
-    }
-
-    @PostMapping("test/eccSign")
-    public Object eccSign(
-        @RequestParam(name = "privateKey") String privateKey,
-        @RequestBody String data
-    ) {
-        return ZResponse.success(CryptoUtil.eccSign(privateKey, data));
-    }
-
-    @PostMapping("test/eccVerify")
-    public Object eccSign(
-        @RequestParam(name = "publicKey") String publicKey,
-        @RequestParam(name = "signature") String signature,
-        @RequestBody String data
-    ) {
-        return ZResponse.success(CryptoUtil.eccVerify(publicKey, data, signature));
-    }
+    // ⚠️ 安全注意: 以下测试接口已在安全审计中移除
+    // 原因: 这些接口接收私钥作为参数，存在严重的密钥泄露风险
+    // 如需 ECC 测试功能，请在本地测试环境中使用，不要部署到生产环境
+    // 
+    // 被移除的接口:
+    // - POST /test/eccEncrypt  (ECC加密测试)
+    // - POST /test/eccDecrypt  (ECC解密测试 - 接收私钥)
+    // - POST /test/eccSign     (ECC签名测试 - 接收私钥)
+    // - POST /test/eccVerify   (ECC验签测试)
+    //
+    // 替代方案: 使用预配置的密钥对进行测试，私钥应在服务器端安全存储
 
     @PostMapping("register")
     public @ResponseBody

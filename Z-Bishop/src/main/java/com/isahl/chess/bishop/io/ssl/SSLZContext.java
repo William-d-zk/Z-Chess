@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.io.ssl;
 import com.isahl.chess.bishop.protocol.ProtocolContext;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
@@ -44,6 +45,7 @@ public class SSLZContext<A extends IPContext>
         extends ProtocolContext<IPacket>
         implements IProxyContext<A>
 {
+    private final Logger     _Logger = Logger.getLogger("io.bishop.ssl." + getClass().getSimpleName());
     private final SSLEngine  _SslEngine;
     private final SSLContext _SslContext;
     private final SSLSession _SslSession;
@@ -63,6 +65,8 @@ public class SSLZContext<A extends IPContext>
         }
         _SslEngine = _SslContext.createSSLEngine();
         _SslEngine.setEnabledProtocols(new String[]{ "TLSv1.2" });
+        // Enable all supported cipher suites for compatibility
+        _SslEngine.setEnabledCipherSuites(_SslEngine.getSupportedCipherSuites());
         _SslEngine.setUseClientMode(type == ISort.Type.CLIENT);
         _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER && option.isSslClientAuth());
         _SslSession = _SslEngine.getSession();
@@ -92,7 +96,7 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeOutbound();
         }
         catch(SSLException e) {
-            e.printStackTrace();
+            _Logger.warning("SSL close error: %s", e.getMessage());
         }
     }
 
@@ -105,14 +109,18 @@ public class SSLZContext<A extends IPContext>
     @Override
     public void ready()
     {
-        advanceOutState(ENCODE_PAYLOAD);
+        // Use ENCODE_FRAME for handshake phase so SslHandShakeFilter.pipeSeek can be invoked
+        advanceOutState(ENCODE_FRAME);
         advanceInState(DECODE_FRAME);
         _ActingContext.ready();
         try {
+            _Logger.info("Starting SSL handshake, clientMode=%s, needClientAuth=%s", 
+                        _SslEngine.getUseClientMode(), _SslEngine.getNeedClientAuth());
             _SslEngine.beginHandshake();
+            _Logger.debug("SSL handshake started successfully, status=%s", _SslEngine.getHandshakeStatus());
         }
         catch(SSLException e) {
-            e.printStackTrace();
+            _Logger.fetal("SSL handshake initialization failed: %s", e.getMessage());
         }
     }
 
@@ -134,18 +142,25 @@ public class SSLZContext<A extends IPContext>
     {
         try {
             ByteBuf netOutBuffer = ByteBuf.allocate(_SslSession.getPacketBufferSize());
+            _Logger.info("SSL wrap: input=%d bytes, handshakeStatus=%s", output.readableBytes(), _SslEngine.getHandshakeStatus());
             SSLEngineResult result = _SslEngine.wrap(output.toReadBuffer(), netOutBuffer.toWriteBuffer());
             int produced = result.bytesProduced();
+            _Logger.debug("SSL wrap result: status=%s, produced=%d, handshakeStatus=%s", 
+                         result.getStatus(), produced, result.getHandshakeStatus());
             switch(result.getStatus()) {
                 case OK, BUFFER_UNDERFLOW -> {
                     doTask();
                     return netOutBuffer.seek(produced);
                 }
-                case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl wrap error:%s", result.getStatus());
+                case CLOSED, BUFFER_OVERFLOW -> {
+                    _Logger.warning("SSL wrap failed with status: %s, handshakeStatus: %s", result.getStatus(), result.getHandshakeStatus());
+                    throw new ZException("ssl wrap error:%s", result.getStatus());
+                }
             }
             return null;
         }
         catch(SSLException e) {
+            _Logger.fetal("SSL wrap error: %s", e.getMessage());
             throw new ZException(e, "ssl wrap error");
         }
     }
@@ -155,12 +170,16 @@ public class SSLZContext<A extends IPContext>
         try {
             ByteBuf appInBuffer = ByteBuf.allocate(_AppInBufferSize);
             ByteBuffer inputBuffer = netInBuffer.toReadBuffer();
+            _Logger.debug("SSL unwrap: input=%d bytes, handshakeStatus=%s", inputBuffer.remaining(), _SslEngine.getHandshakeStatus());
             SSLEngineResult result = _SslEngine.unwrap(inputBuffer, appInBuffer.toWriteBuffer());
             int consumed = result.bytesConsumed();
             int produced = result.bytesProduced();
+            _Logger.debug("SSL unwrap result: status=%s, consumed=%d, produced=%d, handshakeStatus=%s", 
+                         result.getStatus(), consumed, produced, result.getHandshakeStatus());
             switch(result.getStatus()) {
                 case OK -> doTask();
                 case BUFFER_UNDERFLOW -> {
+                    _Logger.debug("SSL unwrap BUFFER_UNDERFLOW, need more data");
                     if(inputBuffer.hasRemaining()) {
                         throw new ZException(new IllegalStateException(),
                                              "state error,unwrap under flow & input has remain");
@@ -174,6 +193,7 @@ public class SSLZContext<A extends IPContext>
             return produced > 0 ? appInBuffer.seek(produced) : null;
         }
         catch(SSLException e) {
+            _Logger.fetal("SSL unwrap error: %s", e.getMessage());
             throw new ZException(e, "ssl unwrap error");
         }
     }

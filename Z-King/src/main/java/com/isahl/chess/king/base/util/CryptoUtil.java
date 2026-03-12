@@ -433,16 +433,13 @@ public class CryptoUtil
         return _Instance.sha256(input);
     }
 
-    public static String MD5(String input)
-    {
-        return _Instance.md5(input);
-    }
-
-    public static String SHA1(String input)
-    {
-        return _Instance.md5(input);
-    }
-
+    // MD5 方法已移除 (安全原因: 已被攻破，存在碰撞攻击)
+    // 请使用 SHA256() 方法替代
+    
+    /**
+     * SHA1 哈希 - 仅供 WebSocket RFC 6455 协议内部使用
+     * 注意: SHA1 已被攻破，不应在新的代码中使用
+     */
     public static byte[] SHA1(byte[] input)
     {
         return _Instance.sha1(input);

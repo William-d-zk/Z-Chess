@@ -37,6 +37,7 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.message.InnerProtocol;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.Subselect;
 
 import java.io.Serial;
 import java.time.Instant;
@@ -58,11 +59,14 @@ import static jakarta.persistence.TemporalType.TIMESTAMP;
  * - created_by_id: bigint
  * - updated_by_id: bigint
  *
+ * 注意: 这是一个数据库视图，系统启动时不会自动创建表
+ *
  * @author william.d.zk
  * @since 2024
  */
 @Entity(name = "icv_date")
 @Immutable
+@Subselect("SELECT * FROM isahl.icv_date")
 @Table(name = "icv_date", schema = "isahl")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)

@@ -24,12 +24,14 @@
 package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.ISocketConfig;
 import org.springframework.util.unit.DataSize;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.Duration;
@@ -37,6 +39,7 @@ import java.time.Duration;
 public class SocketConfig
         implements ISocketConfig
 {
+    private final Logger   _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private boolean        keepAlive;
     private Duration       connectTimeoutInSecond;
     private Duration       writeTimeoutInSecond;
@@ -163,10 +166,23 @@ public class SocketConfig
     private KeyStore loadKeyStore(String path,
                                   String password) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException
     {
+        _Logger.debug("Attempting to load keystore: %s", path);
+        
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(getClass().getClassLoader()
-                                .getResourceAsStream(path), password.toCharArray());
-        return keyStore;
+        InputStream is = getClass().getClassLoader().getResourceAsStream(path);
+        
+        if (is == null) {
+            _Logger.fetal("Keystore not found in classpath: %s", path);
+            throw new IOException("Keystore not found: " + path);
+        }
+        
+        try {
+            keyStore.load(is, password.toCharArray());
+            _Logger.info("Successfully loaded keystore: %s", path);
+            return keyStore;
+        } finally {
+            is.close();
+        }
     }
 
     public void setTrustKeyStorePath(String trustKeyStorePath)
@@ -195,7 +211,7 @@ public class SocketConfig
                 return trustManagers = factory.getTrustManagers();
             }
             catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to load trust managers: %s", e.getMessage());
                 return null;
             }
         }
@@ -213,7 +229,7 @@ public class SocketConfig
                 return keyManagers = factory.getKeyManagers();
             }
             catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | UnrecoverableKeyException e) {
-                e.printStackTrace();
+                _Logger.warning("Failed to load key managers: %s", e.getMessage());
                 return null;
             }
         }
@@ -224,15 +240,31 @@ public class SocketConfig
     @Override
     public void init()
     {
+        _Logger.info("SocketConfig.init() started");
         try {
+            if (keyStorePath != null) {
+                _Logger.info("Loading keystore from: %s", keyStorePath);
+                KeyManager[] kms = getKeyManagers();
+                _Logger.info("Loaded %d key managers", kms != null ? kms.length : 0);
+            }
+            if (trustKeyStorePath != null) {
+                _Logger.info("Loading truststore from: %s", trustKeyStorePath);
+                TrustManager[] tms = getTrustManagers();
+                _Logger.info("Loaded %d trust managers", tms != null ? tms.length : 0);
+            }
+            
             SSLContext sslCtx = SSLContext.getInstance("TLSv1.2");
             sslCtx.init(getKeyManagers(), getTrustManagers(), null);
+            _Logger.info("SSLContext initialized successfully");
+            
             SSLSession sslSession = sslCtx.createSSLEngine()
                                           .getSession();
             sslPacketBufferSize = sslSession.getPacketBufferSize();
             sslAppBufferSize = sslSession.getApplicationBufferSize();
+            _Logger.info("SSL buffer sizes - packet: %d, app: %d", sslPacketBufferSize, sslAppBufferSize);
         }
-        catch(NoSuchAlgorithmException | KeyManagementException e) {
+        catch(Exception e) {
+            _Logger.fetal("SSL initialization failed: %s", e.getMessage());
             throw new ZException(e, "ssl static init failed");
         }
     }

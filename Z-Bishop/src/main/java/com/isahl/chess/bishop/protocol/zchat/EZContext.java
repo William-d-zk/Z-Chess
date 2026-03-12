@@ -23,13 +23,21 @@
 
 package com.isahl.chess.bishop.protocol.zchat;
 
-import com.isahl.chess.king.base.crypt.util.Rc4;
+import com.isahl.chess.king.base.crypt.util.AesGcm;
+import com.isahl.chess.king.base.crypt.util.ISymmetric;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
+/**
+ * EZContext - 加密上下文
+ * 
+ * 安全更新: 已使用 AES-GCM 替代已移除的 RC4 算法
+ * 
+ * @author Z-Chess Team
+ */
 public class EZContext
         extends ZContext
         implements IEContext
@@ -40,7 +48,8 @@ public class EZContext
     private boolean mUpdateKeyIn, mUpdateKeyOut;
     private int    mSymmetricKeyId;
     private byte[] mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
-    private Rc4 mEncryptRc4, mDecryptRc4;
+    // 使用 AES-GCM 替代 RC4 (安全修复)
+    private AesGcm mEncryptAesGcm, mDecryptAesGcm;
     private IEncryptor mEncryptHandler;
 
     public EZContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
@@ -48,16 +57,22 @@ public class EZContext
         super(option, mode, type);
     }
 
+    /**
+     * 获取对称解密器 (使用 AES-GCM 替代已移除的 RC4)
+     */
     @Override
-    public Rc4 getSymmetricDecrypt()
+    public ISymmetric getSymmetricDecrypt()
     {
-        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4() : mDecryptRc4;
+        return mDecryptAesGcm == null ? mDecryptAesGcm = new AesGcm() : mDecryptAesGcm;
     }
 
+    /**
+     * 获取对称加密器 (使用 AES-GCM 替代已移除的 RC4)
+     */
     @Override
-    public Rc4 getSymmetricEncrypt()
+    public ISymmetric getSymmetricEncrypt()
     {
-        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4() : mEncryptRc4;
+        return mEncryptAesGcm == null ? mEncryptAesGcm = new AesGcm() : mEncryptAesGcm;
     }
 
     @Override

@@ -93,7 +93,6 @@ public abstract class BaseMeta
         }
         catch(IOException e) {
             _Logger.fetal("flush meta failed: %s", e);
-            e.printStackTrace();
         }
     }
 
@@ -104,7 +103,7 @@ public abstract class BaseMeta
             mFile.close();
         }
         catch(IOException e) {
-            e.printStackTrace();
+            _Logger.warning("close meta file failed: %s", e);
         }
     }
 
