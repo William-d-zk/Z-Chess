@@ -24,7 +24,7 @@
 package com.isahl.chess.bishop.protocol.zchat;
 
 import com.isahl.chess.king.base.crypt.util.AesGcm;
-import com.isahl.chess.king.base.crypt.util.ISymmetric;
+import com.isahl.chess.king.base.crypt.features.ISymmetric;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;

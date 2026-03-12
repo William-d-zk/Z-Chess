@@ -53,4 +53,30 @@ public interface ISslOption
     int getSslPacketSize();
 
     int getSslAppSize();
+
+    // KeyStore/TrustStore 路径（用于热重载）
+    default String getKeyStorePath()
+    {
+        return null;
+    }
+
+    default String getKeyStorePassword()
+    {
+        return null;
+    }
+
+    default String getTrustStorePath()
+    {
+        return null;
+    }
+
+    default String getTrustStorePassword()
+    {
+        return null;
+    }
+
+    default boolean isHotReloadEnabled()
+    {
+        return false;
+    }
 }
