@@ -26,6 +26,7 @@ package com.isahl.chess.queen.events.functions;
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.ITriple;
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
@@ -39,6 +40,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 public class SocketConnected
         implements IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
 {
+    private final Logger    _Logger = Logger.getLogger(getClass().getSimpleName());
     private final AioReader _AioReader = new AioReader();
 
     @Override
@@ -58,7 +60,7 @@ public class SocketConnected
                 channel.close();
             }
             catch(IOException ex) {
-                ex.printStackTrace();
+                _Logger.warning("close channel error", ex);
             }
             return Triple.of(false, channel, e);
         }

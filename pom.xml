@@ -59,7 +59,7 @@
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
         <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.24</logback.version>
+        <logback.version>1.5.25</logback.version>
         <logback-access-common.version>2.0.7</logback-access-common.version>
         <!--SPRING-BOOT-->
         <spring-boot.version>3.5.9</spring-boot.version>
@@ -75,8 +75,8 @@
         <!--PIPELINE-->
         <disruptor.version>4.0.0</disruptor.version>
         <!--TOOLS-->
-        <httpcore5.version>5.4</httpcore5.version>
-        <httpclient5.version>5.6</httpclient5.version>
+        <httpcore5.version>5.3.1</httpcore5.version>
+        <httpclient5.version>5.4</httpclient5.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <junit.platform.version>1.13.1</junit.platform.version>

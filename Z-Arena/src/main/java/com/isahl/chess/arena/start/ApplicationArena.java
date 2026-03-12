@@ -33,25 +33,69 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
+ * Z-Chess Arena 网关应用启动类
+ * 
+ * 安全更新 (v1.0.20):
+ * - 移除了 H2 数据库支持
+ * - 添加了数据库健康检查，无数据库时自动退出
+ * - 强制要求配置 PostgreSQL
+ * 
  * @author william.d.zk
  * @date 2021/02/17
  */
 
 @EnableScheduling
 @Configuration
-@ComponentScan(basePackages = { "com.isahl.chess.knight.raft",
+@ComponentScan(basePackages = { 
+    "com.isahl.chess.knight.raft",
+    "com.isahl.chess.knight.cluster",
     "com.isahl.chess.rook.storage",
     "com.isahl.chess.pawn.endpoint",
     "com.isahl.chess.player.api",
-    "com.isahl.chess.arena.gateway" })
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class,
-    DataSourceTransactionManagerAutoConfiguration.class,
-    HibernateJpaAutoConfiguration.class })
+    "com.isahl.chess.arena.gateway" 
+})
+@EnableAutoConfiguration
 public class ApplicationArena
 {
 
     public static void main(String[] args)
     {
+        // 添加启动前检查
+        checkRequiredEnvironment();
+        
         SpringApplication.run(ApplicationArena.class, args);
+    }
+    
+    /**
+     * 检查必需的环境变量
+     * 在无数据库环境下给出明确提示
+     */
+    private static void checkRequiredEnvironment()
+    {
+        String postgresPassword = System.getenv("POSTGRES_PASSWORD");
+        if (postgresPassword == null || postgresPassword.isEmpty()) {
+            System.err.println("╔════════════════════════════════════════════════════════════════╗");
+            System.err.println("║  ERROR: 缺少必需的环境变量                                      ║");
+            System.err.println("╠════════════════════════════════════════════════════════════════╣");
+            System.err.println("║  未设置 POSTGRES_PASSWORD 环境变量                              ║");
+            System.err.println("║                                                                ║");
+            System.err.println("║  H2 数据库已移除，必须使用 PostgreSQL                          ║");
+            System.err.println("║  请按以下步骤配置:                                             ║");
+            System.err.println("║                                                                ║");
+            System.err.println("║  1. 设置环境变量:                                              ║");
+            System.err.println("║     export POSTGRES_PASSWORD=your_secure_password              ║");
+            System.err.println("║                                                                ║");
+            System.err.println("║  2. 启动 PostgreSQL (Docker):                                  ║");
+            System.err.println("║     docker run -d --name postgres \\                           ║");
+            System.err.println("║       -e POSTGRES_PASSWORD=your_password \\                    ║");
+            System.err.println("║       -e POSTGRES_USER=chess \\                                ║");
+            System.err.println("║       -e POSTGRES_DB=zchess_test \\                            ║");
+            System.err.println("║       -p 5432:5432 postgres:17                                 ║");
+            System.err.println("║                                                                ║");
+            System.err.println("║  3. 或使用现有的 PostgreSQL 实例                               ║");
+            System.err.println("╚════════════════════════════════════════════════════════════════╝");
+            
+            System.exit(1);
+        }
     }
 }

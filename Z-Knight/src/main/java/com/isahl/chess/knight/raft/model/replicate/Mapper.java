@@ -520,7 +520,7 @@ public class Mapper
                              }
                              catch(IOException | IllegalArgumentException | InvocationTargetException |
                                    NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-                                 e.printStackTrace();
+                                 _Logger.warning("Read segment failed: %s", e.getMessage());
                              }
                              return null;
                          })

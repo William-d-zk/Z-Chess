@@ -133,10 +133,16 @@ public class SslSocketConfig implements ISocketConfig {
     @PostConstruct
     public void init() {
         _Logger.info("Initializing TLS configuration...");
+        _Logger.info("Provider enabled: %s, KeyStore: %s", provider.isEnabled(), provider.getKeyStorePath());
+        _Logger.info("Consumer enabled: %s", consumer.isEnabled());
+        _Logger.info("Cluster enabled: %s", cluster.isEnabled());
+        _Logger.info("Internal enabled: %s", internal.isEnabled());
         
         // 初始化各组件的 SSL 上下文
         if (provider.isEnabled()) {
             initSslContext(provider, "provider");
+        } else {
+            _Logger.warning("Provider SSL is not enabled");
         }
         if (consumer.isEnabled()) {
             initSslContext(consumer, "consumer");

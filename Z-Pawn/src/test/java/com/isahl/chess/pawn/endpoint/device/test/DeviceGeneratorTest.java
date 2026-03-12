@@ -118,8 +118,8 @@ public class DeviceGeneratorTest {
         String wifiMac = generateMacAddress();
         String bluetoothMac = generateMacAddress();
         
-        // 生成序列号 (MD5 of MACs)
-        String serialNo = CryptoUtil.MD5(ethernetMac + "|" + wifiMac + "|" + bluetoothMac);
+        // 生成序列号 (SHA-256 of MACs) [安全修复: 从 MD5 升级]
+        String serialNo = CryptoUtil.SHA256(ethernetMac + "|" + wifiMac + "|" + bluetoothMac);
         
         // 生成ECC密钥对
         ASymmetricKeyPair keyPair = CryptoUtil.generateEccKeyPair(256);

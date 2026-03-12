@@ -29,8 +29,6 @@ server:
     enabled: false
 
 spring:
-  profiles:
-    active: online
   jackson:
     property-naming-strategy: SNAKE_CASE
     date-format: yyyy-MM-dd HH:mm:ss
@@ -75,9 +73,10 @@ z:
           ssl:
             enabled: ${SSL_ENABLED:false}
             key-store-path: ${SSL_KEYSTORE_PATH:/app/cert/server.p12}
-            key-store-password: ${SSL_KEYSTORE_PASSWORD:changeit}
+            # ⚠️ 安全警告: 必须设置密钥库密码，不允许使用默认值
+            key-store-password: ${SSL_KEYSTORE_PASSWORD:?错误: 必须设置 SSL_KEYSTORE_PASSWORD 环境变量}
             trust-store-path: ${SSL_TRUSTSTORE_PATH:/app/cert/trust.p12}
-            trust-store-password: ${SSL_TRUSTSTORE_PASSWORD:changeit}
+            trust-store-password: ${SSL_TRUSTSTORE_PASSWORD:?错误: 必须设置 SSL_TRUSTSTORE_PASSWORD 环境变量}
             client-auth: ${SSL_CLIENT_AUTH:false}
             protocol: ${SSL_PROTOCOL:TLSv1.2}
         # 集群 TLS 配置
@@ -85,9 +84,10 @@ z:
           ssl:
             enabled: ${CLUSTER_SSL_ENABLED:false}
             key-store-path: ${CLUSTER_KEYSTORE_PATH:/app/cert/cluster.p12}
-            key-store-password: ${CLUSTER_KEYSTORE_PASSWORD:changeit}
+            # ⚠️ 安全警告: 必须设置集群密钥库密码，不允许使用默认值
+            key-store-password: ${CLUSTER_KEYSTORE_PASSWORD:?错误: 必须设置 CLUSTER_KEYSTORE_PASSWORD 环境变量}
             trust-store-path: ${CLUSTER_TRUSTSTORE_PATH:/app/cert/cluster-trust.p12}
-            trust-store-password: ${CLUSTER_TRUSTSTORE_PASSWORD:changeit}
+            trust-store-password: ${CLUSTER_TRUSTSTORE_PASSWORD:?错误: 必须设置 CLUSTER_TRUSTSTORE_PASSWORD 环境变量}
             client-auth: true
             protocol: TLSv1.2
 

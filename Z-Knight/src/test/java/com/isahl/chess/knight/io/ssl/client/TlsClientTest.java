@@ -47,7 +47,10 @@ public class TlsClientTest {
     private static Path serverKeyStore;
     private static Path clientKeyStore;
     private static Path trustStore;
-    private static final String PASSWORD = "test123";
+    // 从环境变量读取密码，如果不存在则生成随机密码（安全修复）
+    private static final String PASSWORD = System.getenv("TLS_TEST_PASSWORD") != null ? 
+        System.getenv("TLS_TEST_PASSWORD") : 
+        java.util.Base64.getEncoder().encodeToString(java.security.SecureRandom.getSeed(12));
     private static final int TEST_PORT = 28443;
 
     @BeforeAll

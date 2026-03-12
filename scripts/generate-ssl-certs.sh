@@ -13,15 +13,37 @@
 set -e
 
 ENV=${1:-dev}
-PASSWORD=${2:-changeit}
 CERT_DIR="cert"
-DAYS=365
 
-# 根据环境设置证书有效期
-if [ "$ENV" = "prod" ]; then
+# ⚠️ 安全要求: 必须设置强密码
+if [ -z "$2" ]; then
+    echo "错误: 必须提供密钥库密码作为第二个参数"
+    echo "用法: ./generate-ssl-certs.sh [环境] [密码]"
+    echo "示例: ./generate-ssl-certs.sh prod \$(openssl rand -base64 32)"
+    exit 1
+fi
+PASSWORD=$2
+
+# 证书有效期设置（默认365天，最少90天）
+DAYS=${CERT_DAYS:-365}
+if [ "$DAYS" -lt 90 ]; then
+    echo "警告: 证书有效期不应少于90天，已调整为90天"
     DAYS=90
+fi
+
+# 根据环境调整证书有效期（生产环境建议90天，最长不超过365天）
+if [ "$ENV" = "prod" ]; then
+    # 生产环境: 90天，符合安全最佳实践
+    DAYS=${CERT_DAYS:-90}
+    echo "生产环境模式: 证书有效期设置为 $DAYS 天"
 elif [ "$ENV" = "test" ]; then
-    DAYS=180
+    # 测试环境: 180天
+    DAYS=${CERT_DAYS:-180}
+    echo "测试环境模式: 证书有效期设置为 $DAYS 天"
+else
+    # 开发环境: 365天
+    DAYS=${CERT_DAYS:-365}
+    echo "开发环境模式: 证书有效期设置为 $DAYS 天"
 fi
 
 echo "========================================="
@@ -29,6 +51,12 @@ echo "Z-Chess TLS 证书生成脚本"
 echo "环境: $ENV"
 echo "有效期: $DAYS 天"
 echo "========================================="
+echo ""
+echo "⚠️  安全提示:"
+echo "   - 请妥善保管密钥库密码"
+echo "   - 私钥文件(*-key.pem)和密钥库(*.p12)权限已设置为 600"
+echo "   - 证书过期前30天请重新生成"
+echo ""
 
 # 创建证书目录
 mkdir -p "$CERT_DIR"

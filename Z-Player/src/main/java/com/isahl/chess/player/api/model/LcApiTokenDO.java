@@ -61,13 +61,17 @@ public class LcApiTokenDO {
         this.company_code = company_code;
     }
 
+    /**
+     * 安全注意: 此方法用于日志输出，已排除敏感字段(app_token, app_key)
+     * 如需访问这些字段，请使用相应的 getter 方法
+     */
     @Override
     public String toString() {
         return "LcApiTokenDO{" +
             "cat_id='" + cat_id + '\'' +
             ", company_code='" + company_code + '\'' +
-            ", app_token='" + app_token + '\'' +
-            ", app_key='" + app_key + '\'' +
+            ", app_token='***'" +  // 敏感信息脱敏
+            ", app_key='***'" +    // 敏感信息脱敏
             ", expire_time=" + expire_time +
             '}';
     }

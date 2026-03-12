@@ -80,7 +80,7 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
 # 1883-1891: MQTT ports
 # 5228: Gateway
 # 5300: Internal
-EXPOSE 8080 8000 1883 1884 1885 1886 1887 1888 1889 1890 1891 5228 5300
+EXPOSE 8080 8000 1883 1884 1885 1886 1887 1888 1889 1890 1891 2883 5228 5300
 
 # 启动命令
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app/app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE}"]

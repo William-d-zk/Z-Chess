@@ -116,7 +116,7 @@ public class BaseAioClient
                                    connect(c);
                                }
                                catch(IOException e) {
-                                   e.printStackTrace();
+                                   _Logger.warning("Connect error: %s", e.getMessage());
                                }
                            }));
     }
