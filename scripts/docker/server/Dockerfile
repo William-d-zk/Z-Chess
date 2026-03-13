@@ -16,9 +16,9 @@
 
 FROM bellsoft/liberica-openjdk-alpine:17.0.18-10
 
-LABEL maintainer="Z-Chess Team" \
+LABEL maintainer="Z-Chess.Cluster" \
       version="1.0.22" \
-      description="Z-Chess Arena Server (Multi-Arch)"
+      description="Z-Chess.Arena Cluster Node"
 
 ENV TZ=Asia/Shanghai \
     JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" \
