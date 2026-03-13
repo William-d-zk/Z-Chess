@@ -32,7 +32,7 @@
 FROM postgres:17.8-alpine3.23
 
 # 元数据标签
-LABEL maintainer="Z-Chess Team" \
+LABEL maintainer="Z-Chess.Cluster" \
       version="17.8" \
       description="PostgreSQL 17 for Z-Chess" \
       base.image="alpine:3.23"
