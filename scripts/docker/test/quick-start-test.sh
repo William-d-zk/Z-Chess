@@ -8,7 +8,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="z-chess-test"
-COMPOSE_FILE="${SCRIPT_DIR}/Docker-Compose-Test.yaml"
+COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yaml"
 
 # 颜色定义
 RED='\033[0;31m'
