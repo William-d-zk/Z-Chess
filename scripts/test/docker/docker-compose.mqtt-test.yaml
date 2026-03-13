@@ -1,0 +1,279 @@
+# MIT License
+#
+# Copyright (c) 2016~2024. Z-Chess
+#
+# Z-Chess Docker Compose - MQTT v3/v5 测试环境
+# 配置方式：配置文件嵌入镜像，通过 ENTRYPOINT 加载
+
+services:
+  # ==========================================================================
+  # PostgreSQL 17 数据库服务
+  # ==========================================================================
+  db-pg:
+    image: z-chess-postgres:17.8-arm64
+    container_name: db-pg
+    hostname: db-pg
+    domainname: isahl.com
+    
+    ports:
+      - "5432:5432"
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.254
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    environment:
+      - POSTGRES_USER=chess
+      - POSTGRES_PASSWORD=chess123
+      - POSTGRES_DB=isahl_9.x
+      - TZ=Asia/Shanghai
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 0 (主节点)
+  # 配置文件已嵌入镜像，无需挂载
+  # ==========================================================================
+  raft00:
+    build:
+      context: .
+      dockerfile: Dockerfile.arena
+    image: z-chess-arena:1.0.22
+    container_name: raft00
+    hostname: raft00
+    
+    depends_on:
+      db-pg:
+        condition: service_healthy
+    
+    ports:
+      - "8080:8080"    # HTTP API
+      - "1883:1883"    # MQTT v3/v5
+      - "2883:2883"    # MQTT over TLS
+      - "8000:8000"    # Debug
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.110
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      # 仅挂载数据和日志目录
+      - type: bind
+        source: ~/Z-Chess/raft00
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft00
+        target: /app/logs
+        bind:
+          create_host_path: true
+    
+    environment:
+      # 仅设置时区，其他配置来自嵌入的配置文件
+      - TZ=Asia/Shanghai
+    
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    
+    restart: unless-stopped
+
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 1
+  # ==========================================================================
+  raft01:
+    image: z-chess-arena:1.0.22
+    container_name: raft01
+    hostname: raft01
+    depends_on:
+      db-pg:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+      - "1884:1883"
+      - "2884:2883"
+      - "8001:8000"
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.111
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft01
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft01
+        target: /app/logs
+        bind:
+          create_host_path: true
+    environment:
+      - POSTGRES_PASSWORD=chess123
+      - TZ=Asia/Shanghai
+      - NODE_ID=raft01
+      - RAFT_PORT=2889
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 2
+  # ==========================================================================
+  raft02:
+    image: z-chess-arena:1.0.22
+    container_name: raft02
+    hostname: raft02
+    depends_on:
+      db-pg:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+      - "1885:1883"
+      - "2885:2883"
+      - "8002:8000"
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.112
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft02
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft02
+        target: /app/logs
+        bind:
+          create_host_path: true
+    environment:
+      - POSTGRES_PASSWORD=chess123
+      - TZ=Asia/Shanghai
+      - NODE_ID=raft02
+      - RAFT_PORT=2890
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Audience 测试客户端
+  # ==========================================================================
+  audience:
+    build:
+      context: .
+      dockerfile: Dockerfile.audience
+    image: z-chess-audience:1.0.21
+    container_name: audience
+    hostname: audience
+    
+    depends_on:
+      raft00:
+        condition: service_healthy
+    
+    ports:
+      - "8090:8080"    # HTTP API
+      - "8300:8000"    # Debug
+    
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.120
+    
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "db-pg.isahl.com:172.30.10.254"
+    
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/logs/audience
+        target: /app/logs
+        bind:
+          create_host_path: true
+    
+    environment:
+      - TZ=Asia/Shanghai
+    
+    command: >
+      sh -c "
+        echo '========================================' &&
+        echo 'Z-Chess Audience Test Client v1.0.21' &&
+        echo '========================================' &&
+        echo '' &&
+        echo '等待集群服务就绪...' &&
+        sleep 20 &&
+        echo '' &&
+        echo '检查 MQTT 服务...' &&
+        nc -zv raft00 1883 &&
+        echo '✓ MQTT 服务就绪' &&
+        echo '' &&
+        echo '启动 Audience 客户端...' &&
+        java -XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0 
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 
+        -jar /app/app.jar
+      "
+    
+    restart: "no"
+
+# ============================================================================
+# 网络配置
+# ============================================================================
+networks:
+  endpoint:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
+          gateway: 172.30.10.1
+
+# ============================================================================
+# 共享卷
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local

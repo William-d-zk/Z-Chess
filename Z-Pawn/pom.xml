@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.21</version>
+        <version>1.0.22</version>
     </parent>
     <artifactId>endpoint.z-pawn</artifactId>
     <name>Z-Pawn</name>
@@ -43,6 +43,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
         </dependency>
     </dependencies>
     <build>
