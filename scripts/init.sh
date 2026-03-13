@@ -31,7 +31,7 @@ mkdir -p Z-Chess/raft01
 mkdir -p Z-Chess/raft02
 cd "$env_dir" || exit
 
-cd ../Z-Board || exit
+cd "$env_dir/Z-Board" || exit
 mvn -P dev clean install -Dmaven.test.skip=true
 
 cd ..

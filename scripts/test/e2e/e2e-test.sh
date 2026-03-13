@@ -217,7 +217,7 @@ step2_start_test_clients() {
         
         if timeout 60 docker run -d \
             --name "$client_name" \
-            --network z-chess-endpoint \
+            --network z-chess-endpoint-endpoint \
             --add-host="raft00:172.30.10.110" \
             --add-host="db-pg.isahl.com:172.30.10.254" \
             -e "TEST_CLIENT_ID=$i" \
