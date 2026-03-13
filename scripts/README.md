@@ -1,90 +1,96 @@
-# Z-Chess 部署脚本合集
+# Z-Chess Scripts 目录
 
-## 文档导航
-
-| 文档 | 说明 |
-|------|------|
-| [QUICK_TEST.md](QUICK_TEST.md) | 5 分钟快速测试指南 |
-| [LOCAL_TEST_GUIDE.md](LOCAL_TEST_GUIDE.md) | 完整的单机测试文档 |
-| [DOCKER_UPGRADE_GUIDE.md](DOCKER_UPGRADE_GUIDE.md) | Docker 升级指南 (PostgreSQL 17) |
-| [CLUSTER_CONFIG_CHECK.md](CLUSTER_CONFIG_CHECK.md) | 集群配置检查报告 |
-| [CROSS_IDC_GATEWAY_DESIGN.md](CROSS_IDC_GATEWAY_DESIGN.md) | 跨 IDC Gateway 设计方案 |
-
-## 快速命令
-
-```bash
-cd scripts
-
-# 启动集群
-./bin/quick-start.sh
-
-# 健康检查
-./bin/health-check.sh
-
-# 查看日志
-./bin/view-logs.sh
-
-# 停止集群
-./bin/stop-cluster.sh
-
-# 清理环境
-./bin/cleanup.sh
-```
+本目录包含 Z-Chess 项目的容器化管理、构建和测试脚本。
 
 ## 目录结构
 
 ```
 scripts/
-├── README.md                      # 本文件
-├── QUICK_TEST.md                  # 快速测试指南
-├── LOCAL_TEST_GUIDE.md            # 单机测试完整文档
-├── DOCKER_UPGRADE_GUIDE.md        # Docker 升级指南
-├── CLUSTER_CONFIG_CHECK.md        # 集群配置检查
-├── CROSS_IDC_GATEWAY_DESIGN.md    # 跨 IDC 设计方案
-├── bin/                           # 可执行脚本
-│   ├── quick-start.sh            # 快速启动
-│   ├── stop-cluster.sh           # 停止集群
-│   ├── view-logs.sh              # 查看日志
-│   ├── health-check.sh           # 健康检查
-│   └── cleanup.sh                # 清理环境
-├── aarch64/                       # ARM64 架构配置
-│   ├── Dockerfile
-│   └── Docker-Compose.yaml
-├── amd64/                         # AMD64 架构配置
-│   ├── Dockerfile
-│   └── Docker-Compose.yaml
-└── postgres17/                    # PostgreSQL 17 配置
-    ├── Dockerfile
-    ├── postgresql.conf
-    └── init-scripts/
+├── archive/                    # 归档的过时脚本
+├── bin/                        # 容器管理脚本
+│   ├── cleanup.sh             # 清理容器和资源
+│   ├── health-check.sh        # 健康检查
+│   ├── quick-start.sh         # 快速启动集群
+│   ├── stop-cluster.sh        # 停止集群
+│   └── view-logs.sh           # 查看日志
+├── build/                      # 构建脚本
+│   ├── aarch64/               # ARM64 架构构建
+│   ├── amd64/                 # AMD64 架构构建
+│   ├── docker-build-aarch64.sh
+│   └── docker-build-amd64.sh
+├── deploy/                     # 部署配置
+│   ├── kubernetes/            # Kubernetes 配置
+│   └── swarm/                 # Docker Swarm 配置
+├── docker/                     # Docker 配置和测试
+│   ├── aarch64/               # ARM64 Docker 配置
+│   ├── amd64/                 # AMD64 Docker 配置
+│   ├── postgres17/            # PostgreSQL 17 配置
+│   └── test/                  # Docker 测试环境
+│       ├── docker-compose.yaml
+│       ├── docker-compose.mqtt-test.yaml
+│       ├── Dockerfile.arena
+│       ├── Dockerfile.audience
+│       └── ...
+├── test/                       # 测试脚本
+│   ├── e2e/                   # 端到端测试
+│   ├── integration/           # 集成测试
+│   ├── tls/                   # TLS 测试
+│   └── README.md
+├── clean-and-restart.sh       # 清理并重启
+├── init.sh                    # 初始化脚本
+├── lib.sh                     # 通用库函数
+└── README.md                  # 本文件
 ```
 
-## 系统要求
+## 快速开始
 
-- Docker 20.10+
-- Docker Compose 2.0+
-- 4 核 CPU / 8GB 内存（最低）
-- 8 核 CPU / 16GB 内存（推荐）
+### 启动集群
 
-## 端口占用
+```bash
+# 使用快速启动脚本
+./bin/quick-start.sh
 
-| 端口 | 服务 | 说明 |
-|------|------|------|
-| 8080 | HTTP API | REST API 入口 |
-| 8000 | Debug | Java 调试端口 |
-| 1883 | MQTT | MQTT Broker |
-| 1884-1885 | MQTT | 其他节点 MQTT |
-| 5432 | PostgreSQL | 数据库 |
-| 5228 | Cluster | ZChat 集群协议 |
-| 5300 | Gateway | Gateway 服务 |
+# 或使用 Docker Compose
+cd docker/test
+docker compose -f docker-compose.mqtt-test.yaml up -d
+```
 
-## 支持的平台
+### 构建镜像
 
-- [x] Linux AMD64
-- [x] Linux ARM64
-- [x] macOS (Docker Desktop)
-- [x] Windows (WSL2 + Docker)
+```bash
+# ARM64
+./build/docker-build-aarch64.sh
 
-## 获取帮助
+# AMD64
+./build/docker-build-amd64.sh
+```
 
-查看具体文档或运行脚本时添加 `-h` 参数。
+### 运行测试
+
+```bash
+# MQTT 测试
+cd docker/test
+./start-mqtt-test.sh
+
+# TLS 测试
+cd test/tls
+./tls-verification.sh
+```
+
+## 文档
+
+- [集群配置检查](CLUSTER_CONFIG_CHECK.md)
+- [跨 IDC 网关设计](CROSS_IDC_GATEWAY_DESIGN.md)
+- [Docker 升级指南](DOCKER_UPGRADE_GUIDE.md)
+- [本地测试指南](LOCAL_TEST_GUIDE.md)
+- [快速测试](QUICK_TEST.md)
+
+## 变更记录
+
+### 2024-03-13 目录重组
+
+- 将 `aarch64/` 和 `amd64/` 移动到 `docker/`
+- 将测试脚本整合到 `test/` 和 `docker/test/`
+- 将构建脚本移动到 `build/`
+- 归档过时的 FreeBSD 和旧版脚本到 `archive/`
+- 更新所有路径引用

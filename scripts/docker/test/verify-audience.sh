@@ -30,7 +30,7 @@ else
     echo -e "${YELLOW}⚠ Audience 镜像不存在，开始构建...${NC}"
     cd "${SCRIPT_DIR}/../.."
     docker build --platform linux/arm64 -t z-chess-audience:2.0-arm64 \
-        -f scripts/aarch64/Dockerfile.audience .
+        -f docker/test/Dockerfile.audience .
     echo -e "${GREEN}✓ 镜像构建完成${NC}"
 fi
 

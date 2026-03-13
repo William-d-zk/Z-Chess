@@ -53,7 +53,7 @@ if ! docker image inspect z-chess-arena:2.0-arm64 &> /dev/null; then
         exit 1
     }
     docker build --platform linux/arm64 -t z-chess-arena:2.0-arm64 \
-        -f scripts/aarch64/Dockerfile .
+        -f docker/aarch64/Dockerfile .
 fi
 echo -e "${GREEN}✓ 镜像检查完成${NC}"
 
