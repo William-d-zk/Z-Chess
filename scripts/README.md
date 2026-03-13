@@ -2,11 +2,17 @@
 
 本目录包含 Z-Chess 项目的容器化管理、构建和测试脚本。
 
+## 特性
+
+- **统一架构**: 使用官方 sqlite-jdbc，自动适配 AMD64/ARM64，无需区分架构
+- **简化构建**: 单条命令构建，自动检测当前架构
+- **容器化管理**: 完整的 Docker Compose 配置，支持 3 节点集群
+
 ## 目录结构
 
 ```
 scripts/
-├── archive/                    # 归档的过时脚本
+├── archive/                    # 归档的过时脚本和旧架构配置
 ├── bin/                        # 容器管理脚本
 │   ├── cleanup.sh             # 清理容器和资源
 │   ├── health-check.sh        # 健康检查
@@ -14,16 +20,13 @@ scripts/
 │   ├── stop-cluster.sh        # 停止集群
 │   └── view-logs.sh           # 查看日志
 ├── build/                      # 构建脚本
-│   ├── aarch64/               # ARM64 架构构建
-│   ├── amd64/                 # AMD64 架构构建
-│   ├── docker-build-aarch64.sh
-│   └── docker-build-amd64.sh
+│   └── docker-build.sh        # 统一 Docker 构建脚本 (支持多架构)
 ├── deploy/                     # 部署配置
-│   ├── kubernetes/            # Kubernetes 配置
-│   └── swarm/                 # Docker Swarm 配置
-├── docker/                     # Docker 配置和测试
-│   ├── aarch64/               # ARM64 Docker 配置
-│   ├── amd64/                 # AMD64 Docker 配置
+│   ├── kubernetes/            # Kubernetes 配置 (预留)
+│   └── swarm/                 # Docker Swarm 配置 (预留)
+├── docker/                     # Docker 配置
+│   ├── Dockerfile             # 统一 Dockerfile (AMD64/ARM64 通用)
+│   ├── docker-compose.yaml    # 3 节点集群配置
 │   ├── postgres17/            # PostgreSQL 17 配置
 │   └── test/                  # Docker 测试环境
 │       ├── docker-compose.yaml
@@ -35,7 +38,7 @@ scripts/
 │   ├── e2e/                   # 端到端测试
 │   ├── integration/           # 集成测试
 │   ├── tls/                   # TLS 测试
-│   └── README.md
+│   └── unit/                  # 单元测试
 ├── clean-and-restart.sh       # 清理并重启
 ├── init.sh                    # 初始化脚本
 ├── lib.sh                     # 通用库函数
@@ -44,37 +47,47 @@ scripts/
 
 ## 快速开始
 
-### 启动集群
+### 1. 构建镜像
 
 ```bash
-# 使用快速启动脚本
+# 构建当前架构的镜像 (自动检测 AMD64/ARM64)
+cd scripts/build
+./docker-build.sh 1.0.22
+
+# 或使用 buildx 构建多架构镜像
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -f scripts/docker/Dockerfile \
+  -t z-chess-arena:1.0.22 \
+  .
+```
+
+### 2. 启动集群
+
+```bash
+# 方式1: 使用快速启动脚本
 ./bin/quick-start.sh
 
-# 或使用 Docker Compose
+# 方式2: 使用 Docker Compose
+cd docker
+docker compose up -d
+
+# 方式3: 使用测试环境
 cd docker/test
 docker compose -f docker-compose.mqtt-test.yaml up -d
 ```
 
-### 构建镜像
+### 3. 查看状态
 
 ```bash
-# ARM64
-./build/docker-build-aarch64.sh
+# 健康检查
+./bin/health-check.sh
 
-# AMD64
-./build/docker-build-amd64.sh
-```
+# 查看日志
+./bin/view-logs.sh
 
-### 运行测试
-
-```bash
-# MQTT 测试
-cd docker/test
-./start-mqtt-test.sh
-
-# TLS 测试
-cd test/tls
-./tls-verification.sh
+# 停止集群
+./bin/stop-cluster.sh
 ```
 
 ## 文档
@@ -85,7 +98,33 @@ cd test/tls
 - [本地测试指南](LOCAL_TEST_GUIDE.md)
 - [快速测试](QUICK_TEST.md)
 
+## 架构说明
+
+### 统一 Dockerfile
+
+使用 `bellsoft/liberica-openjdk-alpine:17.0.18-10` 作为基础镜像，该镜像支持多架构：
+- AMD64 (x86_64)
+- ARM64 (aarch64)
+
+官方 sqlite-jdbc 会自动加载对应架构的 native 库，无需手动管理。
+
+### 端口映射
+
+| 服务 | 容器内端口 | 主机端口 (raft00) | 主机端口 (raft01) | 主机端口 (raft02) |
+|-----|-----------|------------------|------------------|------------------|
+| HTTP API | 8080 | 8080 | 8081 | 8082 |
+| MQTT TCP | 1883 | 1883 | 1884 | 1885 |
+| MQTT TLS | 2883 | 2883 | 2884 | 2885 |
+| Debug | 8000 | 8000 | 8001 | 8002 |
+
 ## 变更记录
+
+### 2024-03-13 架构合并
+
+- 合并 `aarch64/` 和 `amd64/` 到统一的 `docker/Dockerfile`
+- 使用官方 sqlite-jdbc，自动适配不同架构
+- 简化构建脚本为单一的 `docker-build.sh`
+- 归档旧的架构相关脚本
 
 ### 2024-03-13 目录重组
 
