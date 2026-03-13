@@ -8,8 +8,13 @@
 # 特性:
 # - 使用官方 sqlite-jdbc，自动适配不同架构
 # - 无需手动管理 native 库文件
+#
+# 基础镜像选择 (按优先级):
+# 1. bellsoft/liberica-openjdk-alpine:17 - Liberica JDK (推荐，体积小)
+# 2. eclipse-temurin:17-jdk-alpine - Eclipse Adoptium (广泛可用)
+# 3. amazoncorretto:17-alpine - Amazon Corretto (AWS优化)
 
-FROM bellsoft/liberica-openjdk-alpine:17.0.18-10
+FROM bellsoft/liberica-openjdk-alpine:17
 
 LABEL maintainer="Z-Chess Team" \
       version="1.0.22" \
