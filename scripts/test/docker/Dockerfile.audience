@@ -1,54 +1,17 @@
 # MIT License
 #
 # Copyright (c) 2016~2024. Z-Chess
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-# the Software, and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# ============================================================================
 # Z-Chess Audience Test Client Docker Image (ARM64)
-# 
-# 用途：
-# - 压力测试客户端
-# - MQTT/WebSocket 连接测试
-# - TLS 加密连接验证
-# - 集群性能测试
-# ============================================================================
-
 FROM isahl-liberica-jdk17:17.0.18-arm64
 
-# 元数据标签
 LABEL maintainer="Z-Chess Team" \
-      version="2.0" \
-      description="Z-Chess Audience Test Client for ARM64" \
-      base.image="alpine:3.23" \
-      java.version="17"
+      version="1.0.21" \
+      description="Z-Chess Audience Test Client for ARM64"
 
-# 环境变量
 ENV TZ=Asia/Shanghai \
-    JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" \
-    SPRING_PROFILES_ACTIVE=online \
-    TEST_MODE=mqtt \
-    TEST_TARGET_HOST=raft00 \
-    TEST_TARGET_PORT=1883 \
-    TEST_CONCURRENCY=100 \
-    TEST_DURATION=60
+    JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=50.0 -XX:InitialRAMPercentage=25.0"
 
-# 安装系统依赖
 RUN set -eux && \
     apk upgrade --no-cache && \
     apk add --no-cache \
@@ -57,31 +20,38 @@ RUN set -eux && \
         ca-certificates \
         tzdata \
         bind-tools \
-        netcat-openbsd && \
+        netcat-openbsd \
+        mosquitto-clients && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone && \
     rm -rf /var/cache/apk/* /tmp/*
 
-# 创建应用目录
 WORKDIR /app
 
-# 构建参数
-ARG JAR_FILE=Z-Audience/target/*.jar
+# 复制应用 JAR
+COPY Z-Audience/target/*.jar app.jar
 
-# 复制应用文件
-COPY ${JAR_FILE} app.jar
+# 复制配置文件
+COPY config/audience-docker.properties /app/config/
 
 # 设置权限
-RUN chmod 644 /app/app.jar
+RUN chmod 644 /app/app.jar && \
+    mkdir -p /app/logs /app/config
 
-# 健康检查 - 检查进程是否运行
+# 健康检查
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD pgrep -f "java.*app.jar" > /dev/null || exit 1
 
-# 暴露端口
-# 8080: HTTP API (测试控制接口)
-# 8000: Debug
 EXPOSE 8080 8000
 
 # 启动命令
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app/app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE}"]
+ENTRYPOINT ["sh", "-c", " \
+    if [ -f /app/config/audience-docker.properties ]; then \
+        echo '使用配置文件: /app/config/audience-docker.properties'; \
+        export SPRING_CONFIG_LOCATION=classpath:/,/app/config/; \
+    fi; \
+    java ${JAVA_OPTS} \
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 \
+        -jar /app/app.jar \
+        --spring.profiles.active=docker \
+"]

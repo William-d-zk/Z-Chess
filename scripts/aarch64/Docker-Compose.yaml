@@ -24,7 +24,7 @@
 # 
 # 升级说明：
 # - PostgreSQL 17.2 (升级自旧版本)
-# - Alpine Linux 3.20 (内核 6.6.x)
+# - Alpine Linux 3.23 (内核 6.6.x)
 # - 优化网络和存储配置
 # ============================================================================
 
@@ -65,7 +65,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-chess}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?错误: 必须设置 POSTGRES_PASSWORD 环境变量}
       - POSTGRES_DB=${POSTGRES_DB:-isahl_9.x}
-      # PGDATA 默认为 /var/lib/postgresql/data，与卷挂载路径一致
       - TZ=Asia/Shanghai
       - PGTZ=Asia/Shanghai
     
@@ -136,12 +135,8 @@ services:
           create_host_path: true
     
     environment:
-      - SPRING_PROFILES_ACTIVE=online
+      - SPRING_PROFILES_ACTIVE=dev
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -Djava.library.path=/usr/lib
-      # 数据库配置与 application.properties 保持一致
-      # postgresql.host=db-pg.isahl.com
-      # postgresql.port=5432
-      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
       - DB_PORT=5432
       - DB_NAME=isahl_9.x
@@ -200,12 +195,8 @@ services:
         target: /app/logs
     
     environment:
-      - SPRING_PROFILES_ACTIVE=online
+      - SPRING_PROFILES_ACTIVE=dev
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
-      # 数据库配置与 application.properties 保持一致
-      # postgresql.host=db-pg.isahl.com
-      # postgresql.port=5432
-      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
       - DB_PORT=5432
       - DB_NAME=isahl_9.x
@@ -259,12 +250,8 @@ services:
         target: /app/logs
     
     environment:
-      - SPRING_PROFILES_ACTIVE=online
+      - SPRING_PROFILES_ACTIVE=dev
       - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
-      # 数据库配置与 application.properties 保持一致
-      # postgresql.host=db-pg.isahl.com
-      # postgresql.port=5432
-      # postgresql.database=isahl_9.x
       - DB_HOST=db-pg.isahl.com
       - DB_PORT=5432
       - DB_NAME=isahl_9.x

@@ -1,0 +1,11 @@
+FROM z-chess-arena:1.0.21
+
+# 使用 debug 模式启动
+ENTRYPOINT ["sh", "-c", " \
+    echo '启动 Z-Chess Arena (Debug 模式)...'; \
+    java $JAVA_OPTS \
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 \
+        -jar /app/app.jar \
+        --debug \
+        2>&1 | tee /app/logs/debug.log \
+"]
