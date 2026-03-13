@@ -1,0 +1,256 @@
+# MIT License
+#
+# Copyright (c) 2016~2024. Z-Chess
+#
+# Z-Chess Docker Compose - 统一版本 (支持 AMD64/ARM64)
+#
+# 特性:
+# - 使用官方 sqlite-jdbc，自动适配不同架构
+# - 无需区分 CPU 架构
+#
+# 使用方法:
+#   cd scripts/docker
+#   docker compose up -d
+#
+# 或指定平台:
+#   docker compose up -d --build --set '*.platform=linux/arm64'
+#   docker compose up -d --build --set '*.platform=linux/amd64'
+
+services:
+  # ==========================================================================
+  # PostgreSQL 17 数据库服务
+  # ==========================================================================
+  db-pg:
+    image: postgres:17-alpine
+    container_name: db-pg
+    hostname: db-pg
+    domainname: isahl.com
+
+    ports:
+      - "5432:5432"
+
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.254
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    environment:
+      - POSTGRES_USER=chess
+      - POSTGRES_PASSWORD=chess123
+      - POSTGRES_DB=isahl_9.x
+      - TZ=Asia/Shanghai
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chess -d isahl_9.x"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 0 (主节点)
+  # ==========================================================================
+  raft00:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile
+    image: z-chess-arena:1.0.22
+    container_name: raft00
+    hostname: raft00
+
+    depends_on:
+      db-pg:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"    # HTTP API
+      - "1883:1883"    # MQTT v3/v5
+      - "2883:2883"    # MQTT over TLS
+      - "8000:8000"    # Debug
+
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.110
+
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft00
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft00
+        target: /app/logs
+        bind:
+          create_host_path: true
+
+    environment:
+      - POSTGRES_PASSWORD=chess123
+      - TZ=Asia/Shanghai
+      - NODE_ID=raft00
+      - NODE_IP=172.30.10.110
+      - RAFT_PORT=2888
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 1
+  # ==========================================================================
+  raft01:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile
+    image: z-chess-arena:1.0.22
+    container_name: raft01
+    hostname: raft01
+
+    depends_on:
+      db-pg:
+        condition: service_healthy
+
+    ports:
+      - "8081:8080"    # HTTP API
+      - "1884:1883"    # MQTT v3/v5
+      - "2884:2883"    # MQTT over TLS
+      - "8001:8000"    # Debug
+
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.111
+
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft01
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft01
+        target: /app/logs
+        bind:
+          create_host_path: true
+
+    environment:
+      - POSTGRES_PASSWORD=chess123
+      - TZ=Asia/Shanghai
+      - NODE_ID=raft01
+      - NODE_IP=172.30.10.111
+      - RAFT_PORT=2889
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Z-Chess Arena 节点 2
+  # ==========================================================================
+  raft02:
+    build:
+      context: ../..
+      dockerfile: scripts/docker/Dockerfile
+    image: z-chess-arena:1.0.22
+    container_name: raft02
+    hostname: raft02
+
+    depends_on:
+      db-pg:
+        condition: service_healthy
+
+    ports:
+      - "8082:8080"    # HTTP API
+      - "1885:1883"    # MQTT v3/v5
+      - "2885:2883"    # MQTT over TLS
+      - "8002:8000"    # Debug
+
+    networks:
+      endpoint:
+        ipv4_address: 172.30.10.112
+
+    extra_hosts:
+      - "raft00:172.30.10.110"
+      - "raft01:172.30.10.111"
+      - "raft02:172.30.10.112"
+      - "gate00:172.30.10.110"
+      - "gate01:172.30.10.111"
+      - "gate02:172.30.10.112"
+      - "db-pg.isahl.com:172.30.10.254"
+
+    volumes:
+      - type: bind
+        source: ~/Z-Chess/raft02
+        target: /root/Z-Chess
+        bind:
+          create_host_path: true
+      - type: bind
+        source: ~/Z-Chess/logs/raft02
+        target: /app/logs
+        bind:
+          create_host_path: true
+
+    environment:
+      - POSTGRES_PASSWORD=chess123
+      - TZ=Asia/Shanghai
+      - NODE_ID=raft02
+      - NODE_IP=172.30.10.112
+      - RAFT_PORT=2890
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    restart: unless-stopped
+
+# ============================================================================
+# 网络配置
+# ============================================================================
+networks:
+  endpoint:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24
+          gateway: 172.30.10.1
+
+# ============================================================================
+# 共享卷
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
