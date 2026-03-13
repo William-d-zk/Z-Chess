@@ -4,9 +4,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
 
-COMPOSE_FILE="docker/docker-compose.yaml"
+COMPOSE_FILE="$SCRIPT_DIR/docker/docker-compose.yaml"
 
 echo "🧹 停止并清理容器..."
 docker compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true

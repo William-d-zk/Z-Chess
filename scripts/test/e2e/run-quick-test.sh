@@ -42,58 +42,47 @@ test_health_check() {
 test_cluster_status() {
     log_info "测试: 集群状态"
     
-    local response=$(http_get "${API_ENDPOINT}/api/cluster/status")
+    local response=$(http_get "${API_ENDPOINT}/cluster/close")
     local code=$(get_http_code "$response")
     local body=$(get_response_body "$response")
     
     if [ "$code" == "200" ]; then
-        local role=$(echo "$body" | jq -r '.role // "unknown"')
-        log_info "集群角色: $role"
-        log_success "集群状态 API"
-        ((TESTS_PASSED++))
-        return 0
-    else
-        log_error "集群状态 API (HTTP $code)"
-        ((TESTS_FAILED++))
-        return 1
+        local code_val=$(echo "$body" | jq -r '.code // -1')
+        if [ "$code_val" == "0" ]; then
+            log_info "集群状态: 正常"
+            log_success "集群状态 API"
+            ((TESTS_PASSED++))
+            return 0
+        fi
     fi
+    
+    log_error "集群状态 API (HTTP $code)"
+    ((TESTS_FAILED++))
+    return 1
 }
 
 #######################################
-# 测试: 设备 CRUD
+# 测试: 设备查询
 #######################################
-test_device_crud() {
-    log_info "测试: 设备 CRUD"
+test_device_query() {
+    log_info "测试: 设备查询"
     
-    local device_id="test-device-$(generate_uuid | cut -d'-' -f1)"
+    local response=$(http_get "${API_ENDPOINT}/device/online/all")
+    local code=$(get_http_code "$response")
+    local body=$(get_response_body "$response")
     
-    # 创建设备
-    log_info "创建设备: $device_id"
-    local create_resp=$(http_post "${API_ENDPOINT}/api/devices" \
-        "{\"device_id\": \"$device_id\", \"name\": \"Test Device\", \"type\": 1}")
-    local create_code=$(get_http_code "$create_resp")
-    
-    if [ "$create_code" != "200" ] && [ "$create_code" != "201" ]; then
-        log_warn "创建设备跳过或失败 (HTTP $create_code)"
-        ((TESTS_FAILED++))
-        return 1
+    if [ "$code" == "200" ]; then
+        local code_val=$(echo "$body" | jq -r '.code // -1')
+        if [ "$code_val" == "0" ]; then
+            log_success "设备查询 API"
+            ((TESTS_PASSED++))
+            return 0
+        fi
     fi
     
-    log_success "设备创建"
-    
-    # 查询设备
-    log_info "查询设备: $device_id"
-    local get_resp=$(http_get "${API_ENDPOINT}/api/devices/$device_id")
-    local get_code=$(get_http_code "$get_resp")
-    
-    if [ "$get_code" == "200" ]; then
-        log_success "设备查询"
-    else
-        log_warn "设备查询 (HTTP $get_code)"
-    fi
-    
-    ((TESTS_PASSED++))
-    return 0
+    log_error "设备查询 API (HTTP $code)"
+    ((TESTS_FAILED++))
+    return 1
 }
 
 #######################################
@@ -102,14 +91,19 @@ test_device_crud() {
 test_mqtt_connection() {
     log_info "测试: MQTT 连接"
     
-    if ! command -v mosquitto_pub &> /dev/null; then
-        log_warn "跳过 MQTT 测试 (未安装 mosquitto-clients)"
-        ((TESTS_PASSED++))  # 不算失败
-        return 0
+    # 检查端口 (使用 nc 或 bash 内置)
+    local port_open=false
+    if command -v nc > /dev/null 2>&1; then
+        if nc -z "${MQTT_HOST}" "${MQTT_PORT}" 2>/dev/null; then
+            port_open=true
+        fi
+    elif command -v bash > /dev/null 2>&1; then
+        if bash -c "exec 3<>/dev/tcp/${MQTT_HOST}/${MQTT_PORT}" 2>/dev/null; then
+            port_open=true
+        fi
     fi
     
-    # 检查端口
-    if timeout 5 bash -c "</dev/tcp/${MQTT_HOST}/${MQTT_PORT}" 2>/dev/null; then
+    if [ "$port_open" == "true" ]; then
         log_success "MQTT 端口可连接"
         ((TESTS_PASSED++))
         return 0
@@ -165,7 +159,7 @@ run_all_tests() {
     test_cluster_status || true
     test_database_connection || true
     test_mqtt_connection || true
-    test_device_crud || true
+    test_device_query || true
     
     # 统计
     local end_time=$(date +%s)

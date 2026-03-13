@@ -34,5 +34,5 @@ cd "$env_dir" || exit
 cd "$env_dir/Z-Board" || exit
 mvn -P dev clean install -Dmaven.test.skip=true
 
-cd ..
+cd "$env_dir" || exit
 mvn clean compile install -Dmaven.test.skip=true -P dev

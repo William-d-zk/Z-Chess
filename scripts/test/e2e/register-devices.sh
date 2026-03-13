@@ -95,7 +95,7 @@ register_device() {
     
     # 调用注册 API
     local response=$(curl -s -w "\n%{http_code}" \
-        -X POST "${endpoint}/api/devices/register" \
+        -X POST "${endpoint}/device/init" \
         -H "Content-Type: application/json" \
         -d "{\"device_id\": \"$device_id\", \"type\": $device_type}" 2>/dev/null || echo -e "\n000")
     
