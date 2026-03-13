@@ -21,13 +21,13 @@ services:
   # PostgreSQL 17 数据库服务
   # ==========================================================================
   db-pg:
-    image: postgres:17-alpine
+    image: postgres:17.8-alpine3.23
     container_name: db-pg
     hostname: db-pg
     domainname: isahl.com
 
     ports:
-      - "5432:5432"
+      - "6543:5432"
 
     networks:
       endpoint:
@@ -57,7 +57,7 @@ services:
   raft00:
     build:
       context: ../..
-      dockerfile: scripts/docker/Dockerfile
+      dockerfile: scripts/docker/server/Dockerfile
     image: z-chess-arena:1.0.22
     container_name: raft00
     hostname: raft00
@@ -119,7 +119,7 @@ services:
   raft01:
     build:
       context: ../..
-      dockerfile: scripts/docker/Dockerfile
+      dockerfile: scripts/docker/server/Dockerfile
     image: z-chess-arena:1.0.22
     container_name: raft01
     hostname: raft01
@@ -181,7 +181,7 @@ services:
   raft02:
     build:
       context: ../..
-      dockerfile: scripts/docker/Dockerfile
+      dockerfile: scripts/docker/server/Dockerfile
     image: z-chess-arena:1.0.22
     container_name: raft02
     hostname: raft02

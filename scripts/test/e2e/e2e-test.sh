@@ -217,7 +217,7 @@ step2_start_test_clients() {
         
         if timeout 60 docker run -d \
             --name "$client_name" \
-            --network z-chess-endpoint-endpoint \
+            --network z-chess_endpoint \
             --add-host="raft00:172.30.10.110" \
             --add-host="db-pg.isahl.com:172.30.10.254" \
             -e "TEST_CLIENT_ID=$i" \
@@ -305,7 +305,7 @@ step3_register_devices() {
         local response
         local http_code
         response=$(curl -s -w "\n%{http_code}" -X POST \
-            "http://localhost:8080/api/devices/register" \
+            "http://localhost:8080/device/init" \
             -H "Content-Type: application/json" \
             -d "{\"device_id\": \"$device_id\", \"type\": 1}" 2>/dev/null || echo -e "\n000")
         
@@ -422,7 +422,7 @@ run_api_tests() {
     
     # 测试 2: 集群状态 API
     local cluster_status
-    cluster_status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/api/cluster/status")
+    cluster_status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/cluster/close")
     if [ "$cluster_status" = "200" ]; then
         tests_passed=$((tests_passed + 1))
         set_result "api_cluster_status" "PASSED"
@@ -435,7 +435,7 @@ run_api_tests() {
     
     # 测试 3: 设备列表 API
     local devices_status
-    devices_status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/api/devices")
+    devices_status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/device/online/all")
     if [ "$devices_status" = "200" ]; then
         tests_passed=$((tests_passed + 1))
         set_result "api_devices" "PASSED"
