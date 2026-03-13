@@ -14,7 +14,7 @@
 # 2. eclipse-temurin:17-jdk-alpine - Eclipse Adoptium (广泛可用)
 # 3. amazoncorretto:17-alpine - Amazon Corretto (AWS优化)
 
-FROM bellsoft/liberica-openjdk-alpine:17
+FROM bellsoft/liberica-openjdk-alpine:17.0.18-10
 
 LABEL maintainer="Z-Chess Team" \
       version="1.0.22" \
