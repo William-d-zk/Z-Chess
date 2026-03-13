@@ -2,7 +2,7 @@
 
 ## 变更概要
 
-将测试脚本从架构相关目录（`scripts/aarch64/`）移动到功能相关目录（`scripts/test/`），使目录结构更清晰合理。
+将测试脚本从架构相关目录（`docker/aarch64/`）移动到功能相关目录（`scripts/test/`），使目录结构更清晰合理。
 
 ## 旧结构
 
@@ -56,11 +56,11 @@ scripts/
 
 | 原位置 | 新位置 | 说明 |
 |--------|--------|------|
-| `scripts/aarch64/Docker-Compose-Test.yaml` | `scripts/test/docker/docker-compose.yaml` | Docker 测试配置 |
-| `scripts/aarch64/test-cluster.sh` | `scripts/test/docker/test-cluster.sh` | 集群管理脚本 |
-| `scripts/aarch64/quick-start-test.sh` | `scripts/test/docker/quick-start-test.sh` | 快速启动脚本 |
-| `scripts/aarch64/verify-audience.sh` | `scripts/test/docker/verify-audience.sh` | 镜像验证脚本 |
-| `scripts/aarch64/Dockerfile.audience` | `scripts/build/aarch64/Dockerfile.audience` | Audience 镜像构建 |
+| `docker/aarch64/Docker-Compose-Test.yaml` | `scripts/test/docker/docker-compose.yaml` | Docker 测试配置 |
+| `docker/aarch64/test-cluster.sh` | `scripts/test/docker/test-cluster.sh` | 集群管理脚本 |
+| `docker/aarch64/quick-start-test.sh` | `scripts/test/docker/quick-start-test.sh` | 快速启动脚本 |
+| `docker/aarch64/verify-audience.sh` | `scripts/test/docker/verify-audience.sh` | 镜像验证脚本 |
+| `docker/aarch64/Dockerfile.audience` | `build/aarch64/Dockerfile.audience` | Audience 镜像构建 |
 | `scripts/generate-ssl-certs.sh` | `scripts/test/tls/generate-ssl-certs.sh` | 证书生成脚本 |
 | `scripts/tls-verification.sh` | `scripts/test/tls/tls-verification.sh` | TLS 验证脚本 |
 
@@ -75,7 +75,7 @@ scripts/
 
 ### 更新的路径引用
 
-- `docker-compose.yaml`: 更新 `dockerfile` 路径从 `scripts/aarch64/` 到 `scripts/build/aarch64/`
+- `docker-compose.yaml`: 更新 `dockerfile` 路径从 `docker/aarch64/` 到 `build/aarch64/`
 - `quick-start-test.sh`: 更新 Maven 构建路径
 - `DOCKER_TEST_CLUSTER.md`: 更新所有路径引用
 
@@ -84,11 +84,11 @@ scripts/
 旧位置的脚本现在会显示重定向提示并自动转发到新位置：
 
 ```bash
-$ scripts/aarch64/test-cluster.sh start
+$ docker/aarch64/test-cluster.sh start
 ========================================
 提示: 此脚本已移动到新的位置
 ========================================
-旧位置: scripts/aarch64/test-cluster.sh
+旧位置: docker/aarch64/test-cluster.sh
 新位置: scripts/test/docker/test-cluster.sh
 ...
 ```

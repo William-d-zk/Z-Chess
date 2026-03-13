@@ -77,7 +77,7 @@ services:
   raft00:
     build:
       context: ../../..
-      dockerfile: scripts/build/aarch64/Dockerfile
+      dockerfile: docker/aarch64/Dockerfile
       platforms:
         - linux/arm64
     image: z-chess-arena:2.0-arm64
@@ -256,7 +256,7 @@ services:
   audience:
     build:
       context: ../../..
-      dockerfile: scripts/build/aarch64/Dockerfile.audience
+      dockerfile: docker/aarch64/Dockerfile.audience
       platforms:
         - linux/arm64
     image: z-chess-audience:2.0-arm64
@@ -327,7 +327,7 @@ services:
   tls-tester:
     build:
       context: ../../..
-      dockerfile: scripts/build/aarch64/Dockerfile.audience
+      dockerfile: docker/aarch64/Dockerfile.audience
       platforms:
         - linux/arm64
     image: z-chess-audience:2.0-arm64

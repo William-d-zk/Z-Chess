@@ -96,11 +96,11 @@ docker run --rm \
 
 ```bash
 # ARM64
-cd scripts/aarch64
+cd docker/aarch64
 docker-compose up -d
 
 # AMD64
-cd scripts/amd64
+cd docker/amd64
 docker-compose up -d
 ```
 
@@ -129,7 +129,7 @@ rm -rf ~/Services/db/postgresql
 mkdir -p ~/Services/db/postgresql17/log
 
 # 构建并启动
-cd scripts/aarch64  # 或 amd64
+cd docker/aarch64  # 或 amd64
 docker-compose up --build -d
 ```
 
