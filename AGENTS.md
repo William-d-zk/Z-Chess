@@ -7,7 +7,6 @@ Before creating a git commit, ALWAYS run the code formatter to ensure code follo
 ### Formatter Configuration
 - Uses Spotless Maven Plugin with Eclipse formatter
 - Configuration file: `docs/eclipse-formatter.xml`
-- Based on IDEA code style: `idea_java_style_william_d_zk.xml`
 
 ### Commands
 
