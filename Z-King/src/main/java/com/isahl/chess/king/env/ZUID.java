@@ -42,26 +42,26 @@ import java.util.regex.Pattern;
  *     {10} Device consumer connection
  *     {11} Cluster symmetry communication
  * </p>
- * [04bit] cluster-region
+ * [03bit] cluster-region
  * [03bit] cluster-set identity
- * [07bit] cluster-node identity
- * [38bit] timestamp gap 2021-06-01 00:00:00.000
- * [10bit] sequence in one millisecond
+ * [06bit] cluster-node identity
+ * [36bit] timestamp gap 2021-06-01 00:00:00.000
+ * [12bit] sequence in one millisecond
  */
 public class ZUID
 {
 
     public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2021, Month.JUNE, 1, 0, 0);
     public static final long          EPOCH_SECOND       = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
-    public static final int           SEQUENCE_BITS      = 10;
+    public static final int           SEQUENCE_BITS      = 12;
     public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
     public static final int           TIMESTAMP_BITS     = 38;
     public static final int           TIMESTAMP_SHIFT    = SEQUENCE_BITS;
-    public static final int           NODE_BITS          = 7;
+    public static final int           NODE_BITS          = 6;
     public static final int           NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
     public static final int           CLUSTER_BITS       = 3;
     public static final int           CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
-    public static final int           IDC_BITS           = 4;
+    public static final int           IDC_BITS           = 3;
     public static final int           IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
     public static final int           TYPE_BITS          = 2;
     public static final int           TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
@@ -82,7 +82,7 @@ public class ZUID
                                                              (((1L << CLUSTER_BITS) - 1) << CLUSTER_SHIFT);
     public static final  long           NODE_MASK          = ((1L << NODE_BITS) - 1) << NODE_SHIFT;
     public static final  long           PEER_MASK          = CLUSTER_MASK | NODE_MASK;
-    public static final  long           PREFIX_MASK        = -1L << 48;
+    public static final  long           PREFIX_MASK        = -1L << (TYPE_SHIFT - TYPE_BITS);
     public static final  long           DEVICE_MASK        = -1L >>> TYPE_BITS;
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
