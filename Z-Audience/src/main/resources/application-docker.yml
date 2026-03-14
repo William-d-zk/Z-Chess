@@ -3,77 +3,94 @@
 #
 # Copyright (c) 2016~2024. Z-Chess
 #
-# Z-Audience Docker 测试环境配置
+# Z-Audience Docker 环境配置
 #
 
 server:
-  port: 8080
+  port: 8081
 
 spring:
-  profiles:
-    active: online
   jackson:
     property-naming-strategy: SNAKE_CASE
     date-format: yyyy-MM-dd HH:mm:ss
-    default-property-inclusion: non_empty
+    parser:
+      allow_single_quotes: true
+    deserialization:
+      fail_on_unknown_properties: true
+    defaultPropertyInclusion: NON_EMPTY
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: servlet
+  output:
+    ansi:
+      enabled: ALWAYS
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  cache:
+    type: jcache
+    jcache:
+      provider: org.ehcache.jsr107.EhcacheCachingProvider
 
-# 压力测试配置
-z:
-  chess:
-    pressure:
-      # 目标服务器配置
-      target:
-        host: ${Z_CHESS_PRESSURE_TARGET_HOST:raft00}
-        port: ${Z_CHESS_PRESSURE_TARGET_PORT:1883}
-      
-      # 并发连接数
-      concurrency: ${Z_CHESS_PRESSURE_CONCURRENCY:100}
-      
-      # 每个连接每秒请求数
-      requests-per-second-per-client: 10
-      
-      # 测试持续时间
-      duration: ${Z_CHESS_PRESSURE_DURATION:PT60S}
-      
-      # 连接建立速率（每秒新建连接数）
-      connection-rate: 100
-      
-      # 连接建立超时
-      connect-timeout: PT10S
-      
-      # 请求超时
-      request-timeout: PT5S
-      
-      # 是否启用心跳
-      keep-alive: true
-      
-      # 心跳间隔（秒）
-      heartbeat-interval: 30
-      
-      # 协议类型：mqtt, websocket, zchat
-      protocol: ${Z_CHESS_PRESSURE_PROTOCOL:mqtt}
-      
-      # 消息 payload 大小（字节）
-      payload-size: 256
-      
-      # 是否打印详细日志
-      verbose: false
-      
-      # 统计采样间隔（秒）
-      stats-interval: 5
-      
-      # 预热时间（秒）
-      warm-up-seconds: 5
+# 管理端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
 
 # 日志配置
 logging:
   level:
-    root: INFO
-    com.isahl.chess: DEBUG
-    com.isahl.chess.audience: DEBUG
+    com.isahl.chess.audience: INFO
+    com.isahl.chess.king: WARN
+    org.springframework: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: /app/logs/audience.log
-    max-size: 100MB
-    max-history: 7
+
+# Z-Audience 压测客户端配置
+z:
+  chess:
+    audience:
+      # MQTT 消费者配置
+      qtt:
+        name: ${AUDIENCE_NAME:audience-docker}
+        host: ${TARGET_HOST:host.docker.internal}
+        port: ${TARGET_PORT:1883}
+      # WebSocket 配置
+      ws:
+        name: ${AUDIENCE_NAME:audience-docker}
+        host: ${TARGET_HOST:host.docker.internal}
+        port: ${TARGET_PORT_WS:1889}
+        path: /mqtt
+      # ZChat 配置
+      chat:
+        name: ${AUDIENCE_NAME:audience-docker}
+        host: ${TARGET_HOST:host.docker.internal}
+        port: ${TARGET_PORT_CHAT:1886}
+      # IO 线程数
+      io_count: ${IO_COUNT:3}
+
+    # 压测配置
+    pressure:
+      target:
+        host: ${PRESSURE_TARGET_HOST:host.docker.internal}
+        port: ${PRESSURE_TARGET_PORT:1883}
+        path: ${PRESSURE_TARGET_PATH:/mqtt}
+      concurrency: ${PRESSURE_CONCURRENCY:1000}
+      requests-per-second-per-client: ${PRESSURE_REQUESTS_PER_SECOND:10}
+      connection-rate: ${PRESSURE_CONNECTION_RATE:50}
+      duration: ${PRESSURE_DURATION:PT60S}
+      warm-up-seconds: ${PRESSURE_WARM_UP_SECONDS:5}
+      stats-interval: ${PRESSURE_STATS_INTERVAL:5}
+      connect-timeout: ${PRESSURE_CONNECT_TIMEOUT:PT10S}
+      request-timeout: ${PRESSURE_REQUEST_TIMEOUT:PT5S}
+      keep-alive: ${PRESSURE_KEEP_ALIVE:true}
+      heartbeat-interval: ${PRESSURE_HEARTBEAT_INTERVAL:30}
+      protocol: ${PRESSURE_PROTOCOL:mqtt}
+      payload-size: ${PRESSURE_PAYLOAD_SIZE:256}
+      verbose: ${PRESSURE_VERBOSE:false}

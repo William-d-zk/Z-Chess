@@ -1,0 +1,124 @@
+# MIT License
+#
+# Copyright (c) 2016~2024. Z-Chess
+#
+# Z-Audience Pressure Test Client - Docker Compose
+# 独立的压测客户端配置
+#
+# 使用方法:
+#   cd scripts/docker
+#   docker compose -f docker-compose.audience.yml up -d
+#
+# 环境变量配置:
+#   TARGET_HOST: 目标服务器地址 (默认: host.docker.internal)
+#   TARGET_PORT: 目标服务器端口 (默认: 1883)
+#   CONCURRENCY: 并发连接数 (默认: 1000)
+#   DURATION: 测试持续时间 (默认: PT60S)
+
+version: "3.9"
+
+services:
+  # ==========================================================================
+  # Z-Audience 压测客户端
+  # ==========================================================================
+  audience:
+    build:
+      context: ../../Z-Audience
+      dockerfile: Dockerfile
+    image: z-chess-audience:1.0.22
+    container_name: audience
+    hostname: audience
+
+    ports:
+      - "8081:8081"    # HTTP API 端口
+
+    networks:
+      - docker_endpoint
+      - audience-net
+
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      # 压测目标配置
+      - PRESSURE_TARGET_HOST=${TARGET_HOST:-host.docker.internal}
+      - PRESSURE_TARGET_PORT=${TARGET_PORT:-1883}
+      - PRESSURE_PROTOCOL=${PROTOCOL:-mqtt}
+      # 并发配置
+      - PRESSURE_CONCURRENCY=${CONCURRENCY:-1000}
+      - PRESSURE_REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND:-10}
+      - PRESSURE_DURATION=${DURATION:-PT60S}
+      # 连接配置
+      - PRESSURE_CONNECTION_RATE=${CONNECTION_RATE:-50}
+      - PRESSURE_CONNECT_TIMEOUT=${CONNECT_TIMEOUT:-PT10S}
+      # 心跳配置
+      - PRESSURE_KEEP_ALIVE=true
+      - PRESSURE_HEARTBEAT_INTERVAL=30
+
+    volumes:
+      - audience_logs:/app/logs
+      - /Users/william.d.zk/Github/program/Z-Chess/scripts/test/e2e/data:/app/data:ro  # 挂载测试设备凭证
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    restart: unless-stopped
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ==========================================================================
+  # 可选: 监控服务 (Prometheus + Grafana)
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: audience-prometheus
+    profiles:
+      - monitoring
+    ports:
+      - "9090:9090"
+    networks:
+      - audience-net
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: audience-grafana
+    profiles:
+      - monitoring
+    ports:
+      - "3000:3000"
+    networks:
+      - audience-net
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+# ==========================================================================
+# 网络配置
+# ==========================================================================
+networks:
+  docker_endpoint:
+    external: true
+  audience-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.20.0/24
+
+# ==========================================================================
+# 共享卷
+# ==========================================================================
+volumes:
+  audience_logs:
+    driver: local
+  grafana_data:
+    driver: local
