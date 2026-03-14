@@ -558,6 +558,27 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <configuration>
+                        <java>
+                            <eclipse>
+                                <file>docs/eclipse-formatter.xml</file>
+                            </eclipse>
+                        </java>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>apply-format</id>
+                            <goals>
+                                <goal>apply</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>${maven-clean-plugin.version}</version>
@@ -616,26 +637,6 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>6.25.0</version>
-                <configuration>
-                    <java>
-                        <eclipse>
-                            <file>docs/eclipse-formatter.xml</file>
-                        </eclipse>
-                    </java>
-                    <pom>
-                        <sortPomModules />
-                    </pom>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>apply-format</id>
-                        <goals>
-                            <goal>apply</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
