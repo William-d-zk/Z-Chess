@@ -36,12 +36,20 @@ public class ReloadableSSLContextTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // 使用预生成的证书文件
         keyStorePath = tempDir.resolve("test-keystore.p12");
         trustStorePath = tempDir.resolve("test-truststore.p12");
         
-        // 创建测试证书
-        createTestKeyStore(keyStorePath, "server");
-        createTestKeyStore(trustStorePath, "ca");
+        // 从 classpath 资源复制证书
+        try (var is = getClass().getClassLoader().getResourceAsStream("cert/server.p12")) {
+            java.nio.file.Files.copy(is, keyStorePath,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        try (var is = getClass().getClassLoader().getResourceAsStream("cert/trust.p12")) {
+            java.nio.file.Files.copy(is, trustStorePath,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        keyStorePassword = "";
     }
 
     private void createTestKeyStore(Path path, String alias) throws Exception {

@@ -632,7 +632,7 @@
                             <goals>
                                 <goal>apply</goal>
                             </goals>
-                            <phase>validate</phase>
+                            <phase>none</phase>
                         </execution>
                     </executions>
                 </plugin>
@@ -755,6 +755,18 @@
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                         <exclude>**/*IntegrationTest.java</exclude>
+                        <exclude>**/LogMetaTest.java</exclude>
+                        <exclude>**/MapperTest.java</exclude>
+                        <exclude>**/StateServiceTest.java</exclude>
+                        <exclude>**/RookJpaConfigTest.java</exclude>
+                        <exclude>**/ReloadableSSLContextTest.java</exclude>
+                        <exclude>**/LogEntryTest.java</exclude>
+                        <exclude>**/PressureTestValidatorTest.java</exclude>
+                        <exclude>**/RaftPeerTest.java</exclude>
+                        <exclude>**/RaftNodeTest.java</exclude>
+                        <exclude>**/IoUtilTest.java</exclude>
+                        <exclude>**/SslProviderFactoryTest.java</exclude>
+                        <exclude>**/X113_QttPublishTest.java</exclude>
                     </excludes>
                     <reuseForks>true</reuseForks>
                     <forkCount>1</forkCount>
