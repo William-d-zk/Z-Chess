@@ -50,7 +50,7 @@ jobs:
     
     - name: Check Code Format
       run: |
-        mvn formatter:validate -B -V || echo "⚠️ 代码格式检查失败，请运行 'mvn formatter:format' 修复"
+        mvn spotless:check -B -V || echo "⚠️ 代码格式检查失败，请运行 'mvn spotless:apply' 修复"
     
     - name: Compile Check
       run: mvn clean compile -DskipTests -B -V

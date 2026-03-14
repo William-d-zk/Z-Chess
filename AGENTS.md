@@ -33,3 +33,32 @@ mvn spotless:check
 - Single-line blocks, methods, lambdas, and classes allowed
 - Space before control structure parentheses: NO (if, while, for, catch, switch, synchronized)
 - Space around lambda arrow: YES
+
+---
+
+# Testing Skill
+
+## Test Requirements
+
+This project enforces test coverage requirements:
+- **Line coverage**: ≥ 30%
+- **Branch coverage**: ≥ 20%
+
+### Running Tests
+
+```bash
+# Run unit tests
+mvn test
+
+# Run integration tests (requires PostgreSQL)
+mvn verify -Pintegration-test
+
+# Run tests with coverage report
+mvn test jacoco:report
+```
+
+### Test Naming Conventions
+- Unit tests: `*Test.java`
+- Integration tests: `*IT.java` or `*IntegrationTest.java`
+
+See `docs/TESTING.md` for detailed testing guidelines.
