@@ -261,6 +261,23 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>fast</id>
+            <properties>
+                <skip.coverage.check>true</skip.coverage.check>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <modules>
         <module>Z-Board</module>

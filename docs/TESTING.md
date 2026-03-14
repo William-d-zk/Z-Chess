@@ -46,6 +46,9 @@ open target/site/jacoco/index.html
 
 # 覆盖率检查 (会验证是否达到最低要求)
 mvn test jacoco:check
+
+# 快速测试 (跳过覆盖率检查)
+mvn test -Pfast
 ```
 
 ## 测试配置
@@ -72,6 +75,42 @@ mvn test jacoco:check
 | POSTGRES_USER | chess | PostgreSQL 用户名 |
 | POSTGRES_PASSWORD | chess | PostgreSQL 密码 |
 | POSTGRES_DB | test | PostgreSQL 数据库名 |
+
+## 测试工具类
+
+项目提供了测试工具类，位于 `Z-Audience/src/test/java/com/isahl/chess/audience/testing/`：
+
+| 类 | 说明 |
+|----|------|
+| `BaseTest` | 测试基类，提供常用断言方法 |
+| `TestData` | 测试数据生成器，支持随机字符串、数字、UUID 等 |
+| `Mockery` | Mockito 工具类，简化 Mock 创建 |
+| `IntegrationTest` | 集成测试注解，自动配置 Spring Boot 测试环境 |
+
+### 使用示例
+
+```java
+import com.isahl.chess.audience.testing.BaseTest;
+import com.isahl.chess.audience.testing.TestData;
+import com.isahl.chess.audience.testing.Mockery;
+
+class MyServiceTest extends BaseTest {
+
+    @Test
+    void testWithTestData() {
+        String randomString = TestData.randomString(10);
+        int randomInt = TestData.randomInt(100);
+        String uuid = TestData.randomUuid();
+    }
+
+    @Test
+    void testWithMockery() {
+        MyService mock = Mockery.mock(MyService.class, m -> {
+            when(m.process(any())).thenReturn("mocked");
+        });
+    }
+}
+```
 
 ## 编写测试
 
