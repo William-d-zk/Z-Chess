@@ -25,8 +25,6 @@ package com.isahl.chess.audience.testing;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import java.util.function.Supplier;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BaseTest
@@ -40,21 +38,6 @@ public abstract class BaseTest
 
     protected void beforeEach()
     {
-    }
-
-    protected <T extends Throwable> void assertThrows(Class<T> expectedType, Runnable executable)
-    {
-        assertThrows(expectedType, executable, "Expected exception was not thrown");
-    }
-
-    protected <T extends Throwable> void assertThrows(Class<T> expectedType, Runnable executable, String message)
-    {
-        assertThrows(expectedType, executable, () -> new AssertionError(message));
-    }
-
-    protected <T extends Throwable> void assertThrows(Class<T> expectedType, Runnable executable, Supplier<String> messageSupplier)
-    {
-        assertThrows(expectedType, executable, messageSupplier);
     }
 
     protected void assertNotBlank(String string)
@@ -85,11 +68,11 @@ public abstract class BaseTest
         assertTrue(array.length > 0, "Array should not be empty");
     }
 
-    protected void assertArrayEquals(byte[] expected, byte[] actual)
+    protected void assertByteArrayEquals(byte[] expected, byte[] actual)
     {
         assertNotNull(expected, "Expected array should not be null");
         assertNotNull(actual, "Actual array should not be null");
-        assertArrayEquals(expected, actual, "Arrays are not equal");
+        assertArrayEquals(expected, actual);
     }
 
     protected void assertHexEquals(String expected, byte[] actual)

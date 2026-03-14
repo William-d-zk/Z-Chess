@@ -747,7 +747,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.2</version>
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
@@ -757,8 +757,7 @@
                         <exclude>**/*IntegrationTest.java</exclude>
                     </excludes>
                     <reuseForks>true</reuseForks>
-                    <parallel>classes</parallel>
-                    <threadCount>4</threadCount>
+                    <forkCount>1</forkCount>
                     <rerunFailingTestsCount>2</rerunFailingTestsCount>
                     <properties>
                         <configuration.disable.compiler.plugin.selection>true</configuration.disable.compiler.plugin.selection>
