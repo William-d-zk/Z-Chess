@@ -9,6 +9,8 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes({ "com.isahl.chess.board.annotation.ISerialGenerator",
                             "com.isahl.chess.board.annotation.ISerialFactory" })
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 public class ZAnnotationProcessor
         extends AbstractProcessor
 {

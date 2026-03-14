@@ -24,6 +24,7 @@
 package com.isahl.chess.audience.testing;
 
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -44,9 +45,9 @@ public class Mockery
 
     public static <T> T mock(Class<T> classToMock, Consumer<T> setup)
     {
-        T mock = Mockito.mock(classToMock);
-        setup.accept(mock);
-        return mock;
+        T mockInstance = Mockito.mock(classToMock);
+        setup.accept(mockInstance);
+        return mockInstance;
     }
 
     public static <T> T spy(T object)
@@ -62,11 +63,6 @@ public class Mockery
     public static <T> T anyMock()
     {
         return Mockito.any();
-    }
-
-    public static <T> T anyObject()
-    {
-        return Mockito.anyObject();
     }
 
     public static <T> T refEq(T obj)
@@ -92,11 +88,6 @@ public class Mockery
     public static <T> T isA(Class<T> clazz)
     {
         return Mockito.isA(clazz);
-    }
-
-    public static void verifyZeroInteractions(Object... mocks)
-    {
-        Mockito.verifyZeroInteractions(mocks);
     }
 
     public static void verifyNoMoreInteractions(Object... mocks)
@@ -125,20 +116,5 @@ public class Mockery
         {
             throw throwable;
         };
-    }
-
-    public static <T> Answer<T> returnsDefault()
-    {
-        return Answers.RETURNS_DEFAULTS;
-    }
-
-    public static <T> Answer<T> returnsSmartNulls()
-    {
-        return Answers.RETURNS_SMART_NULLS;
-    }
-
-    public static <T> Answer<T> returnsDeepStubs()
-    {
-        return Answers.RETURNS_DEEP_STUBS;
     }
 }
