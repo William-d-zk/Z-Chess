@@ -220,6 +220,47 @@
                 </pluginManagement>
             </build>
         </profile>
+        <profile>
+            <id>integration-test</id>
+            <properties>
+                <skip.unit.tests>true</skip.unit.tests>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <executions>
+                            <execution>
+                                <id>integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/*IT.java</include>
+                                        <include>**/*IntegrationTest.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>**/*Test.java</exclude>
+                                    </excludes>
+                                    <systemPropertyVariables>
+                                        <postgres.host>${POSTGRES_HOST:localhost}</postgres.host>
+                                        <postgres.port>${POSTGRES_PORT:5432}</postgres.port>
+                                        <postgres.user>${POSTGRES_USER:chess}</postgres.user>
+                                        <postgres.password>${POSTGRES_PASSWORD:chess}</postgres.password>
+                                        <postgres.db>${POSTGRES_DB:test}</postgres.db>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <modules>
         <module>Z-Board</module>
@@ -686,6 +727,27 @@
                     <encoding>${java.encoding}</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                    </excludes>
+                    <reuseForks>true</reuseForks>
+                    <parallel>classes</parallel>
+                    <threadCount>4</threadCount>
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
+                    <properties>
+                        <configuration.disable.compiler.plugin.selection>true</configuration.disable.compiler.plugin.selection>
+                    </properties>
+                </configuration>
+            </plugin>
             <!-- JaCoCo 代码覆盖率插件 -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -718,7 +780,12 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.00</minimum>
+                                            <minimum>0.30</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.20</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
