@@ -148,7 +148,7 @@ jobs:
         done
     
     - name: Run Integration Tests
-      run: mvn verify -P integration-test -DskipUnitTests -B -V || true
+      run: mvn verify -P integration-test -DskipUnitTests -B -V
       env:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432

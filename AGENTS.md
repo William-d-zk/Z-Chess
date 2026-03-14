@@ -61,4 +61,16 @@ mvn test jacoco:report
 - Unit tests: `*Test.java`
 - Integration tests: `*IT.java` or `*IntegrationTest.java`
 
+### Fast Test (Skip Coverage)
+```bash
+mvn test -Pfast
+```
+
+### Test Utilities
+The project provides test utilities in `Z-Audience/src/test/java/com/isahl/chess/audience/testing/`:
+- `BaseTest` - Base test class with common assertions
+- `TestData` - Random test data generators
+- `Mockery` - Mockito utilities
+- `IntegrationTest` - Integration test annotation
+
 See `docs/TESTING.md` for detailed testing guidelines.
