@@ -1,0 +1,11 @@
+# MQTT 测试设备配置文件
+# 生成时间: $(date)
+# 服务器地址: localhost:1883
+
+mqtt:
+  broker: localhost
+  port: 1883
+  qos: 1
+  keep_alive: 60
+  
+devices:
