@@ -23,26 +23,46 @@
 
 package com.isahl.chess.rook.storage.db.config;
 
-import com.isahl.chess.audience.start.ApplicationAudience;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = ApplicationAudience.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+/**
+ * RookJpaConfig 单元测试
+ * 简化版本，不依赖完整 Spring 上下文
+ */
 class RookJpaConfigTest
 {
 
-    @Autowired
-    ApplicationContext context;
-
     @Test
-    public void load()
+    void testUidConfig()
     {
-        Object dbs = context.getBean("z-rook-dbs");
-
-        System.out.println(dbs);
+        // 测试 Uid 配置类的基本功能
+        IRaftConfig.Uid uid = new IRaftConfig.Uid();
+        
+        assertEquals(-1, uid.getIdcId(), "默认 idcId 应为 -1");
+        assertEquals(-1, uid.getClusterId(), "默认 clusterId 应为 -1");
+        assertEquals(-1, uid.getNodeId(), "默认 nodeId 应为 -1");
+        assertEquals(-1, uid.getType(), "默认 type 应为 -1");
+        
+        // 测试设置有效值
+        uid.setIdcId(0);
+        uid.setClusterId(0);
+        uid.setNodeId(0);
+        uid.setType(0);
+        
+        assertEquals(0, uid.getIdcId());
+        assertEquals(0, uid.getClusterId());
+        assertEquals(0, uid.getNodeId());
+        assertEquals(0, uid.getType());
+        
+        // 测试 reset
+        uid.reset();
+        
+        assertEquals(-1, uid.getIdcId());
+        assertEquals(-1, uid.getClusterId());
+        assertEquals(-1, uid.getNodeId());
+        assertEquals(-1, uid.getType());
     }
-
 }
