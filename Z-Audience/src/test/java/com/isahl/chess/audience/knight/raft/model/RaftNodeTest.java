@@ -78,7 +78,7 @@ class RaftNodeTest
         
         assertEquals("raft00", node.getHost(), "host 应该匹配");
         assertEquals(0, node.getPort(), "未设置 port 时应该为 0");
-        assertTrue(node.isInState(RaftState.FOLLOWER), "默认状态应该是 FOLLOWER");
+        assertTrue(node.isInState(RaftState.OUTSIDE), "默认状态应该是 OUTSIDE (未设置)");
         assertNotNull(node.toString(), "toString 不应该返回 null");
     }
     

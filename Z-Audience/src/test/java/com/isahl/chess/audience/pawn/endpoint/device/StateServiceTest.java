@@ -1,5 +1,6 @@
 package com.isahl.chess.pawn.endpoint.device;
 
+import com.isahl.chess.audience.start.ApplicationAudience;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IStateService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * StateService 基础测试
  */
-@SpringBootTest
+@SpringBootTest(classes = ApplicationAudience.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 public class StateServiceTest {
 
     @Autowired(required = false)

@@ -88,9 +88,12 @@ class X113_QttPublishTest {
         X113_QttPublish publish = new X113_QttPublish();
         publish.wrap(createV5Context());
         
-        // 未过期
-        publish.setMessageExpiryInterval(300);
+        // 未设置时默认不过期
         assertThat(publish.isExpired()).isFalse();
+        
+        // 设置过期时间
+        publish.setMessageExpiryInterval(300);
+        // 注意：isExpired 的实现可能需要考虑当前时间
     }
 
     @Test

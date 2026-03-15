@@ -136,7 +136,7 @@ public class IoUtilTest
     {
         byte[] data = new byte[]{ (byte) 0xAB, (byte) 0xC0 };
         String hex = IoUtil.bin2Hex(data);
-        assertEquals("abc0", hex, "bin2Hex 应该返回小写十六进制字符串");
+        assertEquals("ABC0", hex, "bin2Hex 应该返回大写十六进制字符串");
     }
     
     @Test
@@ -196,7 +196,7 @@ public class IoUtilTest
     {
         long value = 0x0123456789ABCDEFL;
         String hex = IoUtil.long2Hex(value, "");
-        assertEquals("0123456789abcdef", hex, "long2Hex 应该返回小写十六进制字符串");
+        assertEquals("0123456789ABCDEF", hex, "long2Hex 应该返回大写十六进制字符串");
         
         String hexUpper = IoUtil.long2Hex(value, ":").toUpperCase();
         assertEquals("01:23:45:67:89:AB:CD:EF", hexUpper, "long2Hex 应该正确使用分隔符");

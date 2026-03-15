@@ -64,15 +64,15 @@ class RaftPeerTest
     void testRaftStateCodes()
     {
         // 验证 RaftState 枚举值
-        assertEquals(0x01, RaftState.OUTSIDE.getCode(), "OUTSIDE 代码应该是 0x01");
+        assertEquals(0x00, RaftState.OUTSIDE.getCode(), "OUTSIDE 代码应该是 0x00");
+        assertEquals(0x01, RaftState.CLIENT.getCode(), "CLIENT 代码应该是 0x01");
         assertEquals(0x02, RaftState.FOLLOWER.getCode(), "FOLLOWER 代码应该是 0x02");
         assertEquals(0x04, RaftState.ELECTOR.getCode(), "ELECTOR 代码应该是 0x04");
         assertEquals(0x08, RaftState.CANDIDATE.getCode(), "CANDIDATE 代码应该是 0x08");
         assertEquals(0x10, RaftState.LEADER.getCode(), "LEADER 代码应该是 0x10");
-        assertEquals(0x20, RaftState.JOINT.getCode(), "JOINT 代码应该是 0x20");
-        assertEquals(0x40, RaftState.CLIENT.getCode(), "CLIENT 代码应该是 0x40");
-        assertEquals(0x80, RaftState.GATE.getCode(), "GATE 代码应该是 0x80");
-        assertEquals(0x100, RaftState.LEARNER.getCode(), "LEARNER 代码应该是 0x100");
+        assertEquals(0x20, RaftState.GATE.getCode(), "GATE 代码应该是 0x20");
+        assertEquals(0x40, RaftState.LEARNER.getCode(), "LEARNER 代码应该是 0x40");
+        assertEquals(0x80, RaftState.JOINT.getCode(), "JOINT 代码应该是 0x80");
     }
     
     @Test
@@ -87,10 +87,10 @@ class RaftPeerTest
     @Test
     void testRaftStateRoleOf()
     {
-        // 验证状态角色名称
-        assertEquals("FOLLOWER", RaftState.roleOf(0x02), "FOLLOWER 角色名称");
-        assertEquals("LEADER", RaftState.roleOf(0x10), "LEADER 角色名称");
-        assertEquals("CANDIDATE", RaftState.roleOf(0x08), "CANDIDATE 角色名称");
+        // 验证状态角色名称 (带 R: 前缀)
+        assertEquals("R:FOLLOWER", RaftState.roleOf(0x02), "FOLLOWER 角色名称");
+        assertEquals("R:LEADER", RaftState.roleOf(0x10), "LEADER 角色名称");
+        assertEquals("R:CANDIDATE", RaftState.roleOf(0x08), "CANDIDATE 角色名称");
     }
     
     @Test

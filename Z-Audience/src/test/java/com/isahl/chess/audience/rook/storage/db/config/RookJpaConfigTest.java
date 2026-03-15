@@ -23,13 +23,14 @@
 
 package com.isahl.chess.rook.storage.db.config;
 
+import com.isahl.chess.audience.start.ApplicationAudience;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 
 
-@SpringBootTest
+@SpringBootTest(classes = ApplicationAudience.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class RookJpaConfigTest
 {
 
