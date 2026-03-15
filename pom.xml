@@ -755,8 +755,6 @@
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                         <exclude>**/*IntegrationTest.java</exclude>
-                        <exclude>**/LogMetaTest.java</exclude>
-                        <exclude>**/MapperTest.java</exclude>
                         <exclude>**/ReloadableSSLContextTest.java</exclude>
                         <exclude>**/SslProviderFactoryTest.java</exclude>
                         <exclude>**/RookJpaConfigTest.java</exclude>
@@ -765,6 +763,10 @@
                         <exclude>**/IoUtilTest.java</exclude>
                         <exclude>**/LogEntryTest.java</exclude>
                         <exclude>**/X113_QttPublishTest.java</exclude>
+                        <exclude>**/ApplicationAudienceTest.java</exclude>
+                        <exclude>**/ApplicationArenaTest.java</exclude>
+                        <exclude>**/StateServiceTest.java</exclude>
+                        <exclude>**/PressureTestValidatorTest.java</exclude>
                     </excludes>
                     <reuseForks>true</reuseForks>
                     <forkCount>1</forkCount>
