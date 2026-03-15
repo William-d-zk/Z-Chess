@@ -23,6 +23,7 @@
 
 package com.isahl.chess.audience.client.stress;
 
+import com.isahl.chess.audience.start.ApplicationAudience;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -42,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  * 2. 自定义配置测试
  *    - 修改并发数、目标地址、协议类型等参数
  */
-@SpringBootTest
+@SpringBootTest(classes = ApplicationAudience.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 public class PressureTestValidatorTest
 {
     /**
