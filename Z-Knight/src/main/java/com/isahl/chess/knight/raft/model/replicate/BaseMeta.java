@@ -100,7 +100,14 @@ public abstract class BaseMeta
     public void close()
     {
         if(mFile == null) {return;}
-        flush();
+        try {
+            if(mFile.getChannel().isOpen()) {
+                flush();
+            }
+        }
+        catch(Exception e) {
+            // ignore channel check errors
+        }
         try {
             mFile.close();
         }
