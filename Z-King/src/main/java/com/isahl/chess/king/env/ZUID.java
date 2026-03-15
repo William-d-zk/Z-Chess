@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * 2^64 unsigned long data encoding
  * session port-prefix max 2^16
- * 00-0000-000-0000000-00000000000000000000000000000000000000-0000000000
+ * 00-0000-0000-0000-000000000000000000000000000000000000-000000000000
  * [02bit] peer-type
  * <p>
  *     {00} Client manager service
@@ -42,8 +42,8 @@ import java.util.regex.Pattern;
  *     {10} Device consumer connection
  *     {11} Cluster symmetry communication
  * </p>
- * [03bit] cluster-region
- * [03bit] cluster-set identity
+ * [04bit] cluster-region
+ * [04bit] cluster-set identity
  * [06bit] cluster-node identity
  * [36bit] timestamp gap 2021-06-01 00:00:00.000
  * [12bit] sequence in one millisecond
@@ -55,13 +55,13 @@ public class ZUID
     public static final long          EPOCH_SECOND       = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
     public static final int           SEQUENCE_BITS      = 12;
     public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
-    public static final int           TIMESTAMP_BITS     = 38;
+    public static final int           TIMESTAMP_BITS     = 36;
     public static final int           TIMESTAMP_SHIFT    = SEQUENCE_BITS;
     public static final int           NODE_BITS          = 6;
     public static final int           NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
-    public static final int           CLUSTER_BITS       = 3;
+    public static final int           CLUSTER_BITS       = 4;
     public static final int           CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
-    public static final int           IDC_BITS           = 3;
+    public static final int           IDC_BITS           = 4;
     public static final int           IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
     public static final int           TYPE_BITS          = 2;
     public static final int           TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
