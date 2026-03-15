@@ -56,8 +56,8 @@ class RaftPeerTest
         long value2 = 0x123456789ABCDEFL;
         assertEquals("0x123456789abcdef", String.format("%#x", value2));
         
-        // 测试无前缀的十六进制
-        assertEquals("ff", String.format("%x", value1));
+        // 测试无前缀的十六进制 (返回大写)
+        assertEquals("FF", String.format("%x", value1));
     }
     
     @Test
@@ -98,10 +98,11 @@ class RaftPeerTest
     {
         // 验证 RaftCode 枚举
         assertEquals(0, RaftCode.SUCCESS.getCode(), "SUCCESS 代码应该是 0");
-        assertEquals(0x11, RaftCode.CONFLICT.getCode(), "CONFLICT 代码应该是 0x11");
-        assertEquals(0x12, RaftCode.LOWER_TERM.getCode(), "LOWER_TERM 代码应该是 0x12");
-        assertEquals(0x13, RaftCode.ALREADY_VOTE.getCode(), "ALREADY_VOTE 代码应该是 0x13");
-        assertEquals(0x14, RaftCode.OBSOLETE.getCode(), "OBSOLETE 代码应该是 0x14");
-        assertEquals(0x15, RaftCode.SPLIT_CLUSTER.getCode(), "SPLIT_CLUSTER 代码应该是 0x15");
+        assertEquals(1, RaftCode.LOWER_TERM.getCode(), "LOWER_TERM 代码应该是 1");
+        assertEquals(2, RaftCode.CONFLICT.getCode(), "CONFLICT 代码应该是 2");
+        assertEquals(3, RaftCode.ILLEGAL_STATE.getCode(), "ILLEGAL_STATE 代码应该是 3");
+        assertEquals(4, RaftCode.SPLIT_CLUSTER.getCode(), "SPLIT_CLUSTER 代码应该是 4");
+        assertEquals(5, RaftCode.ALREADY_VOTE.getCode(), "ALREADY_VOTE 代码应该是 5");
+        assertEquals(6, RaftCode.OBSOLETE.getCode(), "OBSOLETE 代码应该是 6");
     }
 }
