@@ -72,6 +72,7 @@ public abstract class BaseMeta
      */
     public void flush(boolean fsync)
     {
+        if(mFile == null) {return;}
         try {
             byte[] toWrite = encoded();
             FileChannel channel = mFile.getChannel();
@@ -98,6 +99,7 @@ public abstract class BaseMeta
 
     public void close()
     {
+        if(mFile == null) {return;}
         flush();
         try {
             mFile.close();
