@@ -51,13 +51,13 @@ class RaftPeerTest
         // 测试不同的十六进制格式化
         long value1 = 0xFF;
         assertEquals("0xff", String.format("%#x", value1), "小写十六进制格式化");
-        assertEquals("0xFF", String.format("%#X", value1), "大写十六进制格式化");
+        assertEquals("0XFF", String.format("%#X", value1), "大写十六进制格式化");
         
         long value2 = 0x123456789ABCDEFL;
         assertEquals("0x123456789abcdef", String.format("%#x", value2));
         
-        // 测试无前缀的十六进制 (返回大写)
-        assertEquals("FF", String.format("%x", value1));
+        // 测试无前缀的十六进制 (返回小写)
+        assertEquals("ff", String.format("%x", value1));
     }
     
     @Test
