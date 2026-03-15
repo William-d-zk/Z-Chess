@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * 2^64 unsigned long data encoding
  * session port-prefix max 2^16
- * 00-000-000-000000-00000000000000000000000000000000000000000-0000000000
+ * 00-000-000-00000-00000000000000000000000000000000000000000000-00000000000
  * [02bit] peer-type
  * <p>
  *     {00} Client manager service
@@ -44,20 +44,20 @@ import java.util.regex.Pattern;
  * </p>
  * [03bit] cluster-region
  * [03bit] cluster-set identity
- * [06bit] cluster-node identity
+ * [05bit] cluster-node identity
  * [40bit] timestamp gap 2021-06-01 00:00:00.000
- * [10bit] sequence in one millisecond
+ * [11bit] sequence in one millisecond
  */
 public class ZUID
 {
 
     public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2021, Month.JUNE, 1, 0, 0);
     public static final long          EPOCH_SECOND       = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
-    public static final int           SEQUENCE_BITS      = 10;
+    public static final int           SEQUENCE_BITS      = 11;
     public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
     public static final int           TIMESTAMP_BITS     = 40;
     public static final int           TIMESTAMP_SHIFT    = SEQUENCE_BITS;
-    public static final int           NODE_BITS          = 6;
+    public static final int           NODE_BITS          = 5;
     public static final int           NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
     public static final int           CLUSTER_BITS       = 3;
     public static final int           CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
