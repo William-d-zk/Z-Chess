@@ -49,6 +49,7 @@ public class ReloadableSSLContextTest {
             java.nio.file.Files.copy(is, trustStorePath,
                 java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
+        // 新证书无密码
         keyStorePassword = "";
     }
 
