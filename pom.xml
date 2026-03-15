@@ -759,13 +759,11 @@
                         <exclude>**/MapperTest.java</exclude>
                         <exclude>**/ReloadableSSLContextTest.java</exclude>
                         <exclude>**/SslProviderFactoryTest.java</exclude>
-                        <exclude>**/LogEntryTest.java</exclude>
                         <exclude>**/RookJpaConfigTest.java</exclude>
-                        <exclude>**/StateServiceTest.java</exclude>
-                        <exclude>**/PressureTestValidatorTest.java</exclude>
                         <exclude>**/RaftPeerTest.java</exclude>
                         <exclude>**/RaftNodeTest.java</exclude>
                         <exclude>**/IoUtilTest.java</exclude>
+                        <exclude>**/LogEntryTest.java</exclude>
                         <exclude>**/X113_QttPublishTest.java</exclude>
                     </excludes>
                     <reuseForks>true</reuseForks>
