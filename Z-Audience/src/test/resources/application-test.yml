@@ -27,6 +27,15 @@ spring:
       enabled: true
       path: /h2-console
 
+z:
+  chess:
+    raft:
+      uid:
+        idc_id: 0
+        cluster_id: 0
+        node_id: 0
+        type: 0
+
 logging:
   level:
     root: INFO

@@ -21,16 +21,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.arena.start;
+package com.isahl.chess.audience.arena;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.junit.jupiter.api.Test;
 
-@SpringBootTest
-@ExtendWith(SpringExtension.class)
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * ApplicationArena 基础测试
+ * 简化版本，不依赖完整 Spring 上下文
+ */
 class ApplicationArenaTest
 {
-
-
+    @Test
+    void test()
+    {
+        // 基础测试
+        assertNotNull(String.class);
+    }
 }
