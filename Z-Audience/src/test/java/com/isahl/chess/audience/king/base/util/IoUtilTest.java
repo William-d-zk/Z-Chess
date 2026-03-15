@@ -102,7 +102,8 @@ public class IoUtilTest
         buffer.get();
         
         // 验证 buffer 操作后的状态
-        assertEquals(2, buffer.writerIdx(), "写入后 writerIdx 应该是 4 - 2（discard）= 2");
+        // discard: writerIdx = 4 - readerIdx(1) = 3
+        assertEquals(3, buffer.writerIdx(), "写入后 writerIdx 应该是 4 - 1（get后）= 3");
     }
 
     @Test

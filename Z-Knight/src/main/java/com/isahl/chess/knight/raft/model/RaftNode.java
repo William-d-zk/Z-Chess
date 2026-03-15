@@ -158,6 +158,10 @@ public class RaftNode
 
     public boolean isInState(RaftState state)
     {
+        // OUTSIDE 状态需要特殊处理（mState = 0 时）
+        if(state == RaftState.OUTSIDE) {
+            return mState == 0;
+        }
         return (mState & state.getCode()) != 0;
     }
 
