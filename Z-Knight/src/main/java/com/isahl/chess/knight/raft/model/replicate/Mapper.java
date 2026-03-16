@@ -715,10 +715,27 @@ public class Mapper
 
     private void installSnapshot()
     {
-        // TODO 安装本地已经获取的 sn
-        //  snapshot 存档。
-        // 1. 检查snapshot的完整性
-        // 2. 检查snapshot的数签
+        if(mSnapshotMeta == null || mSnapshotMeta.getCommit() == 0) {
+            _Logger.info("No valid snapshot to install");
+            return;
+        }
+
+        long snapshotIndex = mSnapshotMeta.getCommit();
+        long snapshotTerm = mSnapshotMeta.getTerm();
+
+        _Logger.info("Installing snapshot: index=%d, term=%d", snapshotIndex, snapshotTerm);
+
+        if(snapshotIndex >= mLogMeta.getIndex()) {
+            mLogMeta.setStart(snapshotIndex + 1);
+            mLogMeta.setIndex(snapshotIndex);
+            mLogMeta.setIndexTerm(snapshotTerm);
+            mLogMeta.setTerm(snapshotTerm);
+        }
+
+        _Index2SegmentMap.clear();
+
+        vValid = true;
+        _Logger.info("Snapshot installed successfully, new start index: %d", mLogMeta.getStart());
     }
 
     private boolean checkState()

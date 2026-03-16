@@ -21,7 +21,7 @@ public class TlsTestServer {
     
     private int port = 28443;
     private String keyStorePath;
-    private String password = "changeit";
+    private String password = System.getProperty("tls.test.keystore.password", "changeit");
     private boolean needClientAuth = false;
     
     public static void main(String[] args) {

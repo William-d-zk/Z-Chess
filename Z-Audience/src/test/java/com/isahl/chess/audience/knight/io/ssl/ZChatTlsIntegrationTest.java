@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ZChatTlsIntegrationTest {
 
+    private static final String TEST_PASSWORD = System.getProperty("tls.test.password", "test123");
+
     @TempDir
     static Path tempDir;
 
@@ -56,7 +58,7 @@ public class ZChatTlsIntegrationTest {
             "-inkey", serverKey.toString(),
             "-out", serverKeyStore.toString(),
             "-name", "server",
-            "-password", "pass:test123"
+            "-password", "pass:" + TEST_PASSWORD
         );
         pb.redirectErrorStream(true);
         p = pb.start();
@@ -67,7 +69,7 @@ public class ZChatTlsIntegrationTest {
             "-file", caCert.toString(),
             "-keystore", trustStore.toString(),
             "-storetype", "PKCS12",
-            "-storepass", "test123",
+            "-storepass", TEST_PASSWORD,
             "-noprompt"
         );
         pb.redirectErrorStream(true);
@@ -80,9 +82,9 @@ public class ZChatTlsIntegrationTest {
             sslConfig = new SslSocketConfig();
             sslConfig.getProvider().setEnabled(true);
             sslConfig.getProvider().setKeyStorePath(serverKeyStore.toString());
-            sslConfig.getProvider().setKeyStorePassword("test123");
+            sslConfig.getProvider().setKeyStorePassword(TEST_PASSWORD);
             sslConfig.getProvider().setTrustStorePath(trustStore.toString());
-            sslConfig.getProvider().setTrustStorePassword("test123");
+            sslConfig.getProvider().setTrustStorePassword(TEST_PASSWORD);
             sslConfig.getProvider().setProtocol("TLSv1.2");
             sslConfig.init();
         }

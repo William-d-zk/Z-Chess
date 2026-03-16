@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.service;
 
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.IValid;
@@ -109,8 +110,8 @@ public class StateService
         try {
             cleanup(this);
         }
-        catch(Throwable e) {
-            _Logger.warning(e);
+        catch(Exception e) {
+            _Logger.warning("Error during cleanup", e);
         }
     }
 
@@ -145,7 +146,7 @@ public class StateService
             }
             //@formatter:on
         }
-        catch(Throwable e) {
+        catch(Exception e) {
             self._Logger.warning("cycle cleaner x failed", e);
         }
     }
@@ -194,7 +195,7 @@ public class StateService
             try {
                 _SessionRepository.save(sessionEntity);
             }
-            catch(Throwable e) {
+            catch(Exception e) {
                 _Logger.warning("session[%#x] storage → db error", e, session);
             }
         }
@@ -215,18 +216,27 @@ public class StateService
             }
             return v;
         });
-        IProtocol protocol = null;
+        IProtocol willMessage = null;
         Optional<SessionEntity> optional = _SessionRepository.findById(session);
         if(optional.isPresent()) {
             SessionEntity se = optional.get();
             DeviceClient client = se.client();
             if(client != null && client.getWillContent() != null) {
                 IThread.Topic will = client.getWillContent();
-                // TODO 从遗嘱存储中提取遗嘱信息。
+                _Logger.info("Publishing will message: topic=%s, QoS=%s, retain=%b",
+                             will.pattern(), will.level(), will.retain());
 
+                X113_QttPublish publish = new X113_QttPublish();
+                publish.withTopic(will.pattern().pattern())
+                       .target(_ZUID.getPeerId());
+
+                IQoS.Level willLevel = will.level();
+                publish.setLevel(willLevel);
+
+                willMessage = publish;
             }
         }
-        return null;
+        return willMessage;
     }
 
     @Override
@@ -276,7 +286,7 @@ public class StateService
                 try {
                     _MsgStateService.setMsgStateEntity(message);
                 }
-                catch(Throwable e) {
+                catch(Exception e) {
                     _Logger.warning("local storage received msg %s failed", message.getId(), e);
                 }
             }
@@ -294,7 +304,7 @@ public class StateService
                 return exist;
             }
         }
-        catch(Throwable e) {
+        catch(Exception e) {
             _Logger.warning("local delete msg %s failed", primaryKey, e);
         }
         return null;
@@ -323,7 +333,7 @@ public class StateService
                 try {
                     _MsgStateService.setMsgStateEntity(message);
                 }
-                catch(Throwable e) {
+                catch(Exception e) {
                     _Logger.warning("local add broker msg %s failed", message.getId(), e);
                 }
             }
@@ -345,7 +355,7 @@ public class StateService
             _MsgStateService.deleteMsgStateEntity(key);
             return true;
         }
-        catch(Throwable e) {
+        catch(Exception e) {
             //ignore no exists key
             return false;
         }
