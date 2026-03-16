@@ -1,0 +1,67 @@
+# WolfSSL Build Environment
+# 用于在不同 OS/Arch 环境中编译 wolfssl
+#
+# 支持的平台和构建方式:
+#
+# 1. Linux (docker buildx):
+#    docker buildx build --platform linux/amd64 -t wolfssl-builder:linux-amd64 .
+#    docker buildx build --platform linux/arm64 -t wolfssl-builder:linux-arm64 .
+#
+# 2. macOS (本地编译):
+#    在 Apple Silicon Mac 上编译后放入 darwin/arm64/
+#    在 Intel Mac 上编译后放入 darwin/amd64/
+#
+# 输出文件 (放入对应 OS/Arch 目录):
+#   - libwolfssl.so / libwolfssl.dylib
+#   - libwolfssljni.so / libwolfssljni.dylib  
+#   - wolfssl-*.jar
+#   - wolfssl-jsse-*.jar
+
+# Linux 构建 - 使用 Liberica JDK Alpine
+FROM bellsoft/liberica-openjdk-alpine:17.0.18-10 AS builder
+
+LABEL maintainer="Z-Chess.WolfSSL.Builder" \
+      version="5.8.4" \
+      description="WolfSSL Build Environment for Linux"
+
+# 安装编译依赖
+RUN apk add --no-cache \
+    build-base \
+    autoconf \
+    automake \
+    libtool \
+    perl \
+    wget \
+    unzip \
+    curl \
+    linux-headers \
+    maven
+
+WORKDIR /build
+
+# 复制 wolfssl 源码 (需要从 Z-Bishop/wolfssl 复制)
+COPY wolfssl-5.8.4.zip /build/
+COPY wolfssl-jni-jsse-1.16.0.zip /build/
+
+# 解压源码
+RUN unzip -q wolfssl-5.8.4.zip && \
+    unzip -q wolfssl-jni-jsse-1.16.0.zip
+
+# 编译 wolfSSL native 库
+RUN cd wolfssl-5.8.4 && \
+    ./configure --enable-jni --enable-opensslextra --enable-ecc && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig
+
+# 编译 wolfSSL JNI/JSSE
+RUN cd wolfssl-jni-jsse-1.16.0 && \
+    mvn package -DskipTests
+
+# 输出文件
+RUN mkdir -p /output && \
+    cp /usr/local/lib/libwolfssl*.so* /output/ 2>/dev/null || true && \
+    cp /usr/local/lib/libwolfssljni*.so* /output/ 2>/dev/null || true && \
+    cp /build/wolfssl-5.8.4/.libs/libwolfssl*.so* /output/ 2>/dev/null || true && \
+    cp /build/wolfssl-jni-jsse-1.16.0/target/*.jar /output/ && \
+    ls -la /output/

@@ -50,7 +50,6 @@ public class SslProviderFactoryTest {
         
         // 验证是有效的 Provider 类型之一
         assertTrue(provider == SslProviderFactory.SslProviderType.WOLFSSL ||
-                   provider == SslProviderFactory.SslProviderType.OPENSSL ||
                    provider == SslProviderFactory.SslProviderType.JDK);
     }
 
@@ -68,10 +67,9 @@ public class SslProviderFactoryTest {
         boolean nativeAvailable = SslProviderFactory.isNativeSslAvailable();
         SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
         
-        // 如果使用了原生库，provider 应该是 WOLFSSL 或 OPENSSL
+        // 如果使用了原生库，provider 应该是 WOLFSSL
         if (nativeAvailable) {
-            assertTrue(provider == SslProviderFactory.SslProviderType.WOLFSSL ||
-                      provider == SslProviderFactory.SslProviderType.OPENSSL);
+            assertEquals(SslProviderFactory.SslProviderType.WOLFSSL, provider);
         }
     }
 
@@ -87,17 +85,6 @@ public class SslProviderFactoryTest {
     }
 
     @Test
-    void testIsOpenSSLAvailable() {
-        // 测试 OpenSSL 可用性
-        boolean opensslAvailable = SslProviderFactory.isOpenSSLAvailable();
-        SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
-        
-        if (opensslAvailable) {
-            assertEquals(SslProviderFactory.SslProviderType.OPENSSL, provider);
-        }
-    }
-
-    @Test
     void testPrintStatus() {
         // 测试打印状态（不抛出异常即可）
         assertDoesNotThrow(() -> SslProviderFactory.printStatus());
@@ -109,12 +96,6 @@ public class SslProviderFactoryTest {
         SslProviderFactory.SslProviderType wolfssl = SslProviderFactory.SslProviderType.WOLFSSL;
         assertEquals("wolfJSSE", wolfssl.getProviderName());
         assertEquals("WolfSSL", wolfssl.getDisplayName());
-        
-        SslProviderFactory.SslProviderType openssl = SslProviderFactory.SslProviderType.OPENSSL;
-        assertEquals("OpenSSL", openssl.getProviderName());
-        // 实际返回可能包含额外信息如 "OpenSSL (via Netty TCNative)"
-        assertTrue(openssl.getDisplayName().startsWith("OpenSSL"), 
-            "OpenSSL display name should start with OpenSSL");
         
         SslProviderFactory.SslProviderType jdk = SslProviderFactory.SslProviderType.JDK;
         assertEquals("SunJSSE", jdk.getProviderName());

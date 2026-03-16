@@ -70,7 +70,7 @@
         <commons-compress.version>1.28.0</commons-compress.version>
         <!--SSL Providers-->
         <wolfssl.version>5.7.6</wolfssl.version>
-        <netty-tcnative.version>2.0.70.Final</netty-tcnative.version>
+        <wolfssl.jni.version>1.16.0</wolfssl.jni.version>
         <!--DB-->
         <postgresql.jdbc.version>42.7.8</postgresql.jdbc.version>
         <sqlite.jdbc.version>3.51.2.0</sqlite.jdbc.version>
@@ -391,17 +391,6 @@
             <!-- They must be downloaded from https://www.wolfssl.com/download/ -->
             <!-- and installed manually to local maven repo: -->
             <!-- mvn install:install-file -Dfile=wolfssl-jsse.jar -DgroupId=com.wolfssl -DartifactId=wolfssl-jsse -Dversion=${wolfssl.version} -Dpackaging=jar -->
-            <!--OpenSSL via Netty TCNative (fallback)-->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-tcnative</artifactId>
-                <version>${netty-tcnative.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-tcnative-boringssl-static</artifactId>
-                <version>${netty-tcnative.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>

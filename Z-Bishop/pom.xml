@@ -39,10 +39,27 @@
             <artifactId>io.z-queen</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--SSL Providers: loaded via reflection at runtime-->
-        <!--WolfSSL: download from https://www.wolfssl.com/download/ -->
-        <!--OpenSSL (Netty TCNative): will be loaded if present in classpath -->
     </dependencies>
+    <profiles>
+        <profile>
+            <id>wolfssl</id>
+            <activation>
+                <property>
+                    <name>wolfssl</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <dependencies>
+                <!--WolfSSL: download from https://www.wolfssl.com/download/ -->
+                <!--and install: mvn install:install-file -Dfile=wolfssl-jsse.jar -DgroupId=com.wolfssl -DartifactId=wolfssl-jsse -Dversion=${wolfssl.jni.version} -Dpackaging=jar -->
+                <dependency>
+                    <groupId>com.wolfssl</groupId>
+                    <artifactId>wolfssl-jsse</artifactId>
+                    <version>${wolfssl.jni.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>

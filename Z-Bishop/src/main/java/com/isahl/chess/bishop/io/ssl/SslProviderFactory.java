@@ -26,17 +26,17 @@ package com.isahl.chess.bishop.io.ssl;
 import com.isahl.chess.king.base.log.Logger;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.security.Provider;
 import java.security.Security;
 
 /**
  * SSL Provider 工厂类
- * 优先级: WolfSSL -> OpenSSL (via Netty TCNative) -> JDK Default
+ * 优先级: WolfSSL -> JDK Default
  * 
  * 可通过系统属性配置:
- * - ssl.provider.force=openssl 强制使用指定 provider
+ * - ssl.provider.force=wolfssl 强制使用指定 provider
  * - ssl.provider.disableWolfSSL=true 禁用 WolfSSL
- * - ssl.provider.disableOpenSSL=true 禁用 OpenSSL
  * 
  * 线程安全：使用双重检查锁定（DCL）模式确保线程安全初始化
  * 
@@ -51,7 +51,6 @@ public class SslProviderFactory {
      */
     public enum SslProviderType {
         WOLFSSL("wolfJSSE", "WolfSSL"),
-        OPENSSL("OpenSSL", "OpenSSL (via Netty TCNative)"),
         JDK("SunJSSE", "JDK Default");
 
         private final String providerName;
@@ -80,7 +79,7 @@ public class SslProviderFactory {
 
     /**
      * 初始化 SSL Provider
-     * 按优先级尝试: WolfSSL -> OpenSSL -> JDK Default
+     * 按优先级尝试: WolfSSL -> JDK Default
      * 支持通过 SslConfiguration 进行配置
      * 
      * 线程安全：使用 DCL 模式，确保只初始化一次
@@ -125,17 +124,9 @@ public class SslProviderFactory {
                 return;
             }
 
-            // 2. 尝试 OpenSSL（如果未禁用）
-            if (!SslConfiguration.isOpenSSLDisabled() && tryLoadOpenSSL()) {
-                _CurrentProvider = SslProviderType.OPENSSL;
-                _Logger.info("SSL Provider initialized: OpenSSL (via Netty TCNative)");
-                _Initialized = true;
-                return;
-            }
-
-            // 3. 退化为 JDK 默认实现
+            // 2. 退化为 JDK 默认实现
             _CurrentProvider = SslProviderType.JDK;
-            _Logger.info("SSL Provider initialized: JDK Default (WolfSSL and OpenSSL not available or disabled)");
+            _Logger.info("SSL Provider initialized: JDK Default (WolfSSL not available or disabled)");
             _Initialized = true;
         }
     }
@@ -148,7 +139,6 @@ public class SslProviderFactory {
     private static boolean tryLoadProvider(SslProviderType providerType) {
         return switch (providerType) {
             case WOLFSSL -> tryLoadWolfSSL();
-            case OPENSSL -> tryLoadOpenSSL();
             case JDK -> true; // JDK 总是可用
         };
     }
@@ -159,12 +149,34 @@ public class SslProviderFactory {
      */
     private static boolean tryLoadWolfSSL() {
         try {
-            // 加载 wolfssl JNI 库
-            System.loadLibrary("wolfssl");
-            _Logger.debug("wolfssl native library loaded successfully");
-
-            // 尝试加载 WolfSSL JSSE Provider
-            Class<?> wolfSSLProviderClass = Class.forName("com.wolfssl.provider.jsse.WolfSSLProvider");
+            // 先检查 Java 类是否可用
+            Class<?> wolfSSLProviderClass;
+            try {
+                wolfSSLProviderClass = Class.forName("com.wolfssl.provider.jsse.WolfSSLProvider");
+            } catch (ClassNotFoundException e) {
+                _Logger.debug("WolfSSL JSSE Provider class not found in classpath");
+                return false;
+            }
+            
+            // 尝试加载 native 库
+            String libPath = System.getProperty("user.home") + "/.local/lib";
+            String jniLibName = System.getProperty("os.name").contains("Mac") ? 
+                "libwolfssljni.dylib" : "libwolfssljni.so";
+            
+            try {
+                System.loadLibrary("wolfssljni");
+                _Logger.debug("wolfssljni native library loaded via System.loadLibrary");
+            } catch (UnsatisfiedLinkError e1) {
+                File jniLib = new File(libPath, jniLibName);
+                if (jniLib.exists()) {
+                    System.load(jniLib.getAbsolutePath());
+                    _Logger.debug("wolfssljni native library loaded from: " + jniLib.getAbsolutePath());
+                } else {
+                    throw new UnsatisfiedLinkError("wolfssljni not found in: " + libPath);
+                }
+            }
+            
+            // 实例化 Provider
             Provider wolfSSLProvider = (Provider) wolfSSLProviderClass.getDeclaredConstructor().newInstance();
             
             // 插入到 Provider 列表的最前面（优先级最高）
@@ -177,41 +189,9 @@ public class SslProviderFactory {
             _Logger.info("WolfSSL provider registered and verified successfully");
             return true;
         } catch (UnsatisfiedLinkError e) {
-            _Logger.debug("WolfSSL native library not found: %s", e.getMessage());
-        } catch (ClassNotFoundException e) {
-            _Logger.debug("WolfSSL JSSE Provider class not found: %s", e.getMessage());
+            _Logger.debug("WolfSSL native library not found: " + e.getMessage());
         } catch (Exception e) {
-            _Logger.debug("Failed to initialize WolfSSL: %s", e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * 尝试加载 OpenSSL (via Netty TCNative)
-     * @return 是否成功
-     */
-    private static boolean tryLoadOpenSSL() {
-        try {
-            // 尝试加载 Netty TCNative OpenSSL
-            Class<?> opensslClass = Class.forName("io.netty.handler.ssl.OpenSsl");
-            
-            // 检查 OpenSSL 是否可用
-            Boolean available = (Boolean) opensslClass.getMethod("isAvailable").invoke(null);
-            if (!available) {
-                String error = (String) opensslClass.getMethod("unavailabilityCause").invoke(null);
-                _Logger.debug("OpenSSL is not available: %s", error);
-                return false;
-            }
-            
-            // 获取版本信息
-            String version = (String) opensslClass.getMethod("versionString").invoke(null);
-            _Logger.info("OpenSSL (via Netty TCNative) version: %s", version);
-            
-            return true;
-        } catch (ClassNotFoundException e) {
-            _Logger.debug("Netty TCNative OpenSSL classes not found: %s", e.getMessage());
-        } catch (Exception e) {
-            _Logger.debug("Failed to initialize OpenSSL: %s", e.getMessage());
+            _Logger.debug("Failed to initialize WolfSSL: " + e.getMessage());
         }
         return false;
     }
@@ -257,8 +237,8 @@ public class SslProviderFactory {
                     yield SSLContext.getInstance(protocol);
                 }
             }
-            case OPENSSL, JDK -> {
-                // OpenSSL 和 JDK 都使用标准方式创建
+            case JDK -> {
+                // JDK 使用标准方式创建
                 if ("TLSv1.3".equals(protocol)) {
                     _Logger.debug("Using %s for TLS 1.3", _CurrentProvider.getDisplayName());
                 }
@@ -285,7 +265,7 @@ public class SslProviderFactory {
                     yield false;
                 }
                 yield switch (_CurrentProvider) {
-                    case WOLFSSL, OPENSSL -> true;
+                    case WOLFSSL -> true;
                     case JDK -> Runtime.version().feature() >= 11; // JDK 11+ 支持 TLS 1.3
                 };
             }
@@ -330,20 +310,11 @@ public class SslProviderFactory {
     }
 
     /**
-     * 检查 OpenSSL 是否可用
-     * @return 是否可用
-     */
-    public static boolean isOpenSSLAvailable() {
-        return getCurrentProvider() == SslProviderType.OPENSSL;
-    }
-
-    /**
-     * 检查是否使用了原生 SSL 库 (WolfSSL 或 OpenSSL)
+     * 检查是否使用了原生 SSL 库 (WolfSSL)
      * @return 是否使用了原生库
      */
     public static boolean isNativeSslAvailable() {
-        SslProviderType provider = getCurrentProvider();
-        return provider == SslProviderType.WOLFSSL || provider == SslProviderType.OPENSSL;
+        return getCurrentProvider() == SslProviderType.WOLFSSL;
     }
 
     /**

@@ -30,9 +30,8 @@ import com.isahl.chess.king.base.log.Logger;
  * 支持通过系统属性配置 SSL Provider 行为
  * 
  * 配置项:
- * - ssl.provider.force: 强制使用指定 provider (wolfssl/openssl/jdk)
+ * - ssl.provider.force: 强制使用指定 provider (wolfssl/jdk)
  * - ssl.provider.disableWolfSSL: 禁用 WolfSSL (true/false)
- * - ssl.provider.disableOpenSSL: 禁用 OpenSSL (true/false)
  * - ssl.debug: 开启 SSL 调试信息 (true/false)
  * 
  * @author william.d.zk
@@ -44,7 +43,6 @@ public class SslConfiguration {
     // 系统属性名称
     public static final String PROP_FORCE_PROVIDER = "ssl.provider.force";
     public static final String PROP_DISABLE_WOLFSSL = "ssl.provider.disableWolfSSL";
-    public static final String PROP_DISABLE_OPENSSL = "ssl.provider.disableOpenSSL";
     public static final String PROP_SSL_DEBUG = "ssl.debug";
     public static final String PROP_WOLFSSL_DEBUG = "wolfssl.debug";
 
@@ -62,9 +60,6 @@ public class SslConfiguration {
             case "wolfssl":
             case "wolf":
                 return SslProviderFactory.SslProviderType.WOLFSSL;
-            case "openssl":
-            case "open":
-                return SslProviderFactory.SslProviderType.OPENSSL;
             case "jdk":
             case "default":
                 return SslProviderFactory.SslProviderType.JDK;
@@ -81,14 +76,6 @@ public class SslConfiguration {
      */
     public static boolean isWolfSSLDisabled() {
         return Boolean.getBoolean(PROP_DISABLE_WOLFSSL);
-    }
-
-    /**
-     * 检查是否禁用了 OpenSSL
-     * @return 是否禁用
-     */
-    public static boolean isOpenSSLDisabled() {
-        return Boolean.getBoolean(PROP_DISABLE_OPENSSL);
     }
 
     /**
@@ -129,7 +116,6 @@ public class SslConfiguration {
         _Logger.info("===== SSL Configuration =====");
         _Logger.info("Force Provider: %s", System.getProperty(PROP_FORCE_PROVIDER, "[not set, auto-detect]"));
         _Logger.info("Disable WolfSSL: %s", isWolfSSLDisabled());
-        _Logger.info("Disable OpenSSL: %s", isOpenSSLDisabled());
         _Logger.info("SSL Debug: %s", isSslDebugEnabled());
         _Logger.info("WolfSSL Debug: %s", isWolfSSLDebugEnabled());
         _Logger.info("=============================");
