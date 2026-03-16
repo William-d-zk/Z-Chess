@@ -29,6 +29,8 @@ import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.security.Provider;
 import java.security.Security;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * SSL Provider 工厂类
@@ -70,38 +72,33 @@ public class SslProviderFactory {
         }
     }
 
-    // 使用 volatile 确保可见性
     private static volatile SslProviderType _CurrentProvider = null;
     private static volatile boolean _Initialized = false;
-    
-    // 用于同步的锁对象
     private static final Object INIT_LOCK = new Object();
+    
+    private static final Map<String, SSLContext> _ContextCache = new ConcurrentHashMap<>();
 
-    /**
-     * 初始化 SSL Provider
-     * 按优先级尝试: WolfSSL -> JDK Default
-     * 支持通过 SslConfiguration 进行配置
-     * 
-     * 线程安全：使用 DCL 模式，确保只初始化一次
-     */
+    private static final String[] NATIVE_LIBRARY_SEARCH_PATHS = {
+        System.getProperty("java.library.path", ""),
+        System.getProperty("user.home") + "/.local/lib",
+        "/usr/local/lib",
+        "/usr/lib",
+        "/opt/wolfssl/lib"
+    };
+
     public static void initialize() {
-        // 第一次检查（无锁）
         if (_Initialized) {
             return;
         }
         
-        // 同步块
         synchronized (INIT_LOCK) {
-            // 第二次检查（有锁）
             if (_Initialized) {
                 return;
             }
 
-            // 应用调试配置
             SslConfiguration.applyDebugSettings();
             SslConfiguration.printConfiguration();
 
-            // 检查是否有强制指定的 Provider
             SslProviderType forcedProvider = SslConfiguration.getForcedProvider();
             if (forcedProvider != null) {
                 _Logger.info("SSL Provider forced to: %s", forcedProvider.getDisplayName());
@@ -116,7 +113,6 @@ public class SslProviderFactory {
                 }
             }
 
-            // 1. 首先尝试 WolfSSL（如果未禁用）
             if (!SslConfiguration.isWolfSSLDisabled() && tryLoadWolfSSL()) {
                 _CurrentProvider = SslProviderType.WOLFSSL;
                 _Logger.info("SSL Provider initialized: WolfSSL");
@@ -124,7 +120,6 @@ public class SslProviderFactory {
                 return;
             }
 
-            // 2. 退化为 JDK 默认实现
             _CurrentProvider = SslProviderType.JDK;
             _Logger.info("SSL Provider initialized: JDK Default (WolfSSL not available or disabled)");
             _Initialized = true;
@@ -132,24 +127,29 @@ public class SslProviderFactory {
     }
 
     /**
-     * 尝试加载指定的 Provider
-     * @param providerType Provider 类型
-     * @return 是否成功
+     * 重置 SSL Provider 状态（主要用于测试）
      */
+    public static void reset() {
+        synchronized (INIT_LOCK) {
+            _Initialized = false;
+            _CurrentProvider = null;
+            _ContextCache.clear();
+            
+            Security.removeProvider("wolfJSSE");
+            
+            _Logger.debug("SSL Provider reset completed");
+        }
+    }
+
     private static boolean tryLoadProvider(SslProviderType providerType) {
         return switch (providerType) {
             case WOLFSSL -> tryLoadWolfSSL();
-            case JDK -> true; // JDK 总是可用
+            case JDK -> true;
         };
     }
 
-    /**
-     * 尝试加载 WolfSSL
-     * @return 是否成功
-     */
     private static boolean tryLoadWolfSSL() {
         try {
-            // 先检查 Java 类是否可用
             Class<?> wolfSSLProviderClass;
             try {
                 wolfSSLProviderClass = Class.forName("com.wolfssl.provider.jsse.WolfSSLProvider");
@@ -158,35 +158,25 @@ public class SslProviderFactory {
                 return false;
             }
             
-            // 尝试加载 native 库
-            String libPath = System.getProperty("user.home") + "/.local/lib";
-            String jniLibName = System.getProperty("os.name").contains("Mac") ? 
-                "libwolfssljni.dylib" : "libwolfssljni.so";
-            
-            try {
-                System.loadLibrary("wolfssljni");
-                _Logger.debug("wolfssljni native library loaded via System.loadLibrary");
-            } catch (UnsatisfiedLinkError e1) {
-                File jniLib = new File(libPath, jniLibName);
-                if (jniLib.exists()) {
-                    System.load(jniLib.getAbsolutePath());
-                    _Logger.debug("wolfssljni native library loaded from: " + jniLib.getAbsolutePath());
-                } else {
-                    throw new UnsatisfiedLinkError("wolfssljni not found in: " + libPath);
-                }
+            if (!loadWolfSSLNativeLibrary()) {
+                return false;
             }
             
-            // 实例化 Provider
             Provider wolfSSLProvider = (Provider) wolfSSLProviderClass.getDeclaredConstructor().newInstance();
             
-            // 插入到 Provider 列表的最前面（优先级最高）
-            Security.insertProviderAt(wolfSSLProvider, 1);
+            int existingWolfSSL = findProviderIndex("wolfJSSE");
+            if (existingWolfSSL > 0) {
+                Security.removeProvider("wolfJSSE");
+                _Logger.debug("Removed existing WolfSSL provider at position %d", existingWolfSSL);
+            }
             
-            // 验证 SSLContext 可以创建
+            int insertPos = findInsertPosition();
+            Security.insertProviderAt(wolfSSLProvider, insertPos);
+            
             SSLContext ctx = SSLContext.getInstance("TLS", wolfSSLProvider);
             ctx.init(null, null, null);
             
-            _Logger.info("WolfSSL provider registered and verified successfully");
+            _Logger.info("WolfSSL provider registered at position %d and verified successfully", insertPos);
             return true;
         } catch (UnsatisfiedLinkError e) {
             _Logger.debug("WolfSSL native library not found: " + e.getMessage());
@@ -195,32 +185,87 @@ public class SslProviderFactory {
         }
         return false;
     }
+    
+    private static boolean loadWolfSSLNativeLibrary() {
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        String jniLibName = osName.contains("mac") ? 
+            "libwolfssljni.dylib" : "libwolfssljni.so";
+        
+        try {
+            System.loadLibrary("wolfssljni");
+            _Logger.debug("wolfssljni native library loaded via System.loadLibrary");
+            return true;
+        } catch (UnsatisfiedLinkError e) {
+            _Logger.debug("System.loadLibrary failed, searching in known paths...");
+        }
+        
+        for (String path : NATIVE_LIBRARY_SEARCH_PATHS) {
+            if (path == null || path.isEmpty()) {
+                continue;
+            }
+            
+            String[] subPaths = path.split(File.pathSeparator);
+            for (String subPath : subPaths) {
+                File jniLib = new File(subPath, jniLibName);
+                if (jniLib.exists() && jniLib.canRead()) {
+                    try {
+                        System.load(jniLib.getAbsolutePath());
+                        _Logger.info("wolfssljni native library loaded from: %s", jniLib.getAbsolutePath());
+                        return true;
+                    } catch (UnsatisfiedLinkError e) {
+                        _Logger.debug("Failed to load from %s: %s", jniLib.getAbsolutePath(), e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        _Logger.debug("WolfSSL native library not found in any known path");
+        return false;
+    }
+    
+    private static int findProviderIndex(String providerName) {
+        Provider[] providers = Security.getProviders();
+        for (int i = 0; i < providers.length; i++) {
+            if (providers[i].getName().equals(providerName)) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+    
+    private static int findInsertPosition() {
+        Provider[] providers = Security.getProviders();
+        for (int i = 0; i < providers.length; i++) {
+            String name = providers[i].getName();
+            if (name.startsWith("SUN") || name.startsWith("Sun") || name.equals("SunJSSE")) {
+                return i + 2;
+            }
+        }
+        return 2;
+    }
 
-    /**
-     * 获取当前使用的 SSL Provider 类型
-     * @return SSL Provider 类型
-     */
     public static SslProviderType getCurrentProvider() {
-        // 确保初始化完成（无锁快速路径）
         if (!_Initialized) {
             initialize();
         }
         return _CurrentProvider;
     }
 
-    /**
-     * 获取 SSLContext 实例
-     * 根据当前 provider 类型返回相应的 SSLContext
-     * @param protocol TLS 协议版本 (如 "TLS", "TLSv1.2", "TLSv1.3")
-     * @return SSLContext 实例
-     * @throws Exception 创建失败时抛出
-     */
     public static SSLContext getSSLContext(String protocol) throws Exception {
         if (!_Initialized) {
             initialize();
         }
 
-        // 检查协议版本是否支持
+        return _ContextCache.computeIfAbsent(protocol, p -> {
+            try {
+                return createSSLContext(p);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create SSLContext for protocol: " + p, e);
+            }
+        });
+    }
+    
+    private static SSLContext createSSLContext(String protocol) throws Exception {
         if (!isProtocolSupported(protocol)) {
             _Logger.warning("Protocol %s may not be fully supported by current provider, attempting anyway", protocol);
         }
@@ -238,7 +283,6 @@ public class SslProviderFactory {
                 }
             }
             case JDK -> {
-                // JDK 使用标准方式创建
                 if ("TLSv1.3".equals(protocol)) {
                     _Logger.debug("Using %s for TLS 1.3", _CurrentProvider.getDisplayName());
                 }
@@ -247,37 +291,26 @@ public class SslProviderFactory {
         };
     }
     
-    /**
-     * 检查指定的 TLS 协议版本是否被当前 provider 支持
-     * @param protocol 协议版本
-     * @return 是否支持
-     */
     public static boolean isProtocolSupported(String protocol) {
         if (protocol == null || protocol.isEmpty()) {
             return false;
         }
         
         return switch (protocol) {
-            case "TLS", "TLSv1.2" -> true;  // 所有 provider 都支持 TLS 1.2
+            case "TLS", "TLSv1.2" -> true;
             case "TLSv1.3" -> {
-                // TLS 1.3 支持情况
                 if (_CurrentProvider == null) {
                     yield false;
                 }
                 yield switch (_CurrentProvider) {
                     case WOLFSSL -> true;
-                    case JDK -> Runtime.version().feature() >= 11; // JDK 11+ 支持 TLS 1.3
+                    case JDK -> Runtime.version().feature() >= 11;
                 };
             }
             default -> false;
         };
     }
     
-    /**
-     * 获取最佳的 TLS 协议版本
-     * 优先返回 TLS 1.3，如果不可用则返回 TLS 1.2
-     * @return 最佳协议版本字符串
-     */
     public static String getBestProtocol() {
         if (isProtocolSupported("TLSv1.3")) {
             return "TLSv1.3";
@@ -285,41 +318,22 @@ public class SslProviderFactory {
         return "TLSv1.2";
     }
     
-    /**
-     * 检查是否已初始化
-     */
     public static boolean isInitialized() {
         return _Initialized;
     }
 
-    /**
-     * 获取 SSLContext 实例 (使用默认 TLS 协议)
-     * @return SSLContext 实例
-     * @throws Exception 创建失败时抛出
-     */
     public static SSLContext getSSLContext() throws Exception {
         return getSSLContext("TLS");
     }
 
-    /**
-     * 检查 WolfSSL 是否可用
-     * @return 是否可用
-     */
     public static boolean isWolfSSLAvailable() {
         return getCurrentProvider() == SslProviderType.WOLFSSL;
     }
 
-    /**
-     * 检查是否使用了原生 SSL 库 (WolfSSL)
-     * @return 是否使用了原生库
-     */
     public static boolean isNativeSslAvailable() {
         return getCurrentProvider() == SslProviderType.WOLFSSL;
     }
 
-    /**
-     * 打印当前 SSL Provider 状态信息
-     */
     public static void printStatus() {
         if (!_Initialized) {
             initialize();
@@ -329,7 +343,6 @@ public class SslProviderFactory {
         _Logger.info("Current Provider: %s", _CurrentProvider.getDisplayName());
         _Logger.info("Provider Name: %s", _CurrentProvider.getProviderName());
         
-        // 打印所有已注册的 Provider
         _Logger.debug("Registered Security Providers:");
         Provider[] providers = Security.getProviders();
         for (int i = 0; i < providers.length; i++) {

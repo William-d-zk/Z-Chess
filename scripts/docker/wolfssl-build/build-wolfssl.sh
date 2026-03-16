@@ -16,9 +16,26 @@ set -e
 OS=${1:-linux}
 ARCH=${2:-amd64}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 SOURCE_DIR="${PROJECT_ROOT}/Z-Bishop/wolfssl"
 OUTPUT_DIR="${PROJECT_ROOT}/scripts/docker/wolfssl"
+
+WOLFSSL_VERSION=5.8.4
+WOLFSSL_JNI_VERSION=1.16.0
+
+get_cpu_count() {
+    if command -v nproc &> /dev/null; then
+        nproc
+    elif command -v sysctl &> /dev/null; then
+        sysctl -n hw.ncpu 2>/dev/null || echo 4
+    elif [ -f /proc/cpuinfo ]; then
+        grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 4
+    else
+        echo 4
+    fi
+}
+
+CPU_COUNT=$(get_cpu_count)
 
 echo "========================================"
 echo "WolfSSL Build Script"
@@ -26,31 +43,29 @@ echo "========================================"
 echo "Target: ${OS}/${ARCH}"
 echo "Source: ${SOURCE_DIR}"
 echo "Output: ${OUTPUT_DIR}/${OS}/${ARCH}"
+echo "CPU Count: ${CPU_COUNT}"
 echo ""
 
-# 检查源码目录
-if [ ! -f "${SOURCE_DIR}/wolfssl-5.8.4.zip" ]; then
-    echo "Error: wolfssl-5.8.4.zip not found in ${SOURCE_DIR}"
+if [ ! -f "${SOURCE_DIR}/wolfssl-${WOLFSSL_VERSION}.zip" ]; then
+    echo "Error: wolfssl-${WOLFSSL_VERSION}.zip not found in ${SOURCE_DIR}"
+    echo "Please download from https://www.wolfssl.com/download/"
     exit 1
 fi
 
-if [ ! -f "${SOURCE_DIR}/wolfssl-jni-jsse-1.16.0.zip" ]; then
-    echo "Error: wolfssl-jni-jsse-1.16.0.zip not found in ${SOURCE_DIR}"
+if [ ! -f "${SOURCE_DIR}/wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}.zip" ]; then
+    echo "Error: wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}.zip not found in ${SOURCE_DIR}"
+    echo "Please download from https://www.wolfssl.com/download/"
     exit 1
 fi
 
-# 创建输出目录
 mkdir -p "${OUTPUT_DIR}/${OS}/${ARCH}"
 
-# 清理之前的构建
 rm -rf /tmp/wolfssl-*
 
-# 解压源码
 echo "Extracting wolfSSL source..."
-unzip -q -o "${SOURCE_DIR}/wolfssl-5.8.4.zip" -d /tmp/
-unzip -q -o "${SOURCE_DIR}/wolfssl-jni-jsse-1.16.0.zip" -d /tmp/
+unzip -q -o "${SOURCE_DIR}/wolfssl-${WOLFSSL_VERSION}.zip" -d /tmp/
+unzip -q -o "${SOURCE_DIR}/wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}.zip" -d /tmp/
 
-# 检查工具
 if ! command -v autoconf &> /dev/null; then
     echo "Error: autoconf not found. Please install build tools."
     exit 1
@@ -61,38 +76,88 @@ if ! command -v make &> /dev/null; then
     exit 1
 fi
 
-# 编译 wolfSSL
 echo "Building wolfSSL native library..."
-cd /tmp/wolfssl-5.8.4
-./configure --enable-jni --enable-opensslextra --enable-ecc
-make -j$(nproc)
-sudo make install
-sudo ldconfig
+cd /tmp/wolfssl-${WOLFSSL_VERSION}
 
-# 编译 wolfSSL JNI
+if [ ! -f ./configure ]; then
+    echo "Running autogen.sh..."
+    ./autogen.sh
+fi
+
+./configure --enable-jni --enable-opensslextra --enable-ecc --enable-tls13
+make -j${CPU_COUNT}
+
+if command -v sudo &> /dev/null; then
+    sudo make install
+    sudo ldconfig 2>/dev/null || true
+else
+    make install
+    ldconfig 2>/dev/null || true
+fi
+
 echo "Building wolfSSL JNI/JSSE..."
-cd /tmp/wolfssl-jni-jsse-1.16.0
-mvn package -DskipTests
+cd /tmp/wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}
 
-# 复制输出文件
+if [ -f ./autogen.sh ]; then
+    ./autogen.sh
+fi
+
+if [ -f ./configure ]; then
+    ./configure --with-wolfssl=/usr/local
+    make -j${CPU_COUNT}
+    
+    if command -v sudo &> /dev/null; then
+        sudo make install
+    else
+        make install
+    fi
+fi
+
+if [ -f pom.xml ]; then
+    mvn package -DskipTests -q
+fi
+
 echo "Copying output files..."
 
 if [ "$OS" = "linux" ]; then
-    # Linux: 复制 .so 文件
-    cp /usr/local/lib/libwolfssl*.so* "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
-    cp /usr/local/lib/libwolfssljni*.so* "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
-    cp /tmp/wolfssl-5.8.4/.libs/libwolfssl*.so* "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
+    for lib in /usr/local/lib/libwolfssl*.so*; do
+        [ -f "$lib" ] && cp -f "$lib" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+    done
+    for lib in /usr/local/lib/libwolfssljni*.so*; do
+        [ -f "$lib" ] && cp -f "$lib" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+    done
+    for lib in /tmp/wolfssl-${WOLFSSL_VERSION}/.libs/libwolfssl*.so*; do
+        [ -f "$lib" ] && cp -f "$lib" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+    done
 elif [ "$OS" = "darwin" ]; then
-    # macOS: 复制 .dylib 文件
-    cp /usr/local/lib/libwolfssl*.dylib "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
-    cp /usr/local/lib/libwolfssljni*.dylib "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
+    for lib in /usr/local/lib/libwolfssl*.dylib; do
+        [ -f "$lib" ] && cp -f "$lib" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+    done
+    for lib in /usr/local/lib/libwolfssljni*.dylib; do
+        [ -f "$lib" ] && cp -f "$lib" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+    done
 fi
 
-# 复制 JAR 文件
-cp /tmp/wolfssl-5.8.4/*.jar "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
-cp /tmp/wolfssl-jni-jsse-1.16.0/target/*.jar "${OUTPUT_DIR}/${OS}/${ARCH}/" 2>/dev/null || true
+for jar in /tmp/wolfssl-${WOLFSSL_VERSION}/*.jar; do
+    [ -f "$jar" ] && cp -f "$jar" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+done
+for jar in /tmp/wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}/target/*.jar; do
+    [ -f "$jar" ] && cp -f "$jar" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+done
+for jar in /tmp/wolfssl-jni-jsse-${WOLFSSL_JNI_VERSION}/lib/*.jar; do
+    [ -f "$jar" ] && cp -f "$jar" "${OUTPUT_DIR}/${OS}/${ARCH}/"
+done
 
-# 列出输出文件
+cd "${OUTPUT_DIR}/${OS}/${ARCH}"
+
+for f in wolfssl-jsse-*-SNAPSHOT.jar; do
+    if [ -f "$f" ]; then
+        new_name="${f%-SNAPSHOT.jar}.jar"
+        mv "$f" "$new_name"
+        echo "Renamed: $f -> $new_name"
+    fi
+done
+
 echo ""
 echo "Build complete! Output files:"
 ls -la "${OUTPUT_DIR}/${OS}/${ARCH}/"

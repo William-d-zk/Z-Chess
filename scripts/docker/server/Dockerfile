@@ -29,12 +29,18 @@ LABEL maintainer="Z-Chess.Cluster" \
       version="1.0.22" \
       description="Z-Chess.Arena Cluster Node with WolfSSL"
 
+ARG WOLFSSL_VERSION=5.8.4
+ARG WOLFSSL_JNI_VERSION=1.16.0
+ARG MAIN_CLASS=com.isahl.chess.arena.start.ApplicationArena
+
 ENV TZ=Asia/Shanghai \
     JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" \
     SPRING_PROFILES_ACTIVE=dev \
-    POSTGRES_PASSWORD=chess123
+    POSTGRES_PASSWORD=chess123 \
+    WOLFSSL_VERSION=${WOLFSSL_VERSION} \
+    WOLFSSL_JNI_VERSION=${WOLFSSL_JNI_VERSION} \
+    MAIN_CLASS=${MAIN_CLASS}
 
-# 安装依赖
 RUN set -eux && \
     apk upgrade --no-cache && \
     apk add --no-cache \
@@ -49,23 +55,17 @@ RUN set -eux && \
 
 WORKDIR /app
 
-# 复制应用 JAR (从项目根目录构建)
 ARG JAR_FILE=Z-Arena/target/*.jar
 COPY ${JAR_FILE} app.jar
 
-# 复制配置文件到工作目录
 COPY scripts/docker/config/application-docker.properties application.properties
 
-# 复制 WolfSSL 目录（所有架构）
 COPY scripts/docker/wolfssl/ /tmp/wolfssl/
 
-# 检测 OS/Arch 并复制对应的 WolfSSL 文件
-# 支持: linux/arm64, linux/amd64
 RUN OS=$(uname -s | tr '[:upper:]' '[:lower:]') && \
     ARCH=$(cat /etc/apk/arch 2>/dev/null || uname -m) && \
     echo "Detected: OS=${OS}, Arch=${ARCH}" && \
-    mkdir -p /app/lib && \
-    # 映射架构名称
+    mkdir -p /app/lib /usr/local/lib && \
     if [ "${ARCH}" = "aarch64" ] || [ "${ARCH}" = "arm64" ]; then \
         ARCH_DIR="linux/arm64"; \
     elif [ "${ARCH}" = "x86_64" ] || [ "${ARCH}" = "amd64" ]; then \
@@ -74,45 +74,32 @@ RUN OS=$(uname -s | tr '[:upper:]' '[:lower:]') && \
         ARCH_DIR=""; \
     fi && \
     echo "Looking for WolfSSL in: ${ARCH_DIR}" && \
-    if [ -n "${ARCH_DIR}" ] && [ -f "/tmp/wolfssl/${ARCH_DIR}/wolfssl-jsse-1.16.0.jar" ]; then \
+    WOLFSSL_JAR="wolfssl-jsse-${WOLFSSL_JNI_VERSION}.jar" && \
+    if [ -n "${ARCH_DIR}" ] && [ -f "/tmp/wolfssl/${ARCH_DIR}/${WOLFSSL_JAR}" ]; then \
         echo "Using WolfSSL from ${ARCH_DIR}"; \
         cp /tmp/wolfssl/${ARCH_DIR}/*.jar /app/lib/; \
         cp /tmp/wolfssl/${ARCH_DIR}/*.so* /usr/local/lib/ 2>/dev/null || true; \
         cp /tmp/wolfssl/${ARCH_DIR}/*.dylib* /usr/local/lib/ 2>/dev/null || true; \
     else \
-        echo "Warning: No WolfSSL files found for ${OS}/${ARCH}"; \
+        echo "Warning: No WolfSSL files found for ${OS}/${ARCH}, will use JDK SSL"; \
     fi && \
-    ldconfig 2>/dev/null || true && \
+    rm -rf /tmp/wolfssl && \
     if ls /app/lib/wolfssl*.jar 1>/dev/null 2>&1; then \
         echo "WolfSSL files copied successfully"; \
         ls -la /app/lib/; \
     else \
-        echo "Warning: No WolfSSL JARs found, will use JDK SSL"; \
+        echo "Using JDK SSL only"; \
     fi
 
-# 设置权限
 RUN chmod 644 /app/app.jar /app/application.properties && \
     mkdir -p /app/logs /root/Z-Chess
 
-# 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:8080/actuator/health || exit 1
 
-# 端口: HTTP, Debug, MQTT, MQTT-TLS
 EXPOSE 8080 8000 1883 2883
 
-# 启动命令
-CMD ["sh", "-c", " \
-    echo 'Starting Z-Chess Arena...'; \
-    echo 'Config: /app/application.properties'; \
-    if ls /app/lib/wolfssl*.jar 1>/dev/null 2>&1; then \
-        echo 'Using WolfSSL for TLS acceleration'; \
-        WOLFSSL_CP=$(ls /app/lib/wolfssl*.jar | tr '\\n' ':'); \
-        exec java ${JAVA_OPTS} -cp \"app.jar:${WOLFSSL_CP}\" \
-            -Djava.library.path=/usr/local/lib \
-            -jar app.jar; \
-    else \
-        echo 'Using JDK SSL'; \
-        exec java ${JAVA_OPTS} -jar app.jar; \
-    fi \
-"]
+COPY scripts/docker/server/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
