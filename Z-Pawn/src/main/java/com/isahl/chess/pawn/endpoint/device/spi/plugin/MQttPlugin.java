@@ -28,15 +28,24 @@ import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11D_QttPingresp;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11F_QttAuth;
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
+import com.isahl.chess.bishop.protocol.mqtt.model.CodeMqtt;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttTopicAlias;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider;
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0D_Error;
+
+import static com.isahl.chess.bishop.protocol.mqtt.model.QttType.*;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
+import com.isahl.chess.pawn.endpoint.device.config.MqttConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
@@ -59,11 +68,16 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider.AuthContext;
+import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider.AuthResult;
+
 import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.NULL;
 import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
+import static com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol.VERSION_V5_0;
 import static com.isahl.chess.king.config.KingCode.SUCCESS;
 
 /**
@@ -81,19 +95,226 @@ public class MQttPlugin
     private final IDeviceService  _DeviceService;
     private final IMessageService _MessageService;
     private final IStateService   _StateService;
+    private final MqttConfig     _MqttConfig;
+
+    private final Map<Long, AuthContext> _AuthContexts = new ConcurrentHashMap<>();
+    private final Map<String, IQttAuthProvider> _AuthProviders = new ConcurrentHashMap<>();
+
+    private final Map<String, CachedDevice> _DeviceCache = new ConcurrentHashMap<>();
+    private static final long DEVICE_CACHE_TTL_MS = 60000; // 1 minute TTL
+
+    private static class CachedDevice {
+        final DeviceEntity device;
+        final long cachedAt;
+
+        CachedDevice(DeviceEntity device) {
+            this.device = device;
+            this.cachedAt = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - cachedAt > DEVICE_CACHE_TTL_MS;
+        }
+    }
 
     @Autowired
-    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService)
+    public MQttPlugin(IDeviceService deviceService, IMessageService messageService, IStateService stateService, MqttConfig mqttConfig)
     {
         _DeviceService = deviceService;
         _MessageService = messageService;
         _StateService = stateService;
+        _MqttConfig = mqttConfig;
+    }
+
+    public void registerAuthProvider(IQttAuthProvider provider)
+    {
+        _AuthProviders.put(provider.getAuthMethod(), provider);
+        _Logger.info("Registered auth provider: %s", provider.getAuthMethod());
+    }
+
+    private DeviceEntity getDeviceByToken(String token)
+    {
+        CachedDevice cached = _DeviceCache.get(token);
+        if(cached != null && !cached.isExpired()) {
+            _Logger.debug("Device cache hit for token: %s", token);
+            return cached.device;
+        }
+
+        DeviceEntity device = _DeviceService.findByToken(token);
+        if(device != null) {
+            _DeviceCache.put(token, new CachedDevice(device));
+            _Logger.debug("Device cached for token: %s", token);
+        }
+        else {
+            _DeviceCache.remove(token);
+        }
+
+        return device;
+    }
+
+    private void invalidateDeviceCache(String token)
+    {
+        _DeviceCache.remove(token);
+    }
+
+    private long handleV5Connection(X111_QttConnect x111, X112_QttConnack x112, ISession session)
+    {
+        _Logger.debug("Handling MQTT v5 connection from: %s", x111.getClientId());
+
+        DeviceEntity device = getDeviceByToken(x111.getClientId());
+        if(device == null) {
+            x112.rejectIdentifier();
+            return ZUID.INVALID_PEER_ID;
+        }
+
+        if(!device.getUsername().equalsIgnoreCase(x111.getUserName()) ||
+           !CryptoUtil.constantTimeEquals(device.getPassword(), x111.getPassword())) {
+            x112.rejectNotAuthorized();
+            return ZUID.INVALID_PEER_ID;
+        }
+
+        long deviceId = device.primaryKey();
+
+        long sessionExpiry = x111.getSessionExpiryInterval();
+        long effectiveExpiry = _MqttConfig.getEffectiveSessionExpiryInterval(sessionExpiry);
+        x112.setSessionExpiryInterval(effectiveExpiry);
+
+        int clientReceiveMax = x111.getReceiveMaximum();
+        int serverReceiveMax = _MqttConfig.getServerReceiveMaximum();
+        x112.setReceiveMaximum(serverReceiveMax);
+
+        int clientTopicAliasMax = x111.getTopicAliasMaximum();
+        int effectiveTopicAliasMax = _MqttConfig.getEffectiveTopicAliasMaximum(clientTopicAliasMax);
+        x112.setTopicAliasMaximum(effectiveTopicAliasMax);
+
+        int clientMaxPacketSize = x111.getMaximumPacketSize();
+        int serverMaxPacketSize = _MqttConfig.getMaximumPacketSize();
+        if(clientMaxPacketSize > 0 && clientMaxPacketSize < serverMaxPacketSize) {
+            x112.setMaximumPacketSize(clientMaxPacketSize);
+        }
+        else {
+            x112.setMaximumPacketSize(serverMaxPacketSize);
+        }
+
+        x112.setMaximumQoS(_MqttConfig.getMaximumQoS());
+
+        x112.setRetainAvailable(_MqttConfig.isRetainAvailable());
+        x112.setWildcardSubscriptionAvailable(_MqttConfig.isWildcardSubscriptionAvailable());
+        x112.setSubscriptionIdentifierAvailable(_MqttConfig.isSubscriptionIdentifierAvailable());
+        x112.setSharedSubscriptionAvailable(_MqttConfig.isSharedSubscriptionAvailable());
+
+        if(_MqttConfig.isEnhancedAuthEnabled()) {
+            String authMethod = x111.getAuthenticationMethod();
+            if(authMethod != null && _MqttConfig.isAuthMethodSupported(authMethod)) {
+                _Logger.debug("Enhanced auth requested: %s", authMethod);
+
+                if(x111.getAuthenticationData() != null) {
+                    AuthContext authContext = new AuthContext(session.index(), x111.getClientId(), authMethod);
+                    IQttAuthProvider.AuthResult result = handleContinueAuth(authMethod, x111.getAuthenticationData(), authContext);
+                    if(result.isSuccess()) {
+                        x112.setAuthenticationMethod(authMethod);
+                        if(result.getAuthData() != null) {
+                            x112.setAuthenticationData(result.getAuthData());
+                        }
+                        _Logger.info("Enhanced authentication success for method: %s", authMethod);
+                    }
+                    else if(result.isContinue()) {
+                        x112.setAuthenticationMethod(authMethod);
+                        x112.setAuthenticationData(result.getAuthData());
+                        AuthContext ctx = new AuthContext(session.index(), x111.getClientId(), authMethod);
+                        _AuthContexts.put(session.index(), ctx);
+                        x112.rejectBadAuthenticationMethod();
+                        _Logger.info("Enhanced authentication continue for method: %s", authMethod);
+                        return ZUID.INVALID_PEER_ID;
+                    }
+                    else {
+                        _Logger.warning("Enhanced authentication failed for method: %s, reason: %s", authMethod, result.getReason());
+                        x112.rejectNotAuthorized();
+                        return ZUID.INVALID_PEER_ID;
+                    }
+                }
+                else {
+                    x112.setAuthenticationMethod(authMethod);
+                    _Logger.info("Enhanced authentication accepted for method: %s", authMethod);
+                }
+            }
+            else if(authMethod != null) {
+                _Logger.warning("Unsupported authentication method: %s", authMethod);
+                x112.rejectNotAuthorized();
+                return ZUID.INVALID_PEER_ID;
+            }
+        }
+
+        if(x111.isRequestResponseInformation()) {
+            x112.setResponseInformation("response_info_available");
+        }
+
+        QttContext context = session.getContext(QttContext.class);
+        if(context != null) {
+            context.initV5Context(x112.getProperties());
+
+            if(clientReceiveMax > 0) {
+                context.setInboundQuota(clientReceiveMax);
+            }
+
+            if(effectiveTopicAliasMax > 0) {
+                context.setTopicAliasManager(new QttTopicAlias(effectiveTopicAliasMax));
+            }
+        }
+
+        x112.responseOk();
+        _Logger.info("MQTT v5 connection accepted: client=%s, sessionExpiry=%d, recvMax=%d, topicAliasMax=%d",
+            x111.getClientId(), effectiveExpiry, serverReceiveMax, effectiveTopicAliasMax);
+
+        return deviceId;
+    }
+
+    private IQttAuthProvider.AuthResult handleContinueAuth(String authMethod, byte[] authData, AuthContext context)
+    {
+        IQttAuthProvider provider = _AuthProviders.get(authMethod);
+        if(provider == null) {
+            _Logger.warning("No auth provider found for method: %s", authMethod);
+            return IQttAuthProvider.AuthResult.failure("Unsupported authentication method");
+        }
+
+        return provider.continueAuth(authMethod, authData, context);
+    }
+
+    private IQttAuthProvider.AuthResult handleAuth(String authMethod, byte[] authData, long sessionId)
+    {
+        AuthContext context = _AuthContexts.get(sessionId);
+        if(context == null) {
+            _Logger.warning("No auth context found for session: %d", sessionId);
+            return IQttAuthProvider.AuthResult.failure("No authentication in progress");
+        }
+
+        IQttAuthProvider.AuthResult result = handleContinueAuth(authMethod, authData, context);
+        if(result.isSuccess() || result.isFailure()) {
+            _AuthContexts.remove(sessionId);
+        }
+        return result;
     }
 
     @Override
     public boolean isSupported(IoSerial input)
     {
-        return (input.serial() >= 0x111 && input.serial() <= 0x11F) || input instanceof ZChatEntity;
+        int serial = input.serial();
+        return serial == serialOf(CONNECT) ||
+               serial == serialOf(CONNACK) ||
+               serial == serialOf(PUBLISH) ||
+               serial == serialOf(PUBACK) ||
+               serial == serialOf(PUBREC) ||
+               serial == serialOf(PUBREL) ||
+               serial == serialOf(PUBCOMP) ||
+               serial == serialOf(SUBSCRIBE) ||
+               serial == serialOf(SUBACK) ||
+               serial == serialOf(UNSUBSCRIBE) ||
+               serial == serialOf(UNSUBACK) ||
+               serial == serialOf(PINGREQ) ||
+               serial == serialOf(PINGRESP) ||
+               serial == serialOf(DISCONNECT) ||
+               serial == serialOf(AUTH) ||
+               input instanceof ZChatEntity;
     }
 
     public boolean isSupported(ISession session)
@@ -105,7 +326,7 @@ public class MQttPlugin
     public void onExchange(IProtocol body, List<ITriple> load)
     {
         _Logger.debug("onExchange:%s ", body);
-        if(body.serial() == 0x113) {
+        if(body.serial() == serialOf(PUBLISH)) {
             X113_QttPublish x113 = (X113_QttPublish) body;
             if(x113.level()
                    .getValue() > 0)
@@ -213,49 +434,64 @@ public class MQttPlugin
                 else if(!x111.isClean() && x111.getClientId() == null) {
                     x112.rejectIdentifier();
                 }
-                long deviceId = ZUID.INVALID_PEER_ID;
-                if(x112.isOk()) {
-                    _Logger.info("Login Client: %s", x111.getClientId());
-                    DeviceEntity device = _DeviceService.findByToken(x111.getClientId());
-                    if(device == null) {
-                        x112.rejectIdentifier();
+
+                if(x111.getVersion() == VERSION_V5_0 && _MqttConfig.isEnabled()) {
+                    long deviceId = handleV5Connection(x111, x112, session);
+                    if(deviceId == ZUID.INVALID_PEER_ID) {
+                        return Triple.of(x112, null, SINGLE);
                     }
-                    //@formatter:off
-                    else if(!device.getUsername()
-                                   .equalsIgnoreCase(x111.getUserName()) ||
-                            !device.getPassword()
-                                   .equals(x111.getPassword()))
-                    //@formatter:on
-                    {
-                        /*
-                         * @see DeviceEntity
-                         * username >=8 && <=32
-                         * password >=17 && <=32
-                         * no_empty
-                         */
-                        x112.rejectNotAuthorized();
+                    if(x112.isOk()) {
+                        ISession old = manager.mapSession(session.prefix(deviceId), session);
+                        if(old != null) {
+                            _Logger.info("re-login ok, wait for consistent notify; client[%s],close old",
+                                         x111.getClientId());
+                            old.innerClose();
+                        }
+                        else {
+                            _Logger.info("login check ok, wait for consistent notify; client[%s]", x111.getClientId());
+                        }
+                        return Triple.of(null, x111, NULL);
                     }
                     else {
-                        deviceId = device.primaryKey();
+                        return Triple.of(x112, null, SINGLE);
                     }
-                }
-                if(x112.isOk()) {
-                    ISession old = manager.mapSession(session.prefix(deviceId), session);
-                    if(old != null) {
-                        _Logger.info("re-login ok, wait for consistent notify; client[%s],close old",
-                                     x111.getClientId());
-                        old.innerClose();
-                    }
-                    else {
-                        _Logger.info("login check ok, wait for consistent notify; client[%s]", x111.getClientId());
-                    }
-                    return Triple.of(null, x111, NULL);
                 }
                 else {
-                    _Logger.info("reject %s",
-                                 x112.getCode()
-                                     .name());
-                    return Triple.of(x112, null, SINGLE);
+                    long deviceId = ZUID.INVALID_PEER_ID;
+                    if(x112.isOk()) {
+                        _Logger.info("Login Client: %s", x111.getClientId());
+                        DeviceEntity device = getDeviceByToken(x111.getClientId());
+                        if(device == null) {
+                            x112.rejectIdentifier();
+                        }
+                        else if(!device.getUsername()
+                                      .equalsIgnoreCase(x111.getUserName()) ||
+                                !CryptoUtil.constantTimeEquals(device.getPassword(), x111.getPassword()))
+                        {
+                            x112.rejectNotAuthorized();
+                        }
+                        else {
+                            deviceId = device.primaryKey();
+                        }
+                    }
+                    if(x112.isOk()) {
+                        ISession old = manager.mapSession(session.prefix(deviceId), session);
+                        if(old != null) {
+                            _Logger.info("re-login ok, wait for consistent notify; client[%s],close old",
+                                         x111.getClientId());
+                            old.innerClose();
+                        }
+                        else {
+                            _Logger.info("login check ok, wait for consistent notify; client[%s]", x111.getClientId());
+                        }
+                        return Triple.of(null, x111, NULL);
+                    }
+                    else {
+                        _Logger.info("reject %s",
+                                     x112.getCode()
+                                         .name());
+                        return Triple.of(x112, null, SINGLE);
+                    }
                 }
             }
             case 0x118, 0x11A -> {
@@ -267,13 +503,40 @@ public class MQttPlugin
                 return Triple.of(new X0D_Error(), input, SINGLE);
             }
             case 0x11F -> {
-                // TODO v5
+                X11F_QttAuth x11F = (X11F_QttAuth) input;
+                String authMethod = x11F.getAuthMethod();
+                byte[] authData = x11F.getAuthData();
+
+                if(x11F.isReauthenticate()) {
+                    _Logger.info("Re-authentication request from session: %d", session.index());
+                }
+
+                IQttAuthProvider.AuthResult result = handleAuth(authMethod, authData, session.index());
+                X11F_QttAuth authResponse = new X11F_QttAuth();
+
+                if(result.isSuccess()) {
+                    authResponse.setSuccess();
+                    if(result.getAuthData() != null) {
+                        authResponse.setAuthData(result.getAuthData());
+                    }
+                    _Logger.info("Authentication success for session: %d", session.index());
+                }
+                else if(result.isContinue()) {
+                    authResponse.setContinueAuthentication();
+                    authResponse.setAuthData(result.getAuthData());
+                    _Logger.info("Authentication continue for session: %d", session.index());
+                }
+                else {
+                    authResponse.setReasonCode(CodeMqtt.REJECT_NOT_AUTHORIZED.getCode());
+                    _Logger.warning("Authentication failed for session: %d, reason: %s", session.index(), result.getReason());
+                }
+
+                return Triple.of(authResponse, session, session.encoder());
             }
             default -> {
                 return null;
             }
         }
-        return null;
     }
 
     @Override
@@ -331,7 +594,6 @@ public class MQttPlugin
                                 Topic t = new Topic(_QttTopicToRegex(topic), level, 0);
                                 Subscribe subscribe = subscribe(t, origin);
                                 if(subscribe != null) {
-                                    //TODO 统计单指令多个Subscribe的情况
                                     x119.addResult(subscribe.level(origin));
                                 }
                                 else {
@@ -380,7 +642,6 @@ public class MQttPlugin
                 }
             }
             case 0x11F -> {
-                // TODO v5
             }
         }
         return null;
@@ -389,25 +650,28 @@ public class MQttPlugin
     @Override
     public <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body)
     {
-        //TODO 增加MsgDeliveryStatus更新逻辑，<待发>→<发送中>
         _StateService.add(msgId, body);
+        _Logger.debug("MsgDeliveryStatus: msgId=%d PENDING->SENDING", msgId);
     }
 
     @Override
     public boolean ack(long msgId, long origin)
     {
-        /*
-            TODO 增加MsgDeliveryStatus更新逻辑，[<待发>/<发送中>]→[<妥投>/<已接收>]，
-            TODO 0x113→0x114 0x113→0x115→0x116→0x117的逻辑不通可以考虑重构接口
-        */
-        return _StateService.drop(origin, msgId);
+        boolean result = _StateService.drop(origin, msgId);
+        if(result) {
+            _Logger.debug("MsgDeliveryStatus: msgId=%d SENDING->DELIVERED", msgId);
+        }
+        return result;
     }
 
     @Override
     public void clean(long session)
     {
-        //TODO 检索状态机中保存的消息，全部改变状态为<失败>
-        _StateService.dismiss(session);
+        IProtocol willMessage = _StateService.dismiss(session);
+        if(willMessage != null) {
+            _Logger.info("Publishing will message for session: %d", session);
+            onLogic(null, null, willMessage, Collections.emptyList());
+        }
     }
 
     public IProtocol onClose(ISession session)

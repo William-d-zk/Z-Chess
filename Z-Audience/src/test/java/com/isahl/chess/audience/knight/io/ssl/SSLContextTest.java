@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SSLContextTest {
 
+    private static final String TEST_PASSWORD = System.getProperty("tls.test.password", "test123");
+
     @TempDir
     static Path tempDir;
 
@@ -59,7 +61,7 @@ public class SSLContextTest {
             "-in", caCertPath.toString(),
             "-inkey", serverKeyPath.toString(),
             "-out", serverCertPath.toString(),
-            "-name", "server", "-password", "pass:test123"
+            "-name", "server", "-password", "pass:" + TEST_PASSWORD
         );
         pb.redirectErrorStream(true);
         process = pb.start();
@@ -70,7 +72,7 @@ public class SSLContextTest {
             "keytool", "-import", "-alias", "ca",
             "-file", caCertPath.toString(),
             "-keystore", trustCertPath.toString(),
-            "-storetype", "PKCS12", "-storepass", "test123", "-noprompt"
+            "-storetype", "PKCS12", "-storepass", TEST_PASSWORD, "-noprompt"
         );
         pb.redirectErrorStream(true);
         process = pb.start();
@@ -80,9 +82,9 @@ public class SSLContextTest {
         config = new SslSocketConfig();
         config.getProvider().setEnabled(true);
         config.getProvider().setKeyStorePath(serverCertPath.toString());
-        config.getProvider().setKeyStorePassword("test123");
+        config.getProvider().setKeyStorePassword(TEST_PASSWORD);
         config.getProvider().setTrustStorePath(trustCertPath.toString());
-        config.getProvider().setTrustStorePassword("test123");
+        config.getProvider().setTrustStorePassword(TEST_PASSWORD);
         config.getProvider().setProtocol("TLSv1.2");
         config.init();
     }

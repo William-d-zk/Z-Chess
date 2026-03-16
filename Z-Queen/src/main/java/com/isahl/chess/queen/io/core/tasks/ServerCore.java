@@ -272,7 +272,7 @@ public class ServerCore
         /*
          * 负责进行 session 上数据的解码，由于相同的 session 是在同一个read processor 上执行
          * 虽然解决了先后顺序和组包的问题，单 session 巨帧(frame > 64K) 将导致资源利用率不均匀
-         * 单帧 处理的数据量限定为 64K，//TODO 分帧传输将被严格受限，后续继续降低单帧容量
+         * 单帧 处理的数据量限定为 64K，分帧传输将被严格受限，后续继续降低单帧容量
          */
         final Z1Processor<QEvent>[] _DecodeProcessors = new Z1Processor[_DecoderCount];
         Arrays.setAll(_ReadEvents, slot->createPipelineLite(_AioQueueSize));

@@ -26,8 +26,8 @@ import java.util.Arrays;
  * TLS 测试客户端
  * 
  * 用法:
- * 1. 单向 TLS: java TlsTestClient --host localhost --port 1883 --trust-store cert/trust.p12 --password changeit
- * 2. 双向 TLS: java TlsTestClient --host localhost --port 1883 --trust-store cert/trust.p12 --key-store cert/client.p12 --password changeit
+ * 1. 单向 TLS: java TlsTestClient --host localhost --port 1883 --trust-store cert/trust.p12 --password <PASSWORD>
+ * 2. 双向 TLS: java TlsTestClient --host localhost --port 1883 --trust-store cert/trust.p12 --key-store cert/client.p12 --password <PASSWORD>
  * 
  * @author william.d.zk
  */
@@ -77,13 +77,13 @@ public class TlsTestClient {
         System.out.println("示例:");
         System.out.println("  # 单向 TLS");
         System.out.println("  java TlsTestClient --host localhost --port 1883 \\\n");
-        System.out.println("    --trust-store cert/trust.p12 --password changeit");
+        System.out.println("    --trust-store cert/trust.p12 --password <PASSWORD>");
         System.out.println();
         System.out.println("  # 双向 TLS");
         System.out.println("  java TlsTestClient --host localhost --port 1883 \\\n");
         System.out.println("    --trust-store cert/trust.p12 \\\n");
         System.out.println("    --key-store cert/client.p12 \\\n");
-        System.out.println("    --password changeit");
+        System.out.println("    --password <PASSWORD>");
     }
 
     private boolean parseArgs(String[] args) {

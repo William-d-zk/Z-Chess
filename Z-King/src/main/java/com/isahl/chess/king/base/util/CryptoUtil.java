@@ -483,8 +483,8 @@ public class CryptoUtil
             String publicKeyString = Base64.encodeBase64String(publicKey.getEncoded());
             String privateKeyString = Base64.encodeBase64String(privateKey.getEncoded());
             return new ASymmetricKeyPair("EC",publicKeyString, privateKeyString);
-        } catch (Throwable t) {
-            _Logger.fetal("生成ecc密钥对出现异常, keySize = "+keySize,t);
+        } catch (Exception e) {
+            _Logger.fetal("生成ecc密钥对出现异常, keySize = "+keySize, e);
         }
         return null;
     }
@@ -505,8 +505,8 @@ public class CryptoUtil
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] result = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return Base64.encodeBase64String(result);
-        } catch (Throwable t) {
-            _Logger.fetal("ecc encryption encounter exception.",t);
+        } catch (Exception e) {
+            _Logger.fetal("ecc encryption encounter exception.", e);
         }
         return null;
     }
@@ -527,8 +527,8 @@ public class CryptoUtil
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] result = cipher.doFinal(Base64.decodeBase64(data));
             return new String(result);
-        } catch (Throwable t) {
-            _Logger.fetal("ecc decryption encounter exception.",t);
+        } catch (Exception e) {
+            _Logger.fetal("ecc decryption encounter exception.", e);
         }
         return null;
     }
@@ -549,8 +549,8 @@ public class CryptoUtil
             signature.initSign(key);
             signature.update(data.getBytes());
             return new String(Base64.encodeBase64(signature.sign()));
-        } catch (Throwable t) {
-            _Logger.fetal("ecc sign encounter exception.",t);
+        } catch (Exception e) {
+            _Logger.fetal("ecc sign encounter exception.", e);
         }
         return null;
     }
@@ -572,8 +572,8 @@ public class CryptoUtil
             signature.initVerify(key);
             signature.update(srcData.getBytes());
             return signature.verify(Base64.decodeBase64(sign.getBytes()));
-        } catch (Throwable t) {
-            _Logger.fetal("ecc signature verify encounter exception.",t);
+        } catch (Exception e) {
+            _Logger.fetal("ecc signature verify encounter exception.", e);
         }
         return false;
     }

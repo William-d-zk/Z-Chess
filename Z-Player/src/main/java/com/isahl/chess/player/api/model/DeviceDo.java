@@ -32,6 +32,9 @@ import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
 import org.springframework.lang.NonNull;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
  * @author william.d.zk
  * @since 2019-06-15
@@ -40,8 +43,15 @@ import org.springframework.lang.NonNull;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceDo
 {
+    @NotBlank(message = "Device number is required")
+    @Size(min = 8, max = 32, message = "Device number must be between 8 and 32 characters")
     private String        mNumber;
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 8, max = 32, message = "Username must be between 8 and 32 characters")
     private String        mUsername;
+
+    @Size(min = 17, max = 32, message = "Password must be between 17 and 32 characters")
     private String        mPassword;
     private String        mToken;
     private DeviceProfile mProfile;

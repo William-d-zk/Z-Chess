@@ -35,8 +35,8 @@ import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -50,7 +50,7 @@ public class BaseDatagramPeer
 
     private final TimeWheel                                            _TimeWheel;
     private final Selector                                             _Selector;
-    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new HashMap<>();
+    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new ConcurrentHashMap<>();
 
     public BaseDatagramPeer(TimeWheel timeWheel) throws IOException
     {

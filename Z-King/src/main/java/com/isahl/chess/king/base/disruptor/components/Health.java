@@ -64,7 +64,10 @@ public class Health
     private void attenuation()
     {
         mStatisticDuration = mStatisticDuration.plus(mDuration);
-        //TODO count 和 统计的总次数都进行衰减
+        if(mCount > 0) {
+            mCount = mCount * 95 / 100;
+            mNumber = mNumber * 95 / 100;
+        }
     }
 
     @Override

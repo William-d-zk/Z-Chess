@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +56,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * @author william.d.zk {@code @date} 2019/05/01
@@ -428,7 +433,7 @@ public class DeviceController {
     @PostMapping("register")
     public @ResponseBody
     ZResponse<?> registerDevice(
-        @RequestBody DeviceDo deviceDo
+        @Valid @RequestBody DeviceDo deviceDo
     ) {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setVNotice(deviceDo.getNumber());

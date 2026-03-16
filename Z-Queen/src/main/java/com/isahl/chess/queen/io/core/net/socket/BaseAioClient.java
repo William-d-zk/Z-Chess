@@ -35,9 +35,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BaseAioClient
@@ -47,7 +47,7 @@ public class BaseAioClient
 
     private final TimeWheel                                            _TimeWheel;
     private final AsynchronousChannelGroup                             _ChannelGroup;
-    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new HashMap<>();
+    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new ConcurrentHashMap<>();
 
     public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup, String type)
     {

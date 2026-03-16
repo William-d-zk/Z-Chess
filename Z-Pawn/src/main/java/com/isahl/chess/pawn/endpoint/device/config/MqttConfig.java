@@ -30,16 +30,16 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * MQTT v5.0 配置类
+ * MQTT 配置类
  * <p>
- * 配置项前缀：z.chess.mqtt.v5
+ * 配置项前缀：z.chess.mqtt
  * </p>
  *
  * @author william.d.zk
  */
 @Configuration
-@ConfigurationProperties(prefix = "z.chess.mqtt.v5")
-public class MqttV5Config
+@ConfigurationProperties(prefix = "z.chess.mqtt")
+public class MqttConfig
 {
     // ==================== 特性开关 ====================
 
@@ -528,7 +528,7 @@ public class MqttV5Config
     public String toString()
     {
         return String.format(
-            "MqttV5Config{enabled=%s, alias=%s, expiry=%s, flow=%s, shared=%s, auth=%s, " +
+            "MqttConfig{enabled=%s, alias=%s, expiry=%s, flow=%s, shared=%s, auth=%s, " +
             "recvMax=%d, topicAliasMax=%d, maxQoS=%d}",
             enabled,
             topicAliasEnabled,
