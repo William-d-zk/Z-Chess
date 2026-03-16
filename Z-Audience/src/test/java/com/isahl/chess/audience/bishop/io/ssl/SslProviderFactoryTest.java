@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2024. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -92,7 +92,6 @@ public class SslProviderFactoryTest {
 
     @Test
     void testProviderTypeEnum() {
-        // 测试 Provider 类型枚举
         SslProviderFactory.SslProviderType wolfssl = SslProviderFactory.SslProviderType.WOLFSSL;
         assertEquals("wolfJSSE", wolfssl.getProviderName());
         assertEquals("WolfSSL", wolfssl.getDisplayName());
@@ -100,5 +99,30 @@ public class SslProviderFactoryTest {
         SslProviderFactory.SslProviderType jdk = SslProviderFactory.SslProviderType.JDK;
         assertEquals("SunJSSE", jdk.getProviderName());
         assertEquals("JDK Default", jdk.getDisplayName());
+    }
+
+    @Test
+    void testReset() {
+        SslProviderFactory.initialize();
+        assertTrue(SslProviderFactory.isInitialized());
+        
+        SslProviderFactory.reset();
+        assertFalse(SslProviderFactory.isInitialized());
+        
+        SslProviderFactory.initialize();
+        assertTrue(SslProviderFactory.isInitialized());
+    }
+
+    @Test
+    void testSSLContextCaching() throws Exception {
+        SSLContext ctx1 = SslProviderFactory.getSSLContext("TLSv1.2");
+        SSLContext ctx2 = SslProviderFactory.getSSLContext("TLSv1.2");
+        assertSame(ctx1, ctx2, "SSLContext should be cached");
+    }
+
+    @Test
+    void testGetBestProtocol() {
+        String protocol = SslProviderFactory.getBestProtocol();
+        assertTrue(protocol.equals("TLSv1.3") || protocol.equals("TLSv1.2"));
     }
 }
