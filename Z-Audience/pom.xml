@@ -146,6 +146,37 @@
             <artifactId>cache-api</artifactId>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>wolfssl</id>
+            <activation>
+                <property>
+                    <name>wolfssl</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <dependencies>
+                <!--WolfSSL: download from https://www.wolfssl.com/download/ -->
+                <!--and install: mvn install:install-file -Dfile=wolfssl-jsse.jar -DgroupId=com.wolfssl -DartifactId=wolfssl-jsse -Dversion=${wolfssl.jni.version} -Dpackaging=jar -->
+                <dependency>
+                    <groupId>com.wolfssl</groupId>
+                    <artifactId>wolfssl-jsse</artifactId>
+                    <version>${wolfssl.jni.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-Djava.library.path=${user.home}/.local/lib</argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <!-- Spring Boot Maven 插件 -->
