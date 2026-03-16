@@ -36,6 +36,11 @@
     <dependencies>
         <dependency>
             <groupId>com.isahl.chess</groupId>
+            <artifactId>protocol.z-bishop</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>cluster.z-knight</artifactId>
             <version>${project.version}</version>
         </dependency>
