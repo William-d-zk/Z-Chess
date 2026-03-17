@@ -1,0 +1,2 @@
+# ProtocolHandler SPI implementations
+com.isahl.chess.bishop.protocol.spi.example.ExampleTextProtocolHandler
