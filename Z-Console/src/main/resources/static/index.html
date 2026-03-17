@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-Chess 管理控制台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .header { background: #1a73e8; color: white; padding: 20px; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h2 { color: #333; margin-bottom: 15px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .metric { background: #f8f9fa; padding: 15px; border-radius: 4px; text-align: center; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #1a73e8; }
+        .metric-label { color: #666; margin-top: 5px; }
+        .status-up { color: #34a853; }
+        .status-down { color: #ea4335; }
+        .node-list { list-style: none; }
+        .node-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .node-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .status-leader { background: #e8f0fe; color: #1a73e8; }
+        .status-follower { background: #f1f3f4; color: #5f6368; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #1557b0; }
+        #refreshTime { color: #666; font-size: 12px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Z-Chess 管理控制台</h1>
+        <p>集群监控与管理</p>
+    </div>
+    
+    <div class="container">
+        <div class="card">
+            <h2>集群状态</h2>
+            <div id="clusterStatus">加载中...</div>
+            <button onclick="loadClusterStatus()" style="margin-top: 15px;">刷新</button>
+        </div>
+        
+        <div class="card">
+            <h2>监控指标</h2>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div class="metric-value" id="activeConnections">-</div>
+                    <div class="metric-label">活跃连接</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="messagesPublished">-</div>
+                    <div class="metric-label">发布消息</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="messagesReceived">-</div>
+                    <div class="metric-label">接收消息</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="leaderChanges">-</div>
+                    <div class="metric-label">Leader 变更</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>集群节点</h2>
+            <ul class="node-list" id="nodeList">
+                <li class="node-item">加载中...</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2>JVM 状态</h2>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div class="metric-value" id="usedMemory">-</div>
+                    <div class="metric-label">已用内存 (MB)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="cpuCores">-</div>
+                    <div class="metric-label">CPU 核心数</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="refreshTime"></div>
+    </div>
+    
+    <script>
+        async function loadClusterStatus() {
+            try {
+                const response = await fetch('/api/cluster/status');
+                const data = await response.json();
+                
+                document.getElementById('clusterStatus').innerHTML = `
+                    <p><strong>集群大小:</strong> ${data.clusterSize}</p>
+                    <p><strong>Leader:</strong> ${data.leaderId}</p>
+                    <p><strong>法定人数:</strong> ${data.quorumSize}</p>
+                    <p><strong>提交索引:</strong> ${data.commitIndex}</p>
+                    <p><strong>健康状态:</strong> <span class="${data.healthy ? 'status-up' : 'status-down'}">${data.healthy ? '健康' : '异常'}</span></p>
+                `;
+                
+                document.getElementById('refreshTime').textContent = '最后更新：' + new Date().toLocaleTimeString();
+            } catch (error) {
+                document.getElementById('clusterStatus').innerHTML = '<p class="status-down">加载失败</p>';
+            }
+        }
+        
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/api/metrics/summary');
+                const data = await response.json();
+                
+                document.getElementById('activeConnections').textContent = data.connections.active.toLocaleString();
+                document.getElementById('messagesPublished').textContent = data.mqtt.messagesPublished.toLocaleString();
+                document.getElementById('messagesReceived').textContent = data.mqtt.messagesReceived.toLocaleString();
+                document.getElementById('leaderChanges').textContent = data.cluster.leaderChanges;
+            } catch (error) {
+                console.error('Failed to load metrics:', error);
+            }
+        }
+        
+        async function loadNodes() {
+            try {
+                const response = await fetch('/api/cluster/nodes');
+                const nodes = await response.json();
+                
+                const nodeList = document.getElementById('nodeList');
+                nodeList.innerHTML = '';
+                
+                for (const [id, node] of Object.entries(nodes)) {
+                    const statusClass = node.status === 'LEADER' ? 'status-leader' : 'status-follower';
+                    nodeList.innerHTML += `
+                        <li class="node-item">
+                            <span><strong>${id}</strong> - ${node.host}:${node.port}</span>
+                            <span class="node-status ${statusClass}">${node.status}</span>
+                        </li>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('nodeList').innerHTML = '<li class="node-item">加载失败</li>';
+            }
+        }
+        
+        async function loadJvmMetrics() {
+            try {
+                const response = await fetch('/api/metrics/jvm');
+                const data = await response.json();
+                
+                document.getElementById('usedMemory').textContent = Math.round(data.usedMemory / 1024 / 1024);
+                document.getElementById('cpuCores').textContent = data.availableProcessors;
+            } catch (error) {
+                console.error('Failed to load JVM metrics:', error);
+            }
+        }
+        
+        function loadAll() {
+            loadClusterStatus();
+            loadMetrics();
+            loadNodes();
+            loadJvmMetrics();
+        }
+        
+        // Initial load
+        loadAll();
+        
+        // Auto refresh every 30 seconds
+        setInterval(loadAll, 30000);
+    </script>
+</body>
+</html>
