@@ -290,7 +290,6 @@
         <module>Z-Player</module>
         <module>Z-Audience</module>
         <module>Z-Arena</module>
-        <module>Z-Console</module>
     </modules>
 
     <dependencies>
