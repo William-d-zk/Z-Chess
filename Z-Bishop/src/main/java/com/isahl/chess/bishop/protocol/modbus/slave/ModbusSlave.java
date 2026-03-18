@@ -64,22 +64,20 @@ public class ModbusSlave {
     }
     
     private void registerDefaultHandlers() {
-        // 读线圈
+        // Phase 1 功能码
         registerHandler(ModbusFunction.READ_COILS, this::handleReadCoils);
-        // 读离散输入
         registerHandler(ModbusFunction.READ_DISCRETE_INPUTS, this::handleReadDiscreteInputs);
-        // 读保持寄存器
         registerHandler(ModbusFunction.READ_HOLDING_REGISTERS, this::handleReadHoldingRegisters);
-        // 读输入寄存器
         registerHandler(ModbusFunction.READ_INPUT_REGISTERS, this::handleReadInputRegisters);
-        // 写单个线圈
         registerHandler(ModbusFunction.WRITE_SINGLE_COIL, this::handleWriteSingleCoil);
-        // 写单个寄存器
         registerHandler(ModbusFunction.WRITE_SINGLE_REGISTER, this::handleWriteSingleRegister);
-        // 写多个线圈
         registerHandler(ModbusFunction.WRITE_MULTIPLE_COILS, this::handleWriteMultipleCoils);
-        // 写多个寄存器
         registerHandler(ModbusFunction.WRITE_MULTIPLE_REGISTERS, this::handleWriteMultipleRegisters);
+        
+        // Phase 2 扩展功能码
+        registerHandler(ModbusFunction.READ_EXCEPTION_STATUS, this::handleReadExceptionStatus);
+        registerHandler(ModbusFunction.DIAGNOSTICS, this::handleDiagnostics);
+        registerHandler(ModbusFunction.REPORT_SERVER_ID, this::handleReportServerId);
     }
     
     public void registerHandler(ModbusFunction function, FunctionHandler handler) {
@@ -325,6 +323,55 @@ public class ModbusSlave {
             return ModbusResponse.exception(request.getUnitId(), ModbusFunction.WRITE_MULTIPLE_REGISTERS,
                 ModbusExceptionCode.ILLEGAL_DATA_ADDRESS.getCode());
         }
+    }
+    
+    // ========== 扩展功能码处理器 ==========
+    
+    private ModbusResponse handleReadExceptionStatus(ModbusRequest request) {
+        byte status = com.isahl.chess.bishop.protocol.modbus.function.ModbusExtendedFunctions
+            .readExceptionStatus(request.getUnitId());
+        byte[] data = new byte[]{status};
+        return new ModbusResponse(request.getUnitId(), ModbusFunction.READ_EXCEPTION_STATUS, data);
+    }
+    
+    private ModbusResponse handleDiagnostics(ModbusRequest request) {
+        int subfunction = ((request.getData()[0] & 0xFF) << 8) | (request.getData()[1] & 0xFF);
+        
+        try {
+            com.isahl.chess.bishop.protocol.modbus.function.ModbusExtendedFunctions.DiagnosticsSubfunction sf =
+                com.isahl.chess.bishop.protocol.modbus.function.ModbusExtendedFunctions.DiagnosticsSubfunction
+                    .fromCode(subfunction);
+            
+            byte[] data = com.isahl.chess.bishop.protocol.modbus.function.ModbusExtendedFunctions
+                .diagnostics(sf, request.getData());
+            
+            if (data == null) {
+                return ModbusResponse.exception(request.getUnitId(), ModbusFunction.DIAGNOSTICS,
+                    ModbusExceptionCode.ILLEGAL_DATA_VALUE.getCode());
+            }
+            
+            byte[] response = new byte[2 + data.length];
+            response[0] = request.getData()[0];
+            response[1] = request.getData()[1];
+            System.arraycopy(data, 0, response, 2, data.length);
+            
+            return new ModbusResponse(request.getUnitId(), ModbusFunction.DIAGNOSTICS, response);
+            
+        } catch (IllegalArgumentException e) {
+            return ModbusResponse.exception(request.getUnitId(), ModbusFunction.DIAGNOSTICS,
+                ModbusExceptionCode.ILLEGAL_DATA_VALUE.getCode());
+        }
+    }
+    
+    private ModbusResponse handleReportServerId(ModbusRequest request) {
+        byte[] serverId = com.isahl.chess.bishop.protocol.modbus.function.ModbusExtendedFunctions
+            .reportServerId(request.getUnitId());
+        
+        byte[] data = new byte[1 + serverId.length];
+        data[0] = (byte) serverId.length;
+        System.arraycopy(serverId, 0, data, 1, serverId.length);
+        
+        return new ModbusResponse(request.getUnitId(), ModbusFunction.REPORT_SERVER_ID, data);
     }
     
     // ========== 辅助方法 ==========
