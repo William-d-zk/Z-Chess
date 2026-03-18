@@ -16,3 +16,4 @@ gradlew
 gradlew.bat
 .vscode
 .DS_Store
+.worktrees
