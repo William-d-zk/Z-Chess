@@ -45,9 +45,21 @@ public class ModbusTcpCodec
     public static ByteBuf encodeException(int unitId, int functionCode, ModbusExceptionCode exceptionCode, int transactionId)
     {
         byte[] data = new byte[]{(byte) exceptionCode.getCode()};
-        ModbusMessage message = new ModbusMessage(unitId, ModbusFunction.EXCEPTION, data);
-        message.setFunction(ModbusFunction.fromCode(functionCode | 0x80));
-        return encode(message, transactionId);
+        int length = 1 + data.length;
+        
+        byte[] buffer = new byte[MBAP_HEADER_LENGTH + length];
+        
+        buffer[0] = (byte) ((transactionId >> 8) & 0xFF);
+        buffer[1] = (byte) (transactionId & 0xFF);
+        buffer[2] = 0;
+        buffer[3] = 0;
+        buffer[4] = (byte) ((length >> 8) & 0xFF);
+        buffer[5] = (byte) (length & 0xFF);
+        buffer[6] = (byte) unitId;
+        buffer[7] = (byte) (functionCode | 0x80); // Exception function code
+        buffer[8] = (byte) exceptionCode.getCode();
+        
+        return ByteBuf.wrap(buffer);
     }
     
     public static ModbusTcpMessage decode(ByteBuf buffer)
