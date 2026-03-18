@@ -23,11 +23,11 @@ class ModbusTcpCodecTest {
         ByteBuf buffer = ModbusTcpCodec.encode(message, 1);
         
         assertEquals(12, buffer.readableBytes());
-        assertEquals(0, ((buffer.peek(0) & 0xFF) << 8) | (buffer.peek(1) & 0xFF));
-        assertEquals(0, ((buffer.peek(2) & 0xFF) << 8) | (buffer.peek(3) & 0xFF));
-        assertEquals(5, ((buffer.peek(4) & 0xFF) << 8) | (buffer.peek(5) & 0xFF));
-        assertEquals(1, buffer.peek(6) & 0xFF);
-        assertEquals(0x03, buffer.peek(7) & 0xFF);
+        assertEquals(1, ((buffer.peek(0) & 0xFF) << 8) | (buffer.peek(1) & 0xFF)); // transactionId = 1
+        assertEquals(0, ((buffer.peek(2) & 0xFF) << 8) | (buffer.peek(3) & 0xFF)); // protocolId = 0
+        assertEquals(5, ((buffer.peek(4) & 0xFF) << 8) | (buffer.peek(5) & 0xFF)); // length = 5
+        assertEquals(1, buffer.peek(6) & 0xFF); // unitId = 1
+        assertEquals(0x03, buffer.peek(7) & 0xFF); // function code = 0x03
     }
     
     @Test
@@ -65,11 +65,11 @@ class ModbusTcpCodecTest {
     
     @Test
     void testEncodeExceptionResponse() {
-        byte[] data = ModbusTcpCodec.encodeException(1, 0x03, 
+        ByteBuf buffer = ModbusTcpCodec.encodeException(1, 0x03, 
             com.isahl.chess.bishop.protocol.modbus.model.ModbusExceptionCode.ILLEGAL_DATA_ADDRESS, 1);
         
-        assertEquals(10, data.length);
-        assertEquals((byte) 0x83, data[7]);
-        assertEquals((byte) 0x02, data[8]);
+        assertEquals(9, buffer.readableBytes());
+        assertEquals((byte) 0x83, buffer.peek(7)); // Exception function code
+        assertEquals((byte) 0x02, buffer.peek(8)); // Exception code
     }
 }
