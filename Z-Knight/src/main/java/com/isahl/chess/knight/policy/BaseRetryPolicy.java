@@ -23,7 +23,7 @@
 
 package com.isahl.chess.knight.policy;
 
-public abstract class BaseRetryPolicy
+public class BaseRetryPolicy
         implements Policy.RetryPolicy
 {
     private final String policyId;
@@ -31,12 +31,20 @@ public abstract class BaseRetryPolicy
     private final long retryDelayMs;
     private final double backoffMultiplier;
 
-    protected BaseRetryPolicy(String policyId, int maxRetries, long retryDelayMs, double backoffMultiplier)
+    public BaseRetryPolicy(String policyId, int maxRetries, long retryDelayMs, double backoffMultiplier)
     {
         this.policyId = policyId;
         this.maxRetries = maxRetries;
         this.retryDelayMs = retryDelayMs;
         this.backoffMultiplier = backoffMultiplier;
+    }
+
+    public BaseRetryPolicy()
+    {
+        this.policyId = "default";
+        this.maxRetries = 3;
+        this.retryDelayMs = 1000;
+        this.backoffMultiplier = 2.0;
     }
 
     @Override
@@ -78,7 +86,7 @@ public abstract class BaseRetryPolicy
     @Override
     public boolean shouldRetry(int attemptCount, Throwable cause)
     {
-        return attemptCount < maxRetries;
+        return attemptCount <= maxRetries;
     }
 
     public long calculateDelay(int attemptCount)
