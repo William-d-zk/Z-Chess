@@ -8,19 +8,35 @@
 
 **让闲置的边缘算力被用起来** — 百万级工业边缘设备平时低负载运行，平台将计算任务拆分托管到边缘节点执行，结果汇总后通过IM触达员工。
 
+## Current State (v1.0 Shipped)
+
+**v1.0 MVP** shipped 2026-03-19 with:
+- Distributed task scheduling (dispatch + claim modes)
+- Edge agent (Z-Square) with heartbeat monitoring
+- IM core services (auth, groups, messages with WebSocket)
+
 ## Requirements
 
-### Active
+### Validated (v1.0)
 
-- [ ] **分布式计算任务调度**：支持分发型、认领型、分组分发、组内认领型四种调度模式
-- [ ] **边缘节点计算执行**：子任务在边缘端执行，失败重试机制（任务失败边缘端重试，节点失败冗余算力重试）
-- [ ] **结果汇总与合并**：集群协调者负责结果合并，所有子任务具备相同结构特征
-- [ ] **IM基础能力**：群组聊天、文件传输、工作流提醒
-- [ ] **设备操作能力**：IM中可直接操作设备（指令下发）
-- [ ] **监控能力**：IM中可订阅设备状态、数据流监控
-- [ ] **智能体协作能力**：IM中智能体参与协作
-- [ ] **数据订阅推送**：聊天主题相关数据订阅，变换后推送到对应会话
-- [ ] **延迟分级保障**：设备控制指令 < 40ms，AI推理 10-30秒，数据分析报表 12小时
+- ✓ 分发型调度 — v1.0
+- ✓ 认领型调度 — v1.0
+- ✓ 分组分发 — v1.0
+- ✓ 组内认领 — v1.0
+- ✓ 结果汇总 — v1.0
+- ✓ 失败重试 — v1.0
+- ✓ 用户认证 — v1.0
+- ✓ 群组聊天 — v1.0
+- ✓ 消息推送 — v1.0
+
+### Active (v1.1)
+
+- [ ] **设备操作**: IM中可直接下发设备控制指令到边缘节点 (IM-04)
+- [ ] **状态监控**: IM中可订阅设备状态，变更推送到对应会话 (IM-05)
+- [ ] **数据订阅**: 聊天主题关联数据订阅，变换后推送到对应会话 (IM-06)
+- [ ] **工作流提醒**: 任务状态变更、报表生成等事件通过IM提醒 (IM-07)
+- [ ] **SIM/eSIM绑定**: 设备SIM卡与边缘节点身份绑定 (IM-08)
+- [ ] **延迟分级保障**: 设备控制 < 40ms，AI推理 10-30s，报表 12h (LAT-01 to LAT-03)
 
 ### Out of Scope
 
@@ -32,37 +48,33 @@
 
 **技术基础：**
 - Z-Chess现有模块：Z-Board（基础框架）、Z-King（基础组件）、Z-Queen（网络通信）、Z-Bishop（MQTT协议）、Z-Knight（RAFT集群）、Z-Rook（持久化存储）、Z-Pawn（设备接入）、Z-Player（业务API）、Z-Arena（网关）
+- Z-Knight 新增: SchedulerEngine, SchedulingRule, Policy 接口
+- Z-Square 新增: Edge Agent 模块
+- Z-Player 新增: IM 服务层
 - PostgreSQL + EhCache存储
 - MQTT v5.0/v3.1.1协议支持
 - RAFT一致性集群
-
-**场景特征：**
-- 百万级工业边缘终端接入
-- 边缘设备具备一定算力，平时低负载
-- 实时控制指令低延迟要求（<40ms）
-- 任务类型多样化（控制、推理、批分析）
 
 **已知限制：**
 - ZLS协议仅支持单边认证，NTRU(RC4)需注意密钥强度
 - MQTT 5.0 broker行为部分未实现
 - Modbus TLS Phase 3未完成
 
-## Constraints
-
-- **平台扩展**：基于Z-Chess模块扩展，不新建项目
-- **存算一体**：计算与存储部署在同一节点，减少数据传输
-- **延迟要求**：设备控制 < 40ms，AI推理 10-30s，报表 12h
-- **规模**：百万终端接入
-- **用户**：组织内部员工
-
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| 混合调度模式 | 工业场景多样化，灵活适配不同任务类型 | — Pending |
-| Z-Chess扩展 | 复用现有MQTT、集群、存储能力 | — Pending |
-| 结果结构一致性 | 简化汇总逻辑，支持并行处理 | — Pending |
-| 边缘端任务重试 | 减少网络往返，降低协调者负载 | — Pending |
+| 混合调度模式 | 工业场景多样化，灵活适配不同任务类型 | ✓ Validated v1.0 |
+| Z-Chess扩展 | 复用现有MQTT、集群、存储能力 | ✓ Validated v1.0 |
+| 结果结构一致性 | 简化汇总逻辑，支持并行处理 | ✓ Validated v1.0 |
+| 边缘端任务重试 | 减少网络往返，降低协调者负载 | ✓ Validated v1.0 |
+| Z-Knight架构重构 | 提取 SchedulerEngine 接口，解耦调度逻辑 | ✓ Validated v1.0 |
+
+## Next Milestone Goals
+
+**v1.1** — 设备联动 (Phase 5-6):
+- IM中操作设备、订阅状态、数据推送
+- 延迟分级保障
 
 ---
-*Last updated: 2026-03-18 after initialization*
+*Last updated: 2026-03-19 after v1.0 milestone shipped*
