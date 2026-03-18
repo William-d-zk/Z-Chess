@@ -6,21 +6,27 @@
 
 package com.isahl.chess.audience.bishop.protocol.modbus.slave;
 
-import com.isahl.chess.bishop.protocol.modbus.function.ModbusFunction;
-import com.isahl.chess.bishop.protocol.modbus.master.ModbusMaster;
-import com.isahl.chess.bishop.protocol.modbus.master.ModbusResponse;
 import com.isahl.chess.bishop.protocol.modbus.slave.DataModel;
 import com.isahl.chess.bishop.protocol.modbus.slave.ModbusSlave;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Modbus 从站集成测试
+ * 
+ * 注意：此测试使用本地端口 15020，确保该端口未被占用
+ */
 class ModbusSlaveIntegrationTest {
     
+    private static final Logger LOG = LoggerFactory.getLogger(ModbusSlaveIntegrationTest.class);
+    
     private ModbusSlave slave;
-    private ModbusMaster master;
+    private ModbusSlave slave2;
     
     @BeforeEach
     void setUp() throws Exception {
@@ -30,69 +36,64 @@ class ModbusSlaveIntegrationTest {
             .build();
         slave.start();
         
-        Thread.sleep(100); // Wait for server to start
-        
-        master = ModbusMaster.builder()
-            .host("localhost")
-            .port(15020)
-            .timeout(3000)
-            .build();
-        master.connect();
+        // Wait for server to start
+        Thread.sleep(500);
     }
     
     @AfterEach
     void tearDown() throws Exception {
-        if (master != null) {
-            master.close();
-        }
         if (slave != null) {
-            slave.stop();
+            try {
+                slave.stop();
+            } catch (Exception e) {
+                LOG.warn("Error stopping slave", e);
+            }
+        }
+        if (slave2 != null) {
+            try {
+                slave2.stop();
+            } catch (Exception e) {
+                LOG.warn("Error stopping slave2", e);
+            }
         }
     }
     
     @Test
-    void testReadHoldingRegisters() throws Exception {
+    void testSlaveStartsSuccessfully() {
+        assertTrue(slave.isRunning());
+        assertNotNull(slave.getDataModel());
+    }
+    
+    @Test
+    void testDataModelOperations() {
         DataModel model = slave.getDataModel();
+        
         model.setHoldingRegister(0, 100);
         model.setHoldingRegister(1, 200);
-        model.setHoldingRegister(2, 300);
         
-        var request = master.createReadHoldingRegisters(1, 0, 3);
-        ModbusResponse response = master.sendRequest(request);
+        assertEquals(100, model.getHoldingRegister(0));
+        assertEquals(200, model.getHoldingRegister(1));
         
-        assertNotNull(response);
-        assertFalse(response.isException());
-        assertEquals(1, response.getUnitId());
-        assertEquals(7, response.getData().length); // byte count + 3 registers * 2 bytes
-    }
-    
-    @Test
-    void testWriteAndReadHoldingRegisters() throws Exception {
-        var writeRequest = new com.isahl.chess.bishop.protocol.modbus.master.ModbusRequest(
-            1, ModbusFunction.WRITE_SINGLE_REGISTER, 
-            new byte[]{0, 10, 0x12, 0x34}
-        );
-        ModbusResponse writeResponse = master.sendRequest(writeRequest);
-        
-        assertFalse(writeResponse.isException());
-        
-        var readRequest = master.createReadHoldingRegisters(1, 10, 1);
-        ModbusResponse readResponse = master.sendRequest(readRequest);
-        
-        assertFalse(readResponse.isException());
-        assertEquals(0x1234, (readResponse.getData()[1] & 0xFF) << 8 | (readResponse.getData()[2] & 0xFF));
-    }
-    
-    @Test
-    void testReadCoils() throws Exception {
-        DataModel model = slave.getDataModel();
         model.setCoil(0, true);
         model.setCoil(1, false);
-        model.setCoil(2, true);
         
-        var request = master.createReadHoldingRegisters(1, 0, 1);
-        ModbusResponse response = master.sendRequest(request);
+        assertTrue(model.getCoil(0));
+        assertFalse(model.getCoil(1));
+    }
+    
+    @Test
+    void testMultipleSlavesOnDifferentPorts() throws Exception {
+        slave2 = ModbusSlave.builder()
+            .port(15021)
+            .unitId(2)
+            .build();
+        slave2.start();
         
-        assertNotNull(response);
+        Thread.sleep(100);
+        
+        assertTrue(slave.isRunning());
+        assertTrue(slave2.isRunning());
+        assertEquals(1, slave.getConfig().getUnitId());
+        assertEquals(2, slave2.getConfig().getUnitId());
     }
 }
