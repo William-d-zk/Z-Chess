@@ -5,8 +5,8 @@
 Before creating a git commit, ALWAYS run the code formatter to ensure code follows the project style guide.
 
 ### Formatter Configuration
-- Uses Spotless Maven Plugin with Eclipse formatter
-- Configuration file: `docs/eclipse-formatter.xml`
+- Uses Spotless Maven Plugin with Google Java Format 1.18.1
+- Style: Google Java Style Guide
 
 ### Commands
 
@@ -26,12 +26,10 @@ mvn spotless:check
 3. If there are uncommitted formatting changes, add them to the commit
 
 ### Key Style Rules
-- Braces on new line for classes, methods, control structures
-- 4-space indentation (smart tabs)
-- Line length: 120 characters
-- Single-line blocks, methods, lambdas, and classes allowed
-- Space before control structure parentheses: NO (if, while, for, catch, switch, synchronized)
-- Space around lambda arrow: YES
+- Google Java Style (4-space indentation)
+- Line length: 100 characters
+- Braces on same line for classes, methods, control structures
+- Automatic import organization
 
 ---
 
