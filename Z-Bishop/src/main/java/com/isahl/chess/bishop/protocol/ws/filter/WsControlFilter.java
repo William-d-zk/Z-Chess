@@ -39,98 +39,82 @@ import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 /**
  * @author William.d.zk
  */
-public class WsControlFilter<T extends WsContext>
-        extends AioFilterChain<T, WsControl<T>, WsFrame>
-{
-    public WsControlFilter()
-    {
-        super("ws_control");
-    }
+public class WsControlFilter<T extends WsContext> extends AioFilterChain<T, WsControl<T>, WsFrame> {
+  public WsControlFilter() {
+    super("ws_control");
+  }
 
-    @Override
-    public WsFrame encode(T context, WsControl<T> output)
-    {
-        WsFrame frame = new WsFrame();
-        frame.header(output.header());
-        frame.withSub(output.encode(context)
-                            .array());
-        context.promotionOut();
-        return frame;
-    }
+  @Override
+  public WsFrame encode(T context, WsControl<T> output) {
+    WsFrame frame = new WsFrame();
+    frame.header(output.header());
+    frame.withSub(output.encode(context).array());
+    context.promotionOut();
+    return frame;
+  }
 
-    @Override
-    public WsControl<T> decode(T context, WsFrame input)
-    {
-        WsControl<T> control = switch(input.header() & 0x0F) {
-            case WsFrame.frame_op_code_ctrl_close -> new X102_Close<>();
-            case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping<>();
-            case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong<>();
-            default -> throw new ZException("ws control nonsupport %d", input.header() & 0x0F);
+  @Override
+  public WsControl<T> decode(T context, WsFrame input) {
+    WsControl<T> control =
+        switch (input.header() & 0x0F) {
+          case WsFrame.frame_op_code_ctrl_close -> new X102_Close<>();
+          case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping<>();
+          case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong<>();
+          default -> throw new ZException("ws control nonsupport %d", input.header() & 0x0F);
         };
-        control.decode(input.subEncoded());
-        context.demotionIn();
-        return control;
-    }
+    control.decode(input.subEncoded());
+    context.demotionIn();
+    return control;
+  }
 
-    @Override
-    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
-    {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof WsControl c) {
-            IPContext acting = context;
-            do {
-                //@formatter:off
-                if(acting.isOutConvert() &&
-                   acting instanceof IWsContext &&
-                   c.isCtrl())
-                {
-                //@formatter:on
-                    return Pair.of(ResultType.NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output) {
+    if (checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)
+        && output instanceof WsControl c) {
+      IPContext acting = context;
+      do {
+        // @formatter:off
+        if (acting.isOutConvert() && acting instanceof IWsContext && c.isCtrl()) {
+          // @formatter:on
+          return Pair.of(ResultType.NEXT_STEP, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
-    {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof WsFrame f && f.isCtrl()) {
-            IPContext acting = context;
-            do {
-                if(acting.isInConvert() && acting instanceof IWsContext) {
-                    return Pair.of(ResultType.HANDLED, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input) {
+    if (checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)
+        && input instanceof WsFrame f
+        && f.isCtrl()) {
+      IPContext acting = context;
+      do {
+        if (acting.isInConvert() && acting instanceof IWsContext) {
+          return Pair.of(ResultType.HANDLED, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
-    {
-        return (I) encode((T) context, (WsControl<T>) output);
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output) {
+    return (I) encode((T) context, (WsControl<T>) output);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
-    {
-        return (O) decode((T) context, (WsFrame) input);
-    }
-
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input) {
+    return (O) decode((T) context, (WsFrame) input);
+  }
 }

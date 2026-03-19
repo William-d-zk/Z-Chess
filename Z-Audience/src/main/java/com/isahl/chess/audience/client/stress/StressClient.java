@@ -27,112 +27,95 @@ import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * 压测客户端封装 - 简化版
- */
-public class StressClient implements IValid
-{
-    private final long clientId;
-    private final PressureTestConfig config;
-    private final PressureMetrics metrics;
-    private final TimeWheel timeWheel;
-    private final AtomicBoolean connected = new AtomicBoolean(false);
-    private final AtomicBoolean running = new AtomicBoolean(false);
-    private volatile ICancelable heartbeatTask;
-    private volatile ICancelable requestTask;
-    private ISession session;
-    private java.util.function.Consumer<StressClient> onConnectedCallback;
-    private java.util.function.Consumer<StressClient> onDisconnectedCallback;
-    private java.util.function.Consumer<Throwable> onErrorCallback;
+/** 压测客户端封装 - 简化版 */
+public class StressClient implements IValid {
+  private final long clientId;
+  private final PressureTestConfig config;
+  private final PressureMetrics metrics;
+  private final TimeWheel timeWheel;
+  private final AtomicBoolean connected = new AtomicBoolean(false);
+  private final AtomicBoolean running = new AtomicBoolean(false);
+  private volatile ICancelable heartbeatTask;
+  private volatile ICancelable requestTask;
+  private ISession session;
+  private java.util.function.Consumer<StressClient> onConnectedCallback;
+  private java.util.function.Consumer<StressClient> onDisconnectedCallback;
+  private java.util.function.Consumer<Throwable> onErrorCallback;
 
-    public StressClient(long clientId, PressureTestConfig config, PressureMetrics metrics, TimeWheel timeWheel)
-    {
-        this.clientId = clientId;
-        this.config = config;
-        this.metrics = metrics;
-        this.timeWheel = timeWheel;
-    }
+  public StressClient(
+      long clientId, PressureTestConfig config, PressureMetrics metrics, TimeWheel timeWheel) {
+    this.clientId = clientId;
+    this.config = config;
+    this.metrics = metrics;
+    this.timeWheel = timeWheel;
+  }
 
-    public void onConnected(ISession session)
-    {
-        this.session = session;
-        connected.set(true);
-    }
+  public void onConnected(ISession session) {
+    this.session = session;
+    connected.set(true);
+  }
 
-    public void onConnectFailed(Exception e)
-    {
-        connected.set(false);
-    }
+  public void onConnectFailed(Exception e) {
+    connected.set(false);
+  }
 
-    public void onDisconnected(ISession session)
-    {
-        connected.set(false);
-        this.session = null;
-    }
+  public void onDisconnected(ISession session) {
+    connected.set(false);
+    this.session = null;
+  }
 
-    public void startSending()
-    {
-        running.set(true);
-    }
+  public void startSending() {
+    running.set(true);
+  }
 
-    public void stop()
-    {
-        running.set(false);
-    }
+  public void stop() {
+    running.set(false);
+  }
 
-    public void close()
-    {
-        stop();
-        if(heartbeatTask != null) {
-            heartbeatTask.cancel();
-        }
-        if(requestTask != null) {
-            requestTask.cancel();
-        }
-        if(session != null) {
-            try {
-                session.close();
-            } catch(Exception e) {
-                // ignore
-            }
-        }
+  public void close() {
+    stop();
+    if (heartbeatTask != null) {
+      heartbeatTask.cancel();
     }
+    if (requestTask != null) {
+      requestTask.cancel();
+    }
+    if (session != null) {
+      try {
+        session.close();
+      } catch (Exception e) {
+        // ignore
+      }
+    }
+  }
 
-    public boolean isConnected()
-    {
-        return connected.get();
-    }
+  public boolean isConnected() {
+    return connected.get();
+  }
 
-    public int getPendingRequestCount()
-    {
-        return 0;
-    }
+  public int getPendingRequestCount() {
+    return 0;
+  }
 
-    public void onResponse(long requestId, byte[] data)
-    {
-        // 简化实现
-    }
+  public void onResponse(long requestId, byte[] data) {
+    // 简化实现
+  }
 
-    public long getClientId()
-    {
-        return clientId;
-    }
+  public long getClientId() {
+    return clientId;
+  }
 
-    public void setOnConnectedCallback(java.util.function.Consumer<StressClient> callback)
-    {
-        this.onConnectedCallback = callback;
-    }
+  public void setOnConnectedCallback(java.util.function.Consumer<StressClient> callback) {
+    this.onConnectedCallback = callback;
+  }
 
-    public void setOnDisconnectedCallback(java.util.function.Consumer<StressClient> callback)
-    {
-        this.onDisconnectedCallback = callback;
-    }
+  public void setOnDisconnectedCallback(java.util.function.Consumer<StressClient> callback) {
+    this.onDisconnectedCallback = callback;
+  }
 
-    public void setOnErrorCallback(java.util.function.Consumer<Throwable> callback)
-    {
-        this.onErrorCallback = callback;
-    }
+  public void setOnErrorCallback(java.util.function.Consumer<Throwable> callback) {
+    this.onErrorCallback = callback;
+  }
 }

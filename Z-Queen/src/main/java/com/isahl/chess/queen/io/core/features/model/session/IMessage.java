@@ -27,8 +27,8 @@ import com.isahl.chess.king.base.features.IDuplicate;
 /**
  * @author William.d.zk
  */
-public interface IMessage
-        extends IDuplicate
-{
-    default boolean isMapping() {return false;}
+public interface IMessage extends IDuplicate {
+  default boolean isMapping() {
+    return false;
+  }
 }

@@ -28,62 +28,52 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 /**
- * UDP 通道接口
- * 支持非阻塞 UDP 通信
- * 
+ * UDP 通道接口 支持非阻塞 UDP 通信
+ *
  * @author william.d.zk
  */
-public interface UdpChannel extends Closeable
-{
-    
-    /**
-     * 获取本地绑定地址
-     */
-    InetSocketAddress localAddress();
-    
-    /**
-     * 发送到指定地址
-     * 
-     * @param data 数据
-     * @param remote 远程地址
-     * @return 发送字节数
-     */
-    int send(byte[] data, InetSocketAddress remote);
-    
-    /**
-     * 接收数据
-     * 
-     * @return 数据包和发送者地址
-     */
-    UdpPacket receive();
-    
-    /**
-     * 加入多播组
-     * 
-     * @param group 多播组地址
-     * @param networkInterface 网络接口
-     */
-    void joinGroup(InetSocketAddress group, String networkInterface);
-    
-    /**
-     * 离开多播组
-     * 
-     * @param group 多播组地址
-     */
-    void leaveGroup(InetSocketAddress group);
-    
-    /**
-     * 是否支持多播
-     */
-    boolean isMulticastSupported();
-    
-    /**
-     * 获取 Socket 地址
-     */
-    SocketAddress getSocketAddress();
-    
-    /**
-     * 是否有效
-     */
-    boolean isValid();
+public interface UdpChannel extends Closeable {
+
+  /** 获取本地绑定地址 */
+  InetSocketAddress localAddress();
+
+  /**
+   * 发送到指定地址
+   *
+   * @param data 数据
+   * @param remote 远程地址
+   * @return 发送字节数
+   */
+  int send(byte[] data, InetSocketAddress remote);
+
+  /**
+   * 接收数据
+   *
+   * @return 数据包和发送者地址
+   */
+  UdpPacket receive();
+
+  /**
+   * 加入多播组
+   *
+   * @param group 多播组地址
+   * @param networkInterface 网络接口
+   */
+  void joinGroup(InetSocketAddress group, String networkInterface);
+
+  /**
+   * 离开多播组
+   *
+   * @param group 多播组地址
+   */
+  void leaveGroup(InetSocketAddress group);
+
+  /** 是否支持多播 */
+  boolean isMulticastSupported();
+
+  /** 获取 Socket 地址 */
+  SocketAddress getSocketAddress();
+
+  /** 是否有效 */
+  boolean isValid();
 }

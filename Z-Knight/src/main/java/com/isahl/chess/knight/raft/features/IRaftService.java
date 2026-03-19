@@ -26,30 +26,26 @@ package com.isahl.chess.knight.raft.features;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.io.core.features.cluster.IClusterPeer;
-
 import java.util.Collection;
 
 /**
  * @author william.d.zk
  * @date 2020/2/20
  */
-public interface IRaftService
-        extends IRaftModify,
-                IClusterPeer
-{
-    /**
-     * 获取集群的leader信息
-     *
-     * @return leader peer_id
-     */
-    RaftNode getLeader();
+public interface IRaftService extends IRaftModify, IClusterPeer {
+  /**
+   * 获取集群的leader信息
+   *
+   * @return leader peer_id
+   */
+  RaftNode getLeader();
 
-    /**
-     * 获取集群拓扑
-     *
-     * @return peers
-     */
-    Collection<RaftNode> topology();
+  /**
+   * 获取集群拓扑
+   *
+   * @return peers
+   */
+  Collection<RaftNode> topology();
 
-    RaftState raftState();
+  RaftState raftState();
 }

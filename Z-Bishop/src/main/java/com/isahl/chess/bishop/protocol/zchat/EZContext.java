@@ -23,8 +23,8 @@
 
 package com.isahl.chess.bishop.protocol.zchat;
 
-import com.isahl.chess.king.base.crypt.util.AesGcm;
 import com.isahl.chess.king.base.crypt.features.ISymmetric;
+import com.isahl.chess.king.base.crypt.util.AesGcm;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
@@ -33,199 +33,165 @@ import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 
 /**
  * EZContext - 加密上下文
- * 
- * 安全更新: 已使用 AES-GCM 替代已移除的 RC4 算法
- * 
+ *
+ * <p>安全更新: 已使用 AES-GCM 替代已移除的 RC4 算法
+ *
  * @author Z-Chess Team
  */
-public class EZContext
-        extends ZContext
-        implements IEContext
-{
-    private final CryptoUtil _CryptoUtil = new CryptoUtil();
+public class EZContext extends ZContext implements IEContext {
+  private final CryptoUtil _CryptoUtil = new CryptoUtil();
 
-    private int     mPubKeyId = -2;
-    private boolean mUpdateKeyIn, mUpdateKeyOut;
-    private int    mSymmetricKeyId;
-    private byte[] mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
-    // 使用 AES-GCM 替代 RC4 (安全修复)
-    private AesGcm mEncryptAesGcm, mDecryptAesGcm;
-    private IEncryptor mEncryptHandler;
+  private int mPubKeyId = -2;
+  private boolean mUpdateKeyIn, mUpdateKeyOut;
+  private int mSymmetricKeyId;
+  private byte[] mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
+  // 使用 AES-GCM 替代 RC4 (安全修复)
+  private AesGcm mEncryptAesGcm, mDecryptAesGcm;
+  private IEncryptor mEncryptHandler;
 
-    public EZContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
-    {
-        super(option, mode, type);
+  public EZContext(INetworkOption option, ISort.Mode mode, ISort.Type type) {
+    super(option, mode, type);
+  }
+
+  /** 获取对称解密器 (使用 AES-GCM 替代已移除的 RC4) */
+  @Override
+  public ISymmetric getSymmetricDecrypt() {
+    return mDecryptAesGcm == null ? mDecryptAesGcm = new AesGcm() : mDecryptAesGcm;
+  }
+
+  /** 获取对称加密器 (使用 AES-GCM 替代已移除的 RC4) */
+  @Override
+  public ISymmetric getSymmetricEncrypt() {
+    return mEncryptAesGcm == null ? mEncryptAesGcm = new AesGcm() : mEncryptAesGcm;
+  }
+
+  @Override
+  public int getSymmetricKeyId() {
+    return mSymmetricKeyId;
+  }
+
+  @Override
+  public void setSymmetricKeyId(int symmetricKeyId) {
+    mSymmetricKeyId = symmetricKeyId;
+  }
+
+  @Override
+  public byte[] getSymmetricKeyIn() {
+    return mSymmetricKeyIn;
+  }
+
+  @Override
+  public byte[] getSymmetricKeyOut() {
+    return mSymmetricKeyOut;
+  }
+
+  @Override
+  public byte[] getReRollKey() {
+    return mSymmetricKeyReroll;
+  }
+
+  @Override
+  public boolean needUpdateKeyIn() {
+    if (mUpdateKeyIn) {
+      mUpdateKeyIn = false;
+      return true;
     }
+    return false;
+  }
 
-    /**
-     * 获取对称解密器 (使用 AES-GCM 替代已移除的 RC4)
-     */
-    @Override
-    public ISymmetric getSymmetricDecrypt()
-    {
-        return mDecryptAesGcm == null ? mDecryptAesGcm = new AesGcm() : mDecryptAesGcm;
+  @Override
+  public boolean needUpdateKeyOut() {
+    if (mUpdateKeyOut) {
+      mUpdateKeyOut = false;
+      return true;
     }
+    return false;
+  }
 
-    /**
-     * 获取对称加密器 (使用 AES-GCM 替代已移除的 RC4)
-     */
-    @Override
-    public ISymmetric getSymmetricEncrypt()
-    {
-        return mEncryptAesGcm == null ? mEncryptAesGcm = new AesGcm() : mEncryptAesGcm;
-    }
+  @Override
+  public void promotionIn() {
+    updateKeyIn();
+  }
 
-    @Override
-    public int getSymmetricKeyId()
-    {
-        return mSymmetricKeyId;
-    }
+  /*
+   * 处理流中仅提供信号即可，
+   * 真正的操作在decode 中使用 cryptIn最终执行
+   */
+  @Override
+  public void updateKeyIn() {
+    mUpdateKeyIn = true;
+  }
 
-    @Override
-    public void setSymmetricKeyId(int symmetricKeyId)
-    {
-        mSymmetricKeyId = symmetricKeyId;
-    }
+  /*
+   * 处理流中仅提供信号即可，
+   * 真正的操作在encode 中使用 cryptOut最终执行
+   */
+  @Override
+  public void promotionOut() {
+    updateKeyOut();
+  }
 
-    @Override
-    public byte[] getSymmetricKeyIn()
-    {
-        return mSymmetricKeyIn;
-    }
+  @Override
+  public void updateKeyOut() {
+    mUpdateKeyOut = true;
+  }
 
-    @Override
-    public byte[] getSymmetricKeyOut()
-    {
-        return mSymmetricKeyOut;
-    }
+  @Override
+  public void reRollKey(byte[] key) {
+    mSymmetricKeyReroll = key;
+  }
 
-    @Override
-    public byte[] getReRollKey()
-    {
-        return mSymmetricKeyReroll;
-    }
+  @Override
+  public void swapKeyIn(byte[] key) {
+    mSymmetricKeyIn = key;
+  }
 
-    @Override
-    public boolean needUpdateKeyIn()
-    {
-        if(mUpdateKeyIn) {
-            mUpdateKeyIn = false;
-            return true;
-        }
-        return false;
-    }
+  @Override
+  public void swapKeyOut(byte[] key) {
+    mSymmetricKeyOut = key;
+  }
 
-    @Override
-    public boolean needUpdateKeyOut()
-    {
-        if(mUpdateKeyOut) {
-            mUpdateKeyOut = false;
-            return true;
-        }
-        return false;
-    }
+  @Override
+  public int getPubKeyId() {
+    return mPubKeyId;
+  }
 
-    @Override
-    public void promotionIn()
-    {
-        updateKeyIn();
-    }
+  @Override
+  public void setPubKeyId(int pubKeyId) {
+    mPubKeyId = pubKeyId;
+  }
 
-    /*
-     * 处理流中仅提供信号即可，
-     * 真正的操作在decode 中使用 cryptIn最终执行
-     */
-    @Override
-    public void updateKeyIn()
-    {
-        mUpdateKeyIn = true;
-    }
+  @Override
+  public IEncryptor getEncryptHandler() {
+    return mEncryptHandler;
+  }
 
-    /*
-     * 处理流中仅提供信号即可，
-     * 真正的操作在encode 中使用 cryptOut最终执行
-     */
-    @Override
-    public void promotionOut()
-    {
-        updateKeyOut();
-    }
+  @Override
+  public void setEncryptHandler(IEncryptor handler) {
+    mEncryptHandler = handler;
+  }
 
-    @Override
-    public void updateKeyOut()
-    {
-        mUpdateKeyOut = true;
-    }
+  public CryptoUtil getCryptUtil() {
+    return _CryptoUtil;
+  }
 
-    @Override
-    public void reRollKey(byte[] key)
-    {
-        mSymmetricKeyReroll = key;
-    }
+  @Override
+  public void cryptIn() {
+    super.promotionIn();
+  }
 
-    @Override
-    public void swapKeyIn(byte[] key)
-    {
-        mSymmetricKeyIn = key;
-    }
+  @Override
+  public void cryptOut() {
+    super.promotionOut();
+  }
 
-    @Override
-    public void swapKeyOut(byte[] key)
-    {
-        mSymmetricKeyOut = key;
-    }
+  @Override
+  public boolean isInCrypt() {
+    return _DecodeState.get() == DECODE_PAYLOAD;
+  }
 
-    @Override
-    public int getPubKeyId()
-    {
-        return mPubKeyId;
-    }
-
-    @Override
-    public void setPubKeyId(int pubKeyId)
-    {
-        mPubKeyId = pubKeyId;
-    }
-
-    @Override
-    public IEncryptor getEncryptHandler()
-    {
-        return mEncryptHandler;
-    }
-
-    @Override
-    public void setEncryptHandler(IEncryptor handler)
-    {
-        mEncryptHandler = handler;
-    }
-
-    public CryptoUtil getCryptUtil()
-    {
-        return _CryptoUtil;
-    }
-
-    @Override
-    public void cryptIn()
-    {
-        super.promotionIn();
-    }
-
-    @Override
-    public void cryptOut()
-    {
-       super.promotionOut();
-    }
-
-    @Override
-    public boolean isInCrypt()
-    {
-        return _DecodeState.get() == DECODE_PAYLOAD;
-    }
-
-    @Override
-    public boolean isOutCrypt()
-    {
-        return _EncodeState.get() == ENCODE_PAYLOAD;
-    }
-
+  @Override
+  public boolean isOutCrypt() {
+    return _EncodeState.get() == ENCODE_PAYLOAD;
+  }
 }

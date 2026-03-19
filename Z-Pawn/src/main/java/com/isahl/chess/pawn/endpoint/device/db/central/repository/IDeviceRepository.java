@@ -25,10 +25,9 @@ package com.isahl.chess.pawn.endpoint.device.db.central.repository;
 
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 /**
  * xxxRepository 会被jpa重载，findByXXX 函数会被处理成根据 xxx 字段去数据库查询
@@ -37,15 +36,12 @@ import java.util.Optional;
  * @date 2020-1-20
  */
 @Repository
-public interface IDeviceRepository
-        extends BaseLongRepository<DeviceEntity>
-{
-    DeviceEntity findByToken(String token);
+public interface IDeviceRepository extends BaseLongRepository<DeviceEntity> {
+  DeviceEntity findByToken(String token);
 
-    DeviceEntity findByNotice(String number);
+  DeviceEntity findByNotice(String number);
 
+  Optional<DeviceEntity> findByDeviceId(long deviceId);
 
-    Optional<DeviceEntity> findByDeviceId(long deviceId);
-
-    List<DeviceEntity> findAllByDeviceIdIn(List<Long> deviceIds);
+  List<DeviceEntity> findAllByDeviceIdIn(List<Long> deviceIds);
 }

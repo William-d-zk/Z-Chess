@@ -27,25 +27,24 @@ import java.util.List;
 
 /**
  * 协议提供者 SPI 接口
- * 
- * 用于发现和注册协议处理器实现。
- * 
+ *
+ * <p>用于发现和注册协议处理器实现。
+ *
  * @author william.d.zk
  */
-public interface ProtocolProvider
-{
-    
-    /**
-     * 获取提供者名称
-     * 
-     * @return 提供者名称
-     */
-    String getName();
-    
-    /**
-     * 获取提供的所有协议处理器
-     * 
-     * @return 协议处理器列表
-     */
-    List<ProtocolHandler> getHandlers();
+public interface ProtocolProvider {
+
+  /**
+   * 获取提供者名称
+   *
+   * @return 提供者名称
+   */
+  String getName();
+
+  /**
+   * 获取提供的所有协议处理器
+   *
+   * @return 协议处理器列表
+   */
+  List<ProtocolHandler> getHandlers();
 }

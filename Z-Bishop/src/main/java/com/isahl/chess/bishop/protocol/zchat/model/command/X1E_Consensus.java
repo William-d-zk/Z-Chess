@@ -30,37 +30,29 @@ import com.isahl.chess.board.base.ISerial;
  * @author william.d.zk
  * @date 2020/4/6
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x1E)
-public class X1E_Consensus
-        extends ZCommand
-{
-    public X1E_Consensus()
-    {
-        super();
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x1E)
+public class X1E_Consensus extends ZCommand {
+  public X1E_Consensus() {
+    super();
+  }
 
-    public X1E_Consensus(long msgId)
-    {
-        super();
-        msgId(msgId);
-    }
+  public X1E_Consensus(long msgId) {
+    super();
+    msgId(msgId);
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_07_ROUTE_MESSAGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_07_ROUTE_MESSAGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return false;
-    }
+  @Override
+  public boolean isMapping() {
+    return false;
+  }
 }

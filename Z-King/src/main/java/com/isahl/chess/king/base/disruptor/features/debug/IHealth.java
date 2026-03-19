@@ -29,15 +29,14 @@ import java.time.Duration;
  * @author William.d.zk
  * @date 2021/07/27
  */
-public interface IHealth
-{
-    boolean isEnabled();
+public interface IHealth {
+  boolean isEnabled();
 
-    void collectOn(long start);
+  void collectOn(long start);
 
-    void collectOff(long end);
+  void collectOff(long end);
 
-    boolean isHealthy();
+  boolean isHealthy();
 
-    Duration averageEventHandling();
+  Duration averageEventHandling();
 }

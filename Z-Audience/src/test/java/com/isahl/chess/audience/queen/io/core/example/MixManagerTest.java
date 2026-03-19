@@ -25,35 +25,30 @@ package com.isahl.chess.queen.io.core.example;
 
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.util.Pair;
-import org.junit.jupiter.api.Test;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.junit.jupiter.api.Test;
 
-class MixManagerTest
-{
+class MixManagerTest {
 
-    @Test
-    void addPeer()
-    {
-        List<IPair> list = new ArrayList<>();
-        add(0, list, new Pair<>(0, new InetSocketAddress(5678)));
+  @Test
+  void addPeer() {
+    List<IPair> list = new ArrayList<>();
+    add(0, list, new Pair<>(0, new InetSocketAddress(5678)));
+  }
+
+  private void add(int index, List<IPair> pairs, IPair pair) {
+    Objects.requireNonNull(pairs);
+    Objects.requireNonNull(pair);
+    if (index >= pairs.size()) {
+      for (int i = pairs.size(); i < index; i++) {
+        pairs.add(new Pair<>(-1, null));
+      }
+      pairs.add(pair);
+    } else {
+      pairs.set(index, pair);
     }
-
-    private void add(int index, List<IPair> pairs, IPair pair)
-    {
-        Objects.requireNonNull(pairs);
-        Objects.requireNonNull(pair);
-        if(index >= pairs.size()) {
-            for(int i = pairs.size(); i < index; i++) {
-                pairs.add(new Pair<>(-1, null));
-            }
-            pairs.add(pair);
-        }
-        else {
-            pairs.set(index, pair);
-        }
-    }
+  }
 }

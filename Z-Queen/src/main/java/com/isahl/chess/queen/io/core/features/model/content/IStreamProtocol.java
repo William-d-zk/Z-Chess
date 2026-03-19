@@ -27,71 +27,49 @@ import com.isahl.chess.queen.io.core.features.model.session.IContext;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 
 /**
- * stream protocol 存在stream control的状态更新机制
- * 状态机由 IContext 进行管理。
+ * stream protocol 存在stream control的状态更新机制 状态机由 IContext 进行管理。
  *
  * @author William.d.zk
  * @see IContext
  */
-public interface IStreamProtocol<C extends IPContext>
-        extends IProtocol
-{
-    /**
-     * 编码结束后 更新状态机状态
-     *
-     * @param ctx
-     */
-    default ByteBuf suffix(ByteBuf output, C ctx)
-    {
-        return suffix(output);
-    }
+public interface IStreamProtocol<C extends IPContext> extends IProtocol {
+  /**
+   * 编码结束后 更新状态机状态
+   *
+   * @param ctx
+   */
+  default ByteBuf suffix(ByteBuf output, C ctx) {
+    return suffix(output);
+  }
 
-    /**
-     * 解码结束后更新状态机状态
-     *
-     * @param ctx
-     */
-    default void fold(C ctx)
-    {
-    }
+  /**
+   * 解码结束后更新状态机状态
+   *
+   * @param ctx
+   */
+  default void fold(C ctx) {}
 
-    /**
-     * 扩展IProtocol 未对IContext进行约定
-     * 编码过程
-     * <p>
-     * //@formatter:off
-     * encode(ctx){
-     *     suffix(encode(){
-     *               suffix(output)
-     *            }
-     *     ,ctx)
-     * }
-     * //@formatter:on
-     * @param ctx
-     * @return
-     */
-    default ByteBuf encode(C ctx)
-    {
-        return suffix(ByteBuf.allocate(sizeOf()), ctx);
-    }
+  /**
+   * 扩展IProtocol 未对IContext进行约定 编码过程
+   *
+   * <p>//@formatter:off encode(ctx){ suffix(encode(){ suffix(output) } ,ctx) } //@formatter:on
+   *
+   * @param ctx
+   * @return
+   */
+  default ByteBuf encode(C ctx) {
+    return suffix(ByteBuf.allocate(sizeOf()), ctx);
+  }
 
-    /**
-     * 扩展IProtocol 未对IContext进行约定
-     * 解码过程
-     * //@formatter:off
-     * decode(input,ctx){
-     *      decode(input){
-     *          fold(input, prefix(input))
-     *      }
-     *      fold(ctx)
-     * }
-     * //@formatter:on
-     * @param input
-     * @param ctx
-     */
-    default void decode(ByteBuf input, C ctx)
-    {
-        decode(input);
-        fold(ctx);
-    }
+  /**
+   * 扩展IProtocol 未对IContext进行约定 解码过程 //@formatter:off decode(input,ctx){ decode(input){ fold(input,
+   * prefix(input)) } fold(ctx) } //@formatter:on
+   *
+   * @param input
+   * @param ctx
+   */
+  default void decode(ByteBuf input, C ctx) {
+    decode(input);
+    fold(ctx);
+  }
 }

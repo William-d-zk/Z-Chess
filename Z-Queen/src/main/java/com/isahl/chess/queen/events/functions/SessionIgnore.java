@@ -30,21 +30,17 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 /**
  * @author william.d.zk
  */
-public class SessionIgnore
-        implements IBinaryOperator<IProtocol, ISession, IProtocol>
-{
+public class SessionIgnore implements IBinaryOperator<IProtocol, ISession, IProtocol> {
 
-    @Override
-    public IProtocol handle(IProtocol input, ISession session)
-    {
-        return input;
-    }
+  @Override
+  public IProtocol handle(IProtocol input, ISession session) {
+    return input;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.ignore";
-    }
+  @Override
+  public String getName() {
+    return "operator.ignore";
+  }
 
-    public static final SessionIgnore INSTANCE = new SessionIgnore();
+  public static final SessionIgnore INSTANCE = new SessionIgnore();
 }

@@ -27,80 +27,76 @@ package com.isahl.chess.queen.config;
  * @author william.d.zk
  * @date 2020/4/23
  */
-public interface IClusterConfig
-{
-    /**
-     * pipeline decoder 分配的固定配额
-     *
-     * @return
-     */
-    int getDecoderCountPower();
+public interface IClusterConfig {
+  /**
+   * pipeline decoder 分配的固定配额
+   *
+   * @return
+   */
+  int getDecoderCountPower();
 
-    /**
-     * pipeline encoder 分配的固定配额
-     */
-    int getEncoderCountPower();
+  /** pipeline encoder 分配的固定配额 */
+  int getEncoderCountPower();
 
-    /**
-     * pipeline 逻辑处理单元数量
-     *
-     * @return
-     */
-    int getLogicCountPower();
+  /**
+   * pipeline 逻辑处理单元数量
+   *
+   * @return
+   */
+  int getLogicCountPower();
 
-    /**
-     * 用于处理集群通讯的处理器单元数
-     *
-     * @return
-     */
-    int getClusterIoCountPower();
+  /**
+   * 用于处理集群通讯的处理器单元数
+   *
+   * @return
+   */
+  int getClusterIoCountPower();
 
-    /**
-     * AIO 处理队列的阶乘数
-     *
-     * @return
-     */
-    int getAioQueueSizePower();
+  /**
+   * AIO 处理队列的阶乘数
+   *
+   * @return
+   */
+  int getAioQueueSizePower();
 
-    /**
-     * Cluster相关处理队列的阶乘数
-     *
-     * @return
-     */
-    int getClusterQueueSizePower();
+  /**
+   * Cluster相关处理队列的阶乘数
+   *
+   * @return
+   */
+  int getClusterQueueSizePower();
 
-    /**
-     * 逻辑处理单元的处理队列阶乘数
-     *
-     * @return
-     */
-    int getLogicQueueSizePower();
+  /**
+   * 逻辑处理单元的处理队列阶乘数
+   *
+   * @return
+   */
+  int getLogicQueueSizePower();
 
-    /**
-     * 异常处理单元的处理队列阶乘数
-     *
-     * @return
-     */
-    int getErrorQueueSizePower();
+  /**
+   * 异常处理单元的处理队列阶乘数
+   *
+   * @return
+   */
+  int getErrorQueueSizePower();
 
-    /**
-     * 处理主动关闭时间的队列阶乘数
-     *
-     * @return
-     */
-    int getCloserQueueSizePower();
+  /**
+   * 处理主动关闭时间的队列阶乘数
+   *
+   * @return
+   */
+  int getCloserQueueSizePower();
 
-    default int getPoolSize()
-    {
-        return 1 // io-dispatch
-               + (1 << getDecoderCountPower()) // read-decode
-               + 1 // decoded-dispatch
-               + 1 // logic-processor
-               + 1 // cluster-single
-               + (1 << getLogicCountPower()) // notify-processor
-               + 1 // write-dispatch
-               + (1 << getEncoderCountPower())// write-encode
-               + 1 // encoded-processor[write-end]
-                ;
-    }
+  default int getPoolSize() {
+    return 1 // io-dispatch
+        + (1 << getDecoderCountPower()) // read-decode
+        + 1 // decoded-dispatch
+        + 1 // logic-processor
+        + 1 // cluster-single
+        + (1 << getLogicCountPower()) // notify-processor
+        + 1 // write-dispatch
+        + (1 << getEncoderCountPower()) // write-encode
+        + 1 // encoded-processor[write-end]
+    ;
+  }
 }

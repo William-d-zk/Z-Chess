@@ -25,21 +25,18 @@ package com.isahl.chess.knight.scheduler.repository;
 
 import com.isahl.chess.knight.scheduler.domain.Task;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
+import java.time.Instant;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.List;
-
 @Repository
 public interface TaskRepository
-        extends JpaRepository<Task, String>,
-                JpaSpecificationExecutor<Task>
-{
-    List<Task> findByStatus(TaskStatus status);
+    extends JpaRepository<Task, String>, JpaSpecificationExecutor<Task> {
+  List<Task> findByStatus(TaskStatus status);
 
-    List<Task> findByDeadlineBefore(Instant now);
+  List<Task> findByDeadlineBefore(Instant now);
 
-    List<Task> findByStatusAndDeadlineBefore(TaskStatus status, Instant now);
+  List<Task> findByStatusAndDeadlineBefore(TaskStatus status, Instant now);
 }

@@ -23,6 +23,8 @@
 
 package com.isahl.chess.queen.events.client;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
+
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
@@ -35,79 +37,70 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
-
 import java.util.List;
-
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 
 /**
  * @author william.d.zk
  */
-public class ClientWriteDispatcher
-        implements IPipeHandler<QEvent>
-{
-    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+public class ClientWriteDispatcher implements IPipeHandler<QEvent> {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
-    final RingBuffer<QEvent> _Error;
-    final RingBuffer<QEvent> _Encoder;
+  final RingBuffer<QEvent> _Error;
+  final RingBuffer<QEvent> _Encoder;
 
-    private final IHealth _Health = new Health(-1);
+  private final IHealth _Health = new Health(-1);
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder)
-    {
-        _Error = error;
-        _Encoder = encoder;
-    }
+  public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder) {
+    _Error = error;
+    _Encoder = encoder;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        if(event.hasError()) {
-            error(_Error, event.getErrorType(), event.getComponent(), event.getEventBinaryOp());
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    if (event.hasError()) {
+      error(_Error, event.getErrorType(), event.getComponent(), event.getEventBinaryOp());
+    } else {
+      switch (event.getEventType()) {
+        case BIZ_LOCAL, WRITE, LOGIC -> {
+          IPair content = event.getComponent();
+          IProtocol output = content.getFirst();
+          ISession session = content.getSecond();
+          if (session.isValid() && output != null) {
+            publish(_Encoder, WRITE, content, session.encoder());
+          }
         }
-        else {
-            switch(event.getEventType()) {
-                case BIZ_LOCAL, WRITE, LOGIC -> {
-                    IPair content = event.getComponent();
-                    IProtocol output = content.getFirst();
-                    ISession session = content.getSecond();
-                    if(session.isValid() && output != null) {
-                        publish(_Encoder, WRITE, content, session.encoder());
-                    }
-                }
-                case DISPATCH -> {
-                    List<ITriple> contents = event.getResultList();
-                    if(contents != null) {
-                        for(ITriple triple : contents) {
-                            IProtocol output = triple.getFirst();
-                            ISession session = triple.getSecond();
-                            if(output != null && session.isValid()) {
-                                publish(_Encoder, WRITE, Pair.of(output, session), triple.getThird());
-                            }
-                        }
-                    }
-                }
-                case WROTE -> {
-                    IPair wrote = event.getComponent();
-                    ISession session = wrote.getSecond();
-                    if(session.isValid()) {
-                        publish(_Encoder, OperateType.WROTE, wrote, event.getEventBinaryOp());
-                    }
-                }
-                default -> {}
+        case DISPATCH -> {
+          List<ITriple> contents = event.getResultList();
+          if (contents != null) {
+            for (ITriple triple : contents) {
+              IProtocol output = triple.getFirst();
+              ISession session = triple.getSecond();
+              if (output != null && session.isValid()) {
+                publish(_Encoder, WRITE, Pair.of(output, session), triple.getThird());
+              }
             }
+          }
         }
+        case WROTE -> {
+          IPair wrote = event.getComponent();
+          ISession session = wrote.getSecond();
+          if (session.isValid()) {
+            publish(_Encoder, OperateType.WROTE, wrote, event.getEventBinaryOp());
+          }
+        }
+        default -> {}
+      }
     }
+  }
 
-    @Override
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

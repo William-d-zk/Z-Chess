@@ -25,19 +25,16 @@ package com.isahl.chess.player.repository;
 
 import com.isahl.chess.player.domain.Group;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
+import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface GroupRepository
-        extends BaseLongRepository<Group>
-{
-    List<Group> findByOwnerId(Long ownerId);
+public interface GroupRepository extends BaseLongRepository<Group> {
+  List<Group> findByOwnerId(Long ownerId);
 
-    List<Group> findByActiveTrue();
+  List<Group> findByActiveTrue();
 
-    @Query("SELECT g FROM Group g JOIN g.members m WHERE m.userId = :userId AND g.active = true")
-    List<Group> findByMemberUserId(Long userId);
+  @Query("SELECT g FROM Group g JOIN g.members m WHERE m.userId = :userId AND g.active = true")
+  List<Group> findByMemberUserId(Long userId);
 }

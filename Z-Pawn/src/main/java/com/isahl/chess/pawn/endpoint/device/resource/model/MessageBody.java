@@ -23,6 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,12 +35,9 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.model.BinarySerial;
-
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
@@ -47,61 +46,45 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @ISerialGenerator(parent = ISerial.BIZ_PLAYER_API_SERIAL)
-public class MessageBody
-        extends BinarySerial
-{
+public class MessageBody extends BinarySerial {
 
-    @Serial
-    private static final long serialVersionUID = -8904730289818144372L;
+  @Serial private static final long serialVersionUID = -8904730289818144372L;
 
-    @JsonIgnore
-    private String mTopic;
+  @JsonIgnore private String mTopic;
 
-    @JsonCreator
-    public MessageBody(
-            @JsonProperty("topic")
-            String topic,
-            @JsonProperty("content")
-            byte[] content)
-    {
-        mTopic = Objects.requireNonNull(topic);
-        withSub(Objects.requireNonNull(content));
-    }
+  @JsonCreator
+  public MessageBody(@JsonProperty("topic") String topic, @JsonProperty("content") byte[] content) {
+    mTopic = Objects.requireNonNull(topic);
+    withSub(Objects.requireNonNull(content));
+  }
 
-    public MessageBody(ByteBuf input)
-    {
-        super(input);
-    }
+  public MessageBody(ByteBuf input) {
+    super(input);
+  }
 
-    public String getTopic()
-    {
-        return mTopic;
-    }
+  public String getTopic() {
+    return mTopic;
+  }
 
-    public byte[] getContent()
-    {
-        return payload();
-    }
+  public byte[] getContent() {
+    return payload();
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        int tl = input.vLength();
-        mTopic = input.readUTF(tl);
-        return remain - vSizeOf(tl);
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    int tl = input.vLength();
+    mTopic = input.readUTF(tl);
+    return remain - vSizeOf(tl);
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length);
-    }
+  @Override
+  public int length() {
+    return super.length() + vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length);
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .vPut(mTopic.getBytes(StandardCharsets.UTF_8));
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).vPut(mTopic.getBytes(StandardCharsets.UTF_8));
+  }
 }

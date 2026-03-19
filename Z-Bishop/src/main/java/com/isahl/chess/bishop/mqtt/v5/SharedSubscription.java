@@ -25,54 +25,50 @@ package com.isahl.chess.bishop.mqtt.v5;
 
 import java.util.Objects;
 
-/**
- * MQTT 5.0 共享订阅表示
- * 主题格式：$share/{shareName}/{topic}
- */
+/** MQTT 5.0 共享订阅表示 主题格式：$share/{shareName}/{topic} */
 public class SharedSubscription {
-    private final String shareName;
-    private final String topic;
-    private final int qos;
+  private final String shareName;
+  private final String topic;
+  private final int qos;
 
-    public SharedSubscription(String shareName, String topic, int qos) {
-        if (shareName == null || shareName.isEmpty()) {
-            throw new IllegalArgumentException("shareName cannot be empty");
-        }
-        if (topic == null || topic.isEmpty()) {
-            throw new IllegalArgumentException("topic cannot be empty");
-        }
-        this.shareName = shareName;
-        this.topic = topic;
-        this.qos = qos;
+  public SharedSubscription(String shareName, String topic, int qos) {
+    if (shareName == null || shareName.isEmpty()) {
+      throw new IllegalArgumentException("shareName cannot be empty");
     }
+    if (topic == null || topic.isEmpty()) {
+      throw new IllegalArgumentException("topic cannot be empty");
+    }
+    this.shareName = shareName;
+    this.topic = topic;
+    this.qos = qos;
+  }
 
-    public String getShareName() {
-        return shareName;
-    }
+  public String getShareName() {
+    return shareName;
+  }
 
-    public String getTopic() {
-        return topic;
-    }
+  public String getTopic() {
+    return topic;
+  }
 
-    public int getQos() {
-        return qos;
-    }
+  public int getQos() {
+    return qos;
+  }
 
-    public String getFullTopic() {
-        return "$share/" + shareName + "/" + topic;
-    }
+  public String getFullTopic() {
+    return "$share/" + shareName + "/" + topic;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SharedSubscription that = (SharedSubscription) o;
-        return Objects.equals(shareName, that.shareName) &&
-               Objects.equals(topic, that.topic);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    SharedSubscription that = (SharedSubscription) o;
+    return Objects.equals(shareName, that.shareName) && Objects.equals(topic, that.topic);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(shareName, topic);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(shareName, topic);
+  }
 }

@@ -25,11 +25,8 @@ package com.isahl.chess.queen.io.core.features.model.session;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-
 import java.util.List;
 
-public interface IExchanger
-        extends IManager
-{
-    void exchange(IProtocol body, long target, int factory, List<ITriple> load);
+public interface IExchanger extends IManager {
+  void exchange(IProtocol body, long target, int factory, List<ITriple> load);
 }

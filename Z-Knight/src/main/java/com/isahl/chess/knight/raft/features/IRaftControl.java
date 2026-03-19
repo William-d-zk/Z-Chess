@@ -31,12 +31,10 @@ import com.isahl.chess.queen.io.core.features.model.content.IControl;
  * @author william.d.zk
  * @date 2020/1/4
  */
-public interface IRaftControl
-        extends IControl<ZContext>
-{
-    long peer();
+public interface IRaftControl extends IControl<ZContext> {
+  long peer();
 
-    long term();
+  long term();
 
-    RaftState state();
+  RaftState state();
 }

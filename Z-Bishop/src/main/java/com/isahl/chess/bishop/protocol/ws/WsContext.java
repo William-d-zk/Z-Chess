@@ -29,96 +29,80 @@ import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-
-import java.util.Base64;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 /**
  * @author William.d.zk
  */
-public class WsContext
-        extends ProtocolContext<WsFrame>
-        implements IWsContext
-{
+public class WsContext extends ProtocolContext<WsFrame> implements IWsContext {
 
-    private final String _SecKey, _SecAcceptExpect;
-    private final int    _MaxPayloadSize;
-    private final byte[] _Mask;
+  private final String _SecKey, _SecAcceptExpect;
+  private final int _MaxPayloadSize;
+  private final byte[] _Mask;
 
-    private int                                 mHandshakeState;
-    private X101_HandShake<? extends WsContext> mWsHandshake;
+  private int mHandshakeState;
+  private X101_HandShake<? extends WsContext> mWsHandshake;
 
-    public WsContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
-    {
-        super(option, mode, type);
-        _MaxPayloadSize = option.getSnfByte() - 2;
-        if(_Type == ISort.Type.CLIENT) {
-            // 使用 SecureRandom 替代 Random (安全修复)
-            SecureRandom sr = new SecureRandom();
-            byte[] seed = new byte[17];
-            sr.nextBytes(seed);
-            // WebSocket RFC 6455 规定必须使用 SHA1 计算 Sec-WebSocket-Key
-            _SecKey = Base64.getEncoder()
-                            .encodeToString(CryptoUtil.SHA1(seed));
-            _SecAcceptExpect = getSecAccept(_SecKey);
-            _Mask = new byte[4];
-            sr.nextBytes(_Mask);
-        }
-        else {
-            _SecKey = _SecAcceptExpect = null;
-            _Mask = null;
-        }
+  public WsContext(INetworkOption option, ISort.Mode mode, ISort.Type type) {
+    super(option, mode, type);
+    _MaxPayloadSize = option.getSnfByte() - 2;
+    if (_Type == ISort.Type.CLIENT) {
+      // 使用 SecureRandom 替代 Random (安全修复)
+      SecureRandom sr = new SecureRandom();
+      byte[] seed = new byte[17];
+      sr.nextBytes(seed);
+      // WebSocket RFC 6455 规定必须使用 SHA1 计算 Sec-WebSocket-Key
+      _SecKey = Base64.getEncoder().encodeToString(CryptoUtil.SHA1(seed));
+      _SecAcceptExpect = getSecAccept(_SecKey);
+      _Mask = new byte[4];
+      sr.nextBytes(_Mask);
+    } else {
+      _SecKey = _SecAcceptExpect = null;
+      _Mask = null;
     }
+  }
 
-    @Override
-    public final int getMaxPayloadSize()
-    {
-        return _MaxPayloadSize;
-    }
+  @Override
+  public final int getMaxPayloadSize() {
+    return _MaxPayloadSize;
+  }
 
-    @Override
-    public String getSeKey()
-    {
-        return _SecKey;
-    }
+  @Override
+  public String getSeKey() {
+    return _SecKey;
+  }
 
-    @Override
-    public byte[] getMask()
-    {
-        return _Mask;
-    }
+  @Override
+  public byte[] getMask() {
+    return _Mask;
+  }
 
-    @Override
-    public final void updateHandshakeState(int state)
-    {
-        mHandshakeState |= state;
-    }
+  @Override
+  public final void updateHandshakeState(int state) {
+    mHandshakeState |= state;
+  }
 
-    @Override
-    public final boolean checkState(int state)
-    {
-        return mHandshakeState == state || (mHandshakeState & state) == state;
-    }
+  @Override
+  public final boolean checkState(int state) {
+    return mHandshakeState == state || (mHandshakeState & state) == state;
+  }
 
-    @Override
-    public String getSecAcceptExpect()
-    {
-        return _SecAcceptExpect;
-    }
+  @Override
+  public String getSecAcceptExpect() {
+    return _SecAcceptExpect;
+  }
 
-    public <T extends WsContext> X101_HandShake<T> response(String host)
-    {
-        return new X101_HandShake<>(host, getSeKey(), getWsVersion());
-    }
+  public <T extends WsContext> X101_HandShake<T> response(String host) {
+    return new X101_HandShake<>(host, getSeKey(), getWsVersion());
+  }
 
-    @SuppressWarnings("unchecked")
-    public <T extends WsContext> X101_HandShake<T> getHandshake()
-    {
-        return (X101_HandShake<T>) mWsHandshake;
-    }
+  @SuppressWarnings("unchecked")
+  public <T extends WsContext> X101_HandShake<T> getHandshake() {
+    return (X101_HandShake<T>) mWsHandshake;
+  }
 
-    public <T extends WsContext> void handshake(X101_HandShake<T> handShake)
-    {
-        mWsHandshake = handShake;
-    }
+  public <T extends WsContext> void handshake(X101_HandShake<T> handShake) {
+    mWsHandshake = handShake;
+  }
 }

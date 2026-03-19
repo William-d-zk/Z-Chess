@@ -28,34 +28,29 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.io.IDecode;
 import com.isahl.chess.king.base.features.io.IEncode;
 
-public interface IoSerial
-        extends ISerial,
-                IEncode,
-                IDecode
-{
-    IoSerial subContent();
+public interface IoSerial extends ISerial, IEncode, IDecode {
+  IoSerial subContent();
 
-    default ByteBuf subEncoded()
-    {
-        byte[] payload = payload();
-        return payload != null && payload.length > 0 ? ByteBuf.wrap(payload) : null;
-    }
+  default ByteBuf subEncoded() {
+    byte[] payload = payload();
+    return payload != null && payload.length > 0 ? ByteBuf.wrap(payload) : null;
+  }
 
-    byte[] payload();
+  byte[] payload();
 
-    default byte[] encoded() {return encode().array();}
+  default byte[] encoded() {
+    return encode().array();
+  }
 
-    @Override
-    default int _sub()
-    {
-        IoSerial sub = subContent();
-        return sub == null ? -1 : sub.serial();
-    }
+  @Override
+  default int _sub() {
+    IoSerial sub = subContent();
+    return sub == null ? -1 : sub.serial();
+  }
 
-    IoSerial withSub(IoSerial sub);
+  IoSerial withSub(IoSerial sub);
 
-    IoSerial withSub(byte[] sub);
+  IoSerial withSub(byte[] sub);
 
-    <T extends IoSerial> T deserializeSub(IoFactory<T> factory);
-
+  <T extends IoSerial> T deserializeSub(IoFactory<T> factory);
 }

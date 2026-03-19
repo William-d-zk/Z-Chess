@@ -29,75 +29,59 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x08)
-public class X08_Identity
-        extends ZControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x08)
+public class X08_Identity extends ZControl {
 
-    private long mPeer, mSession;
+  private long mPeer, mSession;
 
-    public X08_Identity(long peer, long session)
-    {
-        super();
-        mPeer = peer;
-        mSession = session;
-    }
+  public X08_Identity(long peer, long session) {
+    super();
+    mPeer = peer;
+    mSession = session;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 16;
-    }
+  @Override
+  public int length() {
+    return super.length() + 16;
+  }
 
-    public X08_Identity()
-    {
-        super();
-    }
+  public X08_Identity() {
+    super();
+  }
 
-    public long identity()
-    {
-        return mPeer;
-    }
+  public long identity() {
+    return mPeer;
+  }
 
-    public long idx()
-    {
-        return mSession;
-    }
+  public long idx() {
+    return mSession;
+  }
 
-    @Override
-    public X08_Identity duplicate()
-    {
-        return new X08_Identity(mPeer, mSession);
-    }
+  @Override
+  public X08_Identity duplicate() {
+    return new X08_Identity(mPeer, mSession);
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s [ %#x @ %#x ]", getClass().getSimpleName(), mPeer, mSession);
-    }
+  @Override
+  public String toString() {
+    return String.format("%s [ %#x @ %#x ]", getClass().getSimpleName(), mPeer, mSession);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        mSession = input.getLong();
-        return remain - 16;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    mSession = input.getLong();
+    return remain - 16;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mPeer)
-                    .putLong(mSession);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mPeer).putLong(mSession);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
-
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 }

@@ -30,8 +30,6 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
 /**
  * @author william.d.zk
  */
-public interface IAioSort<C extends IPContext>
-        extends ISort
-{
-    C newContext(INetworkOption option);
+public interface IAioSort<C extends IPContext> extends ISort {
+  C newContext(INetworkOption option);
 }

@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.features.model.session;
 /**
  * @author William.d.zk
  */
-public interface ICreated
-{
-    void onCreated(ISession session);
+public interface ICreated {
+  void onCreated(ISession session);
 }

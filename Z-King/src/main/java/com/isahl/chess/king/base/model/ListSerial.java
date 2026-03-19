@@ -29,7 +29,6 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ICollectionSerial;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -37,50 +36,40 @@ import java.util.LinkedList;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class ListSerial<T extends IoSerial>
-        extends LinkedList<T>
-        implements ICollectionSerial<T>
-{
-    public static <E extends IoSerial> IoFactory<ListSerial<E>> _Factory(IoFactory<E> factory)
-    {
-        return input->{
-            ListSerial<E> list = new ListSerial<>(factory);
-            list.decode(input);
-            return list;
-        };
-    }
+public class ListSerial<T extends IoSerial> extends LinkedList<T> implements ICollectionSerial<T> {
+  public static <E extends IoSerial> IoFactory<ListSerial<E>> _Factory(IoFactory<E> factory) {
+    return input -> {
+      ListSerial<E> list = new ListSerial<>(factory);
+      list.decode(input);
+      return list;
+    };
+  }
 
-    private final IoFactory<T> _Factory;
+  private final IoFactory<T> _Factory;
 
-    public ListSerial(IoFactory<T> factory)
-    {
-        super();
-        _Factory = factory;
-    }
+  public ListSerial(IoFactory<T> factory) {
+    super();
+    _Factory = factory;
+  }
 
-    public ListSerial(Collection<T> src, IoFactory<T> factory)
-    {
-        super(src);
-        _Factory = factory;
-    }
+  public ListSerial(Collection<T> src, IoFactory<T> factory) {
+    super(src);
+    _Factory = factory;
+  }
 
-    public ListSerial(ByteBuf input, IoFactory<T> factory)
-    {
-        super();
-        _Factory = factory;
-        decode(input);
-    }
+  public ListSerial(ByteBuf input, IoFactory<T> factory) {
+    super();
+    _Factory = factory;
+    decode(input);
+  }
 
-    @Override
-    public IoFactory<T> factory()
-    {
-        return _Factory;
-    }
+  @Override
+  public IoFactory<T> factory() {
+    return _Factory;
+  }
 
-    @Override
-    public boolean add(T t)
-    {
-        return t != null && super.add(t);
-    }
-
+  @Override
+  public boolean add(T t) {
+    return t != null && super.add(t);
+  }
 }

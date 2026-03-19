@@ -39,34 +39,28 @@ import com.isahl.chess.queen.io.core.model.BaseSort;
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class WsTextZSort
-        extends BaseSort<WsContext>
-{
-    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
+public class WsTextZSort extends BaseSort<WsContext> {
+  private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public WsTextZSort(Mode mode, Type type)
-    {
-        super(mode, type, "ws-text");
-        _Head.linkFront(new WsFrameFilter<>())
-             .linkFront(new WsControlFilter<>())
-             .linkFront(new WsTextFilter<>());
-    }
+  public WsTextZSort(Mode mode, Type type) {
+    super(mode, type, "ws-text");
+    _Head.linkFront(new WsFrameFilter<>())
+        .linkFront(new WsControlFilter<>())
+        .linkFront(new WsTextFilter<>());
+  }
 
-    @Override
-    public IFilterChain getFilterChain()
-    {
-        return _Head;
-    }
+  @Override
+  public IFilterChain getFilterChain() {
+    return _Head;
+  }
 
-    @Override
-    public IoFactory<IProtocol> _SelectFactory()
-    {
-        return ZServerFactory._Instance;
-    }
+  @Override
+  public IoFactory<IProtocol> _SelectFactory() {
+    return ZServerFactory._Instance;
+  }
 
-    @Override
-    public WsContext newContext(INetworkOption option)
-    {
-        return new WsContext(option, getMode(), getType());
-    }
+  @Override
+  public WsContext newContext(INetworkOption option) {
+    return new WsContext(option, getMode(), getType());
+  }
 }

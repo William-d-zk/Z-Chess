@@ -22,160 +22,136 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-
 /**
  * @author William.d.zk
  */
 @ISerialGenerator(parent = ISerial.IO_QUEEN_PACKET_SERIAL)
-public class AioPacket
-        implements IPacket
-{
+public class AioPacket implements IPacket {
 
-    private Status  mStatus = Status.No_Send;
-    private int     mRightIdempotentBit;
-    private int     mLeftIdempotentBit;
-    private ByteBuf mBuffer;
+  private Status mStatus = Status.No_Send;
+  private int mRightIdempotentBit;
+  private int mLeftIdempotentBit;
+  private ByteBuf mBuffer;
 
-    public AioPacket(int size)
-    {
-        mBuffer = ByteBuf.allocate(size);
+  public AioPacket(int size) {
+    mBuffer = ByteBuf.allocate(size);
+  }
+
+  public AioPacket(ByteBuf exist) {
+    mBuffer = exist;
+  }
+
+  @Override
+  public ByteBuf getBuffer() {
+    return mBuffer;
+  }
+
+  @Override
+  public boolean isSending() {
+    return mStatus.equals(Status.Sending);
+  }
+
+  @Override
+  public boolean isSent() {
+    return mStatus.equals(Status.Sent);
+  }
+
+  @Override
+  public IPacket send() {
+    mStatus = Status.Sending;
+    return this;
+  }
+
+  @Override
+  public IPacket waitSend() {
+    mStatus = Status.To_Send;
+    return this;
+  }
+
+  @Override
+  public IPacket noSend() {
+    mStatus = Status.No_Send;
+    return this;
+  }
+
+  @Override
+  public IPacket sent() {
+    mStatus = Status.Sent;
+    return this;
+  }
+
+  @Override
+  public Status getStatus() {
+    return mStatus;
+  }
+
+  @Override
+  public void setAbandon() {
+    mStatus = Status.Abandon;
+  }
+
+  @Override
+  public int length() {
+    return 1 + mBuffer.capacity();
+  }
+
+  @Override
+  public boolean inIdempotent(int bit) {
+    boolean todo = (bit & mRightIdempotentBit) == 0;
+    mRightIdempotentBit |= bit;
+    return todo;
+  }
+
+  @Override
+  public boolean outIdempotent(int bit) {
+    boolean todo = (bit & mLeftIdempotentBit) == 0;
+    mLeftIdempotentBit |= bit;
+    return todo;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    int length = input.vLength();
+    int serial = input.get();
+    if (serial != serial()) {
+      throw new ZException("serial[%d vs %d] no expected", serial, serial());
     }
+    return length - 1;
+  }
 
-    public AioPacket(ByteBuf exist)
-    {
-        mBuffer = exist;
+  @Override
+  public void fold(ByteBuf input, int remain) {
+    if (remain > 0) {
+      byte[] array = new byte[remain];
+      input.get(array);
+      mBuffer = ByteBuf.wrap(array);
     }
+  }
 
-    @Override
-    public ByteBuf getBuffer()
-    {
-        return mBuffer;
-    }
+  @Override
+  public int sizeOf() {
+    return vSizeOf(length());
+  }
 
-    @Override
-    public boolean isSending()
-    {
-        return mStatus.equals(Status.Sending);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return output.vPutLength(length()).put(serial()).put(payload());
+  }
 
-    @Override
-    public boolean isSent()
-    {
-        return mStatus.equals(Status.Sent);
+  @Override
+  public byte[] payload() {
+    if (mBuffer.readerIdx() == 0 && mBuffer.writerIdx() == mBuffer.capacity()) {
+      return mBuffer.array();
+    } else {
+      return mBuffer.peekAll();
     }
-
-    @Override
-    public IPacket send()
-    {
-        mStatus = Status.Sending;
-        return this;
-    }
-
-    @Override
-    public IPacket waitSend()
-    {
-        mStatus = Status.To_Send;
-        return this;
-    }
-
-    @Override
-    public IPacket noSend()
-    {
-        mStatus = Status.No_Send;
-        return this;
-    }
-
-    @Override
-    public IPacket sent()
-    {
-        mStatus = Status.Sent;
-        return this;
-    }
-
-    @Override
-    public Status getStatus()
-    {
-        return mStatus;
-    }
-
-    @Override
-    public void setAbandon()
-    {
-        mStatus = Status.Abandon;
-    }
-
-    @Override
-    public int length()
-    {
-        return 1 + mBuffer.capacity();
-    }
-
-    @Override
-    public boolean inIdempotent(int bit)
-    {
-        boolean todo = (bit & mRightIdempotentBit) == 0;
-        mRightIdempotentBit |= bit;
-        return todo;
-    }
-
-    @Override
-    public boolean outIdempotent(int bit)
-    {
-        boolean todo = (bit & mLeftIdempotentBit) == 0;
-        mLeftIdempotentBit |= bit;
-        return todo;
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int length = input.vLength();
-        int serial = input.get();
-        if(serial != serial()) {
-            throw new ZException("serial[%d vs %d] no expected", serial, serial());
-        }
-        return length - 1;
-    }
-
-    @Override
-    public void fold(ByteBuf input, int remain)
-    {
-        if(remain > 0) {
-            byte[] array = new byte[remain];
-            input.get(array);
-            mBuffer = ByteBuf.wrap(array);
-        }
-    }
-
-    @Override
-    public int sizeOf()
-    {
-        return vSizeOf(length());
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return output.vPutLength(length())
-                     .put(serial())
-                     .put(payload());
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        if(mBuffer.readerIdx() == 0 && mBuffer.writerIdx() == mBuffer.capacity()) {
-            return mBuffer.array();
-        }
-        else {
-            return mBuffer.peekAll();
-        }
-    }
+  }
 }

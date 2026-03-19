@@ -27,33 +27,28 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.LinkedList;
+import java.util.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 @Component
-public class Client
-{
-    private final Queue<IoSerial> _RecvMsgQueue = new LinkedList<>();
-    private final ZUID            _ZUID;
+public class Client {
+  private final Queue<IoSerial> _RecvMsgQueue = new LinkedList<>();
+  private final ZUID _ZUID;
 
-    private ISession mSession;
+  private ISession mSession;
 
-    @Autowired
-    public Client(IRaftConfig raft)
-    {
-        _ZUID = raft.getZUID();
-    }
+  @Autowired
+  public Client(IRaftConfig raft) {
+    _ZUID = raft.getZUID();
+  }
 
-    public ISession getSession()
-    {
-        return mSession;
-    }
+  public ISession getSession() {
+    return mSession;
+  }
 
-    public void setSession(ISession session)
-    {
-        this.mSession = session;
-    }
+  public void setSession(ISession session) {
+    this.mSession = session;
+  }
 }

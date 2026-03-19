@@ -30,10 +30,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceClient;
 import com.isahl.chess.pawn.endpoint.device.resource.model.DeviceProfile;
-import org.springframework.lang.NonNull;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.lang.NonNull;
 
 /**
  * @author william.d.zk
@@ -41,148 +40,140 @@ import jakarta.validation.constraints.Size;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DeviceDo
-{
-    @NotBlank(message = "Device number is required")
-    @Size(min = 8, max = 32, message = "Device number must be between 8 and 32 characters")
-    private String        mNumber;
+public class DeviceDo {
+  @NotBlank(message = "Device number is required")
+  @Size(min = 8, max = 32, message = "Device number must be between 8 and 32 characters")
+  private String mNumber;
 
-    @NotBlank(message = "Username is required")
-    @Size(min = 8, max = 32, message = "Username must be between 8 and 32 characters")
-    private String        mUsername;
+  @NotBlank(message = "Username is required")
+  @Size(min = 8, max = 32, message = "Username must be between 8 and 32 characters")
+  private String mUsername;
 
-    @Size(min = 17, max = 32, message = "Password must be between 17 and 32 characters")
-    private String        mPassword;
-    private String        mToken;
-    private DeviceProfile mProfile;
-    private Long          mUid;
-    private String        mName;
-    private String        mType;
+  @Size(min = 17, max = 32, message = "Password must be between 17 and 32 characters")
+  private String mPassword;
 
-    public  String getType(){
-        return mType;
-    }
-    public void setType(String type){
-        mType = type;
-    }
-    public String getName()
-    {
-        return mName;
-    }
+  private String mToken;
+  private DeviceProfile mProfile;
+  private Long mUid;
+  private String mName;
+  private String mType;
 
-    public void setName(String name)
-    {
-        mName = name;
-    }
+  public String getType() {
+    return mType;
+  }
 
-    public String getNumber()
-    {
-        return mNumber;
-    }
+  public void setType(String type) {
+    mType = type;
+  }
 
-    public void setNumber(String number)
-    {
-        if(number != null) {
-            mNumber = number.toUpperCase();
-        }
-    }
+  public String getName() {
+    return mName;
+  }
 
-    public void setPassword(String password)
-    {
-        if(password != null) {
-            mPassword = password;
-        }
-    }
+  public void setName(String name) {
+    mName = name;
+  }
 
-    public String getPassword()
-    {
-        return mPassword;
-    }
+  public String getNumber() {
+    return mNumber;
+  }
 
-    public void setToken(
-            @NonNull
-            String token)
-    {
-        this.mToken = token.toUpperCase();
+  public void setNumber(String number) {
+    if (number != null) {
+      mNumber = number.toUpperCase();
     }
+  }
 
-    @JsonIgnore
-    public String getToken()
-    {
-        return mToken;
+  public void setPassword(String password) {
+    if (password != null) {
+      mPassword = password;
     }
+  }
 
-    public String getUsername()
-    {
-        return mUsername;
-    }
+  public String getPassword() {
+    return mPassword;
+  }
 
-    public void setUsername(String username)
-    {
-        this.mUsername = username;
-    }
+  public void setToken(@NonNull String token) {
+    this.mToken = token.toUpperCase();
+  }
 
-    public DeviceProfile getProfile()
-    {
-        return mProfile;
-    }
+  @JsonIgnore
+  public String getToken() {
+    return mToken;
+  }
 
-    public void setProfile(DeviceProfile profile)
-    {
-        this.mProfile = profile;
-    }
+  public String getUsername() {
+    return mUsername;
+  }
 
-    public void setUid(String id)
-    {
-        mUid = Long.parseLong(id);
-    }
+  public void setUsername(String username) {
+    this.mUsername = username;
+  }
 
-    public void setUid(long id)
-    {
-        mUid = id;
-    }
+  public DeviceProfile getProfile() {
+    return mProfile;
+  }
 
-    public Long getUid()
-    {
-        return mUid;
-    }
+  public void setProfile(DeviceProfile profile) {
+    this.mProfile = profile;
+  }
 
-    public static DeviceDo of(DeviceEntity entity)
-    {
-        DeviceDo deviceDo = new DeviceDo();
-        deviceDo.setUsername(entity.getUsername());
-        deviceDo.setPassword(entity.getPassword());
-        deviceDo.setNumber(entity.getNotice());
-        deviceDo.setName(entity.getCode());
-        deviceDo.setToken(entity.getToken());
-        deviceDo.setProfile(entity.getProfile());
-        deviceDo.setUid(entity.getCreatedById());
-        return deviceDo;
-    }
+  public void setUid(String id) {
+    mUid = Long.parseLong(id);
+  }
 
-    public static DeviceDo of(DeviceClient client)
-    {
-        DeviceDo deviceDo = new DeviceDo();
-        deviceDo.setUsername(client.getUsername());
-        deviceDo.setNumber(client.getNumber());
-        return deviceDo;
-    }
+  public void setUid(long id) {
+    mUid = id;
+  }
 
-    /**
-     * 安全注意: 此方法用于日志输出，已排除敏感字段(mPassword, mToken)
-     * 如需访问敏感字段，请使用相应的 getter 方法
-     */
-    @Override
-    public String toString() {
-        return "DeviceDo{" +
-            "mNumber='" + mNumber + '\'' +
-            ", mUsername='" + mUsername + '\'' +
-            ", mPassword='***'" +  // 敏感信息脱敏
-            ", mToken='***'" +      // 敏感信息脱敏
-            ", mProfile=" + mProfile +
-            ", mUid=" + mUid +
-            ", mName='" + mName + '\'' +
-            ", mType='" + mType + '\'' +
-            '}';
-    }
+  public Long getUid() {
+    return mUid;
+  }
+
+  public static DeviceDo of(DeviceEntity entity) {
+    DeviceDo deviceDo = new DeviceDo();
+    deviceDo.setUsername(entity.getUsername());
+    deviceDo.setPassword(entity.getPassword());
+    deviceDo.setNumber(entity.getNotice());
+    deviceDo.setName(entity.getCode());
+    deviceDo.setToken(entity.getToken());
+    deviceDo.setProfile(entity.getProfile());
+    deviceDo.setUid(entity.getCreatedById());
+    return deviceDo;
+  }
+
+  public static DeviceDo of(DeviceClient client) {
+    DeviceDo deviceDo = new DeviceDo();
+    deviceDo.setUsername(client.getUsername());
+    deviceDo.setNumber(client.getNumber());
+    return deviceDo;
+  }
+
+  /** 安全注意: 此方法用于日志输出，已排除敏感字段(mPassword, mToken) 如需访问敏感字段，请使用相应的 getter 方法 */
+  @Override
+  public String toString() {
+    return "DeviceDo{"
+        + "mNumber='"
+        + mNumber
+        + '\''
+        + ", mUsername='"
+        + mUsername
+        + '\''
+        + ", mPassword='***'"
+        + // 敏感信息脱敏
+        ", mToken='***'"
+        + // 敏感信息脱敏
+        ", mProfile="
+        + mProfile
+        + ", mUid="
+        + mUid
+        + ", mName='"
+        + mName
+        + '\''
+        + ", mType='"
+        + mType
+        + '\''
+        + '}';
+  }
 }

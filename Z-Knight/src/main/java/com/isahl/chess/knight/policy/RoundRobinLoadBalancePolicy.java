@@ -23,54 +23,46 @@
 
 package com.isahl.chess.knight.policy;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RoundRobinLoadBalancePolicy
-        implements Policy.LoadBalancePolicy
-{
-    private final String policyId;
-    private final AtomicInteger sequence;
+public class RoundRobinLoadBalancePolicy implements Policy.LoadBalancePolicy {
+  private final String policyId;
+  private final AtomicInteger sequence;
 
-    public RoundRobinLoadBalancePolicy(String policyId)
-    {
-        this.policyId = policyId;
-        this.sequence = new AtomicInteger(0);
-    }
+  public RoundRobinLoadBalancePolicy(String policyId) {
+    this.policyId = policyId;
+    this.sequence = new AtomicInteger(0);
+  }
 
-    @Override
-    public String getPolicyId()
-    {
-        return policyId;
-    }
+  @Override
+  public String getPolicyId() {
+    return policyId;
+  }
 
-    @Override
-    public String getPolicyType()
-    {
-        return "LOAD_BALANCE";
-    }
+  @Override
+  public String getPolicyType() {
+    return "LOAD_BALANCE";
+  }
 
-    @Override
-    public boolean validate()
-    {
-        return true;
-    }
+  @Override
+  public boolean validate() {
+    return true;
+  }
 
-    @Override
-    public String selectNode(String taskId, Iterable<String> availableNodes)
-    {
-        if(availableNodes == null) {
-            return null;
-        }
-        String selected = null;
-        int count = 0;
-        int index = sequence.getAndIncrement();
-        for(String node : availableNodes) {
-            if(count++ == index) {
-                selected = node;
-                break;
-            }
-        }
-        return selected;
+  @Override
+  public String selectNode(String taskId, Iterable<String> availableNodes) {
+    if (availableNodes == null) {
+      return null;
     }
+    String selected = null;
+    int count = 0;
+    int index = sequence.getAndIncrement();
+    for (String node : availableNodes) {
+      if (count++ == index) {
+        selected = node;
+        break;
+      }
+    }
+    return selected;
+  }
 }

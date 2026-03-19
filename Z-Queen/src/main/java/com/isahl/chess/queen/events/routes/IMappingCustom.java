@@ -32,16 +32,13 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  * @date 2020/5/7
  */
-public interface IMappingCustom
-{
-    /**
-     * @param manager session manager
-     * @param session input session
-     * @param content input
-     * @return triple
-     * first: response ->
-     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
-     * third: operator-type
-     */
-    ITriple inject(IManager manager, ISession session, IProtocol content);
+public interface IMappingCustom {
+  /**
+   * @param manager session manager
+   * @param session input session
+   * @param content input
+   * @return triple first: response -> second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
+   *     third: operator-type
+   */
+  ITriple inject(IManager manager, ISession session, IProtocol content);
 }

@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 
-public interface IConnectMode
-{
-    ISort.Mode getMode();
+public interface IConnectMode {
+  ISort.Mode getMode();
 }

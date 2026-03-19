@@ -23,106 +23,107 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import javax.net.ssl.SSLContext;
+import org.junit.jupiter.api.Test;
 
 /**
  * SSL Provider Factory 测试类
- * 
+ *
  * @author william.d.zk
  */
 public class SslProviderFactoryTest {
 
-    @Test
-    void testInitialization() {
-        // 测试初始化
-        SslProviderFactory.initialize();
-        assertNotNull(SslProviderFactory.getCurrentProvider());
-    }
+  @Test
+  void testInitialization() {
+    // 测试初始化
+    SslProviderFactory.initialize();
+    assertNotNull(SslProviderFactory.getCurrentProvider());
+  }
 
-    @Test
-    void testGetCurrentProvider() {
-        // 测试获取当前 Provider
-        SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
-        assertNotNull(provider);
-        
-        // 验证是有效的 Provider 类型之一
-        assertTrue(provider == SslProviderFactory.SslProviderType.WOLFSSL ||
-                   provider == SslProviderFactory.SslProviderType.JDK);
-    }
+  @Test
+  void testGetCurrentProvider() {
+    // 测试获取当前 Provider
+    SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
+    assertNotNull(provider);
 
-    @Test
-    void testGetSSLContext() throws Exception {
-        // 测试获取 SSLContext
-        SSLContext context = SslProviderFactory.getSSLContext("TLSv1.2");
-        assertNotNull(context);
-        assertEquals("TLSv1.2", context.getProtocol());
-    }
+    // 验证是有效的 Provider 类型之一
+    assertTrue(
+        provider == SslProviderFactory.SslProviderType.WOLFSSL
+            || provider == SslProviderFactory.SslProviderType.JDK);
+  }
 
-    @Test
-    void testIsNativeSslAvailable() {
-        // 测试原生 SSL 可用性检查
-        boolean nativeAvailable = SslProviderFactory.isNativeSslAvailable();
-        SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
-        
-        // 如果使用了原生库，provider 应该是 WOLFSSL
-        if (nativeAvailable) {
-            assertEquals(SslProviderFactory.SslProviderType.WOLFSSL, provider);
-        }
-    }
+  @Test
+  void testGetSSLContext() throws Exception {
+    // 测试获取 SSLContext
+    SSLContext context = SslProviderFactory.getSSLContext("TLSv1.2");
+    assertNotNull(context);
+    assertEquals("TLSv1.2", context.getProtocol());
+  }
 
-    @Test
-    void testIsWolfSSLAvailable() {
-        // 测试 WolfSSL 可用性
-        boolean wolfsslAvailable = SslProviderFactory.isWolfSSLAvailable();
-        SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
-        
-        if (wolfsslAvailable) {
-            assertEquals(SslProviderFactory.SslProviderType.WOLFSSL, provider);
-        }
-    }
+  @Test
+  void testIsNativeSslAvailable() {
+    // 测试原生 SSL 可用性检查
+    boolean nativeAvailable = SslProviderFactory.isNativeSslAvailable();
+    SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
 
-    @Test
-    void testPrintStatus() {
-        // 测试打印状态（不抛出异常即可）
-        assertDoesNotThrow(() -> SslProviderFactory.printStatus());
+    // 如果使用了原生库，provider 应该是 WOLFSSL
+    if (nativeAvailable) {
+      assertEquals(SslProviderFactory.SslProviderType.WOLFSSL, provider);
     }
+  }
 
-    @Test
-    void testProviderTypeEnum() {
-        SslProviderFactory.SslProviderType wolfssl = SslProviderFactory.SslProviderType.WOLFSSL;
-        assertEquals("wolfJSSE", wolfssl.getProviderName());
-        assertEquals("WolfSSL", wolfssl.getDisplayName());
-        
-        SslProviderFactory.SslProviderType jdk = SslProviderFactory.SslProviderType.JDK;
-        assertEquals("SunJSSE", jdk.getProviderName());
-        assertEquals("JDK Default", jdk.getDisplayName());
-    }
+  @Test
+  void testIsWolfSSLAvailable() {
+    // 测试 WolfSSL 可用性
+    boolean wolfsslAvailable = SslProviderFactory.isWolfSSLAvailable();
+    SslProviderFactory.SslProviderType provider = SslProviderFactory.getCurrentProvider();
 
-    @Test
-    void testReset() {
-        SslProviderFactory.initialize();
-        assertTrue(SslProviderFactory.isInitialized());
-        
-        SslProviderFactory.reset();
-        assertFalse(SslProviderFactory.isInitialized());
-        
-        SslProviderFactory.initialize();
-        assertTrue(SslProviderFactory.isInitialized());
+    if (wolfsslAvailable) {
+      assertEquals(SslProviderFactory.SslProviderType.WOLFSSL, provider);
     }
+  }
 
-    @Test
-    void testSSLContextCaching() throws Exception {
-        SSLContext ctx1 = SslProviderFactory.getSSLContext("TLSv1.2");
-        SSLContext ctx2 = SslProviderFactory.getSSLContext("TLSv1.2");
-        assertSame(ctx1, ctx2, "SSLContext should be cached");
-    }
+  @Test
+  void testPrintStatus() {
+    // 测试打印状态（不抛出异常即可）
+    assertDoesNotThrow(() -> SslProviderFactory.printStatus());
+  }
 
-    @Test
-    void testGetBestProtocol() {
-        String protocol = SslProviderFactory.getBestProtocol();
-        assertTrue(protocol.equals("TLSv1.3") || protocol.equals("TLSv1.2"));
-    }
+  @Test
+  void testProviderTypeEnum() {
+    SslProviderFactory.SslProviderType wolfssl = SslProviderFactory.SslProviderType.WOLFSSL;
+    assertEquals("wolfJSSE", wolfssl.getProviderName());
+    assertEquals("WolfSSL", wolfssl.getDisplayName());
+
+    SslProviderFactory.SslProviderType jdk = SslProviderFactory.SslProviderType.JDK;
+    assertEquals("SunJSSE", jdk.getProviderName());
+    assertEquals("JDK Default", jdk.getDisplayName());
+  }
+
+  @Test
+  void testReset() {
+    SslProviderFactory.initialize();
+    assertTrue(SslProviderFactory.isInitialized());
+
+    SslProviderFactory.reset();
+    assertFalse(SslProviderFactory.isInitialized());
+
+    SslProviderFactory.initialize();
+    assertTrue(SslProviderFactory.isInitialized());
+  }
+
+  @Test
+  void testSSLContextCaching() throws Exception {
+    SSLContext ctx1 = SslProviderFactory.getSSLContext("TLSv1.2");
+    SSLContext ctx2 = SslProviderFactory.getSSLContext("TLSv1.2");
+    assertSame(ctx1, ctx2, "SSLContext should be cached");
+  }
+
+  @Test
+  void testGetBestProtocol() {
+    String protocol = SslProviderFactory.getBestProtocol();
+    assertTrue(protocol.equals("TLSv1.3") || protocol.equals("TLSv1.2"));
+  }
 }

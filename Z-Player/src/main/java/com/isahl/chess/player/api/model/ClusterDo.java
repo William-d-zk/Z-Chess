@@ -31,39 +31,32 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  * @date 2021/6/11
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ClusterDo
-{
-    private long   peerId;
-    private String host;
-    private int    port;
+public class ClusterDo {
+  private long peerId;
+  private String host;
+  private int port;
 
-    public long getPeerId()
-    {
-        return peerId;
-    }
+  public long getPeerId() {
+    return peerId;
+  }
 
-    public void setPeerId(long peerId)
-    {
-        this.peerId = peerId;
-    }
+  public void setPeerId(long peerId) {
+    this.peerId = peerId;
+  }
 
-    public String getHost()
-    {
-        return host;
-    }
+  public String getHost() {
+    return host;
+  }
 
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
+  public void setHost(String host) {
+    this.host = host;
+  }
 
-    public int getPort()
-    {
-        return port;
-    }
+  public int getPort() {
+    return port;
+  }
 
-    public void setPort(int port)
-    {
-        this.port = port;
-    }
+  public void setPort(int port) {
+    this.port = port;
+  }
 }

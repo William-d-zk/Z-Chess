@@ -28,28 +28,22 @@ import com.isahl.chess.king.base.features.IReset;
 /**
  * @author William.d.zk
  */
-public interface IContext
-        extends IReset
-{
-    ByteBuf getRvBuffer();
+public interface IContext extends IReset {
+  ByteBuf getRvBuffer();
 
-    ByteBuf getWrBuffer();
+  ByteBuf getWrBuffer();
 
-    default void ready()
-    {
+  default void ready() {}
 
-    }
+  /*###### 校准时间 #################################################################################################*/
+  long getNetTransportDelay();
 
-    /*###### 校准时间 #################################################################################################*/
-    long getNetTransportDelay();
+  /**
+   * @return negative client ahead server , otherwise client behind server
+   */
+  long getDeltaTime();
 
-    /**
-     * @return negative client ahead server , otherwise client behind server
-     */
-    long getDeltaTime();
+  void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived);
 
-    void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived);
-
-    long getNtpArrivedTime();
-
+  long getNtpArrivedTime();
 }

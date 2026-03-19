@@ -30,8 +30,6 @@ import com.isahl.chess.king.base.features.model.IPair;
  * @author william.d.zk
  * @date 2019-06-28
  */
-public interface ISessionFailed
-        extends IBinaryOperator<Throwable, ISession, IPair>
-{
-    IPair handle(Throwable throwable, ISession session);
+public interface ISessionFailed extends IBinaryOperator<Throwable, ISession, IPair> {
+  IPair handle(Throwable throwable, ISession session);
 }

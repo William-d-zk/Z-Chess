@@ -29,10 +29,8 @@ import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IMsgDeliveryStatusRepository
-        extends BaseLongRepository<MsgDeliveryStatus>
-{
-    MsgDeliveryStatus findByStatus(String status);
+public interface IMsgDeliveryStatusRepository extends BaseLongRepository<MsgDeliveryStatus> {
+  MsgDeliveryStatus findByStatus(String status);
 
-    MsgDeliveryStatus findByFlag(String flag);
+  MsgDeliveryStatus findByFlag(String flag);
 }

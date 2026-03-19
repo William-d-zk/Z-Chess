@@ -27,76 +27,75 @@ import com.isahl.chess.knight.scheduler.domain.*;
 import com.isahl.chess.knight.scheduler.repository.NodeGroupRepository;
 import com.isahl.chess.knight.scheduler.repository.SubTaskRepository;
 import com.isahl.chess.knight.scheduler.repository.TaskRepository;
+import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 @Component
-public class GroupDispatchScheduler
-        implements GroupScheduler
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(GroupDispatchScheduler.class);
+public class GroupDispatchScheduler implements GroupScheduler {
+  private static final Logger _Logger = LoggerFactory.getLogger(GroupDispatchScheduler.class);
 
-    private final TaskRepository _TaskRepository;
-    private final SubTaskRepository _SubTaskRepository;
-    private final NodeGroupRepository _NodeGroupRepository;
-    private final TaskScheduler _BaseScheduler;
+  private final TaskRepository _TaskRepository;
+  private final SubTaskRepository _SubTaskRepository;
+  private final NodeGroupRepository _NodeGroupRepository;
+  private final TaskScheduler _BaseScheduler;
 
-    public GroupDispatchScheduler(TaskRepository taskRepository, SubTaskRepository subTaskRepository, NodeGroupRepository nodeGroupRepository, TaskScheduler baseScheduler)
-    {
-        _TaskRepository = taskRepository;
-        _SubTaskRepository = subTaskRepository;
-        _NodeGroupRepository = nodeGroupRepository;
-        _BaseScheduler = baseScheduler;
+  public GroupDispatchScheduler(
+      TaskRepository taskRepository,
+      SubTaskRepository subTaskRepository,
+      NodeGroupRepository nodeGroupRepository,
+      TaskScheduler baseScheduler) {
+    _TaskRepository = taskRepository;
+    _SubTaskRepository = subTaskRepository;
+    _NodeGroupRepository = nodeGroupRepository;
+    _BaseScheduler = baseScheduler;
+  }
+
+  @Override
+  @Transactional
+  public Task dispatchToGroup(
+      String taskId, String payload, String groupId, List<String> targetNodes, int timeoutSeconds) {
+    Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
+    if (groupOpt.isEmpty()) {
+      _Logger.warn("Group {} not found, using provided nodes", groupId);
+      return _BaseScheduler.dispatchTask(taskId, payload, targetNodes, timeoutSeconds);
     }
 
-    @Override
-    @Transactional
-    public Task dispatchToGroup(String taskId, String payload, String groupId, List<String> targetNodes, int timeoutSeconds)
-    {
-        Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
-        if(groupOpt.isEmpty()) {
-            _Logger.warn("Group {} not found, using provided nodes", groupId);
-            return _BaseScheduler.dispatchTask(taskId, payload, targetNodes, timeoutSeconds);
-        }
+    NodeGroup group = groupOpt.get();
+    _Logger.info(
+        "Dispatching task {} to group {} with {} nodes", taskId, groupId, targetNodes.size());
+    return _BaseScheduler.dispatchTask(taskId, payload, targetNodes, timeoutSeconds);
+  }
 
-        NodeGroup group = groupOpt.get();
-        _Logger.info("Dispatching task {} to group {} with {} nodes", taskId, groupId, targetNodes.size());
-        return _BaseScheduler.dispatchTask(taskId, payload, targetNodes, timeoutSeconds);
+  @Override
+  @Transactional
+  public Task broadcastToGroup(String taskId, String payload, String groupId, int timeoutSeconds) {
+    Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
+    if (groupOpt.isEmpty()) {
+      _Logger.warn("Group {} not found, cannot broadcast", groupId);
+      throw new IllegalArgumentException("Group not found: " + groupId);
     }
 
-    @Override
-    @Transactional
-    public Task broadcastToGroup(String taskId, String payload, String groupId, int timeoutSeconds)
-    {
-        Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
-        if(groupOpt.isEmpty()) {
-            _Logger.warn("Group {} not found, cannot broadcast", groupId);
-            throw new IllegalArgumentException("Group not found: " + groupId);
-        }
+    NodeGroup group = groupOpt.get();
+    List<String> allNodes = group.getNodeIds();
+    _Logger.info(
+        "Broadcasting task {} to group {} with {} nodes", taskId, groupId, allNodes.size());
+    return _BaseScheduler.dispatchTask(taskId, payload, allNodes, timeoutSeconds);
+  }
 
-        NodeGroup group = groupOpt.get();
-        List<String> allNodes = group.getNodeIds();
-        _Logger.info("Broadcasting task {} to group {} with {} nodes", taskId, groupId, allNodes.size());
-        return _BaseScheduler.dispatchTask(taskId, payload, allNodes, timeoutSeconds);
+  @Override
+  public int getGroupPendingCount(String groupId) {
+    Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
+    if (groupOpt.isEmpty()) {
+      return 0;
     }
 
-    @Override
-    public int getGroupPendingCount(String groupId)
-    {
-        Optional<NodeGroup> groupOpt = _NodeGroupRepository.findById(groupId);
-        if(groupOpt.isEmpty()) {
-            return 0;
-        }
-
-        NodeGroup group = groupOpt.get();
-        List<SubTask> pendingTasks = _SubTaskRepository.findByStatus(SubTaskStatus.PENDING);
-        return (int) pendingTasks.stream()
-                               .filter(st -> group.getNodeIds().contains(st.getTargetNode()))
-                               .count();
-    }
+    NodeGroup group = groupOpt.get();
+    List<SubTask> pendingTasks = _SubTaskRepository.findByStatus(SubTaskStatus.PENDING);
+    return (int)
+        pendingTasks.stream().filter(st -> group.getNodeIds().contains(st.getTargetNode())).count();
+  }
 }

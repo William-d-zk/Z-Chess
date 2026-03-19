@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.net.socket.features.server;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -36,28 +35,24 @@ import java.nio.channels.CompletionHandler;
  * @author William.d.zk
  */
 public interface IAioServer
-        extends IAioConnection,
-                CompletionHandler<AsynchronousSocketChannel, IAioServer>
-{
+    extends IAioConnection, CompletionHandler<AsynchronousSocketChannel, IAioServer> {
 
-    void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException;
+  void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup)
+      throws IOException;
 
-    void pendingAccept();
+  void pendingAccept();
 
-    @Override
-    default void completed(AsynchronousSocketChannel channel, IAioServer server)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(), server, OperateType.ACCEPTED, channel);
-        server.pendingAccept();
-    }
+  @Override
+  default void completed(AsynchronousSocketChannel channel, IAioServer server) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    worker.publishConnected(server.getConnectedOperator(), server, OperateType.ACCEPTED, channel);
+    server.pendingAccept();
+  }
 
-    @Override
-    default void failed(Throwable exc, IAioServer server)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishAcceptError(server.getErrorOperator(), exc, server);
-        server.pendingAccept();
-    }
-
+  @Override
+  default void failed(Throwable exc, IAioServer server) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    worker.publishAcceptError(server.getErrorOperator(), exc, server);
+    server.pendingAccept();
+  }
 }

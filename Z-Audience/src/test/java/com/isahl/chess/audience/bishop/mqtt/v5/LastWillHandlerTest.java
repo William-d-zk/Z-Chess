@@ -23,71 +23,71 @@
 
 package com.isahl.chess.audience.bishop.mqtt.v5;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.bishop.mqtt.v5.LastWillHandler;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class LastWillHandlerTest {
-    
-    private LastWillHandler handler;
-    
-    @BeforeEach
-    void setUp() {
-        handler = new LastWillHandler();
-    }
-    
-    @Test
-    void testRegisterLastWill() {
-        handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
-        
-        assertEquals(1, handler.size());
-    }
-    
-    @Test
-    void testNormalDisconnectCancelsWill() {
-        handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
-        
-        handler.onNormalDisconnect("client1");
-        
-        assertEquals(0, handler.size());
-    }
-    
-    @Test
-    void testAbnormalDisconnectPublishesWill() {
-        AtomicBoolean published = new AtomicBoolean(false);
-        handler.setPublishCallback((topic, payload) -> {
-            published.set(true);
-            assertEquals("status/offline", topic);
+
+  private LastWillHandler handler;
+
+  @BeforeEach
+  void setUp() {
+    handler = new LastWillHandler();
+  }
+
+  @Test
+  void testRegisterLastWill() {
+    handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
+
+    assertEquals(1, handler.size());
+  }
+
+  @Test
+  void testNormalDisconnectCancelsWill() {
+    handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
+
+    handler.onNormalDisconnect("client1");
+
+    assertEquals(0, handler.size());
+  }
+
+  @Test
+  void testAbnormalDisconnectPublishesWill() {
+    AtomicBoolean published = new AtomicBoolean(false);
+    handler.setPublishCallback(
+        (topic, payload) -> {
+          published.set(true);
+          assertEquals("status/offline", topic);
         });
-        
-        handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
-        
-        handler.onAbnormalDisconnect("client1");
-        
-        assertTrue(published.get());
-        assertEquals(0, handler.size());
-    }
-    
-    @Test
-    void testRemoveLastWill() {
-        handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
-        
-        handler.removeLastWill("client1");
-        
-        assertEquals(0, handler.size());
-    }
-    
-    @Test
-    void testAbnormalDisconnectNoWill() {
-        AtomicBoolean published = new AtomicBoolean(false);
-        handler.setPublishCallback((topic, payload) -> published.set(true));
-        
-        handler.onAbnormalDisconnect("unknown_client");
-        
-        assertFalse(published.get());
-    }
+
+    handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
+
+    handler.onAbnormalDisconnect("client1");
+
+    assertTrue(published.get());
+    assertEquals(0, handler.size());
+  }
+
+  @Test
+  void testRemoveLastWill() {
+    handler.registerLastWill("client1", "status/offline", "offline".getBytes(), 1, true);
+
+    handler.removeLastWill("client1");
+
+    assertEquals(0, handler.size());
+  }
+
+  @Test
+  void testAbnormalDisconnectNoWill() {
+    AtomicBoolean published = new AtomicBoolean(false);
+    handler.setPublishCallback((topic, payload) -> published.set(true));
+
+    handler.onAbnormalDisconnect("unknown_client");
+
+    assertFalse(published.get());
+  }
 }

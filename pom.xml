@@ -611,9 +611,10 @@
                     <version>3.3.0</version>
                     <configuration>
                         <java>
-                            <eclipse>
-                                <file>docs/eclipse-formatter.xml</file>
-                            </eclipse>
+                            <googleJavaFormat>
+                                <version>1.18.1</version>
+                                <style>GOOGLE</style>
+                            </googleJavaFormat>
                         </java>
                     </configuration>
                     <executions>

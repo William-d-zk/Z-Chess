@@ -23,8 +23,6 @@
 
 package com.isahl.chess.queen.io.core.features.model.routes;
 
-public interface IRoutable
-        extends IDeliver
-{
-    String topic();
+public interface IRoutable extends IDeliver {
+  String topic();
 }

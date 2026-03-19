@@ -26,49 +26,47 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
 /**
  * @author William.d.zk
  */
-public interface IFilterChain
-{
-    void idempotentLeftShift(int previous);
+public interface IFilterChain {
+  void idempotentLeftShift(int previous);
 
-    IFilterChain getPrevious();
+  IFilterChain getPrevious();
 
-    void setPrevious(IFilterChain filter);
+  void setPrevious(IFilterChain filter);
 
-    IFilterChain getNext();
+  IFilterChain getNext();
 
-    void setNext(IFilterChain filter);
+  void setNext(IFilterChain filter);
 
-    IFilterChain getChainHead();
+  IFilterChain getChainHead();
 
-    IFilterChain getChainTail();
+  IFilterChain getChainTail();
 
-    IFilterChain linkAfter(IFilterChain curFilter);
+  IFilterChain linkAfter(IFilterChain curFilter);
 
-    IFilterChain linkFront(IFilterChain curFilter);
+  IFilterChain linkFront(IFilterChain curFilter);
 
-    /**
-     * 取得当前filter所占有的右向幂等位
-     *
-     * @return idempotent bit
-     */
-    int getRightIdempotentBit();
+  /**
+   * 取得当前filter所占有的右向幂等位
+   *
+   * @return idempotent bit
+   */
+  int getRightIdempotentBit();
 
-    /**
-     * 取得当前filter所占有的左向幂等位
-     *
-     * @return idempotent bit
-     */
-    int getLeftIdempotentBit();
+  /**
+   * 取得当前filter所占有的左向幂等位
+   *
+   * @return idempotent bit
+   */
+  int getLeftIdempotentBit();
 
-    /**
-     * 32bit 确保每个Protocol 从chain上只流经一次
-     * filter chain 不得成环
-     *
-     * @param previous previous idempotent bit
-     */
-    void idempotentRightShift(int previous);
+  /**
+   * 32bit 确保每个Protocol 从chain上只流经一次 filter chain 不得成环
+   *
+   * @param previous previous idempotent bit
+   */
+  void idempotentRightShift(int previous);
 
-    IPipeFilter getPipeFilter();
+  IPipeFilter getPipeFilter();
 
-    String getName();
+  String getName();
 }

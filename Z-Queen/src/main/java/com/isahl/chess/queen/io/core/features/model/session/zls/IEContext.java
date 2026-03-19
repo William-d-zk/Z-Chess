@@ -27,97 +27,69 @@ import com.isahl.chess.king.base.crypt.features.ISymmetric;
 /**
  * @author William.d.zk
  */
-public interface IEContext
-{
+public interface IEContext {
 
-    default boolean needUpdateKeyIn()
-    {
-        return false;
-    }
+  default boolean needUpdateKeyIn() {
+    return false;
+  }
 
-    default boolean needUpdateKeyOut()
-    {
-        return false;
-    }
+  default boolean needUpdateKeyOut() {
+    return false;
+  }
 
-    default void updateKeyIn()
-    {
-    }
+  default void updateKeyIn() {}
 
-    default void updateKeyOut()
-    {
-    }
+  default void updateKeyOut() {}
 
-    default int getSymmetricKeyId()
-    {
-        return -2;
-    }
+  default int getSymmetricKeyId() {
+    return -2;
+  }
 
-    default void setSymmetricKeyId(int rc4KeyId)
-    {
-    }
+  default void setSymmetricKeyId(int rc4KeyId) {}
 
-    default byte[] getSymmetricKeyIn()
-    {
-        return null;
-    }
+  default byte[] getSymmetricKeyIn() {
+    return null;
+  }
 
-    default byte[] getSymmetricKeyOut()
-    {
-        return null;
-    }
+  default byte[] getSymmetricKeyOut() {
+    return null;
+  }
 
-    default byte[] getReRollKey()
-    {
-        return null;
-    }
+  default byte[] getReRollKey() {
+    return null;
+  }
 
-    default void reRollKey(byte[] key)
-    {
-    }
+  default void reRollKey(byte[] key) {}
 
-    default void swapKeyIn(byte[] key)
-    {
-    }
+  default void swapKeyIn(byte[] key) {}
 
-    default void swapKeyOut(byte[] key)
-    {
-    }
+  default void swapKeyOut(byte[] key) {}
 
-    default ISymmetric getSymmetricEncrypt()
-    {
-        return null;
-    }
+  default ISymmetric getSymmetricEncrypt() {
+    return null;
+  }
 
-    default ISymmetric getSymmetricDecrypt()
-    {
-        return null;
-    }
+  default ISymmetric getSymmetricDecrypt() {
+    return null;
+  }
 
-    default int getPubKeyId()
-    {
-        return -2;
-    }
+  default int getPubKeyId() {
+    return -2;
+  }
 
-    default void setPubKeyId(int pubKeyId)
-    {
-    }
+  default void setPubKeyId(int pubKeyId) {}
 
-    void cryptIn();
+  void cryptIn();
 
-    void cryptOut();
+  void cryptOut();
 
-    boolean isInCrypt();
+  boolean isInCrypt();
 
-    boolean isOutCrypt();
+  boolean isOutCrypt();
 
-    default IEncryptor getEncryptHandler()
-    {
-        return null;
-    }
+  default IEncryptor getEncryptHandler() {
+    return null;
+  }
 
-    default void setEncryptHandler(IEncryptor handler)
-    {
-    }
-
+  default void setEncryptHandler(IEncryptor handler) {}
 }

@@ -22,15 +22,10 @@
  */
 package com.isahl.chess.queen.io.core.features.model.pipe;
 
-import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 
 /**
  * @author william.d.zk
  * @since 2024-03-26
  */
-public interface IPipeFailed
-        extends IOperator<Throwable, Void>
-{
-
-}
+public interface IPipeFailed extends IOperator<Throwable, Void> {}

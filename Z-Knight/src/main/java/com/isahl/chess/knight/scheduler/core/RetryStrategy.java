@@ -23,9 +23,8 @@
 
 package com.isahl.chess.knight.scheduler.core;
 
-public enum RetryStrategy
-{
-    EDGE_RETRY,
-    REDUNDANT_RETRY,
-    TIMEOUT_RETRY
+public enum RetryStrategy {
+  EDGE_RETRY,
+  REDUNDANT_RETRY,
+  TIMEOUT_RETRY
 }

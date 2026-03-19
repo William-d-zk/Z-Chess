@@ -26,13 +26,10 @@ package com.isahl.chess.knight.raft.util;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.springframework.util.unit.DataSize;
 
-public class LongToDataSizeConverter
-        extends StdConverter<Long, DataSize>
-{
+public class LongToDataSizeConverter extends StdConverter<Long, DataSize> {
 
-    @Override
-    public DataSize convert(Long value)
-    {
-        return DataSize.ofBytes(value);
-    }
+  @Override
+  public DataSize convert(Long value) {
+    return DataSize.ofBytes(value);
+  }
 }

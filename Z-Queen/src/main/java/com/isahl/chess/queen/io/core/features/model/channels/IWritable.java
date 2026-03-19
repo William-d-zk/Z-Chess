@@ -23,7 +23,6 @@
 package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
-
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.ShutdownChannelGroupException;
@@ -33,21 +32,24 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  * @author William.d.zk
  */
-public interface IWritable<A>
-{
-    WRITE_STATUS write(IPacket ps,
-                       CompletionHandler<Integer, A> completionHandler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
+public interface IWritable<A> {
+  WRITE_STATUS write(IPacket ps, CompletionHandler<Integer, A> completionHandler)
+      throws WritePendingException,
+          NotYetConnectedException,
+          ShutdownChannelGroupException,
+          RejectedExecutionException;
 
-    WRITE_STATUS writeNext(int wroteCnt,
-                           CompletionHandler<Integer, A> completionHandler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
+  WRITE_STATUS writeNext(int wroteCnt, CompletionHandler<Integer, A> completionHandler)
+      throws WritePendingException,
+          NotYetConnectedException,
+          ShutdownChannelGroupException,
+          RejectedExecutionException;
 
-    enum WRITE_STATUS
-    {
-        CLOSED,
-        IGNORE,
-        UNFINISHED,
-        IN_SENDING,
-        FLUSHED
-    }
-
+  enum WRITE_STATUS {
+    CLOSED,
+    IGNORE,
+    UNFINISHED,
+    IN_SENDING,
+    FLUSHED
+  }
 }

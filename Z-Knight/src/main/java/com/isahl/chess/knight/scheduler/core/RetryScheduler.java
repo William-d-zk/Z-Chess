@@ -23,85 +23,75 @@
 
 package com.isahl.chess.knight.scheduler.core;
 
-import com.isahl.chess.knight.scheduler.domain.SubTask;
-import com.isahl.chess.knight.scheduler.domain.SubTaskStatus;
-import com.isahl.chess.knight.scheduler.repository.SubTaskRepository;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Component
-public class RetryScheduler
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(RetryScheduler.class);
+public class RetryScheduler {
+  private static final Logger _Logger = LoggerFactory.getLogger(RetryScheduler.class);
 
-    private final TaskScheduler _BaseScheduler;
-    private final ConcurrentHashMap<String, RetryContext> _RetryContexts = new ConcurrentHashMap<>();
+  private final TaskScheduler _BaseScheduler;
+  private final ConcurrentHashMap<String, RetryContext> _RetryContexts = new ConcurrentHashMap<>();
 
-    public RetryScheduler(TaskScheduler baseScheduler)
-    {
-        _BaseScheduler = baseScheduler;
+  public RetryScheduler(TaskScheduler baseScheduler) {
+    _BaseScheduler = baseScheduler;
+  }
+
+  public void handleFailure(String subTaskId, String nodeId, RetryStrategy strategy) {
+    RetryContext ctx = _RetryContexts.computeIfAbsent(subTaskId, k -> new RetryContext());
+
+    switch (strategy) {
+      case EDGE_RETRY -> handleEdgeRetry(subTaskId, ctx);
+      case REDUNDANT_RETRY -> handleRedundantRetry(subTaskId, nodeId, ctx);
+      case TIMEOUT_RETRY -> handleTimeoutRetry(subTaskId, ctx);
     }
+  }
 
-    public void handleFailure(String subTaskId, String nodeId, RetryStrategy strategy)
-    {
-        RetryContext ctx = _RetryContexts.computeIfAbsent(subTaskId, k -> new RetryContext());
-
-        switch(strategy) {
-            case EDGE_RETRY -> handleEdgeRetry(subTaskId, ctx);
-            case REDUNDANT_RETRY -> handleRedundantRetry(subTaskId, nodeId, ctx);
-            case TIMEOUT_RETRY -> handleTimeoutRetry(subTaskId, ctx);
-        }
+  private void handleEdgeRetry(String subTaskId, RetryContext ctx) {
+    if (ctx.edgeRetryCount < ctx.config.maxRetries) {
+      ctx.edgeRetryCount++;
+      long delay = ctx.config.retryDelayMs * (long) Math.pow(2, ctx.edgeRetryCount - 1);
+      _Logger.info(
+          "Edge retry {} for subTask {}, delay {}ms", ctx.edgeRetryCount, subTaskId, delay);
+    } else {
+      _Logger.warn(
+          "Max edge retries reached for subTask {}, switching to redundant retry", subTaskId);
+      ctx.currentStrategy = RetryStrategy.REDUNDANT_RETRY;
     }
+  }
 
-    private void handleEdgeRetry(String subTaskId, RetryContext ctx)
-    {
-        if(ctx.edgeRetryCount < ctx.config.maxRetries) {
-            ctx.edgeRetryCount++;
-            long delay = ctx.config.retryDelayMs * (long) Math.pow(2, ctx.edgeRetryCount - 1);
-            _Logger.info("Edge retry {} for subTask {}, delay {}ms", ctx.edgeRetryCount, subTaskId, delay);
-        }
-        else {
-            _Logger.warn("Max edge retries reached for subTask {}, switching to redundant retry", subTaskId);
-            ctx.currentStrategy = RetryStrategy.REDUNDANT_RETRY;
-        }
+  private void handleRedundantRetry(String subTaskId, String failedNodeId, RetryContext ctx) {
+    if (ctx.redundantRetryCount < ctx.config.maxRetries) {
+      ctx.redundantRetryCount++;
+      _Logger.info(
+          "Redundant retry {} for subTask {} to different node",
+          ctx.redundantRetryCount,
+          subTaskId);
+    } else {
+      _Logger.error("Max redundant retries reached for subTask {}, marking as failed", subTaskId);
+      _BaseScheduler.reportResult(subTaskId, "Max retries exceeded", false);
+      _RetryContexts.remove(subTaskId);
     }
+  }
 
-    private void handleRedundantRetry(String subTaskId, String failedNodeId, RetryContext ctx)
-    {
-        if(ctx.redundantRetryCount < ctx.config.maxRetries) {
-            ctx.redundantRetryCount++;
-            _Logger.info("Redundant retry {} for subTask {} to different node", ctx.redundantRetryCount, subTaskId);
-        }
-        else {
-            _Logger.error("Max redundant retries reached for subTask {}, marking as failed", subTaskId);
-            _BaseScheduler.reportResult(subTaskId, "Max retries exceeded", false);
-            _RetryContexts.remove(subTaskId);
-        }
+  private void handleTimeoutRetry(String subTaskId, RetryContext ctx) {
+    if (ctx.timeoutRetryCount < ctx.config.maxRetries) {
+      ctx.timeoutRetryCount++;
+      _Logger.info("Timeout retry {} for subTask {}", ctx.timeoutRetryCount, subTaskId);
+    } else {
+      _Logger.error("Max timeout retries reached for subTask {}", subTaskId);
+      _BaseScheduler.reportResult(subTaskId, "Timeout exceeded", false);
+      _RetryContexts.remove(subTaskId);
     }
+  }
 
-    private void handleTimeoutRetry(String subTaskId, RetryContext ctx)
-    {
-        if(ctx.timeoutRetryCount < ctx.config.maxRetries) {
-            ctx.timeoutRetryCount++;
-            _Logger.info("Timeout retry {} for subTask {}", ctx.timeoutRetryCount, subTaskId);
-        }
-        else {
-            _Logger.error("Max timeout retries reached for subTask {}", subTaskId);
-            _BaseScheduler.reportResult(subTaskId, "Timeout exceeded", false);
-            _RetryContexts.remove(subTaskId);
-        }
-    }
-
-    public static class RetryContext
-    {
-        public int edgeRetryCount = 0;
-        public int redundantRetryCount = 0;
-        public int timeoutRetryCount = 0;
-        public RetryStrategy currentStrategy = RetryStrategy.EDGE_RETRY;
-        public RetryConfig config = new RetryConfig();
-    }
+  public static class RetryContext {
+    public int edgeRetryCount = 0;
+    public int redundantRetryCount = 0;
+    public int timeoutRetryCount = 0;
+    public RetryStrategy currentStrategy = RetryStrategy.EDGE_RETRY;
+    public RetryConfig config = new RetryConfig();
+  }
 }

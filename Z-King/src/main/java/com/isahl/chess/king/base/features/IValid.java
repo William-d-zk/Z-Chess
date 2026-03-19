@@ -29,14 +29,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface IValid
-{
-    @JsonIgnore
-    default boolean isValid()
-    {
-        return true;
-    }
+public interface IValid {
+  @JsonIgnore
+  default boolean isValid() {
+    return true;
+  }
 
-    @JsonIgnore
-    default boolean isInvalid() {return false;}
+  @JsonIgnore
+  default boolean isInvalid() {
+    return false;
+  }
 }

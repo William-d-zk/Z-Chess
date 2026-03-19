@@ -25,20 +25,13 @@ package com.isahl.chess.knight.raft.features;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
 
-public interface IRaftModify
-{
+public interface IRaftModify {
 
-    /**
-     * raft
-     * 调整拓扑结构
-     *
-     * @param delta 变化的节点
-     *              state == GATE，网关节点操作，
-     *              state == FOLLOW 节点操作
-     *              OP_APPEND,增加节点
-     *              OP_REMOVE,减少节点
-     *              变更作业需要先删除节点，再添加，不能原地变更
-     */
-    void topology(RaftNode delta);
-
+  /**
+   * raft 调整拓扑结构
+   *
+   * @param delta 变化的节点 state == GATE，网关节点操作， state == FOLLOW 节点操作 OP_APPEND,增加节点 OP_REMOVE,减少节点
+   *     变更作业需要先删除节点，再添加，不能原地变更
+   */
+  void topology(RaftNode delta);
 }

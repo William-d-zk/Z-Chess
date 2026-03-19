@@ -26,14 +26,12 @@ package com.isahl.chess.knight.cluster.features;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.message.InnerProtocol;
 
-public interface IConsistencyMapping
-{
-    IoSerial findByCoordinate(long origin, long peer);
+public interface IConsistencyMapping {
+  IoSerial findByCoordinate(long origin, long peer);
 
-    void appendState(IoSerial bizData, long peer, long origin);
+  void appendState(IoSerial bizData, long peer, long origin);
 
-    InnerProtocol export();
+  InnerProtocol export();
 
-    void from(InnerProtocol history);
-
+  void from(InnerProtocol history);
 }

@@ -23,66 +23,54 @@
 
 package com.isahl.chess.audience.testing;
 
-import org.junit.jupiter.api.BeforeEach;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-public abstract class BaseTest
-{
+import org.junit.jupiter.api.BeforeEach;
 
-    @BeforeEach
-    void setUp()
-    {
-        beforeEach();
-    }
+public abstract class BaseTest {
 
-    protected void beforeEach()
-    {
-    }
+  @BeforeEach
+  void setUp() {
+    beforeEach();
+  }
 
-    protected void assertNotBlank(String string)
-    {
-        assertNotNull(string);
-        assertFalse(string.isBlank(), "String should not be blank");
-    }
+  protected void beforeEach() {}
 
-    protected void assertNotBlank(String string, String message)
-    {
-        assertNotNull(string, message);
-        assertFalse(string.isBlank(), message);
-    }
+  protected void assertNotBlank(String string) {
+    assertNotNull(string);
+    assertFalse(string.isBlank(), "String should not be blank");
+  }
 
-    protected void assertBlank(String string)
-    {
-        assertTrue(string == null || string.isBlank(), "String should be blank");
-    }
+  protected void assertNotBlank(String string, String message) {
+    assertNotNull(string, message);
+    assertFalse(string.isBlank(), message);
+  }
 
-    protected void assertLength(int expected, String string)
-    {
-        assertEquals(expected, string.length(), "String length mismatch");
-    }
+  protected void assertBlank(String string) {
+    assertTrue(string == null || string.isBlank(), "String should be blank");
+  }
 
-    protected void assertArrayNotEmpty(byte[] array)
-    {
-        assertNotNull(array, "Array should not be null");
-        assertTrue(array.length > 0, "Array should not be empty");
-    }
+  protected void assertLength(int expected, String string) {
+    assertEquals(expected, string.length(), "String length mismatch");
+  }
 
-    protected void assertByteArrayEquals(byte[] expected, byte[] actual)
-    {
-        assertNotNull(expected, "Expected array should not be null");
-        assertNotNull(actual, "Actual array should not be null");
-        assertArrayEquals(expected, actual);
-    }
+  protected void assertArrayNotEmpty(byte[] array) {
+    assertNotNull(array, "Array should not be null");
+    assertTrue(array.length > 0, "Array should not be empty");
+  }
 
-    protected void assertHexEquals(String expected, byte[] actual)
-    {
-        assertNotNull(actual, "Actual bytes should not be null");
-        StringBuilder sb = new StringBuilder();
-        for(byte b : actual)
-        {
-            sb.append(String.format("%02x", b));
-        }
-        assertEquals(expected, sb.toString(), "Hex string mismatch");
+  protected void assertByteArrayEquals(byte[] expected, byte[] actual) {
+    assertNotNull(expected, "Expected array should not be null");
+    assertNotNull(actual, "Actual array should not be null");
+    assertArrayEquals(expected, actual);
+  }
+
+  protected void assertHexEquals(String expected, byte[] actual) {
+    assertNotNull(actual, "Actual bytes should not be null");
+    StringBuilder sb = new StringBuilder();
+    for (byte b : actual) {
+      sb.append(String.format("%02x", b));
     }
+    assertEquals(expected, sb.toString(), "Hex string mismatch");
+  }
 }

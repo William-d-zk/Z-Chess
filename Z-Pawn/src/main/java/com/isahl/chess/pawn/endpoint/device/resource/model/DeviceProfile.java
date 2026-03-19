@@ -40,238 +40,234 @@ import java.time.LocalDateTime;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DeviceProfile
-        implements Serializable
-{
-    @Serial
-    private static final long serialVersionUID = -3059633247602550952L;
+public class DeviceProfile implements Serializable {
+  @Serial private static final long serialVersionUID = -3059633247602550952L;
 
-    private String wifiMac;
-    private String ethernetMac;
-    private String bluetoothMac;
-    private String imei;
-    private String imsi;
-    private KeyPairProfile keyPairProfile;
-    private ExpirationProfile expirationProfile;
+  private String wifiMac;
+  private String ethernetMac;
+  private String bluetoothMac;
+  private String imei;
+  private String imsi;
+  private KeyPairProfile keyPairProfile;
+  private ExpirationProfile expirationProfile;
 
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public static class ExpirationProfile implements Serializable {
-        @Serial
-        private static final long serialVersionUID = 4453066710608521455L;
-        /**
-         * 首次激活时间
-         */
-        private LocalDateTime activationAt;
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  public static class ExpirationProfile implements Serializable {
+    @Serial private static final long serialVersionUID = 4453066710608521455L;
 
-        /**
-         * 失效时间
-         */
-        private LocalDateTime expireAt;
+    /** 首次激活时间 */
+    private LocalDateTime activationAt;
 
-        /**
-         * 最近一次刷新有效期
-         */
-        private LocalDateTime lastRenewAt;
+    /** 失效时间 */
+    private LocalDateTime expireAt;
 
+    /** 最近一次刷新有效期 */
+    private LocalDateTime lastRenewAt;
 
-        public ExpirationProfile() {
-        }
+    public ExpirationProfile() {}
 
-        public ExpirationProfile(LocalDateTime activationDateTime) {
-            this.activationAt = activationDateTime;
-        }
-
-        public ExpirationProfile(LocalDateTime activationDateTime, LocalDateTime expireAt) {
-            this.activationAt = activationDateTime;
-            this.expireAt = expireAt;
-        }
-
-        public ExpirationProfile(LocalDateTime activationDateTime, LocalDateTime expireAt, LocalDateTime lastRenewAt) {
-            this.activationAt = activationDateTime;
-            this.expireAt = expireAt;
-            this.lastRenewAt = lastRenewAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @Temporal(TIMESTAMP)
-        public LocalDateTime getActivationAt() {
-            return activationAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonSerialize(using = LocalDateTimeSerializer.class)
-        public void setActivationAt(LocalDateTime activationAt) {
-            this.activationAt = activationAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @Temporal(TIMESTAMP)
-        public LocalDateTime getExpireAt() {
-            return expireAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonSerialize(using = LocalDateTimeSerializer.class)
-        public void setExpireAt(LocalDateTime expireAt) {
-            this.expireAt = expireAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-        @Temporal(TIMESTAMP)
-        public LocalDateTime getLastRenewAt() {
-            return lastRenewAt;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @JsonSerialize(using = LocalDateTimeSerializer.class)
-        public void setLastRenewAt(LocalDateTime lastRenewAt) {
-            this.lastRenewAt = lastRenewAt;
-        }
-
-        @Override
-        public String toString() {
-            return "ExpirationProfile{" +
-                "activationAt=" + activationAt +
-                ", expireAt=" + expireAt +
-                ", lastRenewAt=" + lastRenewAt +
-                '}';
-        }
+    public ExpirationProfile(LocalDateTime activationDateTime) {
+      this.activationAt = activationDateTime;
     }
 
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public static class KeyPairProfile implements Serializable {
-        @Serial
-        private static final long serialVersionUID = -413771969356174480L;
-
-        private String keyPairAlgorithm;
-        private String publicKey;
-        private String privateKey;
-
-        public KeyPairProfile() {
-        }
-
-        public KeyPairProfile(String keyPairAlgorithm, String publicKey, String privateKey) {
-            this.keyPairAlgorithm = keyPairAlgorithm;
-            this.publicKey = publicKey;
-            this.privateKey = privateKey;
-        }
-
-        public String getKeyPairAlgorithm() {
-            return keyPairAlgorithm;
-        }
-
-        public void setKeyPairAlgorithm(String keyPairAlgorithm) {
-            this.keyPairAlgorithm = keyPairAlgorithm;
-        }
-
-        public String getPublicKey() {
-            return publicKey;
-        }
-
-        public void setPublicKey(String publicKey) {
-            this.publicKey = publicKey;
-        }
-
-        public String getPrivateKey() {
-            return privateKey;
-        }
-
-        public void setPrivateKey(String privateKey) {
-            this.privateKey = privateKey;
-        }
-
-        @Override
-        public String toString() {
-            return "KeyPairProfile{" +
-                "keyPairAlgorithm='" + keyPairAlgorithm + '\'' +
-                ", publicKey='" + publicKey + '\'' +
-                ", privateKey='" + privateKey + '\'' +
-                '}';
-        }
+    public ExpirationProfile(LocalDateTime activationDateTime, LocalDateTime expireAt) {
+      this.activationAt = activationDateTime;
+      this.expireAt = expireAt;
     }
 
-    public String getWifiMac()
-    {
-        return wifiMac;
+    public ExpirationProfile(
+        LocalDateTime activationDateTime, LocalDateTime expireAt, LocalDateTime lastRenewAt) {
+      this.activationAt = activationDateTime;
+      this.expireAt = expireAt;
+      this.lastRenewAt = lastRenewAt;
     }
 
-    public void setWifiMac(String wifiMac)
-    {
-        this.wifiMac = wifiMac;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Temporal(TIMESTAMP)
+    public LocalDateTime getActivationAt() {
+      return activationAt;
     }
 
-    public String getEthernetMac()
-    {
-        return ethernetMac;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setActivationAt(LocalDateTime activationAt) {
+      this.activationAt = activationAt;
     }
 
-    public void setEthernetMac(String ethernetMac)
-    {
-        this.ethernetMac = ethernetMac;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Temporal(TIMESTAMP)
+    public LocalDateTime getExpireAt() {
+      return expireAt;
     }
 
-    public String getBluetoothMac()
-    {
-        return bluetoothMac;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setExpireAt(LocalDateTime expireAt) {
+      this.expireAt = expireAt;
     }
 
-    public void setBluetoothMac(String bluetoothMac)
-    {
-        this.bluetoothMac = bluetoothMac;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Temporal(TIMESTAMP)
+    public LocalDateTime getLastRenewAt() {
+      return lastRenewAt;
     }
 
-    public String getImei()
-    {
-        return imei;
-    }
-
-    public void setImei(String imei)
-    {
-        this.imei = imei;
-    }
-
-    public String getImsi()
-    {
-        return imsi;
-    }
-
-    public void setImsi(String imsi)
-    {
-        this.imsi = imsi;
-    }
-
-    public KeyPairProfile getKeyPairProfile() {
-        return keyPairProfile;
-    }
-
-    public void setKeyPairProfile(
-        KeyPairProfile keyPairProfile) {
-        this.keyPairProfile = keyPairProfile;
-    }
-
-    public ExpirationProfile getExpirationProfile() {
-        return expirationProfile;
-    }
-
-    public void setExpirationProfile(
-        ExpirationProfile expirationProfile) {
-        this.expirationProfile = expirationProfile;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setLastRenewAt(LocalDateTime lastRenewAt) {
+      this.lastRenewAt = lastRenewAt;
     }
 
     @Override
     public String toString() {
-        return "DeviceProfile{" +
-            "wifiMac='" + wifiMac + '\'' +
-            ", ethernetMac='" + ethernetMac + '\'' +
-            ", bluetoothMac='" + bluetoothMac + '\'' +
-            ", imei='" + imei + '\'' +
-            ", imsi='" + imsi + '\'' +
-            ", keyPairProfile=" + keyPairProfile +
-            '}';
+      return "ExpirationProfile{"
+          + "activationAt="
+          + activationAt
+          + ", expireAt="
+          + expireAt
+          + ", lastRenewAt="
+          + lastRenewAt
+          + '}';
     }
+  }
+
+  @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  public static class KeyPairProfile implements Serializable {
+    @Serial private static final long serialVersionUID = -413771969356174480L;
+
+    private String keyPairAlgorithm;
+    private String publicKey;
+    private String privateKey;
+
+    public KeyPairProfile() {}
+
+    public KeyPairProfile(String keyPairAlgorithm, String publicKey, String privateKey) {
+      this.keyPairAlgorithm = keyPairAlgorithm;
+      this.publicKey = publicKey;
+      this.privateKey = privateKey;
+    }
+
+    public String getKeyPairAlgorithm() {
+      return keyPairAlgorithm;
+    }
+
+    public void setKeyPairAlgorithm(String keyPairAlgorithm) {
+      this.keyPairAlgorithm = keyPairAlgorithm;
+    }
+
+    public String getPublicKey() {
+      return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+      this.publicKey = publicKey;
+    }
+
+    public String getPrivateKey() {
+      return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+      this.privateKey = privateKey;
+    }
+
+    @Override
+    public String toString() {
+      return "KeyPairProfile{"
+          + "keyPairAlgorithm='"
+          + keyPairAlgorithm
+          + '\''
+          + ", publicKey='"
+          + publicKey
+          + '\''
+          + ", privateKey='"
+          + privateKey
+          + '\''
+          + '}';
+    }
+  }
+
+  public String getWifiMac() {
+    return wifiMac;
+  }
+
+  public void setWifiMac(String wifiMac) {
+    this.wifiMac = wifiMac;
+  }
+
+  public String getEthernetMac() {
+    return ethernetMac;
+  }
+
+  public void setEthernetMac(String ethernetMac) {
+    this.ethernetMac = ethernetMac;
+  }
+
+  public String getBluetoothMac() {
+    return bluetoothMac;
+  }
+
+  public void setBluetoothMac(String bluetoothMac) {
+    this.bluetoothMac = bluetoothMac;
+  }
+
+  public String getImei() {
+    return imei;
+  }
+
+  public void setImei(String imei) {
+    this.imei = imei;
+  }
+
+  public String getImsi() {
+    return imsi;
+  }
+
+  public void setImsi(String imsi) {
+    this.imsi = imsi;
+  }
+
+  public KeyPairProfile getKeyPairProfile() {
+    return keyPairProfile;
+  }
+
+  public void setKeyPairProfile(KeyPairProfile keyPairProfile) {
+    this.keyPairProfile = keyPairProfile;
+  }
+
+  public ExpirationProfile getExpirationProfile() {
+    return expirationProfile;
+  }
+
+  public void setExpirationProfile(ExpirationProfile expirationProfile) {
+    this.expirationProfile = expirationProfile;
+  }
+
+  @Override
+  public String toString() {
+    return "DeviceProfile{"
+        + "wifiMac='"
+        + wifiMac
+        + '\''
+        + ", ethernetMac='"
+        + ethernetMac
+        + '\''
+        + ", bluetoothMac='"
+        + bluetoothMac
+        + '\''
+        + ", imei='"
+        + imei
+        + '\''
+        + ", imsi='"
+        + imsi
+        + '\''
+        + ", keyPairProfile="
+        + keyPairProfile
+        + '}';
+  }
 }

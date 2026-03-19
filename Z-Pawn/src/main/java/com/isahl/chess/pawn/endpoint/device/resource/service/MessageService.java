@@ -23,137 +23,122 @@
 
 package com.isahl.chess.pawn.endpoint.device.resource.service;
 
+import static java.time.temporal.ChronoUnit.HOURS;
+
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MsgDeliveryStatus;
+import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMessageRepository;
 import com.isahl.chess.pawn.endpoint.device.db.central.repository.IMsgDeliveryStatusRepository;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.cache.CacheManager;
-import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import static java.time.temporal.ChronoUnit.HOURS;
-
 /**
  * @author william.d.zk
  * @date 2020/2/21
  */
 @Service
-public class MessageService
-        implements IMessageService
-{
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+public class MessageService implements IMessageService {
+  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final CacheManager                 _CacheManager;
-    private final IMessageRepository           _MessageRepository;
-    private final IMsgDeliveryStatusRepository _MsgDeliveryStatusRepository;
-    private final IRaftConfig                  _RaftConfig;
+  private final CacheManager _CacheManager;
+  private final IMessageRepository _MessageRepository;
+  private final IMsgDeliveryStatusRepository _MsgDeliveryStatusRepository;
+  private final IRaftConfig _RaftConfig;
 
-    @Autowired
-    public MessageService(IRaftConfig raftConfig,
-                          CacheManager cacheManager,
-                          IMessageRepository messageRepository,
-                          IMsgDeliveryStatusRepository statusRepository)
-    {
-        _RaftConfig = raftConfig;
-        _CacheManager = cacheManager;
-        _MessageRepository = messageRepository;
-        _MsgDeliveryStatusRepository = statusRepository;
-    }
+  @Autowired
+  public MessageService(
+      IRaftConfig raftConfig,
+      CacheManager cacheManager,
+      IMessageRepository messageRepository,
+      IMsgDeliveryStatusRepository statusRepository) {
+    _RaftConfig = raftConfig;
+    _CacheManager = cacheManager;
+    _MessageRepository = messageRepository;
+    _MsgDeliveryStatusRepository = statusRepository;
+  }
 
-    @PostConstruct
-    void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
-    {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "msg_delivery_status_cache",
-                                  String.class,
-                                  MsgDeliveryStatus.class,
-                                  Duration.of(4, HOURS));
-    }
+  @PostConstruct
+  void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    EhcacheConfig.createCache(
+        _CacheManager,
+        "msg_delivery_status_cache",
+        String.class,
+        MsgDeliveryStatus.class,
+        Duration.of(4, HOURS));
+  }
 
-    @Override
-    public List<MessageBody> listByTopic(String topic, int limit) throws ZException
-    {
-        return null;
-    }
+  @Override
+  public List<MessageBody> listByTopic(String topic, int limit) throws ZException {
+    return null;
+  }
 
-    @Override
-    public List<ZChatEntity> findAfterId(long id)
-    {
-        return _MessageRepository.findAll((root, criteriaQuery, criteriaBuilder)->criteriaQuery.where(criteriaBuilder.greaterThan(
-                                                                                                       root.get("id"),
-                                                                                                       id))
-                                                                                               .getRestriction());
+  @Override
+  public List<ZChatEntity> findAfterId(long id) {
+    return _MessageRepository.findAll(
+        (root, criteriaQuery, criteriaBuilder) ->
+            criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"), id)).getRestriction());
+  }
 
-    }
+  @Override
+  public Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification) {
+    return _MessageRepository.findOne(specification);
+  }
 
-    @Override
-    public Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification)
-    {
-        return _MessageRepository.findOne(specification);
-    }
+  @Override
+  public List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable) {
+    return _MessageRepository.findAll(specification, pageable).toList();
+  }
 
-    @Override
-    public List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable)
-    {
-        return _MessageRepository.findAll(specification, pageable)
-                                 .toList();
-    }
+  @Override
+  public void submit(ZChatEntity post) {
+    post.setMessageId(generateId());
+    _MessageRepository.save(post);
+  }
 
-    @Override
-    public void submit(ZChatEntity post)
-    {
-        post.setMessageId(generateId());
-        _MessageRepository.save(post);
-    }
+  @Override
+  public void submitAll(List<ZChatEntity> contents) {
+    if (contents == null || contents.isEmpty()) return;
+    _Logger.debug("message service submit [%d]", contents.size());
+    _MessageRepository.saveAll(contents);
+  }
 
-    @Override
-    public void submitAll(List<ZChatEntity> contents)
-    {
-        if(contents == null || contents.isEmpty()) return;
-        _Logger.debug("message service submit [%d]", contents.size());
-        _MessageRepository.saveAll(contents);
-    }
+  @Override
+  public long generateId() {
+    return _RaftConfig.getZUID().getId();
+  }
 
-    @Override
-    public long generateId()
-    {
-        return _RaftConfig.getZUID().getId();
-    }
+  @Override
+  public long generateId(long session) {
+    return _RaftConfig.getZUID().moveOn(session);
+  }
 
-    @Override
-    public long generateId(long session)
-    {
-        return _RaftConfig.getZUID().moveOn(session);
-    }
+  @Cacheable(
+      value = "msg_delivery_status_cache",
+      key = "#p0",
+      condition = "#p0 != null",
+      unless = "#result == null")
+  public MsgDeliveryStatus getDeliveryStatus(String status) {
+    return _MsgDeliveryStatusRepository.findByStatus(status);
+  }
 
-    @Cacheable(value = "msg_delivery_status_cache",
-               key = "#p0",
-               condition = "#p0 != null",
-               unless = "#result == null")
-    public MsgDeliveryStatus getDeliveryStatus(String status)
-    {
-        return _MsgDeliveryStatusRepository.findByStatus(status);
-    }
-
-    @Override
-    public void stateInit(ZChatEntity content)
-    {
-        Objects.requireNonNull(content);
-        content.setDeliveryStatus(_MsgDeliveryStatusRepository.findByFlag("start"));
-    }
+  @Override
+  public void stateInit(ZChatEntity content) {
+    Objects.requireNonNull(content);
+    content.setDeliveryStatus(_MsgDeliveryStatusRepository.findByFlag("start"));
+  }
 }

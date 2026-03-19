@@ -9,7 +9,7 @@ import org.hibernate.usertype.UserTypeLegacyBridge;
  */
 public class LegacyBinaryType extends UserTypeLegacyBridge {
 
-    public LegacyBinaryType() {
-        super("org.hibernate.type.BinaryType");
-    }
+  public LegacyBinaryType() {
+    super("org.hibernate.type.BinaryType");
+  }
 }

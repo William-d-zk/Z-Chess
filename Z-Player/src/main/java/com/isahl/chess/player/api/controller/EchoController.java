@@ -38,24 +38,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("echo")
-public class EchoController
-{
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+public class EchoController {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final HookOpenService _HookOpenService;
+  private final HookOpenService _HookOpenService;
 
-    @Autowired
-    public EchoController(HookOpenService hookOpenService) {_HookOpenService = hookOpenService;}
+  @Autowired
+  public EchoController(HookOpenService hookOpenService) {
+    _HookOpenService = hookOpenService;
+  }
 
-    @GetMapping("hook")
-    public @ResponseBody
-    ZResponse<?> hook(
-            @RequestParam(name = "input") String input
-    ) {
-        EchoDo echo = new EchoDo();
-        echo.withSub(new TextSerial(input));
-        ICode code = _HookOpenService.hookLogic(echo);
-        return ZResponse.of(code, echo, "example test");
-    }
-
+  @GetMapping("hook")
+  public @ResponseBody ZResponse<?> hook(@RequestParam(name = "input") String input) {
+    EchoDo echo = new EchoDo();
+    echo.withSub(new TextSerial(input));
+    ICode code = _HookOpenService.hookLogic(echo);
+    return ZResponse.of(code, echo, "example test");
+  }
 }

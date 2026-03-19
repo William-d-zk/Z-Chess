@@ -23,76 +23,69 @@
 
 package com.isahl.chess.knight.service;
 
-import com.isahl.chess.knight.engine.NodeRegistry;
 import com.isahl.chess.knight.engine.SchedulingRule;
-import com.isahl.chess.knight.engine.SchedulerEngine;
 import com.isahl.chess.knight.policy.Policy;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
-
 import java.util.List;
 import java.util.Map;
 
-public interface SchedulerService
-{
-    String submitTask(String taskType, String payload, SchedulingRule rule);
+public interface SchedulerService {
+  String submitTask(String taskType, String payload, SchedulingRule rule);
 
-    String submitGroupTask(String taskType, String payload, String groupId, SchedulingRule rule);
+  String submitGroupTask(String taskType, String payload, String groupId, SchedulingRule rule);
 
-    boolean cancelTask(String taskId);
+  boolean cancelTask(String taskId);
 
-    TaskStatus getTaskStatus(String taskId);
+  TaskStatus getTaskStatus(String taskId);
 
-    TaskResult getTaskResult(String taskId);
+  TaskResult getTaskResult(String taskId);
 
-    void registerPolicy(String taskType, Policy policy);
+  void registerPolicy(String taskType, Policy policy);
 
-    Policy getPolicy(String taskType, String policyType);
+  Policy getPolicy(String taskType, String policyType);
 
-    List<SchedulingRule> getRules(String taskType);
+  List<SchedulingRule> getRules(String taskType);
 
-    void registerRule(String taskType, SchedulingRule rule);
+  void registerRule(String taskType, SchedulingRule rule);
 
-    Map<String, Long> getTaskMetrics();
+  Map<String, Long> getTaskMetrics();
 
-    Map<String, Integer> getNodeMetrics();
+  Map<String, Integer> getNodeMetrics();
 
-    interface DispatchRequest
-    {
-        String getTaskId();
+  interface DispatchRequest {
+    String getTaskId();
 
-        String getTaskType();
+    String getTaskType();
 
-        String getPayload();
+    String getPayload();
 
-        List<String> getTargetNodes();
+    List<String> getTargetNodes();
 
-        int getTimeoutSeconds();
+    int getTimeoutSeconds();
 
-        String getRuleId();
-    }
+    String getRuleId();
+  }
 
-    interface ClaimRequest
-    {
-        String getTaskId();
+  interface ClaimRequest {
+    String getTaskId();
 
-        String getTaskType();
+    String getTaskType();
 
-        String getPayload();
+    String getPayload();
 
-        int getSubTaskCount();
+    int getSubTaskCount();
 
-        int getTimeoutSeconds();
+    int getTimeoutSeconds();
 
-        String getRuleId();
-    }
+    String getRuleId();
+  }
 
-    interface ResultRequest
-    {
-        String getSubTaskId();
+  interface ResultRequest {
+    String getSubTaskId();
 
-        String getResult();
+    String getResult();
 
-        boolean isSuccess();
-    }
+    boolean isSuccess();
+  }
 }

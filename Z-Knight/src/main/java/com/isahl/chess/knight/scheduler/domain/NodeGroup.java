@@ -24,84 +24,70 @@
 package com.isahl.chess.knight.scheduler.domain;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "scheduler_node_group")
-public class NodeGroup
-{
-    @Id
-    private String groupId;
+public class NodeGroup {
+  @Id private String groupId;
 
-    @Column(nullable = false)
-    private String groupName;
+  @Column(nullable = false)
+  private String groupName;
 
-    @ElementCollection
-    @CollectionTable(name = "node_group_members", joinColumns = @JoinColumn(name = "group_id"))
-    @Column(name = "node_id")
-    private List<String> nodeIds = new ArrayList<>();
+  @ElementCollection
+  @CollectionTable(name = "node_group_members", joinColumns = @JoinColumn(name = "group_id"))
+  @Column(name = "node_id")
+  private List<String> nodeIds = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NodeGroupType type;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private NodeGroupType type;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+  @Column(nullable = false)
+  private Instant createdAt;
 
-    public NodeGroup()
-    {
+  public NodeGroup() {}
+
+  public NodeGroup(String groupId, String groupName, NodeGroupType type) {
+    this.groupId = groupId;
+    this.groupName = groupName;
+    this.type = type;
+    this.createdAt = Instant.now();
+  }
+
+  public void addNode(String nodeId) {
+    if (!nodeIds.contains(nodeId)) {
+      nodeIds.add(nodeId);
     }
+  }
 
-    public NodeGroup(String groupId, String groupName, NodeGroupType type)
-    {
-        this.groupId = groupId;
-        this.groupName = groupName;
-        this.type = type;
-        this.createdAt = Instant.now();
-    }
+  public void removeNode(String nodeId) {
+    nodeIds.remove(nodeId);
+  }
 
-    public void addNode(String nodeId)
-    {
-        if(!nodeIds.contains(nodeId)) {
-            nodeIds.add(nodeId);
-        }
-    }
+  public int getNodeCount() {
+    return nodeIds.size();
+  }
 
-    public void removeNode(String nodeId)
-    {
-        nodeIds.remove(nodeId);
-    }
+  public String getGroupId() {
+    return groupId;
+  }
 
-    public int getNodeCount()
-    {
-        return nodeIds.size();
-    }
+  public String getGroupName() {
+    return groupName;
+  }
 
-    public String getGroupId()
-    {
-        return groupId;
-    }
+  public List<String> getNodeIds() {
+    return nodeIds;
+  }
 
-    public String getGroupName()
-    {
-        return groupName;
-    }
+  public NodeGroupType getType() {
+    return type;
+  }
 
-    public List<String> getNodeIds()
-    {
-        return nodeIds;
-    }
-
-    public NodeGroupType getType()
-    {
-        return type;
-    }
-
-    public Instant getCreatedAt()
-    {
-        return createdAt;
-    }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

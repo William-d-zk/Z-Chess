@@ -25,19 +25,15 @@ package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.queen.config.QueenCode;
 
-public interface KnightCode
-        extends QueenCode
-{
-    int CLUSTER_NO_IN_CONGRESS = 0x00700;
-    int CLUSTER_ELECTING       = 0x00701;
+public interface KnightCode extends QueenCode {
+  int CLUSTER_NO_IN_CONGRESS = 0x00700;
+  int CLUSTER_ELECTING = 0x00701;
 
-    static String codeOf(int code)
-    {
-        return switch(code) {
-            case CLUSTER_NO_IN_CONGRESS -> "node.%#x is not in congress";
-            case CLUSTER_ELECTING -> "cluster is electing!";
-            default -> QueenCode.codeOf(code);
-        };
-    }
-
+  static String codeOf(int code) {
+    return switch (code) {
+      case CLUSTER_NO_IN_CONGRESS -> "node.%#x is not in congress";
+      case CLUSTER_ELECTING -> "cluster is electing!";
+      default -> QueenCode.codeOf(code);
+    };
+  }
 }

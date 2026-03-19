@@ -25,12 +25,10 @@ package com.isahl.chess.knight.scheduler.core;
 
 import com.isahl.chess.knight.scheduler.domain.Task;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
-
 import java.util.List;
 
-public interface ResultAggregator
-{
-    String aggregate(List<TaskResult.SubTaskResultEntry> results);
+public interface ResultAggregator {
+  String aggregate(List<TaskResult.SubTaskResultEntry> results);
 
-    boolean canComplete(Task task);
+  boolean canComplete(Task task);
 }

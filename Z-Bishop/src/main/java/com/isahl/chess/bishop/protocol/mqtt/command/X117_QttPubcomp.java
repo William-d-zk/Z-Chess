@@ -23,54 +23,46 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
-
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x117)
-public class X117_QttPubcomp
-        extends QttCommand
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x117)
+public class X117_QttPubcomp extends QttCommand {
 
-    public X117_QttPubcomp()
-    {
-        generateCtrl(false, false, ALMOST_ONCE, QttType.PUBCOMP);
-    }
+  public X117_QttPubcomp() {
+    generateCtrl(false, false, ALMOST_ONCE, QttType.PUBCOMP);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        msgId(input.getUnsignedShort());
-        return input.readableBytes();
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    msgId(input.getUnsignedShort());
+    return input.readableBytes();
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output.putShort(msgId());
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
-        return output;
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output.putShort(msgId());
+    if (mPayload != null) {
+      output.put(mPayload);
     }
+    return output;
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_09_CONFIRM_MESSAGE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("x117 pubcomp:{msg-id:%d}", msgId());
-    }
+  @Override
+  public String toString() {
+    return String.format("x117 pubcomp:{msg-id:%d}", msgId());
+  }
 }

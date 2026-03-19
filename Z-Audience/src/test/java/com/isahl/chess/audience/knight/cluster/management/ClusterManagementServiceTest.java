@@ -23,90 +23,89 @@
 
 package com.isahl.chess.audience.knight.cluster.management;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.knight.cluster.management.ClusterManagementService;
 import com.isahl.chess.knight.cluster.management.ClusterManagementServiceImpl;
 import com.isahl.chess.knight.cluster.management.ClusterNode;
 import com.isahl.chess.knight.cluster.management.ClusterStatus;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class ClusterManagementServiceTest {
-    
-    private ClusterManagementService manager;
-    
-    @BeforeEach
-    void setUp() {
-        manager = new ClusterManagementServiceImpl();
-    }
-    
-    @Test
-    void testAddNode() throws Exception {
-        ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
-        
-        Boolean result = manager.addNode(node).join();
-        
-        assertTrue(result);
-        assertEquals(1, manager.getMembers().size());
-    }
-    
-    @Test
-    void testRemoveNode() throws Exception {
-        ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
-        manager.addNode(node).join();
-        
-        Boolean result = manager.removeNode("node1").join();
-        
-        assertTrue(result);
-        assertEquals(0, manager.getMembers().size());
-    }
-    
-    @Test
-    void testGetStatus() {
-        ClusterNode node1 = new ClusterNode("node1", "192.168.1.10", 9000);
-        ClusterNode node2 = new ClusterNode("node2", "192.168.1.11", 9000);
-        manager.addNode(node1).join();
-        manager.addNode(node2).join();
-        
-        ClusterStatus status = manager.getStatus();
-        
-        assertEquals(2, status.getClusterSize());
-        assertEquals(2, status.getQuorumSize());
-    }
-    
-    @Test
-    void testGetMembers() {
-        ClusterNode node1 = new ClusterNode("node1", "192.168.1.10", 9000);
-        ClusterNode node2 = new ClusterNode("node2", "192.168.1.11", 9000);
-        
-        manager.addNode(node1).join();
-        manager.addNode(node2).join();
-        
-        List<ClusterNode> members = manager.getMembers();
-        
-        assertEquals(2, members.size());
-        assertTrue(members.contains(node1));
-        assertTrue(members.contains(node2));
-    }
-    
-    @Test
-    void testDuplicateNode() {
-        ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
-        
-        manager.addNode(node).join();
-        Boolean result = manager.addNode(node).join();
-        
-        assertFalse(result);
-        assertEquals(1, manager.getMembers().size());
-    }
-    
-    @Test
-    void testRemoveNonExistentNode() {
-        Boolean result = manager.removeNode("nonexistent").join();
-        
-        assertFalse(result);
-    }
+
+  private ClusterManagementService manager;
+
+  @BeforeEach
+  void setUp() {
+    manager = new ClusterManagementServiceImpl();
+  }
+
+  @Test
+  void testAddNode() throws Exception {
+    ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
+
+    Boolean result = manager.addNode(node).join();
+
+    assertTrue(result);
+    assertEquals(1, manager.getMembers().size());
+  }
+
+  @Test
+  void testRemoveNode() throws Exception {
+    ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
+    manager.addNode(node).join();
+
+    Boolean result = manager.removeNode("node1").join();
+
+    assertTrue(result);
+    assertEquals(0, manager.getMembers().size());
+  }
+
+  @Test
+  void testGetStatus() {
+    ClusterNode node1 = new ClusterNode("node1", "192.168.1.10", 9000);
+    ClusterNode node2 = new ClusterNode("node2", "192.168.1.11", 9000);
+    manager.addNode(node1).join();
+    manager.addNode(node2).join();
+
+    ClusterStatus status = manager.getStatus();
+
+    assertEquals(2, status.getClusterSize());
+    assertEquals(2, status.getQuorumSize());
+  }
+
+  @Test
+  void testGetMembers() {
+    ClusterNode node1 = new ClusterNode("node1", "192.168.1.10", 9000);
+    ClusterNode node2 = new ClusterNode("node2", "192.168.1.11", 9000);
+
+    manager.addNode(node1).join();
+    manager.addNode(node2).join();
+
+    List<ClusterNode> members = manager.getMembers();
+
+    assertEquals(2, members.size());
+    assertTrue(members.contains(node1));
+    assertTrue(members.contains(node2));
+  }
+
+  @Test
+  void testDuplicateNode() {
+    ClusterNode node = new ClusterNode("node1", "192.168.1.10", 9000);
+
+    manager.addNode(node).join();
+    Boolean result = manager.addNode(node).join();
+
+    assertFalse(result);
+    assertEquals(1, manager.getMembers().size());
+  }
+
+  @Test
+  void testRemoveNonExistentNode() {
+    Boolean result = manager.removeNode("nonexistent").join();
+
+    assertFalse(result);
+  }
 }

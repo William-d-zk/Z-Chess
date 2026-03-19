@@ -24,77 +24,66 @@
 package com.isahl.chess.king.base.cron.features;
 
 import com.isahl.chess.king.base.cron.Status;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author william.d.zk
  */
-public interface ITask
-        extends ILifeCycle
-{
-    int RETRY_COUNT_BITS = 2;
-    int RETRY_LIMIT      = (1 << RETRY_COUNT_BITS) - 1;
+public interface ITask extends ILifeCycle {
+  int RETRY_COUNT_BITS = 2;
+  int RETRY_LIMIT = (1 << RETRY_COUNT_BITS) - 1;
 
-    static int stateOf(int state, int limit)
-    {
-        return state & ~limit;
+  static int stateOf(int state, int limit) {
+    return state & ~limit;
+  }
+
+  static int countOf(int c, int limit) {
+    return c & limit;
+  }
+
+  static int ctlOf(int rs, int rc) {
+    return rs | rc;
+  }
+
+  static boolean compareAndIncrementRetry(AtomicInteger _Ctl, int expect) {
+    return _Ctl.compareAndSet(expect, expect + 1);
+  }
+
+  static void advanceState(AtomicInteger _Ctl, int targetState, int limit) {
+    for (; ; ) {
+      int c = _Ctl.get();
+      if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {
+        break;
+      }
     }
+  }
 
-    static int countOf(int c, int limit)
-    {
-        return c & limit;
+  static void recedeState(AtomicInteger _Ctl, int targetState, int limit) {
+    for (; ; ) {
+      int c = _Ctl.get();
+      if (c <= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {
+        break;
+      }
     }
+  }
 
-    static int ctlOf(int rs, int rc)
-    {
-        return rs | rc;
-    }
+  static boolean stateLessThan(int c, int s) {
+    return c < s;
+  }
 
-    static boolean compareAndIncrementRetry(AtomicInteger _Ctl, int expect)
-    {
-        return _Ctl.compareAndSet(expect, expect + 1);
-    }
+  static boolean stateAtAlmost(int c, int s) {
+    return c <= s;
+  }
 
-    static void advanceState(AtomicInteger _Ctl, int targetState, int limit)
-    {
-        for(; ; ) {
-            int c = _Ctl.get();
-            if(c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {break;}
-        }
-    }
+  static boolean stateAtLeast(int c, int s) {
+    return c >= s;
+  }
 
-    static void recedeState(AtomicInteger _Ctl, int targetState, int limit)
-    {
-        for(; ; ) {
-            int c = _Ctl.get();
-            if(c <= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) {break;}
-        }
-    }
+  static boolean stateGreaterThan(int c, int s) {
+    return c > s;
+  }
 
-    static boolean stateLessThan(int c, int s)
-    {
-        return c < s;
-    }
-
-    static boolean stateAtAlmost(int c, int s)
-    {
-        return c <= s;
-    }
-
-    static boolean stateAtLeast(int c, int s)
-    {
-        return c >= s;
-    }
-
-    static boolean stateGreaterThan(int c, int s)
-    {
-        return c > s;
-    }
-
-    static boolean isRunning(int c)
-    {
-        return c < Status.STOP.getCode() && c > Status.PENDING.getCode();
-    }
-
+  static boolean isRunning(int c) {
+    return c < Status.STOP.getCode() && c > Status.PENDING.getCode();
+  }
 }

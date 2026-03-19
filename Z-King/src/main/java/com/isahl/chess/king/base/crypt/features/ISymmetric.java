@@ -29,13 +29,10 @@ import com.isahl.chess.king.base.features.IReset;
 /**
  * @author William.d.zk
  */
-public interface ISymmetric
-        extends IReset
-{
-    byte[] createKey(String seed);
+public interface ISymmetric extends IReset {
+  byte[] createKey(String seed);
 
-    void digest(ByteBuf dst, byte[] key);
+  void digest(ByteBuf dst, byte[] key);
 
-    void digest(byte[] dst, byte[] key);
-
+  void digest(byte[] dst, byte[] key);
 }

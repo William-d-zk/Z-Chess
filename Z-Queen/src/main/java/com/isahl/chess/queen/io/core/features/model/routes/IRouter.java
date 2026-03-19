@@ -30,31 +30,29 @@ import com.isahl.chess.queen.io.core.features.model.session.IQoS;
  * @author william.d.zk
  * @date 2019-08-04
  */
-public interface IRouter
-{
+public interface IRouter {
 
-    /**
-     * register message with state for session by id
-     *
-     * @param msgId 需要等待ack的消息 持有的msg-id
-     * @param body  消息本体
-     */
-    <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body);
+  /**
+   * register message with state for session by id
+   *
+   * @param msgId 需要等待ack的消息 持有的msg-id
+   * @param body 消息本体
+   */
+  <P extends IRoutable & IProtocol & IQoS> void register(long msgId, P body);
 
-    /**
-     * feed back message state
-     *
-     * @param msgId  响应的msg-id
-     * @param origin 消息来源的session-index
-     * @return 是否对消息完成了ack动作
-     */
-    boolean ack(long msgId, long origin);
+  /**
+   * feed back message state
+   *
+   * @param msgId 响应的msg-id
+   * @param origin 消息来源的session-index
+   * @return 是否对消息完成了ack动作
+   */
+  boolean ack(long msgId, long origin);
 
-    /**
-     * clean session state machine for message stack
-     *
-     * @param session session index
-     */
-    void clean(long session);
-
+  /**
+   * clean session state machine for message stack
+   *
+   * @param session session index
+   */
+  void clean(long session);
 }

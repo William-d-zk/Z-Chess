@@ -23,116 +23,116 @@
 
 package com.isahl.chess.audience.bishop.mqtt.v5;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.bishop.mqtt.v5.Qos2Handler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class Qos2HandlerTest {
-    
-    private Qos2Handler handler;
-    
-    @BeforeEach
-    void setUp() {
-        handler = new Qos2Handler();
-    }
-    
-    @Test
-    void testHandlePublish() {
-        byte[] payload = "test message".getBytes();
-        int messageId = 123;
-        
-        int pubrecId = handler.handlePublish(messageId, payload);
-        
-        assertEquals(messageId, pubrecId);
-        assertEquals(1, handler.getPendingCount());
-    }
-    
-    @Test
-    void testHandlePublishDuplicate() {
-        byte[] payload = "test message".getBytes();
-        int messageId = 123;
-        
-        handler.handlePublish(messageId, payload);
-        int pubrecId2 = handler.handlePublish(messageId, payload);
-        
-        assertEquals(messageId, pubrecId2);
-        assertEquals(1, handler.getPendingCount());
-    }
-    
-    @Test
-    void testHandlePubrec() {
-        byte[] payload = "test message".getBytes();
-        int messageId = 123;
-        
-        handler.handlePublish(messageId, payload);
-        boolean shouldSendPubrel = handler.handlePubrec(messageId);
-        
-        assertTrue(shouldSendPubrel);
-        assertEquals(1, handler.getPendingCount());
-    }
-    
-    @Test
-    void testHandlePubrel() {
-        byte[] payload = "test message".getBytes();
-        int messageId = 123;
-        
-        handler.handlePublish(messageId, payload);
-        handler.handlePubrec(messageId);
-        boolean shouldSendPubcomp = handler.handlePubrel(messageId);
-        
-        assertTrue(shouldSendPubcomp);
-        assertEquals(1, handler.getPendingCount());
-    }
-    
-    @Test
-    void testHandlePubcomp() {
-        byte[] payload = "test message".getBytes();
-        int messageId = 123;
-        
-        handler.handlePublish(messageId, payload);
-        handler.handlePubrec(messageId);
-        handler.handlePubrel(messageId);
-        
-        Qos2Handler.Qos2Message completed = handler.handlePubcomp(messageId);
-        
-        assertNotNull(completed);
-        assertEquals(messageId, completed.getMessageId());
-        assertArrayEquals(payload, completed.getPayload());
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testFullQos2Flow() {
-        byte[] payload = "QoS 2 message".getBytes();
-        int messageId = 456;
-        
-        // Step 1: PUBLISH -> PUBREC
-        int pubrecId = handler.handlePublish(messageId, payload);
-        assertEquals(messageId, pubrecId);
-        
-        // Step 2: PUBREC -> PUBREL
-        boolean sendPubrel = handler.handlePubrec(messageId);
-        assertTrue(sendPubrel);
-        
-        // Step 3: PUBREL -> PUBCOMP
-        boolean sendPubcomp = handler.handlePubrel(messageId);
-        assertTrue(sendPubcomp);
-        
-        // Step 4: PUBCOMP -> Complete
-        Qos2Handler.Qos2Message completed = handler.handlePubcomp(messageId);
-        assertNotNull(completed);
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testInitiateQos2Publish() {
-        byte[] payload = "outbound message".getBytes();
-        int messageId = 789;
-        
-        handler.initiateQos2Publish(messageId, payload);
-        
-        assertEquals(1, handler.getPendingCount());
-    }
+
+  private Qos2Handler handler;
+
+  @BeforeEach
+  void setUp() {
+    handler = new Qos2Handler();
+  }
+
+  @Test
+  void testHandlePublish() {
+    byte[] payload = "test message".getBytes();
+    int messageId = 123;
+
+    int pubrecId = handler.handlePublish(messageId, payload);
+
+    assertEquals(messageId, pubrecId);
+    assertEquals(1, handler.getPendingCount());
+  }
+
+  @Test
+  void testHandlePublishDuplicate() {
+    byte[] payload = "test message".getBytes();
+    int messageId = 123;
+
+    handler.handlePublish(messageId, payload);
+    int pubrecId2 = handler.handlePublish(messageId, payload);
+
+    assertEquals(messageId, pubrecId2);
+    assertEquals(1, handler.getPendingCount());
+  }
+
+  @Test
+  void testHandlePubrec() {
+    byte[] payload = "test message".getBytes();
+    int messageId = 123;
+
+    handler.handlePublish(messageId, payload);
+    boolean shouldSendPubrel = handler.handlePubrec(messageId);
+
+    assertTrue(shouldSendPubrel);
+    assertEquals(1, handler.getPendingCount());
+  }
+
+  @Test
+  void testHandlePubrel() {
+    byte[] payload = "test message".getBytes();
+    int messageId = 123;
+
+    handler.handlePublish(messageId, payload);
+    handler.handlePubrec(messageId);
+    boolean shouldSendPubcomp = handler.handlePubrel(messageId);
+
+    assertTrue(shouldSendPubcomp);
+    assertEquals(1, handler.getPendingCount());
+  }
+
+  @Test
+  void testHandlePubcomp() {
+    byte[] payload = "test message".getBytes();
+    int messageId = 123;
+
+    handler.handlePublish(messageId, payload);
+    handler.handlePubrec(messageId);
+    handler.handlePubrel(messageId);
+
+    Qos2Handler.Qos2Message completed = handler.handlePubcomp(messageId);
+
+    assertNotNull(completed);
+    assertEquals(messageId, completed.getMessageId());
+    assertArrayEquals(payload, completed.getPayload());
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testFullQos2Flow() {
+    byte[] payload = "QoS 2 message".getBytes();
+    int messageId = 456;
+
+    // Step 1: PUBLISH -> PUBREC
+    int pubrecId = handler.handlePublish(messageId, payload);
+    assertEquals(messageId, pubrecId);
+
+    // Step 2: PUBREC -> PUBREL
+    boolean sendPubrel = handler.handlePubrec(messageId);
+    assertTrue(sendPubrel);
+
+    // Step 3: PUBREL -> PUBCOMP
+    boolean sendPubcomp = handler.handlePubrel(messageId);
+    assertTrue(sendPubcomp);
+
+    // Step 4: PUBCOMP -> Complete
+    Qos2Handler.Qos2Message completed = handler.handlePubcomp(messageId);
+    assertNotNull(completed);
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testInitiateQos2Publish() {
+    byte[] payload = "outbound message".getBytes();
+    int messageId = 789;
+
+    handler.initiateQos2Publish(messageId, payload);
+
+    assertEquals(1, handler.getPendingCount());
+  }
 }

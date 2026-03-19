@@ -24,123 +24,111 @@
 package com.isahl.chess.knight.service;
 
 import com.isahl.chess.knight.engine.DefaultSchedulerEngine;
-import com.isahl.chess.knight.engine.SchedulingRule;
 import com.isahl.chess.knight.engine.SchedulerEngine;
+import com.isahl.chess.knight.engine.SchedulingRule;
 import com.isahl.chess.knight.policy.Policy;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
-public class SchedulerServiceImpl
-        implements SchedulerService
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(SchedulerServiceImpl.class);
+public class SchedulerServiceImpl implements SchedulerService {
+  private static final Logger _Logger = LoggerFactory.getLogger(SchedulerServiceImpl.class);
 
-    private final SchedulerEngine _Engine;
-    private final Map<String, List<SchedulingRule>> _Rules = new ConcurrentHashMap<>();
+  private final SchedulerEngine _Engine;
+  private final Map<String, List<SchedulingRule>> _Rules = new ConcurrentHashMap<>();
 
-    @Autowired
-    public SchedulerServiceImpl(SchedulerEngine engine)
-    {
-        _Engine = engine;
+  @Autowired
+  public SchedulerServiceImpl(SchedulerEngine engine) {
+    _Engine = engine;
+  }
+
+  @Override
+  public String submitTask(String taskType, String payload, SchedulingRule rule) {
+    String taskId = UUID.randomUUID().toString();
+    SchedulerEngine.TaskContext context;
+
+    if (rule instanceof SchedulingRule.DispatchRule dispatch) {
+      context =
+          new DefaultSchedulerEngine.DispatchTaskContext(
+              taskId, taskType, payload, 3600, dispatch.getTargetNodes());
+    } else {
+      context = new DefaultSchedulerEngine.DefaultTaskContext(taskId, taskType, payload, 3600);
     }
 
-    @Override
-    public String submitTask(String taskType, String payload, SchedulingRule rule)
-    {
-        String taskId = UUID.randomUUID().toString();
-        SchedulerEngine.TaskContext context;
+    _Engine.submitTask(context);
+    _Logger.info("Submitted task: taskId={}, taskType={}", taskId, taskType);
+    return taskId;
+  }
 
-        if(rule instanceof SchedulingRule.DispatchRule dispatch) {
-            context = new DefaultSchedulerEngine.DispatchTaskContext(
-                    taskId, taskType, payload, 3600, dispatch.getTargetNodes());
-        }
-        else {
-            context = new DefaultSchedulerEngine.DefaultTaskContext(taskId, taskType, payload, 3600);
-        }
+  @Override
+  public String submitGroupTask(
+      String taskType, String payload, String groupId, SchedulingRule rule) {
+    String taskId = UUID.randomUUID().toString();
+    _Logger.info(
+        "Submitted group task: taskId={}, taskType={}, groupId={}", taskId, taskType, groupId);
+    return taskId;
+  }
 
-        _Engine.submitTask(context);
-        _Logger.info("Submitted task: taskId={}, taskType={}", taskId, taskType);
-        return taskId;
+  @Override
+  public boolean cancelTask(String taskId) {
+    return _Engine.cancelTask(taskId);
+  }
+
+  @Override
+  public TaskStatus getTaskStatus(String taskId) {
+    return _Engine.getTaskStatus(taskId);
+  }
+
+  @Override
+  public TaskResult getTaskResult(String taskId) {
+    return _Engine.getTaskResult(taskId);
+  }
+
+  @Override
+  public void registerPolicy(String taskType, Policy policy) {
+    _Engine.registerPolicy(taskType, policy);
+  }
+
+  @Override
+  public Policy getPolicy(String taskType, String policyType) {
+    Policy policy = _Engine.getPolicy(taskType);
+    if (policy != null && policy.getPolicyType().equals(policyType)) {
+      return policy;
     }
+    return null;
+  }
 
-    @Override
-    public String submitGroupTask(String taskType, String payload, String groupId, SchedulingRule rule)
-    {
-        String taskId = UUID.randomUUID().toString();
-        _Logger.info("Submitted group task: taskId={}, taskType={}, groupId={}", taskId, taskType, groupId);
-        return taskId;
-    }
+  @Override
+  public List<SchedulingRule> getRules(String taskType) {
+    return _Rules.getOrDefault(taskType, List.of());
+  }
 
-    @Override
-    public boolean cancelTask(String taskId)
-    {
-        return _Engine.cancelTask(taskId);
-    }
+  @Override
+  public void registerRule(String taskType, SchedulingRule rule) {
+    _Rules.computeIfAbsent(taskType, k -> new java.util.concurrent.CopyOnWriteArrayList<>())
+        .add(rule);
+    _Logger.info("Registered rule: taskType={}, ruleId={}", taskType, rule.getRuleId());
+  }
 
-    @Override
-    public TaskStatus getTaskStatus(String taskId)
-    {
-        return _Engine.getTaskStatus(taskId);
-    }
+  @Override
+  public Map<String, Long> getTaskMetrics() {
+    return _Engine.getPendingTaskCount();
+  }
 
-    @Override
-    public TaskResult getTaskResult(String taskId)
-    {
-        return _Engine.getTaskResult(taskId);
-    }
-
-    @Override
-    public void registerPolicy(String taskType, Policy policy)
-    {
-        _Engine.registerPolicy(taskType, policy);
-    }
-
-    @Override
-    public Policy getPolicy(String taskType, String policyType)
-    {
-        Policy policy = _Engine.getPolicy(taskType);
-        if(policy != null && policy.getPolicyType().equals(policyType)) {
-            return policy;
-        }
-        return null;
-    }
-
-    @Override
-    public List<SchedulingRule> getRules(String taskType)
-    {
-        return _Rules.getOrDefault(taskType, List.of());
-    }
-
-    @Override
-    public void registerRule(String taskType, SchedulingRule rule)
-    {
-        _Rules.computeIfAbsent(taskType, k -> new java.util.concurrent.CopyOnWriteArrayList<>()).add(rule);
-        _Logger.info("Registered rule: taskType={}, ruleId={}", taskType, rule.getRuleId());
-    }
-
-    @Override
-    public Map<String, Long> getTaskMetrics()
-    {
-        return _Engine.getPendingTaskCount();
-    }
-
-    @Override
-    public Map<String, Integer> getNodeMetrics()
-    {
-        Map<String, Integer> metrics = new HashMap<>();
-        metrics.put("onlineNodes", 0);
-        metrics.put("pendingTasks", 0);
-        return metrics;
-    }
+  @Override
+  public Map<String, Integer> getNodeMetrics() {
+    Map<String, Integer> metrics = new HashMap<>();
+    metrics.put("onlineNodes", 0);
+    metrics.put("pendingTasks", 0);
+    return metrics;
+  }
 }

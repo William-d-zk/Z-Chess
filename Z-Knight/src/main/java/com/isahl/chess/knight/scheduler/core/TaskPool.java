@@ -24,95 +24,85 @@
 package com.isahl.chess.knight.scheduler.core;
 
 import com.isahl.chess.knight.scheduler.domain.SubTask;
-import org.springframework.stereotype.Component;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
-public class TaskPool
-{
-    private final ConcurrentHashMap<String, SubTask> _PendingTasks = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Set<String>> _GroupTasks = new ConcurrentHashMap<>();
+public class TaskPool {
+  private final ConcurrentHashMap<String, SubTask> _PendingTasks = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Set<String>> _GroupTasks = new ConcurrentHashMap<>();
 
-    public void addTask(SubTask task)
-    {
-        _PendingTasks.put(task.getSubTaskId(), task);
-        String groupId = task.getTargetNode();
-        if(groupId != null) {
-            _GroupTasks.computeIfAbsent(groupId, k -> ConcurrentHashMap.newKeySet()).add(task.getSubTaskId());
-        }
+  public void addTask(SubTask task) {
+    _PendingTasks.put(task.getSubTaskId(), task);
+    String groupId = task.getTargetNode();
+    if (groupId != null) {
+      _GroupTasks.computeIfAbsent(groupId, k -> ConcurrentHashMap.newKeySet())
+          .add(task.getSubTaskId());
+    }
+  }
+
+  public Optional<SubTask> claim(String nodeId, int maxCount) {
+    List<String> keys = new ArrayList<>(_PendingTasks.keySet());
+    if (keys.isEmpty()) {
+      return Optional.empty();
     }
 
-    public Optional<SubTask> claim(String nodeId, int maxCount)
-    {
-        List<String> keys = new ArrayList<>(_PendingTasks.keySet());
-        if(keys.isEmpty()) {
-            return Optional.empty();
-        }
+    String firstKey = keys.get(0);
+    SubTask task = _PendingTasks.remove(firstKey);
+    if (task != null) {
+      task.setTargetNode(nodeId);
+      return Optional.of(task);
+    }
+    return Optional.empty();
+  }
 
-        String firstKey = keys.get(0);
-        SubTask task = _PendingTasks.remove(firstKey);
-        if(task != null) {
-            task.setTargetNode(nodeId);
-            return Optional.of(task);
-        }
-        return Optional.empty();
+  public Optional<SubTask> claimFromGroup(String groupId, String nodeId, int maxCount) {
+    Set<String> groupTaskIds = _GroupTasks.get(groupId);
+    if (groupTaskIds == null || groupTaskIds.isEmpty()) {
+      return Optional.empty();
     }
 
-    public Optional<SubTask> claimFromGroup(String groupId, String nodeId, int maxCount)
-    {
-        Set<String> groupTaskIds = _GroupTasks.get(groupId);
-        if(groupTaskIds == null || groupTaskIds.isEmpty()) {
-            return Optional.empty();
-        }
-
-        String firstId = groupTaskIds.iterator().next();
-        SubTask task = _PendingTasks.remove(firstId);
-        if(task != null) {
-            groupTaskIds.remove(task.getSubTaskId());
-            task.setTargetNode(nodeId);
-            return Optional.of(task);
-        }
-        return Optional.empty();
+    String firstId = groupTaskIds.iterator().next();
+    SubTask task = _PendingTasks.remove(firstId);
+    if (task != null) {
+      groupTaskIds.remove(task.getSubTaskId());
+      task.setTargetNode(nodeId);
+      return Optional.of(task);
     }
+    return Optional.empty();
+  }
 
-    public List<SubTask> claimBatch(String nodeId, int maxCount)
-    {
-        List<SubTask> claimed = new ArrayList<>();
-        for(int i = 0; i < maxCount; i++) {
-            Optional<SubTask> task = claim(nodeId, 1);
-            if(task.isEmpty()) {
-                break;
-            }
-            claimed.add(task.get());
-        }
-        return claimed;
+  public List<SubTask> claimBatch(String nodeId, int maxCount) {
+    List<SubTask> claimed = new ArrayList<>();
+    for (int i = 0; i < maxCount; i++) {
+      Optional<SubTask> task = claim(nodeId, 1);
+      if (task.isEmpty()) {
+        break;
+      }
+      claimed.add(task.get());
     }
+    return claimed;
+  }
 
-    public void release(SubTask task)
-    {
-        task.setTargetNode(null);
-        _PendingTasks.put(task.getSubTaskId(), task);
-    }
+  public void release(SubTask task) {
+    task.setTargetNode(null);
+    _PendingTasks.put(task.getSubTaskId(), task);
+  }
 
-    public int getPendingCount()
-    {
-        return _PendingTasks.size();
-    }
+  public int getPendingCount() {
+    return _PendingTasks.size();
+  }
 
-    public int getPendingCountByGroup(String groupId)
-    {
-        Set<String> groupTaskIds = _GroupTasks.get(groupId);
-        if(groupTaskIds == null) {
-            return 0;
-        }
-        return groupTaskIds.size();
+  public int getPendingCountByGroup(String groupId) {
+    Set<String> groupTaskIds = _GroupTasks.get(groupId);
+    if (groupTaskIds == null) {
+      return 0;
     }
+    return groupTaskIds.size();
+  }
 
-    public Set<String> getAllGroups()
-    {
-        return new HashSet<>(_GroupTasks.keySet());
-    }
+  public Set<String> getAllGroups() {
+    return new HashSet<>(_GroupTasks.keySet());
+  }
 }

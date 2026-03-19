@@ -26,13 +26,9 @@ package com.isahl.chess.knight.cluster.features;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
-
 import java.util.List;
 
-/**
- * 由cluster 提供的节点间消息转发服务
- */
-public interface IExchangeService
-{
-    void exchange(IoSerial body, long origin, int factory, IManager manager, List<ITriple> load);
+/** 由cluster 提供的节点间消息转发服务 */
+public interface IExchangeService {
+  void exchange(IoSerial body, long origin, int factory, IManager manager, List<ITriple> load);
 }

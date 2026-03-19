@@ -27,141 +27,122 @@ import com.isahl.chess.rook.storage.db.model.AuditModel;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "im_message",
-        indexes = { @Index(name = "idx_message_group_time", columnList = "group_id, createdAt"),
-                   @Index(name = "idx_message_sender_time", columnList = "sender_id, createdAt"),
-                   @Index(name = "idx_message_receiver_time", columnList = "receiver_id, createdAt") })
-public class Message
-        extends AuditModel
-{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Table(
+    name = "im_message",
+    indexes = {
+      @Index(name = "idx_message_group_time", columnList = "group_id, createdAt"),
+      @Index(name = "idx_message_sender_time", columnList = "sender_id, createdAt"),
+      @Index(name = "idx_message_receiver_time", columnList = "receiver_id, createdAt")
+    })
+public class Message extends AuditModel {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "group_id")
-    private Long groupId;
+  @Column(name = "group_id")
+  private Long groupId;
 
-    @Column(name = "sender_id", nullable = false)
-    private Long senderId;
+  @Column(name = "sender_id", nullable = false)
+  private Long senderId;
 
-    @Column(name = "receiver_id")
-    private Long receiverId;
+  @Column(name = "receiver_id")
+  private Long receiverId;
 
-    @Column(nullable = false, length = 10000)
-    private String content;
+  @Column(nullable = false, length = 10000)
+  private String content;
 
-    @Column(nullable = false)
-    private String type = "TEXT";
+  @Column(nullable = false)
+  private String type = "TEXT";
 
-    @Column(nullable = false)
-    private Long sequenceNum;
+  @Column(nullable = false)
+  private Long sequenceNum;
 
-    @Column(nullable = false)
-    private Boolean delivered = false;
+  @Column(nullable = false)
+  private Boolean delivered = false;
 
-    @Column(nullable = false)
-    private Boolean recalled = false;
+  @Column(nullable = false)
+  private Boolean recalled = false;
 
-    public Message()
-    {
-        super();
-    }
+  public Message() {
+    super();
+  }
 
-    public Message(Long senderId, String content, String type)
-    {
-        super();
-        this.senderId = senderId;
-        this.content = content;
-        this.type = type;
-    }
+  public Message(Long senderId, String content, String type) {
+    super();
+    this.senderId = senderId;
+    this.content = content;
+    this.type = type;
+  }
 
-    public Long getId()
-    {
-        return id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public Long getGroupId()
-    {
-        return groupId;
-    }
+  public Long getGroupId() {
+    return groupId;
+  }
 
-    public void setGroupId(Long groupId)
-    {
-        this.groupId = groupId;
-    }
+  public void setGroupId(Long groupId) {
+    this.groupId = groupId;
+  }
 
-    public Long getSenderId()
-    {
-        return senderId;
-    }
+  public Long getSenderId() {
+    return senderId;
+  }
 
-    public void setSenderId(Long senderId)
-    {
-        this.senderId = senderId;
-    }
+  public void setSenderId(Long senderId) {
+    this.senderId = senderId;
+  }
 
-    public Long getReceiverId()
-    {
-        return receiverId;
-    }
+  public Long getReceiverId() {
+    return receiverId;
+  }
 
-    public void setReceiverId(Long receiverId)
-    {
-        this.receiverId = receiverId;
-    }
+  public void setReceiverId(Long receiverId) {
+    this.receiverId = receiverId;
+  }
 
-    public String getContent()
-    {
-        return content;
-    }
+  public String getContent() {
+    return content;
+  }
 
-    public void setContent(String content)
-    {
-        this.content = content;
-    }
+  public void setContent(String content) {
+    this.content = content;
+  }
 
-    public String getType()
-    {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type)
-    {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public Long getSequenceNum()
-    {
-        return sequenceNum;
-    }
+  public Long getSequenceNum() {
+    return sequenceNum;
+  }
 
-    public void setSequenceNum(Long sequenceNum)
-    {
-        this.sequenceNum = sequenceNum;
-    }
+  public void setSequenceNum(Long sequenceNum) {
+    this.sequenceNum = sequenceNum;
+  }
 
-    public Boolean getDelivered()
-    {
-        return delivered;
-    }
+  public Boolean getDelivered() {
+    return delivered;
+  }
 
-    public void setDelivered(Boolean delivered)
-    {
-        this.delivered = delivered;
-    }
+  public void setDelivered(Boolean delivered) {
+    this.delivered = delivered;
+  }
 
-    public Boolean getRecalled()
-    {
-        return recalled;
-    }
+  public Boolean getRecalled() {
+    return recalled;
+  }
 
-    public void setRecalled(Boolean recalled)
-    {
-        this.recalled = recalled;
-    }
+  public void setRecalled(Boolean recalled) {
+    this.recalled = recalled;
+  }
 }

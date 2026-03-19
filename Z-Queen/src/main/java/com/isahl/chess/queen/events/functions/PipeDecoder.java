@@ -32,28 +32,24 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  * @date 2019-05-08
  */
-public class PipeDecoder
-        implements IPipeDecoder
-{
+public class PipeDecoder implements IPipeDecoder {
 
-    @Override
-    public ITriple handle(IPacket input, ISession session)
-    {
-        ITriple decoded = filterRead(input, session);
-        /*
-            一旦read出现异常将抛出到event-handler进行处理，
-            无异常时才继续session.readNext()操作;
-            不在 read 事件触发时直接进行readNext()，还将保护io-ring-buffer容量问题，
-            防止过量事件挤占io-event-queue;
-            当然这对大数据量高带宽传输支持不良，对session-context-read-buffer容量存在压力。
-        */
-        session.readNext();
-        return decoded;
-    }
+  @Override
+  public ITriple handle(IPacket input, ISession session) {
+    ITriple decoded = filterRead(input, session);
+    /*
+        一旦read出现异常将抛出到event-handler进行处理，
+        无异常时才继续session.readNext()操作;
+        不在 read 事件触发时直接进行readNext()，还将保护io-ring-buffer容量问题，
+        防止过量事件挤占io-event-queue;
+        当然这对大数据量高带宽传输支持不良，对session-context-read-buffer容量存在压力。
+    */
+    session.readNext();
+    return decoded;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.pipe.decoder";
-    }
+  @Override
+  public String getName() {
+    return "operator.pipe.decoder";
+  }
 }

@@ -25,24 +25,18 @@ package com.isahl.chess.queen.io.core.features.model.session;
 /**
  * @author William.d.zk
  */
-public interface ISequence
-{
-    default long getSequence()
-    {
-        return -1;
-    }
+public interface ISequence {
+  default long getSequence() {
+    return -1;
+  }
 
-    default void setSequence(long sequence)
-    {
-    }
+  default void setSequence(long sequence) {}
 
-    default boolean isOrder()
-    {
-        return false;
-    }
+  default boolean isOrder() {
+    return false;
+  }
 
-    default long getOrder()
-    {
-        return -1;
-    }
+  default long getOrder() {
+    return -1;
+  }
 }

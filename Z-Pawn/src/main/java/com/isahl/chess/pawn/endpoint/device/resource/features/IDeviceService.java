@@ -25,60 +25,59 @@ package com.isahl.chess.pawn.endpoint.device.resource.features;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.List;
+public interface IDeviceService {
 
-public interface IDeviceService
-{
+  /**
+   * 新增设备信息
+   *
+   * @param device
+   * @return
+   * @throws ZException
+   */
+  DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
-    /**
-     * 新增设备信息
-     *
-     * @param device
-     * @return
-     * @throws ZException
-     */
-    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
+  /**
+   * 更新设备信息
+   *
+   * @param device
+   * @return
+   * @throws ZException
+   */
+  DeviceEntity updateDevice(DeviceEntity device) throws ZException;
 
-    /**
-     * 更新设备信息
-     *
-     * @param device
-     * @return
-     * @throws ZException
-     */
-    DeviceEntity updateDevice(DeviceEntity device) throws ZException;
+  /**
+   * 根据设备令牌查找
+   *
+   * @param token
+   * @return
+   * @throws ZException
+   */
+  DeviceEntity findByToken(String token) throws ZException;
 
-    /**
-     * 根据设备令牌查找
-     *
-     * @param token
-     * @return
-     * @throws ZException
-     */
-    DeviceEntity findByToken(String token) throws ZException;
+  /**
+   * 根据设备编号查找
+   *
+   * @param number
+   * @return
+   * @throws ZException
+   */
+  DeviceEntity findByNotice(String number) throws ZException;
 
-    /**
-     * 根据设备编号查找
-     *
-     * @param number
-     * @return
-     * @throws ZException
-     */
-    DeviceEntity findByNotice(String number) throws ZException;
+  List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable)
+      throws ZException;
 
-    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
+  List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
 
-    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
+  DeviceEntity getOneDevice(long deviceId);
 
-    DeviceEntity getOneDevice(long deviceId);
-
-    /**
-     * 根据设备ID删除设备
-     * @param id
-     */
-    void deleteDevice(long id);
-
+  /**
+   * 根据设备ID删除设备
+   *
+   * @param id
+   */
+  void deleteDevice(long id);
 }

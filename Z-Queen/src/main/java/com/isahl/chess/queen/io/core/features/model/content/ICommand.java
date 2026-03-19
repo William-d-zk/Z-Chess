@@ -29,12 +29,9 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
  * @author william.d.zk
  * @date 2019-05-17
  */
-public interface ICommand<C extends IPContext>
-        extends IControl<C>
-{
+public interface ICommand<C extends IPContext> extends IControl<C> {
 
-    long msgId();
+  long msgId();
 
-    void msgId(long msgId);
-
+  void msgId(long msgId);
 }

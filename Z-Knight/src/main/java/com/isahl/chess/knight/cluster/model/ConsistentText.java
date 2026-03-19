@@ -38,32 +38,22 @@ import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.CLUSTER_KNIGHT_CONSISTENT_SERIAL)
-public class ConsistentText
-        extends TextSerial
-        implements ITraceable
-{
+public class ConsistentText extends TextSerial implements ITraceable {
 
-    private final long _ClientId;
+  private final long _ClientId;
 
-    @JsonCreator
-    public ConsistentText(
-            @JsonProperty("text")
-            String text,
-            @JsonProperty("client_id")
-            long id)
-    {
-        _ClientId = id;
-        setText(text);
-    }
+  @JsonCreator
+  public ConsistentText(@JsonProperty("text") String text, @JsonProperty("client_id") long id) {
+    _ClientId = id;
+    setText(text);
+  }
 
-    @Override
-    public long origin()
-    {
-        return _ClientId;
-    }
+  @Override
+  public long origin() {
+    return _ClientId;
+  }
 
-    public int length()
-    {
-        return 8 + super.length();
-    }
+  public int length() {
+    return 8 + super.length();
+  }
 }

@@ -27,16 +27,15 @@ package com.isahl.chess.king.base.features;
  * @author william.d.zk
  * @date 2019-06-15
  */
-public interface IStatus
-{
-    String getStatus();
+public interface IStatus {
+  String getStatus();
 
-    int getCode();
+  int getCode();
 
-    int CODE_MISS       = Integer.parseInt("00000001", 2);
-    int CODE_CREATED    = Integer.parseInt("00010010", 2);
-    int CODE_INVALID    = Integer.parseInt("00010110", 2);
-    int CODE_INCOMPLETE = Integer.parseInt("00011110", 2);
-    int CODE_AVAILABLE  = Integer.parseInt("10000010", 2);
-    int CODE_DISABLE    = Integer.parseInt("10010010", 2);
+  int CODE_MISS = Integer.parseInt("00000001", 2);
+  int CODE_CREATED = Integer.parseInt("00010010", 2);
+  int CODE_INVALID = Integer.parseInt("00010110", 2);
+  int CODE_INCOMPLETE = Integer.parseInt("00011110", 2);
+  int CODE_AVAILABLE = Integer.parseInt("10000010", 2);
+  int CODE_DISABLE = Integer.parseInt("10010010", 2);
 }

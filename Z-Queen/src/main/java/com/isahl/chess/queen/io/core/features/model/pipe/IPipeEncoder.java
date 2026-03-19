@@ -36,47 +36,45 @@ import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 /**
  * @author William.d.zk
  */
-public interface IPipeEncoder
-        extends IBinaryOperator<IProtocol, ISession, ITriple>
-{
-    default IPacket protocolWrite(IProtocol output, ISession session)
-    {
-        IPContext context = session.getContext();
-        if(context == null || output == null) {return null;}
-        IFilterChain previous = session.getFilterChain()
-                                       .getChainTail();
-        IProtocol protocol = output;
-        CHAIN:
-        {
-            IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
-            while(previous != null) {
-                context = session.getContext();// 每次都要还原为最外层的context
-                IPipeFilter pipeFilter = previous.getPipeFilter();
-                Pair<IFilter.ResultType, IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
-                resultType = seekResult.getFirst();
-                context = seekResult.getSecond();
-                switch(resultType) {
-                    case ERROR:
-                        throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
-                    case NEED_DATA:
-                    case CANCEL:
-                        return null;
-                    case NEXT_STEP:
-                        protocol = pipeFilter.pipeEncode(context, protocol);
-                        break;
-                    case HANDLED:
-                        protocol = pipeFilter.pipeEncode(context, protocol);
-                        break CHAIN;
-                    case IGNORE:
-                        break;
-                }
-                previous = previous.getPrevious();
-            }
-            if(resultType == IFilter.ResultType.IGNORE && protocol._super() != IProtocol.IO_QUEEN_PACKET_SERIAL) {
-                throw new ZException("no filter handle output: %s ", protocol);
-            }
-        }
-        return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(protocol.encode());
+public interface IPipeEncoder extends IBinaryOperator<IProtocol, ISession, ITriple> {
+  default IPacket protocolWrite(IProtocol output, ISession session) {
+    IPContext context = session.getContext();
+    if (context == null || output == null) {
+      return null;
     }
-
+    IFilterChain previous = session.getFilterChain().getChainTail();
+    IProtocol protocol = output;
+    CHAIN:
+    {
+      IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
+      while (previous != null) {
+        context = session.getContext(); // 每次都要还原为最外层的context
+        IPipeFilter pipeFilter = previous.getPipeFilter();
+        Pair<IFilter.ResultType, IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
+        resultType = seekResult.getFirst();
+        context = seekResult.getSecond();
+        switch (resultType) {
+          case ERROR:
+            throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
+          case NEED_DATA:
+          case CANCEL:
+            return null;
+          case NEXT_STEP:
+            protocol = pipeFilter.pipeEncode(context, protocol);
+            break;
+          case HANDLED:
+            protocol = pipeFilter.pipeEncode(context, protocol);
+            break CHAIN;
+          case IGNORE:
+            break;
+        }
+        previous = previous.getPrevious();
+      }
+      if (resultType == IFilter.ResultType.IGNORE
+          && protocol._super() != IProtocol.IO_QUEEN_PACKET_SERIAL) {
+        throw new ZException("no filter handle output: %s ", protocol);
+      }
+    }
+    return protocol instanceof IPacket ? (IPacket) protocol : new AioPacket(protocol.encode());
+  }
 }

@@ -23,11 +23,10 @@
 
 package com.isahl.chess.knight.scheduler.domain;
 
-public enum TaskStatus
-{
-    PENDING,
-    RUNNING,
-    PARTIAL_COMPLETE,
-    COMPLETE,
-    FAILED
+public enum TaskStatus {
+  PENDING,
+  RUNNING,
+  PARTIAL_COMPLETE,
+  COMPLETE,
+  FAILED
 }

@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
-
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -37,91 +36,101 @@ import java.io.Serializable;
  * @date 2020/7/13
  */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class SnapshotEntry
-        extends InnerProtocol
-        implements ITraceable,
-                   Serializable
-{
-    @Serial
-    private static final long serialVersionUID = -8360451804196525728L;
+public class SnapshotEntry extends InnerProtocol implements ITraceable, Serializable {
+  @Serial private static final long serialVersionUID = -8360451804196525728L;
 
-    private long mOrigin;
-    private long mEnd;
-    private long mTerm;
-    private long mCommit;
-    private long mAccept;
+  private long mOrigin;
+  private long mEnd;
+  private long mTerm;
+  private long mCommit;
+  private long mAccept;
 
-    @Override
-    public int length()
-    {
-        return 8 + // origin
-               8 + // end
-               8 + // term
-               8 + // commit
-               8 + // accept
-               super.length();
-    }
+  @Override
+  public int length() {
+    return 8
+        + // origin
+        8
+        + // end
+        8
+        + // term
+        8
+        + // commit
+        8
+        + // accept
+        super.length();
+  }
 
-    public SnapshotEntry(long origin, long start, long end, long term, long commit, long accept, byte[] content)
-    {
-        super(Operation.OP_INSERT, Strategy.RETAIN);
-        mOrigin = origin;
-        pKey = start;
-        mEnd = end;
-        mTerm = term;
-        mCommit = commit;
-        mAccept = accept;
-        withSub(content);
-    }
+  public SnapshotEntry(
+      long origin, long start, long end, long term, long commit, long accept, byte[] content) {
+    super(Operation.OP_INSERT, Strategy.RETAIN);
+    mOrigin = origin;
+    pKey = start;
+    mEnd = end;
+    mTerm = term;
+    mCommit = commit;
+    mAccept = accept;
+    withSub(content);
+  }
 
-    public SnapshotEntry(ByteBuf input)
-    {
-        super(input);
-        buildSub();
-    }
+  public SnapshotEntry(ByteBuf input) {
+    super(input);
+    buildSub();
+  }
 
-    @Override
-    public long origin() {return mOrigin;}
+  @Override
+  public long origin() {
+    return mOrigin;
+  }
 
-    public long start() {return primaryKey();}
+  public long start() {
+    return primaryKey();
+  }
 
-    public long end() {return mEnd;}
+  public long end() {
+    return mEnd;
+  }
 
-    public long term() {return mTerm;}
+  public long term() {
+    return mTerm;
+  }
 
-    public long commit() {return mCommit;}
+  public long commit() {
+    return mCommit;
+  }
 
-    public long accept() {return mAccept;}
+  public long accept() {
+    return mAccept;
+  }
 
-    public byte[] content() {return payload();}
+  public byte[] content() {
+    return payload();
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(end())
-                    .putLong(term())
-                    .putLong(commit())
-                    .putLong(accept())
-                    .putLong(origin());
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(end())
+        .putLong(term())
+        .putLong(commit())
+        .putLong(accept())
+        .putLong(origin());
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mEnd = input.getLong();
-        mTerm = input.getLong();
-        mCommit = input.getLong();
-        mAccept = input.getLong();
-        mOrigin = input.getLong();
-        return remain - 40;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mEnd = input.getLong();
+    mTerm = input.getLong();
+    mCommit = input.getLong();
+    mAccept = input.getLong();
+    mOrigin = input.getLong();
+    return remain - 40;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("""
+  @Override
+  public String toString() {
+    return String.format(
+        """
                                      snapshot entry @ %#x {
                                      \t\torigin[%#x],
                                      \t\tstart[%d],
@@ -129,6 +138,7 @@ public class SnapshotEntry
                                      \t\tterm[%d],
                                      \t\tcommit[%d],
                                      \t\tsub[%#x](%d),
-                                     }""", serial(), origin(), start(), end(), term(), commit(), _sub(), pLength());
-    }
+                                     }""",
+        serial(), origin(), start(), end(), term(), commit(), _sub(), pLength());
+  }
 }

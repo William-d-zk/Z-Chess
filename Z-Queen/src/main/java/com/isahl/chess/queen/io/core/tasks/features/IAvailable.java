@@ -27,7 +27,6 @@ package com.isahl.chess.queen.io.core.tasks.features;
  * @author william.d.zk
  */
 @FunctionalInterface
-public interface IAvailable<V>
-{
-    void available(V v);
+public interface IAvailable<V> {
+  void available(V v);
 }

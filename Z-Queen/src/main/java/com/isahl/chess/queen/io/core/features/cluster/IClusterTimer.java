@@ -29,7 +29,6 @@ import com.isahl.chess.queen.db.model.IStorage;
  * @author william.d.zk
  * @date 2020/4/9
  */
-public interface IClusterTimer
-{
-    <T extends IStorage> void timeTrigger(T content);
+public interface IClusterTimer {
+  <T extends IStorage> void timeTrigger(T content);
 }

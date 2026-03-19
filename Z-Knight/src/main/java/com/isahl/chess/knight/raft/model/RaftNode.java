@@ -23,6 +23,8 @@
 
 package com.isahl.chess.knight.raft.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
@@ -30,11 +32,8 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
-
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
@@ -42,173 +41,145 @@ import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class RaftNode
-        extends InnerProtocol
-        implements Comparable<RaftNode>
-{
-    @Serial
-    private static final long serialVersionUID = 7634053506664147831L;
+public class RaftNode extends InnerProtocol implements Comparable<RaftNode> {
+  @Serial private static final long serialVersionUID = 7634053506664147831L;
 
-    private String mHost;
-    private int    mPort;
-    private String mGateHost;
-    private int    mGatePort;
-    private int    mState;
+  private String mHost;
+  private int mPort;
+  private String mGateHost;
+  private int mGatePort;
+  private int mState;
 
-    public RaftNode(String host)
-    {
-        super(Operation.OP_REMOVE, Strategy.RETAIN);
-        mHost = host;
+  public RaftNode(String host) {
+    super(Operation.OP_REMOVE, Strategy.RETAIN);
+    mHost = host;
+  }
+
+  public RaftNode(String host, int port) {
+    super(Operation.OP_APPEND, Strategy.RETAIN);
+    mHost = host;
+    mPort = port;
+    mState = RaftState.FOLLOWER.getCode();
+  }
+
+  public RaftNode(String host, String gate, int gatePort) {
+    super(Operation.OP_MODIFY, Strategy.RETAIN);
+    mHost = host;
+    mPort = -1; // 禁止网关提供标准服务;一般Gate会存在更大的负载
+    mGateHost = gate;
+    mGatePort = gatePort;
+    mState = RaftState.GATE.getCode();
+  }
+
+  public RaftNode(ByteBuf input) {
+    super(input);
+  }
+
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output = super.suffix(output).putShort(getPort()).putShort(getGatePort()).put(mState);
+    output.vPut(hostBytes()).vPut(gateHostBytes());
+    return output;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    setPort(input.getUnsignedShort());
+    setGatePort(input.getUnsignedShort());
+    setState(input.get());
+    int hl = input.vLength();
+    setHost(input.readUTF(hl));
+    int gl = input.vLength();
+    setGateHost(input.readUTF(gl));
+    return remain - 5 - vSizeOf(hl) - vSizeOf(gl);
+  }
+
+  @Override
+  public int length() {
+    int length =
+        2 + // port
+            2 + // gate port
+            1; // state
+    length += vSizeOf(IoUtil.isBlank(getHost()) ? 0 : getHost().length());
+    length += vSizeOf(IoUtil.isBlank(getGateHost()) ? 0 : getGateHost().length());
+    return length + super.length();
+  }
+
+  public long getId() {
+    return primaryKey();
+  }
+
+  public void setId(long id) {
+    pKey = id;
+  }
+
+  public String getHost() {
+    return mHost;
+  }
+
+  public byte[] hostBytes() {
+    return IoUtil.isBlank(getHost()) ? null : getHost().getBytes(StandardCharsets.UTF_8);
+  }
+
+  public void setHost(String host) {
+    mHost = host;
+  }
+
+  public int getPort() {
+    return mPort;
+  }
+
+  public void setPort(int port) {
+    mPort = port;
+  }
+
+  public boolean isInState(RaftState state) {
+    // OUTSIDE 状态需要特殊处理（mState = 0 时）
+    if (state == RaftState.OUTSIDE) {
+      return mState == 0;
     }
+    return (mState & state.getCode()) != 0;
+  }
 
-    public RaftNode(String host, int port)
-    {
-        super(Operation.OP_APPEND, Strategy.RETAIN);
-        mHost = host;
-        mPort = port;
-        mState = RaftState.FOLLOWER.getCode();
-    }
+  public void setState(int state) {
+    mState = state;
+  }
 
-    public RaftNode(String host, String gate, int gatePort)
-    {
-        super(Operation.OP_MODIFY, Strategy.RETAIN);
-        mHost = host;
-        mPort = -1;//禁止网关提供标准服务;一般Gate会存在更大的负载
-        mGateHost = gate;
-        mGatePort = gatePort;
-        mState = RaftState.GATE.getCode();
-    }
+  public String getGateHost() {
+    return mGateHost;
+  }
 
-    public RaftNode(ByteBuf input)
-    {
-        super(input);
-    }
+  public byte[] gateHostBytes() {
+    return IoUtil.isBlank(getGateHost()) ? null : getGateHost().getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output = super.suffix(output)
-                      .putShort(getPort())
-                      .putShort(getGatePort())
-                      .put(mState);
-        output.vPut(hostBytes())
-              .vPut(gateHostBytes());
-        return output;
-    }
+  public void setGateHost(String host) {
+    mGateHost = host;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        setPort(input.getUnsignedShort());
-        setGatePort(input.getUnsignedShort());
-        setState(input.get());
-        int hl = input.vLength();
-        setHost(input.readUTF(hl));
-        int gl = input.vLength();
-        setGateHost(input.readUTF(gl));
-        return remain - 5 - vSizeOf(hl) - vSizeOf(gl);
-    }
+  public int getGatePort() {
+    return mGatePort;
+  }
 
-    @Override
-    public int length()
-    {
-        int length = 2 + // port
-                     2 + // gate port
-                     1;  // state
-        length += vSizeOf(IoUtil.isBlank(getHost()) ? 0 : getHost().length());
-        length += vSizeOf(IoUtil.isBlank(getGateHost()) ? 0 : getGateHost().length());
-        return length + super.length();
-    }
+  public void setGatePort(int port) {
+    mGatePort = port;
+  }
 
-    public long getId()
-    {
-        return primaryKey();
-    }
+  /*
+   * 对比时，仅比较 id 与 host 忽略 port
+   * 不得在相同的host中绑定多个port，禁止这种操作
+   */
+  @Override
+  public int compareTo(RaftNode o) {
+    int a = Long.compare(primaryKey(), o.primaryKey());
+    return a == 0 ? mHost.compareTo(o.mHost) : a;
+  }
 
-    public void setId(long id)
-    {
-        pKey = id;
-    }
-
-    public String getHost()
-    {
-        return mHost;
-    }
-
-    public byte[] hostBytes()
-    {
-        return IoUtil.isBlank(getHost()) ? null : getHost().getBytes(StandardCharsets.UTF_8);
-    }
-
-    public void setHost(String host)
-    {
-        mHost = host;
-    }
-
-    public int getPort()
-    {
-        return mPort;
-    }
-
-    public void setPort(int port)
-    {
-        mPort = port;
-    }
-
-    public boolean isInState(RaftState state)
-    {
-        // OUTSIDE 状态需要特殊处理（mState = 0 时）
-        if(state == RaftState.OUTSIDE) {
-            return mState == 0;
-        }
-        return (mState & state.getCode()) != 0;
-    }
-
-    public void setState(int state)
-    {
-        mState = state;
-    }
-
-    public String getGateHost()
-    {
-        return mGateHost;
-    }
-
-    public byte[] gateHostBytes()
-    {
-        return IoUtil.isBlank(getGateHost()) ? null : getGateHost().getBytes(StandardCharsets.UTF_8);
-    }
-
-    public void setGateHost(String host)
-    {
-        mGateHost = host;
-    }
-
-    public int getGatePort()
-    {
-        return mGatePort;
-    }
-
-    public void setGatePort(int port)
-    {
-        mGatePort = port;
-    }
-
-    /*
-     * 对比时，仅比较 id 与 host 忽略 port
-     * 不得在相同的host中绑定多个port，禁止这种操作
-     */
-    @Override
-    public int compareTo(RaftNode o)
-    {
-        int a = Long.compare(primaryKey(), o.primaryKey());
-        return a == 0 ? mHost.compareTo(o.mHost) : a;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format(" RaftNode{%#x,%s:%d,@ %s | Gate[%s:%d] }", primaryKey(), mHost, mPort, RaftState.valueOf(mState), mGateHost, mGatePort);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        " RaftNode{%#x,%s:%d,@ %s | Gate[%s:%d] }",
+        primaryKey(), mHost, mPort, RaftState.valueOf(mState), mGateHost, mGatePort);
+  }
 }

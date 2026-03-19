@@ -30,7 +30,4 @@ package com.isahl.chess.rook.graphic;
  * @see INode
  * @see IEdge
  */
-public interface IScene
-{
-
-}
+public interface IScene {}

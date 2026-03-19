@@ -29,8 +29,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
  * @author william.d.zk
  * @date 2019-05-12
  */
-public interface ICloser
-        extends IBinaryOperator<String, ISession, Void>
-{
-    Void handle(String msg, ISession session);
+public interface ICloser extends IBinaryOperator<String, ISession, Void> {
+  Void handle(String msg, ISession session);
 }

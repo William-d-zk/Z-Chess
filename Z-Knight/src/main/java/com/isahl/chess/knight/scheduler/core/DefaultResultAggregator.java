@@ -28,41 +28,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isahl.chess.knight.scheduler.domain.SubTaskStatus;
 import com.isahl.chess.knight.scheduler.domain.Task;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
-public class DefaultResultAggregator
-        implements ResultAggregator
-{
-    private final ObjectMapper _Mapper;
+public class DefaultResultAggregator implements ResultAggregator {
+  private final ObjectMapper _Mapper;
 
-    public DefaultResultAggregator(ObjectMapper mapper)
-    {
-        _Mapper = mapper;
-    }
+  public DefaultResultAggregator(ObjectMapper mapper) {
+    _Mapper = mapper;
+  }
 
-    @Override
-    public String aggregate(List<TaskResult.SubTaskResultEntry> results)
-    {
-        try {
-            return _Mapper.writeValueAsString(results);
-        }
-        catch(JsonProcessingException e) {
-            return "[\"" + results.stream()
-                                   .map(r -> r.getResult())
-                                   .collect(Collectors.joining("\",\""))
-                    + "\"]";
-        }
+  @Override
+  public String aggregate(List<TaskResult.SubTaskResultEntry> results) {
+    try {
+      return _Mapper.writeValueAsString(results);
+    } catch (JsonProcessingException e) {
+      return "[\""
+          + results.stream().map(r -> r.getResult()).collect(Collectors.joining("\",\""))
+          + "\"]";
     }
+  }
 
-    @Override
-    public boolean canComplete(Task task)
-    {
-        return task.getSubTasks()
-                    .stream()
-                    .allMatch(st -> st.getStatus() == SubTaskStatus.COMPLETE || st.getStatus() == SubTaskStatus.FAILED);
-    }
+  @Override
+  public boolean canComplete(Task task) {
+    return task.getSubTasks().stream()
+        .allMatch(
+            st ->
+                st.getStatus() == SubTaskStatus.COMPLETE || st.getStatus() == SubTaskStatus.FAILED);
+  }
 }

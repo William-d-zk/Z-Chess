@@ -22,6 +22,9 @@
  */
 package com.isahl.chess.bishop.protocol.ws.ctrl;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+import static java.lang.String.format;
+
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.features.IWsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
@@ -32,70 +35,61 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
-
 import java.nio.charset.StandardCharsets;
-
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
-import static java.lang.String.format;
 
 /**
  * @author William.d.zk
  * @date 2017-01-12
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x101)
-public class X101_HandShake<T extends WsContext>
-        extends WsControl<T>
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x101)
+public class X101_HandShake<T extends WsContext> extends WsControl<T> {
 
-    private static final Logger _Logger = Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
+  private static final Logger _Logger =
+      Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
 
-    public X101_HandShake()
-    {
-        super(WsFrame.frame_op_code_ctrl_handshake);
-    }
+  public X101_HandShake() {
+    super(WsFrame.frame_op_code_ctrl_handshake);
+  }
 
-    @Override
-    public String toString()
-    {
-        return format("web socket handshake %s",
-                      mPayload == null ? " no payload" : new String(mPayload, StandardCharsets.UTF_8));
-    }
+  @Override
+  public String toString() {
+    return format(
+        "web socket handshake %s",
+        mPayload == null ? " no payload" : new String(mPayload, StandardCharsets.UTF_8));
+  }
 
-    private int      mCode;
-    private String[] mSupportedVersions;
+  private int mCode;
+  private String[] mSupportedVersions;
 
-    public boolean isClientOk()
-    {
-        return mCode == IWsContext.HS_State_CLIENT_OK;
-    }
+  public boolean isClientOk() {
+    return mCode == IWsContext.HS_State_CLIENT_OK;
+  }
 
-    public boolean isServerAccept()
-    {
-        return mCode == IWsContext.HS_State_ACCEPT_OK;
-    }
+  public boolean isServerAccept() {
+    return mCode == IWsContext.HS_State_ACCEPT_OK;
+  }
 
-    @Override
-    public Level level()
-    {
-        return ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return ALMOST_ONCE;
+  }
 
-    public X101_HandShake(String host, String secKey, int version)
-    {
-        this();
-        mPayload = format(REQUEST_TEMPLATE, host, "chat", secKey, host, version).getBytes(StandardCharsets.UTF_8);
-        mCode = IWsContext.HS_State_CONNECTION;
-    }
+  public X101_HandShake(String host, String secKey, int version) {
+    this();
+    mPayload =
+        format(REQUEST_TEMPLATE, host, "chat", secKey, host, version)
+            .getBytes(StandardCharsets.UTF_8);
+    mCode = IWsContext.HS_State_CONNECTION;
+  }
 
-    public X101_HandShake(String response, int code)
-    {
-        this();
-        mPayload = response.getBytes(StandardCharsets.UTF_8);
-        mCode = code;
-    }
+  public X101_HandShake(String response, int code) {
+    this();
+    mPayload = response.getBytes(StandardCharsets.UTF_8);
+    mCode = code;
+  }
 
-    private final static String REQUEST_TEMPLATE = """
+  private static final String REQUEST_TEMPLATE =
+      """
             GET /%s HTTP/1.1\r
             Host: %s\r
             Upgrade: websocket\r
@@ -106,169 +100,161 @@ public class X101_HandShake<T extends WsContext>
             Sec-WebSocket-Version: %s\r
             \r
             """;
-    private final static int    CRLF_CRLF        = IoUtil.readInt(new byte[]{ '\r',
-                                                                              '\n',
-                                                                              '\r',
-                                                                              '\n' }, 0);
-    private final static String CRLF             = "\r\n";
+  private static final int CRLF_CRLF = IoUtil.readInt(new byte[] {'\r', '\n', '\r', '\n'}, 0);
+  private static final String CRLF = "\r\n";
 
-    @Override
-    public int lack(ByteBuf input)
-    {
-        int remain = input.readableBytes();
-        if(remain < 4) {
-            return 4;
+  @Override
+  public int lack(ByteBuf input) {
+    int remain = input.readableBytes();
+    if (remain < 4) {
+      return 4;
+    } else {
+      for (int offset = 0, end; input.isOffsetReadable(offset + 3); offset++) {
+        end = input.peek(offset);
+        end = (end << 8) | input.peek(offset + 1);
+        end = (end << 8) | input.peek(offset + 2);
+        end = (end << 8) | input.peek(offset + 3);
+        if (end == CRLF_CRLF) {
+          mPayload = new byte[offset + 4];
+          return 0;
         }
-        else {
-            for(int offset = 0, end; input.isOffsetReadable(offset + 3); offset++) {
-                end = input.peek(offset);
-                end = (end << 8) | input.peek(offset + 1);
-                end = (end << 8) | input.peek(offset + 2);
-                end = (end << 8) | input.peek(offset + 3);
-                if(end == CRLF_CRLF) {
-                    mPayload = new byte[offset + 4];
-                    return 0;
-                }
-            }
-            return 1;
-        }
+      }
+      return 1;
     }
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        StringBuilder response = new StringBuilder();
-        input.markReader();
-        input.get(mPayload);
-        input.resetReader();
-        int target = input.readerIdx() + mPayload.length;
-        while(input.readerIdx() < target) {
-            String row = input.readLine();
-            String[] split = row.split("\\s+", 2);
-            String httpKey = split[0].toUpperCase();
-            switch(context().getType()) {
-                case SERVER -> {
-                    switch(httpKey) {
-                        case "GET" -> {
-                            context().updateHandshakeState(WsContext.HS_State_GET);
-                            split = row.split("\\s+");
-                            if(!"HTTP/1.1".equalsIgnoreCase(split[2])) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                        }
-                        case "UPGRADE:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_UPGRADE);
-                            if(!"websocket".equalsIgnoreCase(split[1])) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                            else {
-                                response.append(row)
-                                        .append(CRLF);
-                            }
-                        }
-                        case "CONNECTION:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_CONNECTION);
-                            if(!"Upgrade".equalsIgnoreCase(split[1])) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                            else {
-                                response.append(row)
-                                        .append(CRLF);
-                            }
-                        }
-                        case "SEC-WEBSOCKET-PROTOCOL:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_SEC_PROTOCOL);
-                            if(!split[1].contains("z-chat") && !split[1].contains("mqtt")) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                            else {
-                                response.append(row)
-                                        .append(CRLF);
-                            }
-                        }
-                        case "SEC-WEBSOCKET-VERSION:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_SEC_VERSION);
-                            split = split[1].split("\\s+,\\s+");
-                            if(mSupportedVersions == null) {
-                                mSupportedVersions = new String[split.length];
-                                IoUtil.addArray(split, mSupportedVersions);
-                            }
-                            else {
-                                String[] tmp = new String[split.length + mSupportedVersions.length];
-                                IoUtil.addArray(mSupportedVersions, tmp, split);
-                                mSupportedVersions = tmp;
-                            }
-                            response.append(row)
-                                    .append(CRLF);
-                        }
-                        case "HOST:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_HOST);
-                            response.append(row)
-                                    .append(CRLF);
-                        }
-                        case "ORIGIN:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_ORIGIN);
-                            response.append(row)
-                                    .append(CRLF);
-                        }
-                        case "SEC-WEBSOCKET-KEY:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_SEC_KEY);
-                            response.append(format("Sec-WebSocket-Accept: %s\r\n", context().getSecAccept(split[1])));
-                        }
-                        default -> _Logger.debug("server ignore default: %s", row);
-                    }
-                }
-                case CLIENT -> {
-                    switch(httpKey) {
-                        case "HTTP/1.1" -> {
-                            context().updateHandshakeState(WsContext.HS_State_HTTP_101);
-                            if(!split[1].contains("101 Switching Protocols")) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                        }
-                        case "UPGRADE:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_UPGRADE);
-                            if(!"websocket".equalsIgnoreCase(split[1])) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                        }
-                        case "CONNECTION:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_CONNECTION);
-                            if(!"Upgrade".equalsIgnoreCase(split[1])) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                        }
-                        case "SEC-WEBSOCKET-ACCEPT:" -> {
-                            context().updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
-                            if(!split[1].startsWith(context().getSecAcceptExpect())) {
-                                context().updateHandshakeState(WsContext.HS_State_ERROR);
-                            }
-                        }
-                        default -> _Logger.debug("client ignore default: %s", row);
-                    }
-                }
+  @Override
+  public int prefix(ByteBuf input) {
+    StringBuilder response = new StringBuilder();
+    input.markReader();
+    input.get(mPayload);
+    input.resetReader();
+    int target = input.readerIdx() + mPayload.length;
+    while (input.readerIdx() < target) {
+      String row = input.readLine();
+      String[] split = row.split("\\s+", 2);
+      String httpKey = split[0].toUpperCase();
+      switch (context().getType()) {
+        case SERVER -> {
+          switch (httpKey) {
+            case "GET" -> {
+              context().updateHandshakeState(WsContext.HS_State_GET);
+              split = row.split("\\s+");
+              if (!"HTTP/1.1".equalsIgnoreCase(split[2])) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              }
             }
-        }
-        if(ISort.Type.SERVER == context().getType()) {
-            String toClient =
-                    context().checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols" + CRLF
-                                                                       : "HTTP/1.1 400 Bad Request" + CRLF;
-            context().handshake(new X101_HandShake<>(toClient + response.append(CRLF),
-                                                     context().checkState(WsContext.HS_State_CLIENT_OK)
-                                                     ? WsContext.HS_State_CLIENT_OK : WsContext.HS_State_ERROR));
-            mCode = context().checkState(WsContext.HS_State_CLIENT_OK) ? WsContext.HS_State_CLIENT_OK
-                                                                       : WsContext.HS_State_ERROR;
-        }
-        else if(ISort.Type.CLIENT == context().getType()) {
-            if(context().checkState(WsContext.HS_State_ACCEPT_OK)) {
-                context().handshake(new X101_HandShake<>(response.toString(), WsContext.HS_State_ACCEPT_OK));
-                mCode = WsContext.HS_State_ACCEPT_OK;
+            case "UPGRADE:" -> {
+              context().updateHandshakeState(WsContext.HS_State_UPGRADE);
+              if (!"websocket".equalsIgnoreCase(split[1])) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              } else {
+                response.append(row).append(CRLF);
+              }
             }
+            case "CONNECTION:" -> {
+              context().updateHandshakeState(WsContext.HS_State_CONNECTION);
+              if (!"Upgrade".equalsIgnoreCase(split[1])) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              } else {
+                response.append(row).append(CRLF);
+              }
+            }
+            case "SEC-WEBSOCKET-PROTOCOL:" -> {
+              context().updateHandshakeState(WsContext.HS_State_SEC_PROTOCOL);
+              if (!split[1].contains("z-chat") && !split[1].contains("mqtt")) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              } else {
+                response.append(row).append(CRLF);
+              }
+            }
+            case "SEC-WEBSOCKET-VERSION:" -> {
+              context().updateHandshakeState(WsContext.HS_State_SEC_VERSION);
+              split = split[1].split("\\s+,\\s+");
+              if (mSupportedVersions == null) {
+                mSupportedVersions = new String[split.length];
+                IoUtil.addArray(split, mSupportedVersions);
+              } else {
+                String[] tmp = new String[split.length + mSupportedVersions.length];
+                IoUtil.addArray(mSupportedVersions, tmp, split);
+                mSupportedVersions = tmp;
+              }
+              response.append(row).append(CRLF);
+            }
+            case "HOST:" -> {
+              context().updateHandshakeState(WsContext.HS_State_HOST);
+              response.append(row).append(CRLF);
+            }
+            case "ORIGIN:" -> {
+              context().updateHandshakeState(WsContext.HS_State_ORIGIN);
+              response.append(row).append(CRLF);
+            }
+            case "SEC-WEBSOCKET-KEY:" -> {
+              context().updateHandshakeState(WsContext.HS_State_SEC_KEY);
+              response.append(
+                  format("Sec-WebSocket-Accept: %s\r\n", context().getSecAccept(split[1])));
+            }
+            default -> _Logger.debug("server ignore default: %s", row);
+          }
         }
-        int remain = input.readableBytes();
-        if(remain > 0) {
-            _Logger.warning("handshake! remain [%d]");
+        case CLIENT -> {
+          switch (httpKey) {
+            case "HTTP/1.1" -> {
+              context().updateHandshakeState(WsContext.HS_State_HTTP_101);
+              if (!split[1].contains("101 Switching Protocols")) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              }
+            }
+            case "UPGRADE:" -> {
+              context().updateHandshakeState(WsContext.HS_State_UPGRADE);
+              if (!"websocket".equalsIgnoreCase(split[1])) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              }
+            }
+            case "CONNECTION:" -> {
+              context().updateHandshakeState(WsContext.HS_State_CONNECTION);
+              if (!"Upgrade".equalsIgnoreCase(split[1])) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              }
+            }
+            case "SEC-WEBSOCKET-ACCEPT:" -> {
+              context().updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
+              if (!split[1].startsWith(context().getSecAcceptExpect())) {
+                context().updateHandshakeState(WsContext.HS_State_ERROR);
+              }
+            }
+            default -> _Logger.debug("client ignore default: %s", row);
+          }
         }
-        return 0;
+      }
     }
+    if (ISort.Type.SERVER == context().getType()) {
+      String toClient =
+          context().checkState(WsContext.HS_State_CLIENT_OK)
+              ? "HTTP/1.1 101 Switching Protocols" + CRLF
+              : "HTTP/1.1 400 Bad Request" + CRLF;
+      context()
+          .handshake(
+              new X101_HandShake<>(
+                  toClient + response.append(CRLF),
+                  context().checkState(WsContext.HS_State_CLIENT_OK)
+                      ? WsContext.HS_State_CLIENT_OK
+                      : WsContext.HS_State_ERROR));
+      mCode =
+          context().checkState(WsContext.HS_State_CLIENT_OK)
+              ? WsContext.HS_State_CLIENT_OK
+              : WsContext.HS_State_ERROR;
+    } else if (ISort.Type.CLIENT == context().getType()) {
+      if (context().checkState(WsContext.HS_State_ACCEPT_OK)) {
+        context()
+            .handshake(new X101_HandShake<>(response.toString(), WsContext.HS_State_ACCEPT_OK));
+        mCode = WsContext.HS_State_ACCEPT_OK;
+      }
+    }
+    int remain = input.readableBytes();
+    if (remain > 0) {
+      _Logger.warning("handshake! remain [%d]");
+    }
+    return 0;
+  }
 }

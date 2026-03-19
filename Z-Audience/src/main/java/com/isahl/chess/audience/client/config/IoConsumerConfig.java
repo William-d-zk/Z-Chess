@@ -26,11 +26,10 @@ package com.isahl.chess.audience.client.config;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import java.util.Map;
 
 /**
  * @author william.d.zk
@@ -39,51 +38,43 @@ import java.util.Map;
 @Configuration("io_consumer_config")
 @ConfigurationProperties(prefix = "z.chess.consumer.io")
 @PropertySource("classpath:consumer.io.properties")
-public class IoConsumerConfig
-        implements IAioConfig
-{
-    private Map<String, Integer> sizePowers;
-    private SocketConfig         consumer;
-    private SocketConfig         internal;
+public class IoConsumerConfig implements IAioConfig {
+  private Map<String, Integer> sizePowers;
+  private SocketConfig consumer;
+  private SocketConfig internal;
 
-    @Override
-    public boolean isDomainActive(int type)
-    {
-        return type == ZUID.TYPE_CONSUMER_SLOT || type == ZUID.TYPE_INTERNAL_SLOT;
-    }
+  @Override
+  public boolean isDomainActive(int type) {
+    return type == ZUID.TYPE_CONSUMER_SLOT || type == ZUID.TYPE_INTERNAL_SLOT;
+  }
 
-    @Override
-    public int getSizePower(int type)
-    {
-        return switch(type) {
-            case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 9);
-            case ZUID.TYPE_CONSUMER_SLOT -> sizePowers.getOrDefault("consumer.0", 3);
-            default -> throw new IllegalArgumentException();
-        };
-    }
+  @Override
+  public int getSizePower(int type) {
+    return switch (type) {
+      case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 9);
+      case ZUID.TYPE_CONSUMER_SLOT -> sizePowers.getOrDefault("consumer.0", 3);
+      default -> throw new IllegalArgumentException();
+    };
+  }
 
-    @Override
-    public ISocketConfig getSocketConfig(int type)
-    {
-        return switch(type) {
-            case ZUID.TYPE_INTERNAL_SLOT -> internal;
-            case ZUID.TYPE_CONSUMER_SLOT -> consumer;
-            default -> null;
-        };
-    }
+  @Override
+  public ISocketConfig getSocketConfig(int type) {
+    return switch (type) {
+      case ZUID.TYPE_INTERNAL_SLOT -> internal;
+      case ZUID.TYPE_CONSUMER_SLOT -> consumer;
+      default -> null;
+    };
+  }
 
-    public void setSizePowers(Map<String, Integer> sizePowers)
-    {
-        this.sizePowers = sizePowers;
-    }
+  public void setSizePowers(Map<String, Integer> sizePowers) {
+    this.sizePowers = sizePowers;
+  }
 
-    public void setConsumer(SocketConfig consumer)
-    {
-        this.consumer = consumer;
-    }
+  public void setConsumer(SocketConfig consumer) {
+    this.consumer = consumer;
+  }
 
-    public void setInternal(SocketConfig internal)
-    {
-        this.internal = internal;
-    }
+  public void setInternal(SocketConfig internal) {
+    this.internal = internal;
+  }
 }

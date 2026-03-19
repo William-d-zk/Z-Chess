@@ -24,63 +24,51 @@
 package com.isahl.chess.queen.io.core.net.udp;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
 /**
  * UDP 数据包
- * 
+ *
  * @author william.d.zk
  */
-public class UdpPacket
-{
-    private final ByteBuf _Buffer;
-    private final InetSocketAddress _RemoteAddress;
-    
-    public UdpPacket(ByteBuf buffer, InetSocketAddress remoteAddress)
-    {
-        _Buffer = Objects.requireNonNull(buffer);
-        _RemoteAddress = remoteAddress;
-    }
-    
-    public ByteBuf getBuffer()
-    {
-        return _Buffer;
-    }
-    
-    public InetSocketAddress getRemoteAddress()
-    {
-        return _RemoteAddress;
-    }
-    
-    public int length()
-    {
-        return _Buffer.readableBytes();
-    }
-    
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UdpPacket udpPacket = (UdpPacket) o;
-        return Objects.equals(_Buffer, udpPacket._Buffer) &&
-               Objects.equals(_RemoteAddress, udpPacket._RemoteAddress);
-    }
-    
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(_Buffer, _RemoteAddress);
-    }
-    
-    @Override
-    public String toString()
-    {
-        return "UdpPacket{" +
-               "bytes=" + _Buffer.readableBytes() +
-               ", remote=" + _RemoteAddress +
-               '}';
-    }
+public class UdpPacket {
+  private final ByteBuf _Buffer;
+  private final InetSocketAddress _RemoteAddress;
+
+  public UdpPacket(ByteBuf buffer, InetSocketAddress remoteAddress) {
+    _Buffer = Objects.requireNonNull(buffer);
+    _RemoteAddress = remoteAddress;
+  }
+
+  public ByteBuf getBuffer() {
+    return _Buffer;
+  }
+
+  public InetSocketAddress getRemoteAddress() {
+    return _RemoteAddress;
+  }
+
+  public int length() {
+    return _Buffer.readableBytes();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UdpPacket udpPacket = (UdpPacket) o;
+    return Objects.equals(_Buffer, udpPacket._Buffer)
+        && Objects.equals(_RemoteAddress, udpPacket._RemoteAddress);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_Buffer, _RemoteAddress);
+  }
+
+  @Override
+  public String toString() {
+    return "UdpPacket{" + "bytes=" + _Buffer.readableBytes() + ", remote=" + _RemoteAddress + '}';
+  }
 }

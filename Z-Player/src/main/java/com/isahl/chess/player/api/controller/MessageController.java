@@ -35,53 +35,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author william.d.zk
- * {@code @date} 2019/11/3
+ * @author william.d.zk {@code @date} 2019/11/3
  */
 @RestController
 @RequestMapping("message")
-public class MessageController
-{
-    private final Logger             _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final MessageOpenService _MessageService;
-    private final IDeviceService     _DeviceService;
-    private final IStateService      _IStateService;
+public class MessageController {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final MessageOpenService _MessageService;
+  private final IDeviceService _DeviceService;
+  private final IStateService _IStateService;
 
-    @Autowired
-    public MessageController(MessageOpenService messageService, IDeviceService deviceService, IStateService stateService)
-    {
-        _MessageService = messageService;
-        _DeviceService = deviceService;
-        _IStateService = stateService;
+  @Autowired
+  public MessageController(
+      MessageOpenService messageService, IDeviceService deviceService, IStateService stateService) {
+    _MessageService = messageService;
+    _DeviceService = deviceService;
+    _IStateService = stateService;
+  }
+
+  @PostMapping("submit")
+  public ZResponse<?> submit(
+      @RequestParam(name = "token") String token, @RequestBody MessageDo body) {
+    DeviceEntity device = _DeviceService.findByToken(token);
+    if (device == null) {
+      return ZResponse.error(KingCode.MISS, "origin device not found");
     }
+    _MessageService.submit(device.getId(), body);
+    return ZResponse.success("submit succeed");
+  }
 
-    @PostMapping("submit")
-    public ZResponse<?> submit(
-            @RequestParam(name = "token")
-            String token,
-            @RequestBody
-            MessageDo body)
-    {
-        DeviceEntity device = _DeviceService.findByToken(token);
-        if(device == null) {
-            return ZResponse.error(KingCode.MISS, "origin device not found");
-        }
-        _MessageService.submit(device.getId(), body);
-        return ZResponse.success("submit succeed");
+  @PostMapping("filter")
+  public ZResponse<?> filterTopic(
+      @RequestParam(name = "token") String token, @RequestBody String filterPattern) {
+    DeviceEntity device = _DeviceService.findByToken(token);
+    if (device == null) {
+      return ZResponse.error(KingCode.MISS, "origin device not found");
     }
-
-    @PostMapping("filter")
-    public ZResponse<?> filterTopic(
-            @RequestParam(name = "token")
-            String token,
-            @RequestBody
-            String filterPattern)
-    {
-        DeviceEntity device = _DeviceService.findByToken(token);
-        if(device == null) {
-            return ZResponse.error(KingCode.MISS, "origin device not found");
-        }
-        return ZResponse.success(_IStateService.filter(filterPattern));
-    }
-
+    return ZResponse.success(_IStateService.filter(filterPattern));
+  }
 }

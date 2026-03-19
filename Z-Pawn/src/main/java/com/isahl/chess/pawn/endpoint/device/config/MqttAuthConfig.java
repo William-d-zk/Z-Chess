@@ -23,11 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * MQTT 认证配置
@@ -36,70 +35,52 @@ import java.util.List;
  */
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.mqtt.auth")
-public class MqttAuthConfig
-{
-    /**
-     * 支持的认证方法列表
-     */
-    private List<String> supportedAuthMethods = Arrays.asList();
+public class MqttAuthConfig {
+  /** 支持的认证方法列表 */
+  private List<String> supportedAuthMethods = Arrays.asList();
 
-    /**
-     * 默认认证方法
-     */
-    private String defaultAuthMethod = null;
+  /** 默认认证方法 */
+  private String defaultAuthMethod = null;
 
-    /**
-     * 认证超时时间（秒）
-     */
-    private int authTimeoutSeconds = 60;
+  /** 认证超时时间（秒） */
+  private int authTimeoutSeconds = 60;
 
-    /**
-     * 是否允许重新认证
-     */
-    private boolean reauthenticationAllowed = true;
+  /** 是否允许重新认证 */
+  private boolean reauthenticationAllowed = true;
 
-    public List<String> getSupportedAuthMethods()
-    {
-        return supportedAuthMethods;
-    }
+  public List<String> getSupportedAuthMethods() {
+    return supportedAuthMethods;
+  }
 
-    public void setSupportedAuthMethods(List<String> supportedAuthMethods)
-    {
-        this.supportedAuthMethods = supportedAuthMethods;
-    }
+  public void setSupportedAuthMethods(List<String> supportedAuthMethods) {
+    this.supportedAuthMethods = supportedAuthMethods;
+  }
 
-    public String getDefaultAuthMethod()
-    {
-        return defaultAuthMethod;
-    }
+  public String getDefaultAuthMethod() {
+    return defaultAuthMethod;
+  }
 
-    public void setDefaultAuthMethod(String defaultAuthMethod)
-    {
-        this.defaultAuthMethod = defaultAuthMethod;
-    }
+  public void setDefaultAuthMethod(String defaultAuthMethod) {
+    this.defaultAuthMethod = defaultAuthMethod;
+  }
 
-    public int getAuthTimeoutSeconds()
-    {
-        return authTimeoutSeconds;
-    }
+  public int getAuthTimeoutSeconds() {
+    return authTimeoutSeconds;
+  }
 
-    public void setAuthTimeoutSeconds(int authTimeoutSeconds)
-    {
-        this.authTimeoutSeconds = authTimeoutSeconds;
-    }
+  public void setAuthTimeoutSeconds(int authTimeoutSeconds) {
+    this.authTimeoutSeconds = authTimeoutSeconds;
+  }
 
-    public boolean isReauthenticationAllowed()
-    {
-        return reauthenticationAllowed;
-    }
+  public boolean isReauthenticationAllowed() {
+    return reauthenticationAllowed;
+  }
 
-    public void setReauthenticationAllowed(boolean reauthenticationAllowed)
-    {
-        this.reauthenticationAllowed = reauthenticationAllowed;
-    }
+  public void setReauthenticationAllowed(boolean reauthenticationAllowed) {
+    this.reauthenticationAllowed = reauthenticationAllowed;
+  }
 
-    public boolean isAuthMethodSupported(String method)
-    {
-        return supportedAuthMethods.contains(method);
-    }
+  public boolean isAuthMethodSupported(String method) {
+    return supportedAuthMethods.contains(method);
+  }
 }

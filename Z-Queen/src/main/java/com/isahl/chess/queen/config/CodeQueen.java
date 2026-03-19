@@ -24,38 +24,31 @@
 package com.isahl.chess.queen.config;
 
 import com.isahl.chess.king.base.features.ICode;
-
 import java.util.Objects;
 
-public enum CodeQueen
-        implements ICode
-{
-    ;
+public enum CodeQueen implements ICode {
+  ;
 
-    private final int    _Code;
-    private final String _Formatter;
+  private final int _Code;
+  private final String _Formatter;
 
-    @Override
-    public int getCode(Object... condition)
-    {
-        return _Code;
-    }
+  @Override
+  public int getCode(Object... condition) {
+    return _Code;
+  }
 
-    @Override
-    public String format(Object... args)
-    {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
-    }
+  @Override
+  public String format(Object... args) {
+    return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
+  }
 
-    @Override
-    public String formatter()
-    {
-        return _Formatter;
-    }
+  @Override
+  public String formatter() {
+    return _Formatter;
+  }
 
-    CodeQueen(int code, String formatter)
-    {
-        this._Code = code;
-        this._Formatter = formatter;
-    }
+  CodeQueen(int code, String formatter) {
+    this._Code = code;
+    this._Formatter = formatter;
+  }
 }

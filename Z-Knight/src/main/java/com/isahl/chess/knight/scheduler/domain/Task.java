@@ -24,160 +24,135 @@
 package com.isahl.chess.knight.scheduler.domain;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "scheduler_task")
-public class Task
-{
-    @Id
-    private String taskId;
+public class Task {
+  @Id private String taskId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskType type;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TaskType type;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TaskStatus status;
 
-    @OneToMany(mappedBy = "taskId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SubTask> subTasks = new ArrayList<>();
+  @OneToMany(mappedBy = "taskId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<SubTask> subTasks = new ArrayList<>();
 
-    @Column(nullable = false)
-    private int timeout;
+  @Column(nullable = false)
+  private int timeout;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+  @Column(nullable = false)
+  private Instant createdAt;
 
-    @Column
-    private Instant deadline;
+  @Column private Instant deadline;
 
-    @Column(length = 4096)
-    private String aggregatedResult;
+  @Column(length = 4096)
+  private String aggregatedResult;
 
-    public Task()
-    {
+  public Task() {}
+
+  public Task(String taskId, TaskType type, int timeoutSeconds) {
+    this.taskId = taskId;
+    this.type = type;
+    this.status = TaskStatus.PENDING;
+    this.timeout = timeoutSeconds;
+    this.createdAt = Instant.now();
+    if (timeoutSeconds > 0) {
+      this.deadline = createdAt.plusSeconds(timeoutSeconds);
     }
+  }
 
-    public Task(String taskId, TaskType type, int timeoutSeconds)
-    {
-        this.taskId = taskId;
-        this.type = type;
-        this.status = TaskStatus.PENDING;
-        this.timeout = timeoutSeconds;
-        this.createdAt = Instant.now();
-        if(timeoutSeconds > 0) {
-            this.deadline = createdAt.plusSeconds(timeoutSeconds);
+  public List<SubTask> createSubTasks(int count) {
+    List<SubTask> created = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      SubTask subTask = new SubTask(taskId, null, null);
+      subTasks.add(subTask);
+      created.add(subTask);
+    }
+    return created;
+  }
+
+  public List<SubTask> createSubTasksForNodes(List<String> targetNodes) {
+    List<SubTask> created = new ArrayList<>();
+    for (String node : targetNodes) {
+      SubTask subTask = new SubTask(taskId, node, null);
+      subTasks.add(subTask);
+      created.add(subTask);
+    }
+    return created;
+  }
+
+  public void addResult(String subTaskId, String result, boolean success) {
+    for (SubTask st : subTasks) {
+      if (st.getSubTaskId().equals(subTaskId)) {
+        if (success) {
+          st.markComplete(result);
+        } else {
+          st.markFailed();
         }
+        break;
+      }
     }
+  }
 
-    public List<SubTask> createSubTasks(int count)
-    {
-        List<SubTask> created = new ArrayList<>();
-        for(int i = 0; i < count; i++) {
-            SubTask subTask = new SubTask(taskId, null, null);
-            subTasks.add(subTask);
-            created.add(subTask);
-        }
-        return created;
+  public boolean isComplete() {
+    if (subTasks.isEmpty()) {
+      return false;
     }
+    return subTasks.stream().allMatch(st -> st.getStatus() == SubTaskStatus.COMPLETE);
+  }
 
-    public List<SubTask> createSubTasksForNodes(List<String> targetNodes)
-    {
-        List<SubTask> created = new ArrayList<>();
-        for(String node : targetNodes) {
-            SubTask subTask = new SubTask(taskId, node, null);
-            subTasks.add(subTask);
-            created.add(subTask);
-        }
-        return created;
-    }
+  public boolean hasFailures() {
+    return subTasks.stream().anyMatch(st -> st.getStatus() == SubTaskStatus.FAILED);
+  }
 
-    public void addResult(String subTaskId, String result, boolean success)
-    {
-        for(SubTask st : subTasks) {
-            if(st.getSubTaskId().equals(subTaskId)) {
-                if(success) {
-                    st.markComplete(result);
-                }
-                else {
-                    st.markFailed();
-                }
-                break;
-            }
-        }
-    }
+  public int getCompleteCount() {
+    return (int) subTasks.stream().filter(st -> st.getStatus() == SubTaskStatus.COMPLETE).count();
+  }
 
-    public boolean isComplete()
-    {
-        if(subTasks.isEmpty()) {
-            return false;
-        }
-        return subTasks.stream().allMatch(st -> st.getStatus() == SubTaskStatus.COMPLETE);
-    }
+  public String getTaskId() {
+    return taskId;
+  }
 
-    public boolean hasFailures()
-    {
-        return subTasks.stream().anyMatch(st -> st.getStatus() == SubTaskStatus.FAILED);
-    }
+  public TaskType getType() {
+    return type;
+  }
 
-    public int getCompleteCount()
-    {
-        return (int) subTasks.stream().filter(st -> st.getStatus() == SubTaskStatus.COMPLETE).count();
-    }
+  public TaskStatus getStatus() {
+    return status;
+  }
 
-    public String getTaskId()
-    {
-        return taskId;
-    }
+  public List<SubTask> getSubTasks() {
+    return subTasks;
+  }
 
-    public TaskType getType()
-    {
-        return type;
-    }
+  public int getTimeout() {
+    return timeout;
+  }
 
-    public TaskStatus getStatus()
-    {
-        return status;
-    }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 
-    public List<SubTask> getSubTasks()
-    {
-        return subTasks;
-    }
+  public Instant getDeadline() {
+    return deadline;
+  }
 
-    public int getTimeout()
-    {
-        return timeout;
-    }
+  public String getAggregatedResult() {
+    return aggregatedResult;
+  }
 
-    public Instant getCreatedAt()
-    {
-        return createdAt;
-    }
+  public void setStatus(TaskStatus status) {
+    this.status = status;
+  }
 
-    public Instant getDeadline()
-    {
-        return deadline;
-    }
-
-    public String getAggregatedResult()
-    {
-        return aggregatedResult;
-    }
-
-    public void setStatus(TaskStatus status)
-    {
-        this.status = status;
-    }
-
-    public void setAggregatedResult(String aggregatedResult)
-    {
-        this.aggregatedResult = aggregatedResult;
-    }
+  public void setAggregatedResult(String aggregatedResult) {
+    this.aggregatedResult = aggregatedResult;
+  }
 }

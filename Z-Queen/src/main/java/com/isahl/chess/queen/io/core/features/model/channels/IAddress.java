@@ -27,21 +27,17 @@ import java.net.InetSocketAddress;
 /**
  * @author william.d.zk
  */
-public interface IAddress
-{
+public interface IAddress {
 
-    InetSocketAddress getRemoteAddress();
+  InetSocketAddress getRemoteAddress();
 
-    default void setRemoteAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException("final member!");
-    }
+  default void setRemoteAddress(InetSocketAddress address) {
+    throw new UnsupportedOperationException("final member!");
+  }
 
-    InetSocketAddress getLocalAddress();
+  InetSocketAddress getLocalAddress();
 
-    default void setLocalAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException("final member!");
-    }
-
+  default void setLocalAddress(InetSocketAddress address) {
+    throw new UnsupportedOperationException("final member!");
+  }
 }

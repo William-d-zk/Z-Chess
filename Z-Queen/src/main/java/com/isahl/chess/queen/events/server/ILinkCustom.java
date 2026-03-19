@@ -31,37 +31,29 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.List;
 
 /**
  * @author william.d.zk
  * @date 2020/4/20
  */
-public interface ILinkCustom
-        extends IMappingCustom,
-                IConsistencyBackload
-{
+public interface ILinkCustom extends IMappingCustom, IConsistencyBackload {
 
-    /**
-     * Cluster->Link.notify(Cluster.consensus_result)
-     *
-     * @param manager  session - manager
-     * @param backload cluster 处理请求的返回结果
-     * @param request  需要执行一致性要求的请求
-     * @return list of{ first: response, second:session, third:operator }
-     */
-    List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request);
+  /**
+   * Cluster->Link.notify(Cluster.consensus_result)
+   *
+   * @param manager session - manager
+   * @param backload cluster 处理请求的返回结果
+   * @param request 需要执行一致性要求的请求
+   * @return list of{ first: response, second:session, third:operator }
+   */
+  List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request);
 
-    /**
-     * 当出现了关闭 session 的需要时
-     * 除了session dismiss 之外，还需要对现有链路进行关闭
-     * 触发映射处理机制
-     *
-     * @param session target session
-     * @return session close → cluster consistent
-     * 不同处理系统会采取不同的关闭事件指代
-     */
-    IProtocol onClose(ISession session);
-
+  /**
+   * 当出现了关闭 session 的需要时 除了session dismiss 之外，还需要对现有链路进行关闭 触发映射处理机制
+   *
+   * @param session target session
+   * @return session close → cluster consistent 不同处理系统会采取不同的关闭事件指代
+   */
+  IProtocol onClose(ISession session);
 }

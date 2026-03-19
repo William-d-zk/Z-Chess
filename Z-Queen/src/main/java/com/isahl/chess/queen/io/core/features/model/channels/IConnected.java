@@ -26,13 +26,11 @@ package com.isahl.chess.queen.io.core.features.model.channels;
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
-
 import java.nio.channels.AsynchronousSocketChannel;
 
 /**
  * @author William.d.zk
  */
-public interface IConnected
-{
-    IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator();
+public interface IConnected {
+  IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator();
 }

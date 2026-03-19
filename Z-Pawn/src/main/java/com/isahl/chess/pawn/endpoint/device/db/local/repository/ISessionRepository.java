@@ -29,6 +29,4 @@ import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
 /**
  * @author william.d.zk
  */
-public interface ISessionRepository
-        extends BaseLongRepository<SessionEntity>
-{}
+public interface ISessionRepository extends BaseLongRepository<SessionEntity> {}

@@ -23,74 +23,63 @@
 
 package com.isahl.chess.knight.policy;
 
-public class BaseRetryPolicy
-        implements Policy.RetryPolicy
-{
-    private final String policyId;
-    private final int maxRetries;
-    private final long retryDelayMs;
-    private final double backoffMultiplier;
+public class BaseRetryPolicy implements Policy.RetryPolicy {
+  private final String policyId;
+  private final int maxRetries;
+  private final long retryDelayMs;
+  private final double backoffMultiplier;
 
-    public BaseRetryPolicy(String policyId, int maxRetries, long retryDelayMs, double backoffMultiplier)
-    {
-        this.policyId = policyId;
-        this.maxRetries = maxRetries;
-        this.retryDelayMs = retryDelayMs;
-        this.backoffMultiplier = backoffMultiplier;
-    }
+  public BaseRetryPolicy(
+      String policyId, int maxRetries, long retryDelayMs, double backoffMultiplier) {
+    this.policyId = policyId;
+    this.maxRetries = maxRetries;
+    this.retryDelayMs = retryDelayMs;
+    this.backoffMultiplier = backoffMultiplier;
+  }
 
-    public BaseRetryPolicy()
-    {
-        this.policyId = "default";
-        this.maxRetries = 3;
-        this.retryDelayMs = 1000;
-        this.backoffMultiplier = 2.0;
-    }
+  public BaseRetryPolicy() {
+    this.policyId = "default";
+    this.maxRetries = 3;
+    this.retryDelayMs = 1000;
+    this.backoffMultiplier = 2.0;
+  }
 
-    @Override
-    public String getPolicyId()
-    {
-        return policyId;
-    }
+  @Override
+  public String getPolicyId() {
+    return policyId;
+  }
 
-    @Override
-    public String getPolicyType()
-    {
-        return "RETRY";
-    }
+  @Override
+  public String getPolicyType() {
+    return "RETRY";
+  }
 
-    @Override
-    public int getMaxRetries()
-    {
-        return maxRetries;
-    }
+  @Override
+  public int getMaxRetries() {
+    return maxRetries;
+  }
 
-    @Override
-    public long getRetryDelayMs()
-    {
-        return retryDelayMs;
-    }
+  @Override
+  public long getRetryDelayMs() {
+    return retryDelayMs;
+  }
 
-    @Override
-    public double getBackoffMultiplier()
-    {
-        return backoffMultiplier;
-    }
+  @Override
+  public double getBackoffMultiplier() {
+    return backoffMultiplier;
+  }
 
-    @Override
-    public boolean validate()
-    {
-        return maxRetries >= 0 && retryDelayMs >= 0 && backoffMultiplier >= 1.0;
-    }
+  @Override
+  public boolean validate() {
+    return maxRetries >= 0 && retryDelayMs >= 0 && backoffMultiplier >= 1.0;
+  }
 
-    @Override
-    public boolean shouldRetry(int attemptCount, Throwable cause)
-    {
-        return attemptCount <= maxRetries;
-    }
+  @Override
+  public boolean shouldRetry(int attemptCount, Throwable cause) {
+    return attemptCount <= maxRetries;
+  }
 
-    public long calculateDelay(int attemptCount)
-    {
-        return (long) (retryDelayMs * Math.pow(backoffMultiplier, attemptCount - 1));
-    }
+  public long calculateDelay(int attemptCount) {
+    return (long) (retryDelayMs * Math.pow(backoffMultiplier, attemptCount - 1));
+  }
 }

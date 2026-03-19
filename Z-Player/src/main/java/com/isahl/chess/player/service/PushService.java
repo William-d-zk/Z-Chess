@@ -29,69 +29,68 @@ import com.isahl.chess.player.domain.User;
 import com.isahl.chess.player.repository.GroupMemberRepository;
 import com.isahl.chess.player.repository.MessageRepository;
 import com.isahl.chess.player.repository.UserRepository;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-
 @Service
-public class PushService
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(PushService.class);
+public class PushService {
+  private static final Logger _Logger = LoggerFactory.getLogger(PushService.class);
 
-    private final MessageRepository _MessageRepository;
-    private final UserRepository _UserRepository;
-    private final GroupMemberRepository _GroupMemberRepository;
-    private final SimpMessagingTemplate _MessagingTemplate;
+  private final MessageRepository _MessageRepository;
+  private final UserRepository _UserRepository;
+  private final GroupMemberRepository _GroupMemberRepository;
+  private final SimpMessagingTemplate _MessagingTemplate;
 
-    @Autowired
-    public PushService(MessageRepository messageRepository, UserRepository userRepository, GroupMemberRepository groupMemberRepository, SimpMessagingTemplate messagingTemplate)
-    {
-        _MessageRepository = messageRepository;
-        _UserRepository = userRepository;
-        _GroupMemberRepository = groupMemberRepository;
-        _MessagingTemplate = messagingTemplate;
+  @Autowired
+  public PushService(
+      MessageRepository messageRepository,
+      UserRepository userRepository,
+      GroupMemberRepository groupMemberRepository,
+      SimpMessagingTemplate messagingTemplate) {
+    _MessageRepository = messageRepository;
+    _UserRepository = userRepository;
+    _GroupMemberRepository = groupMemberRepository;
+    _MessagingTemplate = messagingTemplate;
+  }
+
+  public void pushMessage(Message message) {
+    String destination =
+        message.getGroupId() != null
+            ? "/topic/group." + message.getGroupId()
+            : "/queue/user." + message.getReceiverId();
+    _MessagingTemplate.convertAndSend(destination, message);
+    _Logger.debug("Message pushed: destination={}, messageId={}", destination, message.getId());
+  }
+
+  public void pushToUser(Long userId, Object payload) {
+    String destination = "/queue/user." + userId;
+    _MessagingTemplate.convertAndSend(destination, payload);
+    _Logger.debug("Pushed to user: userId={}, destination={}", userId, destination);
+  }
+
+  public void pushToGroup(Long groupId, Object payload) {
+    String destination = "/topic/group." + groupId;
+    _MessagingTemplate.convertAndSend(destination, payload);
+    _Logger.debug("Pushed to group: groupId={}, destination={}", groupId, destination);
+  }
+
+  public void notifyUserStatusChange(Long userId, boolean online) {
+    User user = _UserRepository.findById(userId).orElse(null);
+    if (user == null) {
+      return;
     }
-
-    public void pushMessage(Message message)
-    {
-        String destination = message.getGroupId() != null
-                ? "/topic/group." + message.getGroupId()
-                : "/queue/user." + message.getReceiverId();
-        _MessagingTemplate.convertAndSend(destination, message);
-        _Logger.debug("Message pushed: destination={}, messageId={}", destination, message.getId());
+    user.setOnline(online);
+    _UserRepository.save(user);
+    List<GroupMember> memberships = _GroupMemberRepository.findByUserId(userId);
+    for (GroupMember member : memberships) {
+      pushToGroup(
+          member.getGroup().getId(),
+          Map.of("type", "USER_STATUS", "userId", userId, "online", online));
     }
-
-    public void pushToUser(Long userId, Object payload)
-    {
-        String destination = "/queue/user." + userId;
-        _MessagingTemplate.convertAndSend(destination, payload);
-        _Logger.debug("Pushed to user: userId={}, destination={}", userId, destination);
-    }
-
-    public void pushToGroup(Long groupId, Object payload)
-    {
-        String destination = "/topic/group." + groupId;
-        _MessagingTemplate.convertAndSend(destination, payload);
-        _Logger.debug("Pushed to group: groupId={}, destination={}", groupId, destination);
-    }
-
-    public void notifyUserStatusChange(Long userId, boolean online)
-    {
-        User user = _UserRepository.findById(userId).orElse(null);
-        if(user == null) {
-            return;
-        }
-        user.setOnline(online);
-        _UserRepository.save(user);
-        List<GroupMember> memberships = _GroupMemberRepository.findByUserId(userId);
-        for(GroupMember member : memberships) {
-            pushToGroup(member.getGroup().getId(), Map.of("type", "USER_STATUS", "userId", userId, "online", online));
-        }
-    }
-
+  }
 }

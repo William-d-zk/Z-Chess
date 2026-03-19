@@ -23,62 +23,50 @@
 
 package com.isahl.chess.square.model;
 
-public class TaskResult
-{
-    private String subTaskId;
-    private String taskId;
-    private String result;
-    private boolean success;
+public class TaskResult {
+  private String subTaskId;
+  private String taskId;
+  private String result;
+  private boolean success;
 
-    public TaskResult()
-    {
-    }
+  public TaskResult() {}
 
-    public TaskResult(String subTaskId, String taskId, String result, boolean success)
-    {
-        this.subTaskId = subTaskId;
-        this.taskId = taskId;
-        this.result = result;
-        this.success = success;
-    }
+  public TaskResult(String subTaskId, String taskId, String result, boolean success) {
+    this.subTaskId = subTaskId;
+    this.taskId = taskId;
+    this.result = result;
+    this.success = success;
+  }
 
-    public String getSubTaskId()
-    {
-        return subTaskId;
-    }
+  public String getSubTaskId() {
+    return subTaskId;
+  }
 
-    public void setSubTaskId(String subTaskId)
-    {
-        this.subTaskId = subTaskId;
-    }
+  public void setSubTaskId(String subTaskId) {
+    this.subTaskId = subTaskId;
+  }
 
-    public String getTaskId()
-    {
-        return taskId;
-    }
+  public String getTaskId() {
+    return taskId;
+  }
 
-    public void setTaskId(String taskId)
-    {
-        this.taskId = taskId;
-    }
+  public void setTaskId(String taskId) {
+    this.taskId = taskId;
+  }
 
-    public String getResult()
-    {
-        return result;
-    }
+  public String getResult() {
+    return result;
+  }
 
-    public void setResult(String result)
-    {
-        this.result = result;
-    }
+  public void setResult(String result) {
+    this.result = result;
+  }
 
-    public boolean isSuccess()
-    {
-        return success;
-    }
+  public boolean isSuccess() {
+    return success;
+  }
 
-    public void setSuccess(boolean success)
-    {
-        this.success = success;
-    }
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
 }

@@ -30,23 +30,19 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 /**
  * @author william.d.zk
  */
-public class AcceptFailed
-        implements IBinaryOperator<Throwable, IAioConnection, Void>
-{
+public class AcceptFailed implements IBinaryOperator<Throwable, IAioConnection, Void> {
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
+  private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
 
-    @Override
-    public Void handle(Throwable throwable, IAioConnection aioServer)
-    {
-        _Logger.warning("accept failed,ignore!", throwable);
-        aioServer.error();
-        return null;
-    }
+  @Override
+  public Void handle(Throwable throwable, IAioConnection aioServer) {
+    _Logger.warning("accept failed,ignore!", throwable);
+    aioServer.error();
+    return null;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.accept-failed";
-    }
+  @Override
+  public String getName() {
+    return "operator.accept-failed";
+  }
 }

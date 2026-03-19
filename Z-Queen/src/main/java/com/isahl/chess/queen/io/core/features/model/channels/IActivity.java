@@ -27,9 +27,8 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-public interface IActivity
-{
-    boolean send(ISession session, OperateType eventType, IProtocol... toSends);
+public interface IActivity {
+  boolean send(ISession session, OperateType eventType, IProtocol... toSends);
 
-    void close(ISession session, OperateType eventType);
+  void close(ISession session, OperateType eventType);
 }

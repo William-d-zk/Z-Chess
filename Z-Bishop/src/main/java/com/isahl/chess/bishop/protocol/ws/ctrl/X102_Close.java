@@ -22,42 +22,35 @@
  */
 package com.isahl.chess.bishop.protocol.ws.ctrl;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
-
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x102)
-public class X102_Close<T extends WsContext>
-        extends WsControl<T>
-{
-    public X102_Close()
-    {
-        this(null);
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x102)
+public class X102_Close<T extends WsContext> extends WsControl<T> {
+  public X102_Close() {
+    this(null);
+  }
 
-    public X102_Close(byte[] payload)
-    {
-        super(WsFrame.frame_op_code_ctrl_close);
-        mPayload = payload;
-    }
+  public X102_Close(byte[] payload) {
+    super(WsFrame.frame_op_code_ctrl_close);
+    mPayload = payload;
+  }
 
-    @Override
-    public X102_Close<T> duplicate()
-    {
-        return new X102_Close<>(mPayload);
-    }
+  @Override
+  public X102_Close<T> duplicate() {
+    return new X102_Close<>(mPayload);
+  }
 
-    @Override
-    public Level level()
-    {
-        return ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return ALMOST_ONCE;
+  }
 }

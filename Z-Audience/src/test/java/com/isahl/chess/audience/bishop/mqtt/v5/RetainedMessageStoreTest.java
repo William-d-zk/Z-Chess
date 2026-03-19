@@ -23,81 +23,80 @@
 
 package com.isahl.chess.audience.bishop.mqtt.v5;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.bishop.mqtt.v5.RetainedMessageStore;
 import com.isahl.chess.bishop.mqtt.v5.RetainedMessageStore.RetainedMessage;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class RetainedMessageStoreTest {
-    
-    private RetainedMessageStore store;
-    
-    @BeforeEach
-    void setUp() {
-        store = new RetainedMessageStore();
-    }
-    
-    @Test
-    void testStoreAndGet() {
-        byte[] payload = "test message".getBytes();
-        store.store("sensors/temp", payload, 1);
-        
-        RetainedMessage msg = store.get("sensors/temp");
-        assertNotNull(msg);
-        assertArrayEquals(payload, msg.getPayload());
-        assertEquals(1, msg.getQos());
-    }
-    
-    @Test
-    void testStoreEmptyDeletes() {
-        store.store("sensors/temp", "test".getBytes(), 1);
-        assertEquals(1, store.size());
-        
-        store.store("sensors/temp", null, 1);
-        assertEquals(0, store.size());
-        assertNull(store.get("sensors/temp"));
-    }
-    
-    @Test
-    void testGetMatchingExact() {
-        store.store("sensors/temp", "temp".getBytes(), 1);
-        store.store("sensors/humidity", "humidity".getBytes(), 1);
-        
-        List<RetainedMessage> matching = store.getMatching("sensors/temp");
-        assertEquals(1, matching.size());
-        assertEquals("sensors/temp", matching.get(0).getTopic());
-    }
-    
-    @Test
-    void testGetMatchingWildcardPlus() {
-        store.store("sensors/temp", "temp".getBytes(), 1);
-        store.store("sensors/humidity", "humidity".getBytes(), 1);
-        store.store("actuators/led", "led".getBytes(), 1);
-        
-        List<RetainedMessage> matching = store.getMatching("sensors/+");
-        assertEquals(2, matching.size());
-    }
-    
-    @Test
-    void testGetMatchingWildcardHash() {
-        store.store("sensors/temp/room1", "temp".getBytes(), 1);
-        store.store("sensors/temp/room2", "temp2".getBytes(), 1);
-        store.store("sensors/humidity", "humidity".getBytes(), 1);
-        
-        List<RetainedMessage> matching = store.getMatching("sensors/#");
-        assertEquals(3, matching.size());
-    }
-    
-    @Test
-    void testClear() {
-        store.store("sensors/temp", "temp".getBytes(), 1);
-        store.store("sensors/humidity", "humidity".getBytes(), 1);
-        
-        store.clear();
-        assertEquals(0, store.size());
-    }
+
+  private RetainedMessageStore store;
+
+  @BeforeEach
+  void setUp() {
+    store = new RetainedMessageStore();
+  }
+
+  @Test
+  void testStoreAndGet() {
+    byte[] payload = "test message".getBytes();
+    store.store("sensors/temp", payload, 1);
+
+    RetainedMessage msg = store.get("sensors/temp");
+    assertNotNull(msg);
+    assertArrayEquals(payload, msg.getPayload());
+    assertEquals(1, msg.getQos());
+  }
+
+  @Test
+  void testStoreEmptyDeletes() {
+    store.store("sensors/temp", "test".getBytes(), 1);
+    assertEquals(1, store.size());
+
+    store.store("sensors/temp", null, 1);
+    assertEquals(0, store.size());
+    assertNull(store.get("sensors/temp"));
+  }
+
+  @Test
+  void testGetMatchingExact() {
+    store.store("sensors/temp", "temp".getBytes(), 1);
+    store.store("sensors/humidity", "humidity".getBytes(), 1);
+
+    List<RetainedMessage> matching = store.getMatching("sensors/temp");
+    assertEquals(1, matching.size());
+    assertEquals("sensors/temp", matching.get(0).getTopic());
+  }
+
+  @Test
+  void testGetMatchingWildcardPlus() {
+    store.store("sensors/temp", "temp".getBytes(), 1);
+    store.store("sensors/humidity", "humidity".getBytes(), 1);
+    store.store("actuators/led", "led".getBytes(), 1);
+
+    List<RetainedMessage> matching = store.getMatching("sensors/+");
+    assertEquals(2, matching.size());
+  }
+
+  @Test
+  void testGetMatchingWildcardHash() {
+    store.store("sensors/temp/room1", "temp".getBytes(), 1);
+    store.store("sensors/temp/room2", "temp2".getBytes(), 1);
+    store.store("sensors/humidity", "humidity".getBytes(), 1);
+
+    List<RetainedMessage> matching = store.getMatching("sensors/#");
+    assertEquals(3, matching.size());
+  }
+
+  @Test
+  void testClear() {
+    store.store("sensors/temp", "temp".getBytes(), 1);
+    store.store("sensors/humidity", "humidity".getBytes(), 1);
+
+    store.clear();
+    assertEquals(0, store.size());
+  }
 }

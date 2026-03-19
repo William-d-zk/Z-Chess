@@ -42,183 +42,176 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.List;
 
-public class RaftCustom
-        implements IClusterCustom<IRaftMachine>
-{
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+public class RaftCustom implements IClusterCustom<IRaftMachine> {
+  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final RaftPeer _RaftPeer;
+  private final RaftPeer _RaftPeer;
 
-    public RaftCustom(RaftPeer raftPeer)
-    {
-        _RaftPeer = raftPeer;
-    }
+  public RaftCustom(RaftPeer raftPeer) {
+    _RaftPeer = raftPeer;
+  }
 
-    /**
-     * @param manager  cluster 管理器 注意与 device 管理器的区分
-     * @param session  来源 session
-     * @param received 需要 raft custom 处理的内容
-     * @return ITriple
-     * fst  [response → cluster peer session] : command implements 'IControl', BATCH:List of IControl ; SINGLE: IControl
-     * snd  [response → link handler] : command implements 'IConsistentResult', 需要传递给LINK的内容，
-     * trd  [operator-type] : operator-type [SINGLE|BATCH]
+  /**
+   * @param manager cluster 管理器 注意与 device 管理器的区分
+   * @param session 来源 session
+   * @param received 需要 raft custom 处理的内容
+   * @return ITriple fst [response → cluster peer session] : command implements 'IControl',
+   *     BATCH:List of IControl ; SINGLE: IControl snd [response → link handler] : command
+   *     implements 'IConsistentResult', 需要传递给LINK的内容， trd [operator-type] : operator-type
+   *     [SINGLE|BATCH]
+   */
+  @Override
+  public ITriple inject(IManager manager, ISession session, IProtocol received) {
+    /*
+     * leader -> follow, self::follow
+     * 由于x76.origin == request.session.sessionIndex
+     * LinkCustom中专门有对应findSession的操作，所以此处不再执行此操作，且在LinkCustom中执行更为安全
      */
-    @Override
-    public ITriple inject(IManager manager, ISession session, IProtocol received)
-    {
-        /*
-         * leader -> follow, self::follow
-         * 由于x76.origin == request.session.sessionIndex
-         * LinkCustom中专门有对应findSession的操作，所以此处不再执行此操作，且在LinkCustom中执行更为安全
-         */
-        /* 作为 client 收到 notify */
-        switch(received.serial()) {
-            // Pre-vote 请求
-            case 0x6F -> {
-                return _RaftPeer.onPreVote((X6F_RaftPreVote) received, manager, session);
-            }
-            // Pre-vote 响应
-            case 0x6E -> {
-                return _RaftPeer.onPreVoteResp((X6E_RaftPreVoteResp) received, manager);
-            }
-            // follower → elector
-            case 0x70 -> {
-                return _RaftPeer.onVote((X70_RaftVote) received, manager, session);
-            }
-            // elector → candidate
-            case 0x71 -> {
-                return _RaftPeer.onBallot((X71_RaftBallot) received, manager, session);
-            }
-            // leader → follower
-            case 0x72 -> {
-                return _RaftPeer.onAppend((X72_RaftAppend) received, session);
-            }
-            // follower → leader
-            case 0x73 -> {
-                return _RaftPeer.onAccept((X73_RaftAccept) received, manager);
-            }
-            // * → candidate
-            case 0x74 -> {
-                return _RaftPeer.onReject((X74_RaftReject) received, session);
-            }
-            // client → leader
-            case 0x75 -> {
-                return _RaftPeer.onRequest((X75_RaftReq) received, manager, session);
-            }
-            // client.received:x76
-            case 0x76 -> {
-                return _RaftPeer.onResponse((X76_RaftResp) received);
-            }
-            // leader → client
-            case 0x77 -> {
-                return _RaftPeer.onNotify((X77_RaftNotify) received);
-            }
-            case 0x78 -> {
-                return _RaftPeer.onModify((X78_RaftModify) received, manager);
-            }
-            case 0x79 -> _RaftPeer.onConfirm((X79_RaftConfirm) received);
-            case 0x7C -> {
-                return _RaftPeer.onConfirm((X7B_RaftConfirm) received, manager);
-            }
-            // Snapshot 安装
-            case 0x7D -> {
-                return _RaftPeer.onSnapshot((X7D_RaftSnapshot) received, session);
-            }
-            // Snapshot 响应
-            case 0x7E -> {
-                return _RaftPeer.onSnapshotAck((X7E_RaftSnapshotAck) received);
-            }
-            // ReadIndex 请求
-            case 0x7F -> {
-                return _RaftPeer.onReadIndex((X7F_RaftReadIndex) received, manager);
-            }
-            // ReadIndex 响应
-            case 0x80 -> {
-                return _RaftPeer.onReadIndexResp((X80_RaftReadIndexResp) received);
-            }
-            // Leader 转让请求
-            case 0x81 -> {
-                return _RaftPeer.onTransferLeadership((X81_RaftTransferLeadership) received, manager, session);
-            }
-            // Leader 转让响应
-            case 0x82 -> {
-                _RaftPeer.onTransferLeadershipResp((X82_RaftTransferLeadershipResp) received);
-                return null;
-            }
-            // Lease Read 请求
-            case 0x83 -> {
-                return _RaftPeer.onLeaseRead((X83_RaftLeaseRead) received, manager);
-            }
-            // Lease Read 响应
-            case 0x84 -> {
-                _RaftPeer.onLeaseReadResp((X84_RaftLeaseReadResp) received);
-                return null;
-            }
-            // peer *, behind in config → previous in config
-            case 0x08 -> {
-                X08_Identity x08 = (X08_Identity) received;
-                long peerId = x08.identity();
-                long newIdx = x08.idx();
-                _Logger.info("map peer[ %#x ] session[ %#x ]", peerId, newIdx);
-                manager.mapSession(newIdx, session, peerId);
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + received.serial());
-        }
+    /* 作为 client 收到 notify */
+    switch (received.serial()) {
+        // Pre-vote 请求
+      case 0x6F -> {
+        return _RaftPeer.onPreVote((X6F_RaftPreVote) received, manager, session);
+      }
+        // Pre-vote 响应
+      case 0x6E -> {
+        return _RaftPeer.onPreVoteResp((X6E_RaftPreVoteResp) received, manager);
+      }
+        // follower → elector
+      case 0x70 -> {
+        return _RaftPeer.onVote((X70_RaftVote) received, manager, session);
+      }
+        // elector → candidate
+      case 0x71 -> {
+        return _RaftPeer.onBallot((X71_RaftBallot) received, manager, session);
+      }
+        // leader → follower
+      case 0x72 -> {
+        return _RaftPeer.onAppend((X72_RaftAppend) received, session);
+      }
+        // follower → leader
+      case 0x73 -> {
+        return _RaftPeer.onAccept((X73_RaftAccept) received, manager);
+      }
+        // * → candidate
+      case 0x74 -> {
+        return _RaftPeer.onReject((X74_RaftReject) received, session);
+      }
+        // client → leader
+      case 0x75 -> {
+        return _RaftPeer.onRequest((X75_RaftReq) received, manager, session);
+      }
+        // client.received:x76
+      case 0x76 -> {
+        return _RaftPeer.onResponse((X76_RaftResp) received);
+      }
+        // leader → client
+      case 0x77 -> {
+        return _RaftPeer.onNotify((X77_RaftNotify) received);
+      }
+      case 0x78 -> {
+        return _RaftPeer.onModify((X78_RaftModify) received, manager);
+      }
+      case 0x79 -> _RaftPeer.onConfirm((X79_RaftConfirm) received);
+      case 0x7C -> {
+        return _RaftPeer.onConfirm((X7B_RaftConfirm) received, manager);
+      }
+        // Snapshot 安装
+      case 0x7D -> {
+        return _RaftPeer.onSnapshot((X7D_RaftSnapshot) received, session);
+      }
+        // Snapshot 响应
+      case 0x7E -> {
+        return _RaftPeer.onSnapshotAck((X7E_RaftSnapshotAck) received);
+      }
+        // ReadIndex 请求
+      case 0x7F -> {
+        return _RaftPeer.onReadIndex((X7F_RaftReadIndex) received, manager);
+      }
+        // ReadIndex 响应
+      case 0x80 -> {
+        return _RaftPeer.onReadIndexResp((X80_RaftReadIndexResp) received);
+      }
+        // Leader 转让请求
+      case 0x81 -> {
+        return _RaftPeer.onTransferLeadership(
+            (X81_RaftTransferLeadership) received, manager, session);
+      }
+        // Leader 转让响应
+      case 0x82 -> {
+        _RaftPeer.onTransferLeadershipResp((X82_RaftTransferLeadershipResp) received);
         return null;
+      }
+        // Lease Read 请求
+      case 0x83 -> {
+        return _RaftPeer.onLeaseRead((X83_RaftLeaseRead) received, manager);
+      }
+        // Lease Read 响应
+      case 0x84 -> {
+        _RaftPeer.onLeaseReadResp((X84_RaftLeaseReadResp) received);
+        return null;
+      }
+        // peer *, behind in config → previous in config
+      case 0x08 -> {
+        X08_Identity x08 = (X08_Identity) received;
+        long peerId = x08.identity();
+        long newIdx = x08.idx();
+        _Logger.info("map peer[ %#x ] session[ %#x ]", peerId, newIdx);
+        manager.mapSession(newIdx, session, peerId);
+      }
+      default -> throw new IllegalStateException("Unexpected value: " + received.serial());
     }
+    return null;
+  }
 
-    @Override
-    public List<ITriple> onTimer(IManager manager, IRaftMachine machine)
-    {
-        return machine == null ? null : switch(RaftState.valueOf(machine.state())) {
+  @Override
+  public List<ITriple> onTimer(IManager manager, IRaftMachine machine) {
+    return machine == null
+        ? null
+        : switch (RaftState.valueOf(machine.state())) {
             // step down → follower
-            case FOLLOWER -> _RaftPeer.turnDown(machine);
+          case FOLLOWER -> _RaftPeer.turnDown(machine);
             // pre-vote (使用 candidate 状态但 term 未增加)
-            case CANDIDATE -> {
-                // 检查是否是 pre-vote 阶段
-                var preVoteResult = _RaftPeer.preVote(machine, manager);
-                if(preVoteResult != null && !preVoteResult.isEmpty()) {
-                    yield preVoteResult;
-                }
-                // 正式选举投票
-                yield _RaftPeer.vote4me(machine, manager);
+          case CANDIDATE -> {
+            // 检查是否是 pre-vote 阶段
+            var preVoteResult = _RaftPeer.preVote(machine, manager);
+            if (preVoteResult != null && !preVoteResult.isEmpty()) {
+              yield preVoteResult;
             }
+            // 正式选举投票
+            yield _RaftPeer.vote4me(machine, manager);
+          }
             // heartbeat
-            case LEADER -> _RaftPeer.logAppend(machine, manager);
-            default -> null;
+          case LEADER -> _RaftPeer.logAppend(machine, manager);
+          default -> null;
         };
-    }
+  }
 
-    @Override
-    public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory)
-    {
-        _Logger.debug("cluster consistent %s", request);
-        return _RaftPeer.onSubmit(request, manager, origin, factory);
-    }
+  @Override
+  public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory) {
+    _Logger.debug("cluster consistent %s", request);
+    return _RaftPeer.onSubmit(request, manager, origin, factory);
+  }
 
-    @Override
-    public List<ITriple> change(IManager manager, IoSerial topology)
-    {
-        _Logger.debug("cluster new topology %s", topology);
-        //Accept Machine State
-        return topology instanceof RaftNode ? _RaftPeer.onModify((RaftNode) topology, manager) : null;
-    }
+  @Override
+  public List<ITriple> change(IManager manager, IoSerial topology) {
+    _Logger.debug("cluster new topology %s", topology);
+    // Accept Machine State
+    return topology instanceof RaftNode ? _RaftPeer.onModify((RaftNode) topology, manager) : null;
+  }
 
-    @Override
-    public boolean waitForCommit()
-    {
-        return _RaftPeer.isInCongress();
-    }
+  @Override
+  public boolean waitForCommit() {
+    return _RaftPeer.isInCongress();
+  }
 
-    @Override
-    public IConsistency skipConsistency(IoSerial request, long origin)
-    {
-        X77_RaftNotify x77 = new X77_RaftNotify();
-        x77.origin(origin);
-        x77.withSub(request);
-        return x77;
-    }
+  @Override
+  public IConsistency skipConsistency(IoSerial request, long origin) {
+    X77_RaftNotify x77 = new X77_RaftNotify();
+    x77.origin(origin);
+    x77.withSub(request);
+    return x77;
+  }
 }

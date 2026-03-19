@@ -35,53 +35,47 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class ClusterPlugin
-        implements IAccessService
-{
+public class ClusterPlugin implements IAccessService {
 
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    @Override
-    public boolean isSupported(IoSerial input)
-    {
-        return switch(input.serial()) {
-            case 0x0B, 0x0C -> true;
-            default -> false;
-        };
+  @Override
+  public boolean isSupported(IoSerial input) {
+    return switch (input.serial()) {
+      case 0x0B, 0x0C -> true;
+      default -> false;
+    };
+  }
+
+  @Override
+  public boolean isSupported(ISession session) {
+    return session.getFactory() == ZClusterFactory._Instance;
+  }
+
+  @Override
+  public void onLogic(
+      IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load) {
+    switch (content.serial()) {
+      case 0x0B -> {
+        X0C_Pong x0C = new X0C_Pong();
+        x0C.with(session);
+        load.add(Triple.of(x0C, session, session.encoder()));
+      }
     }
+  }
 
-    @Override
-    public boolean isSupported(ISession session)
-    {
-        return session.getFactory() == ZClusterFactory._Instance;
-    }
+  @Override
+  public ITriple onLink(IManager manager, ISession session, IProtocol input) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
-    {
-        switch(content.serial()) {
-            case 0x0B -> {
-                X0C_Pong x0C = new X0C_Pong();
-                x0C.with(session);
-                load.add(Triple.of(x0C, session, session.encoder()));
-            }
-        }
-    }
-
-    @Override
-    public ITriple onLink(IManager manager, ISession session, IProtocol input)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public List<ITriple> onConsistency(
+      IManager manager, IConsistency backload, IoSerial consensusBody) {
+    throw new UnsupportedOperationException();
+  }
 }

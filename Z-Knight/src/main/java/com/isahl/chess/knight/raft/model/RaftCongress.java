@@ -26,8 +26,4 @@ package com.isahl.chess.knight.raft.model;
 /**
  * @author william.d.zk
  */
-public class RaftCongress
-{
-
-
-}
+public class RaftCongress {}

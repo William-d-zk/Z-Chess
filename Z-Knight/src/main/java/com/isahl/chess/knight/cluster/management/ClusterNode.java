@@ -27,112 +27,93 @@ import java.util.Objects;
 
 /**
  * 集群节点信息
- * 
+ *
  * @author william.d.zk
  */
-public class ClusterNode
-{
-    private String nodeId;
-    private String host;
-    private int port;
-    private NodeStatus status;
-    private long lastHeartbeat;
-    private boolean isLeader;
-    
-    public ClusterNode()
-    {
-    }
-    
-    public ClusterNode(String nodeId, String host, int port)
-    {
-        this.nodeId = nodeId;
-        this.host = host;
-        this.port = port;
-        this.status = NodeStatus.FOLLOWER;
-        this.lastHeartbeat = System.currentTimeMillis();
-        this.isLeader = false;
-    }
-    
-    public String getNodeId()
-    {
-        return nodeId;
-    }
-    
-    public void setNodeId(String nodeId)
-    {
-        this.nodeId = nodeId;
-    }
-    
-    public String getHost()
-    {
-        return host;
-    }
-    
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
-    
-    public int getPort()
-    {
-        return port;
-    }
-    
-    public void setPort(int port)
-    {
-        this.port = port;
-    }
-    
-    public NodeStatus getStatus()
-    {
-        return status;
-    }
-    
-    public void setStatus(NodeStatus status)
-    {
-        this.status = status;
-    }
-    
-    public long getLastHeartbeat()
-    {
-        return lastHeartbeat;
-    }
-    
-    public void setLastHeartbeat(long lastHeartbeat)
-    {
-        this.lastHeartbeat = lastHeartbeat;
-    }
-    
-    public boolean isLeader()
-    {
-        return isLeader;
-    }
-    
-    public void setLeader(boolean leader)
-    {
-        isLeader = leader;
-    }
-    
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ClusterNode that = (ClusterNode) o;
-        return Objects.equals(nodeId, that.nodeId);
-    }
-    
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(nodeId);
-    }
-    
-    public enum NodeStatus
-    {
-        LEADER,
-        FOLLOWER,
-        CANDIDATE,
-        OFFLINE
-    }
+public class ClusterNode {
+  private String nodeId;
+  private String host;
+  private int port;
+  private NodeStatus status;
+  private long lastHeartbeat;
+  private boolean isLeader;
+
+  public ClusterNode() {}
+
+  public ClusterNode(String nodeId, String host, int port) {
+    this.nodeId = nodeId;
+    this.host = host;
+    this.port = port;
+    this.status = NodeStatus.FOLLOWER;
+    this.lastHeartbeat = System.currentTimeMillis();
+    this.isLeader = false;
+  }
+
+  public String getNodeId() {
+    return nodeId;
+  }
+
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public NodeStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(NodeStatus status) {
+    this.status = status;
+  }
+
+  public long getLastHeartbeat() {
+    return lastHeartbeat;
+  }
+
+  public void setLastHeartbeat(long lastHeartbeat) {
+    this.lastHeartbeat = lastHeartbeat;
+  }
+
+  public boolean isLeader() {
+    return isLeader;
+  }
+
+  public void setLeader(boolean leader) {
+    isLeader = leader;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ClusterNode that = (ClusterNode) o;
+    return Objects.equals(nodeId, that.nodeId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(nodeId);
+  }
+
+  public enum NodeStatus {
+    LEADER,
+    FOLLOWER,
+    CANDIDATE,
+    OFFLINE
+  }
 }

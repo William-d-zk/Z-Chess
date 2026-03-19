@@ -34,148 +34,131 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
  * @author William.d.zk
  */
 public abstract class AioFilterChain<C extends IPContext, O extends IProtocol, I extends IProtocol>
-        implements IFilterChain,
-                   IPipeFilter,
-                   IFilter<C, O, I>
-{
+    implements IFilterChain, IPipeFilter, IFilter<C, O, I> {
 
-    protected final Logger _Logger;
+  protected final Logger _Logger;
 
-    private final String       _Name;
-    private       IFilterChain next;
-    private       IFilterChain previous;
+  private final String _Name;
+  private IFilterChain next;
+  private IFilterChain previous;
 
-    private int mRightIdempotent = 0x80000000;
-    private int mLeftIdempotent  = 1;
+  private int mRightIdempotent = 0x80000000;
+  private int mLeftIdempotent = 1;
 
-    protected AioFilterChain(String name)
-    {
-        _Name = name;
-        _Logger = Logger.getLogger("io.queen.chain." + _Name);
+  protected AioFilterChain(String name) {
+    _Name = name;
+    _Logger = Logger.getLogger("io.queen.chain." + _Name);
+  }
+
+  @Override
+  public int getRightIdempotentBit() {
+    return mRightIdempotent;
+  }
+
+  @Override
+  public int getLeftIdempotentBit() {
+    return mLeftIdempotent;
+  }
+
+  @Override
+  public void idempotentRightShift(int previous) {
+    if (previous != 0) {
+      int rightShift = previous >>> 1;
+      if (rightShift != 0) {
+        mRightIdempotent = rightShift;
+      } else {
+        throw new IllegalArgumentException("no space for right shift");
+      }
     }
+    IoUtil.requireNonNull(getNext(), f -> f.idempotentRightShift(mRightIdempotent));
+  }
 
-    @Override
-    public int getRightIdempotentBit()
-    {
-        return mRightIdempotent;
+  @Override
+  public void idempotentLeftShift(int next) {
+    if (next != 0) {
+      int leftShift = next << 1;
+      if (leftShift != 0) {
+        mLeftIdempotent = leftShift;
+      } else {
+        throw new IllegalArgumentException("no space for left shift");
+      }
     }
+    IoUtil.requireNonNull(getPrevious(), f -> f.idempotentLeftShift(mLeftIdempotent));
+  }
 
-    @Override
-    public int getLeftIdempotentBit()
-    {
-        return mLeftIdempotent;
-    }
+  @Override
+  public IFilterChain getPrevious() {
+    return previous;
+  }
 
-    @Override
-    public void idempotentRightShift(int previous)
-    {
-        if(previous != 0) {
-            int rightShift = previous >>> 1;
-            if(rightShift != 0) {
-                mRightIdempotent = rightShift;
-            }
-            else {
-                throw new IllegalArgumentException("no space for right shift");
-            }
-        }
-        IoUtil.requireNonNull(getNext(), f->f.idempotentRightShift(mRightIdempotent));
-    }
+  @Override
+  public void setPrevious(IFilterChain previous) {
+    this.previous = previous;
+  }
 
-    @Override
-    public void idempotentLeftShift(int next)
-    {
-        if(next != 0) {
-            int leftShift = next << 1;
-            if(leftShift != 0) {
-                mLeftIdempotent = leftShift;
-            }
-            else {
-                throw new IllegalArgumentException("no space for left shift");
-            }
-        }
-        IoUtil.requireNonNull(getPrevious(), f->f.idempotentLeftShift(mLeftIdempotent));
-    }
+  @Override
+  public IFilterChain getNext() {
+    return next;
+  }
 
-    @Override
-    public IFilterChain getPrevious()
-    {
-        return previous;
-    }
+  @Override
+  public void setNext(IFilterChain next) {
+    this.next = next;
+  }
 
-    @Override
-    public void setPrevious(IFilterChain previous)
-    {
-        this.previous = previous;
+  @Override
+  public IFilterChain getChainHead() {
+    IFilterChain node = previous;
+    while (node != null && node.getPrevious() != null) {
+      node = node.getPrevious();
     }
+    return node == null ? this : node;
+  }
 
-    @Override
-    public IFilterChain getNext()
-    {
-        return next;
+  @Override
+  public IFilterChain getChainTail() {
+    IFilterChain node = next;
+    while (node != null && node.getNext() != null) {
+      node = node.getNext();
     }
+    return node == null ? this : node;
+  }
 
-    @Override
-    public void setNext(IFilterChain next)
-    {
-        this.next = next;
+  @Override
+  public IFilterChain linkAfter(IFilterChain current) {
+    if (current == null) {
+      return this;
     }
+    current.setNext(this);
+    setPrevious(current);
+    idempotentRightShift(current.getRightIdempotentBit());
+    current.idempotentLeftShift(getLeftIdempotentBit());
+    return this;
+  }
 
-    @Override
-    public IFilterChain getChainHead()
-    {
-        IFilterChain node = previous;
-        while(node != null && node.getPrevious() != null) {
-            node = node.getPrevious();
-        }
-        return node == null ? this : node;
+  @Override
+  public IFilterChain linkFront(IFilterChain current) {
+    if (current == null) {
+      return this;
     }
+    current.setPrevious(this);
+    setNext(current);
+    current.idempotentRightShift(getRightIdempotentBit());
+    idempotentLeftShift(current.getLeftIdempotentBit());
+    return current;
+  }
 
-    @Override
-    public IFilterChain getChainTail()
-    {
-        IFilterChain node = next;
-        while(node != null && node.getNext() != null) {
-            node = node.getNext();
-        }
-        return node == null ? this : node;
-    }
+  protected boolean checkType(IProtocol protocol, int type_serial) {
+    return protocol._super() == type_serial;
+  }
 
-    @Override
-    public IFilterChain linkAfter(IFilterChain current)
-    {
-        if(current == null) {return this;}
-        current.setNext(this);
-        setPrevious(current);
-        idempotentRightShift(current.getRightIdempotentBit());
-        current.idempotentLeftShift(getLeftIdempotentBit());
-        return this;
-    }
+  @Override
+  public IPipeFilter getPipeFilter() {
+    return this;
+  }
 
-    @Override
-    public IFilterChain linkFront(IFilterChain current)
-    {
-        if(current == null) {return this;}
-        current.setPrevious(this);
-        setNext(current);
-        current.idempotentRightShift(getRightIdempotentBit());
-        idempotentLeftShift(current.getLeftIdempotentBit());
-        return current;
-    }
-
-    protected boolean checkType(IProtocol protocol, int type_serial)
-    {
-        return protocol._super() == type_serial;
-    }
-
-    @Override
-    public IPipeFilter getPipeFilter()
-    {
-        return this;
-    }
-
-    @Override
-    public String getName()
-    {
-        return _Name;
-    }
+  @Override
+  public String getName() {
+    return _Name;
+  }
 }

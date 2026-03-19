@@ -30,11 +30,7 @@ package com.isahl.chess.rook.graphic;
  * @see IEdge
  * @see IScene
  */
-public interface IEdge
-{
+public interface IEdge {
 
-    enum Type
-    {
-
-    }
+  enum Type {}
 }

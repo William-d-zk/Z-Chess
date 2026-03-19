@@ -31,70 +31,57 @@ import com.isahl.chess.king.base.util.IoUtil;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x02)
-public class X02_AsymmetricPub
-        extends ZControl
-{
-    private int mPubKeyId = -1;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x02)
+public class X02_AsymmetricPub extends ZControl {
+  private int mPubKeyId = -1;
 
-    public int getPubKeyId()
-    {
-        return mPubKeyId;
-    }
+  public int getPubKeyId() {
+    return mPubKeyId;
+  }
 
-    public void setPubKeyId(int pubKeyId)
-    {
-        this.mPubKeyId = pubKeyId;
-    }
+  public void setPubKeyId(int pubKeyId) {
+    this.mPubKeyId = pubKeyId;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 4;
-    }
+  @Override
+  public int length() {
+    return super.length() + 4;
+  }
 
-    public X02_AsymmetricPub setPubKey(int _id, byte[] key)
-    {
-        mPubKeyId = _id;
-        mPayload = key;
-        return this;
-    }
+  public X02_AsymmetricPub setPubKey(int _id, byte[] key) {
+    mPubKeyId = _id;
+    mPayload = key;
+    return this;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putInt(mPubKeyId);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putInt(mPubKeyId);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPubKeyId = input.getInt();
-        return remain - 4;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPubKeyId = input.getInt();
+    return remain - 4;
+  }
 
-    public byte[] getPubKey()
-    {
-        return mPayload;
-    }
+  public byte[] getPubKey() {
+    return mPayload;
+  }
 
-    public void setPubKey(byte[] pubKey)
-    {
-        mPayload = pubKey;
-    }
+  public void setPubKey(byte[] pubKey) {
+    mPayload = pubKey;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s\npublic-key: %d | %s", super.toString(), mPubKeyId, IoUtil.bin2Hex(mPayload));
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "%s\npublic-key: %d | %s", super.toString(), mPubKeyId, IoUtil.bin2Hex(mPayload));
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 }

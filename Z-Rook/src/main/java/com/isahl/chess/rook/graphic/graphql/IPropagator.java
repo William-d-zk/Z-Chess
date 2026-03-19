@@ -25,17 +25,14 @@ package com.isahl.chess.rook.graphic.graphql;
 
 import com.isahl.chess.rook.graphic.IEdge;
 
-/**
- * 传播器
- */
-public interface IPropagator
-{
-    /**
-     * 传播过程是 从视角节点 到 目标节点
-     *
-     * @param perspective 视角节点 ID
-     * @param target      目标节点 ID
-     * @return 扩散所经过的边
-     */
-    IEdge propagate(long perspective, long target);
+/** 传播器 */
+public interface IPropagator {
+  /**
+   * 传播过程是 从视角节点 到 目标节点
+   *
+   * @param perspective 视角节点 ID
+   * @param target 目标节点 ID
+   * @return 扩散所经过的边
+   */
+  IEdge propagate(long perspective, long target);
 }

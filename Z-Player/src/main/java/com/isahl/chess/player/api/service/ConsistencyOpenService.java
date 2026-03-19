@@ -38,72 +38,61 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ConsistencyOpenService
-        implements IConsistencyService
-{
+public class ConsistencyOpenService implements IConsistencyService {
 
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final DeviceNode _DeviceNode;
-    private final RaftPeer   _RaftPeer;
+  private final DeviceNode _DeviceNode;
+  private final RaftPeer _RaftPeer;
 
-    @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer)
-    {
-        _DeviceNode = deviceNode;
-        _RaftPeer = raftPeer;
+  @Autowired
+  public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer) {
+    _DeviceNode = deviceNode;
+    _RaftPeer = raftPeer;
+  }
+
+  @Override
+  public ICode submit(String content) {
+    if (IoUtil.isBlank(content)) {
+      return CodeKing.MISS;
     }
+    ConsistentText consistency = new ConsistentText(content, _RaftPeer.generateId());
+    ICode result = submit(consistency, _DeviceNode);
 
-    @Override
-    public ICode submit(String content)
-    {
-        if(IoUtil.isBlank(content)) {return CodeKing.MISS;}
-        ConsistentText consistency = new ConsistentText(content, _RaftPeer.generateId());
-        ICode result = submit(consistency, _DeviceNode);
-
-        if(result.getCode() == KingCode.SUCCESS) {
-            _Logger.debug("consistency submit ok:[ %s ]", content);
-        }
-        return result;
+    if (result.getCode() == KingCode.SUCCESS) {
+      _Logger.debug("consistency submit ok:[ %s ]", content);
     }
+    return result;
+  }
 
-    @Override
-    public ICode modify(String host, int port)
-    {
+  @Override
+  public ICode modify(String host, int port) {
 
-        if(_RaftPeer.topology()
-                    .stream()
-                    .anyMatch(node->node.getHost()
-                                        .equals(host)))
-        {
-            _RaftPeer.topology(new RaftNode(host));
-        }
-        else {
-            _RaftPeer.topology(new RaftNode(host, port));
-        }
-        return CodeKing.SUCCESS;
+    if (_RaftPeer.topology().stream().anyMatch(node -> node.getHost().equals(host))) {
+      _RaftPeer.topology(new RaftNode(host));
+    } else {
+      _RaftPeer.topology(new RaftNode(host, port));
     }
+    return CodeKing.SUCCESS;
+  }
 
-    @Override
-    public ICode modify(String host, String gate, int gatePort)
-    {
-        if(_RaftPeer.topology()
-                    .stream()
-                    .anyMatch(node->node.getHost()
-                                        .equals(host) && node.getGateHost()
-                                                             .equals(gate) && node.getGatePort() == gatePort))
-        {
-            _RaftPeer.topology(new RaftNode(host));
-        }
-        else {
-            _RaftPeer.topology(new RaftNode(host, gate, gatePort));
-        }
-        return CodeKing.SUCCESS;
+  @Override
+  public ICode modify(String host, String gate, int gatePort) {
+    if (_RaftPeer.topology().stream()
+        .anyMatch(
+            node ->
+                node.getHost().equals(host)
+                    && node.getGateHost().equals(gate)
+                    && node.getGatePort() == gatePort)) {
+      _RaftPeer.topology(new RaftNode(host));
+    } else {
+      _RaftPeer.topology(new RaftNode(host, gate, gatePort));
     }
+    return CodeKing.SUCCESS;
+  }
 
-    @Override
-    public RaftState getRaftState()
-    {
-        return _RaftPeer.raftState();
-    }
+  @Override
+  public RaftState getRaftState() {
+    return _RaftPeer.raftState();
+  }
 }

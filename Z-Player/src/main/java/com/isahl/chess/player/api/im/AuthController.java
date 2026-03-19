@@ -28,100 +28,96 @@ import com.isahl.chess.player.domain.User;
 import com.isahl.chess.player.domain.UserSession;
 import com.isahl.chess.player.repository.UserRepository;
 import com.isahl.chess.player.repository.UserSessionRepository;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("api/im/auth")
-public class AuthController
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(AuthController.class);
+public class AuthController {
+  private static final Logger _Logger = LoggerFactory.getLogger(AuthController.class);
 
-    private final UserRepository _UserRepository;
-    private final UserSessionRepository _SessionRepository;
+  private final UserRepository _UserRepository;
+  private final UserSessionRepository _SessionRepository;
 
-    @Autowired
-    public AuthController(UserRepository userRepository, UserSessionRepository sessionRepository)
-    {
-        _UserRepository = userRepository;
-        _SessionRepository = sessionRepository;
+  @Autowired
+  public AuthController(UserRepository userRepository, UserSessionRepository sessionRepository) {
+    _UserRepository = userRepository;
+    _SessionRepository = sessionRepository;
+  }
+
+  @PostMapping("login")
+  public ZResponse<?> login(@RequestBody LoginRequest request) {
+    Optional<User> userOpt = _UserRepository.findByUsername(request.username);
+    if (userOpt.isEmpty()) {
+      return ZResponse.error("User not found");
     }
-
-    @PostMapping("login")
-    public ZResponse<?> login(@RequestBody LoginRequest request)
-    {
-        Optional<User> userOpt = _UserRepository.findByUsername(request.username);
-        if(userOpt.isEmpty()) {
-            return ZResponse.error("User not found");
-        }
-        User user = userOpt.get();
-        if(!user.getPasswordHash().equals(request.password)) {
-            return ZResponse.error("Invalid password");
-        }
-        String token = UUID.randomUUID().toString();
-        UserSession session = new UserSession(user.getId(), token, request.clientType, request.clientIp);
-        _SessionRepository.save(session);
-        user.setOnline(true);
-        _UserRepository.save(user);
-        _Logger.info("User logged in: username={}, token={}", request.username, token);
-        return ZResponse.success(Map.of(
-                "token", token,
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "displayName", user.getDisplayName()
-        ));
+    User user = userOpt.get();
+    if (!user.getPasswordHash().equals(request.password)) {
+      return ZResponse.error("Invalid password");
     }
+    String token = UUID.randomUUID().toString();
+    UserSession session =
+        new UserSession(user.getId(), token, request.clientType, request.clientIp);
+    _SessionRepository.save(session);
+    user.setOnline(true);
+    _UserRepository.save(user);
+    _Logger.info("User logged in: username={}, token={}", request.username, token);
+    return ZResponse.success(
+        Map.of(
+            "token", token,
+            "userId", user.getId(),
+            "username", user.getUsername(),
+            "displayName", user.getDisplayName()));
+  }
 
-    @PostMapping("logout")
-    public ZResponse<?> logout(@RequestHeader("X-Session-Token") String token)
-    {
-        Optional<UserSession> sessionOpt = _SessionRepository.findBySessionToken(token);
-        if(sessionOpt.isEmpty()) {
-            return ZResponse.error("Invalid session");
-        }
-        UserSession session = sessionOpt.get();
-        session.setActive(false);
-        session.setLogoutTime(System.currentTimeMillis());
-        _SessionRepository.save(session);
-        _UserRepository.findById(session.getUserId()).ifPresent(user -> {
-            user.setOnline(false);
-            _UserRepository.save(user);
-        });
-        _Logger.info("User logged out: token={}", token);
-        return ZResponse.success("Logged out successfully");
+  @PostMapping("logout")
+  public ZResponse<?> logout(@RequestHeader("X-Session-Token") String token) {
+    Optional<UserSession> sessionOpt = _SessionRepository.findBySessionToken(token);
+    if (sessionOpt.isEmpty()) {
+      return ZResponse.error("Invalid session");
     }
+    UserSession session = sessionOpt.get();
+    session.setActive(false);
+    session.setLogoutTime(System.currentTimeMillis());
+    _SessionRepository.save(session);
+    _UserRepository.findById(session.getUserId())
+        .ifPresent(
+            user -> {
+              user.setOnline(false);
+              _UserRepository.save(user);
+            });
+    _Logger.info("User logged out: token={}", token);
+    return ZResponse.success("Logged out successfully");
+  }
 
-    @GetMapping("verify")
-    public ZResponse<?> verify(@RequestHeader("X-Session-Token") String token)
-    {
-        Optional<UserSession> sessionOpt = _SessionRepository.findBySessionToken(token);
-        if(sessionOpt.isEmpty() || !sessionOpt.get().getActive()) {
-            return ZResponse.error("Invalid or expired session");
-        }
-        UserSession session = sessionOpt.get();
-        Optional<User> userOpt = _UserRepository.findById(session.getUserId());
-        if(userOpt.isEmpty()) {
-            return ZResponse.error("User not found");
-        }
-        User user = userOpt.get();
-        return ZResponse.success(Map.of(
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "displayName", user.getDisplayName()
-        ));
+  @GetMapping("verify")
+  public ZResponse<?> verify(@RequestHeader("X-Session-Token") String token) {
+    Optional<UserSession> sessionOpt = _SessionRepository.findBySessionToken(token);
+    if (sessionOpt.isEmpty() || !sessionOpt.get().getActive()) {
+      return ZResponse.error("Invalid or expired session");
     }
+    UserSession session = sessionOpt.get();
+    Optional<User> userOpt = _UserRepository.findById(session.getUserId());
+    if (userOpt.isEmpty()) {
+      return ZResponse.error("User not found");
+    }
+    User user = userOpt.get();
+    return ZResponse.success(
+        Map.of(
+            "userId", user.getId(),
+            "username", user.getUsername(),
+            "displayName", user.getDisplayName()));
+  }
 
-    public static class LoginRequest
-    {
-        public String username;
-        public String password;
-        public String clientType;
-        public String clientIp;
-    }
+  public static class LoginRequest {
+    public String username;
+    public String password;
+    public String clientType;
+    public String clientIp;
+  }
 }

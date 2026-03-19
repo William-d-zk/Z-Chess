@@ -33,118 +33,110 @@ import com.isahl.chess.queen.events.functions.SessionWrote;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
-import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 import com.isahl.chess.queen.io.core.tasks.features.IAvailable;
 import com.lmax.disruptor.RingBuffer;
-
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public class AioWorker
-        extends Thread
-{
+public class AioWorker extends Thread {
 
-    private final Logger                         _Logger = Logger.getLogger(
-            "io.queen.operator." + getClass().getSimpleName());
-    private final IAvailable<RingBuffer<QEvent>> _Available;
-    private final RingBuffer<QEvent>             _Producer;
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+  private final IAvailable<RingBuffer<QEvent>> _Available;
+  private final RingBuffer<QEvent> _Producer;
 
-    public AioWorker(Runnable r, String name, IAvailable<RingBuffer<QEvent>> available, RingBuffer<QEvent> producer)
-    {
-        super(r, name);
-        _Available = available;
-        Objects.requireNonNull(producer);
-        _Producer = producer;
+  public AioWorker(
+      Runnable r,
+      String name,
+      IAvailable<RingBuffer<QEvent>> available,
+      RingBuffer<QEvent> producer) {
+    super(r, name);
+    _Available = available;
+    Objects.requireNonNull(producer);
+    _Producer = producer;
+  }
+
+  @Override
+  public void run() {
+    try {
+      super.run();
+    } catch (Error e) {
+      _Logger.fetal("AioWorker Work UnCatchEx", e);
+      if (Objects.nonNull(_Available)) {
+        _Available.available(_Producer);
+      }
+      throw e;
     }
+  }
 
-    @Override
-    public void run()
-    {
-        try {
-            super.run();
-        }
-        catch(Error e) {
-            _Logger.fetal("AioWorker Work UnCatchEx", e);
-            if(Objects.nonNull(_Available)) {
-                _Available.available(_Producer);
-            }
-            throw e;
-        }
+  public <T, A, R> void publish(
+      RingBuffer<QEvent> producer,
+      final IBinaryOperator<T, A, R> op,
+      final IError.Type eType,
+      final OperateType type,
+      IPair content) {
+    if (producer.remainingCapacity() == 0) {
+      _Logger.warning("aio worker %s block", getName());
     }
+    long sequence = producer.next();
+    try {
+      QEvent event = producer.get(sequence);
+      if (eType.equals(IError.Type.NO_ERROR)) {
+        event.produce(type, content, op);
+      } else {
+        event.error(eType, content, op);
+      }
+    } finally {
+      producer.publish(sequence);
+    }
+  }
 
-    public <T, A, R> void publish(RingBuffer<QEvent> producer,
-                                  final IBinaryOperator<T, A, R> op,
-                                  final IError.Type eType,
-                                  final OperateType type,
-                                  IPair content)
-    {
-        if(producer.remainingCapacity() == 0) {
-            _Logger.warning("aio worker %s block", getName());
-        }
-        long sequence = producer.next();
-        try {
-            QEvent event = producer.get(sequence);
-            if(eType.equals(IError.Type.NO_ERROR)) {
-                event.produce(type, content, op);
-            }
-            else {
-                event.error(eType, content, op);
-            }
-        }
-        finally {
-            producer.publish(sequence);
-        }
-    }
+  public void publishRead(
+      final IBinaryOperator<IPacket, ISession, ITriple> op, IPacket pack, final ISession session) {
+    publish(_Producer, op, IError.Type.NO_ERROR, OperateType.READ, new Pair<>(pack, session));
+  }
 
-    public void publishRead(final IBinaryOperator<IPacket, ISession, ITriple> op, IPacket pack, final ISession session)
-    {
-        publish(_Producer, op, IError.Type.NO_ERROR, OperateType.READ, new Pair<>(pack, session));
-    }
+  public void publishWrote(final SessionWrote op, final int wroteCnt, final ISession session) {
+    publish(_Producer, op, IError.Type.NO_ERROR, OperateType.WROTE, new Pair<>(wroteCnt, session));
+  }
 
-    public void publishWrote(final SessionWrote op, final int wroteCnt, final ISession session)
-    {
-        publish(_Producer, op, IError.Type.NO_ERROR, OperateType.WROTE, new Pair<>(wroteCnt, session));
-    }
+  public <T> void publishWroteError(
+      final ISessionFailed op, final IError.Type eType, final T t, final ISession session) {
+    publish(_Producer, op, eType, OperateType.WROTE, new Pair<>(t, session));
+  }
 
-    public <T> void publishWroteError(final ISessionFailed op,
-                                      final IError.Type eType,
-                                      final T t,
-                                      final ISession session)
-    {
-        publish(_Producer, op, eType, OperateType.WROTE, new Pair<>(t, session));
-    }
+  public void publishConnected(
+      final IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> op,
+      final IConnectActivity activity,
+      final OperateType type,
+      final AsynchronousSocketChannel channel) {
+    publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
+  }
 
-    public void publishConnected(final IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> op,
-                                 final IConnectActivity activity,
-                                 final OperateType type,
-                                 final AsynchronousSocketChannel channel)
-    {
-        publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
-    }
+  public void publishConnectingError(
+      final IBinaryOperator<Throwable, IAioConnection, Void> op,
+      final Throwable e,
+      final IAioConnector cActive) {
+    publish(_Producer, op, IError.Type.CONNECT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
+  }
 
-    public void publishConnectingError(final IBinaryOperator<Throwable, IAioConnection, Void> op,
-                                       final Throwable e,
-                                       final IAioConnector cActive)
-    {
-        publish(_Producer, op, IError.Type.CONNECT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
-    }
+  public void publishAcceptError(
+      final IBinaryOperator<Throwable, IAioConnection, Void> op,
+      final Throwable e,
+      final IAioServer cActive) {
+    publish(_Producer, op, IError.Type.ACCEPT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
+  }
 
-    public void publishAcceptError(final IBinaryOperator<Throwable, IAioConnection, Void> op,
-                                   final Throwable e,
-                                   final IAioServer cActive)
-    {
-        publish(_Producer, op, IError.Type.ACCEPT_FAILED, OperateType.NULL, new Pair<>(e, cActive));
-    }
-
-    public <T> void publishReadError(final ISessionFailed op, final IError.Type eType, final T t, final ISession session)
-    {
-        publish(_Producer, op, eType, OperateType.READ, new Pair<>(t, session));
-    }
+  public <T> void publishReadError(
+      final ISessionFailed op, final IError.Type eType, final T t, final ISession session) {
+    publish(_Producer, op, eType, OperateType.READ, new Pair<>(t, session));
+  }
 }

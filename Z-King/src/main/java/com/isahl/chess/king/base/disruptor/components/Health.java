@@ -25,95 +25,83 @@ package com.isahl.chess.king.base.disruptor.components;
 
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.log.Logger;
-
 import java.time.Duration;
 
-public class Health
-        implements IHealth
-{
-    private final Logger _Logger;
-    private final int    _ThreadSlot;
+public class Health implements IHealth {
+  private final Logger _Logger;
+  private final int _ThreadSlot;
 
-    public Health(int slot)
-    {
-        _Logger = Logger.getLogger("base.king." + (_ThreadSlot = slot) + "@" + getClass().getSimpleName());
-    }
+  public Health(int slot) {
+    _Logger =
+        Logger.getLogger("base.king." + (_ThreadSlot = slot) + "@" + getClass().getSimpleName());
+  }
 
-    private boolean  mEnable;
-    private Duration mStatisticDuration = Duration.ZERO;
-    private Duration mAverageDuration   = Duration.ZERO;
-    private Duration mDuration          = Duration.ZERO;
-    private long     mStartTime;
-    private long     mCount;
-    private long     mNumber;
-    private long     mStart;
+  private boolean mEnable;
+  private Duration mStatisticDuration = Duration.ZERO;
+  private Duration mAverageDuration = Duration.ZERO;
+  private Duration mDuration = Duration.ZERO;
+  private long mStartTime;
+  private long mCount;
+  private long mNumber;
+  private long mStart;
 
-    public void enable()
-    {
-        mEnable = true;
-    }
+  public void enable() {
+    mEnable = true;
+  }
 
-    public void disable()
-    {
-        mEnable = false;
-    }
+  public void disable() {
+    mEnable = false;
+  }
 
-    /**
-     * 衰减函数
-     */
-    private void attenuation()
-    {
-        mStatisticDuration = mStatisticDuration.plus(mDuration);
-        if(mCount > 0) {
-            mCount = mCount * 95 / 100;
-            mNumber = mNumber * 95 / 100;
-        }
+  /** 衰减函数 */
+  private void attenuation() {
+    mStatisticDuration = mStatisticDuration.plus(mDuration);
+    if (mCount > 0) {
+      mCount = mCount * 95 / 100;
+      mNumber = mNumber * 95 / 100;
     }
+  }
 
-    @Override
-    public boolean isEnabled()
-    {
-        return mEnable;
-    }
+  @Override
+  public boolean isEnabled() {
+    return mEnable;
+  }
 
-    @Override
-    public void collectOn(long start)
-    {
-        mStartTime = System.nanoTime();
-        mStart = start;
-        mNumber++;
-    }
+  @Override
+  public void collectOn(long start) {
+    mStartTime = System.nanoTime();
+    mStart = start;
+    mNumber++;
+  }
 
-    @Override
-    public void collectOff(long end)
-    {
-        if(mNumber > Long.MAX_VALUE - 1) {
-            mNumber = 0;
-        }
-        mCount += end - mStart;
-        mDuration = Duration.ofNanos(System.nanoTime() - mStartTime);
-        attenuation();
-        if(mCount > 0) {
-            mAverageDuration = mStatisticDuration.dividedBy(mCount);
-        }
+  @Override
+  public void collectOff(long end) {
+    if (mNumber > Long.MAX_VALUE - 1) {
+      mNumber = 0;
     }
+    mCount += end - mStart;
+    mDuration = Duration.ofNanos(System.nanoTime() - mStartTime);
+    attenuation();
+    if (mCount > 0) {
+      mAverageDuration = mStatisticDuration.dividedBy(mCount);
+    }
+  }
 
-    @Override
-    public boolean isHealthy()
-    {
-        return false;
-    }
+  @Override
+  public boolean isHealthy() {
+    return false;
+  }
 
-    @Override
-    public Duration averageEventHandling()
-    {
-        return mAverageDuration;
-    }
+  @Override
+  public Duration averageEventHandling() {
+    return mAverageDuration;
+  }
 
-    public Logger getLogger() {
-        return _Logger;
-    }
-    public int getThreadSlot(){
-        return _ThreadSlot;
-    }
+  public Logger getLogger() {
+    return _Logger;
+  }
+
+  public int getThreadSlot() {
+    return _ThreadSlot;
+  }
 }

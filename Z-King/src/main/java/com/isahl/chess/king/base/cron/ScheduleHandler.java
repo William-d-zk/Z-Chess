@@ -24,7 +24,6 @@
 package com.isahl.chess.king.base.cron;
 
 import com.isahl.chess.king.base.features.IValid;
-
 import java.time.Duration;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -32,114 +31,105 @@ import java.util.function.Consumer;
 /**
  * @author William.d.zk
  */
-public class ScheduleHandler<A extends IValid>
-        implements TimeWheel.IWheelItem<A>
-{
-    private       A             attach;
-    private final boolean       _Cycle;
-    private final Consumer<A>   _Callback;
-    private final int           _Priority;
-    private final long          _Tick;
-    private final ReentrantLock _Lock;
+public class ScheduleHandler<A extends IValid> implements TimeWheel.IWheelItem<A> {
+  private A attach;
+  private final boolean _Cycle;
+  private final Consumer<A> _Callback;
+  private final int _Priority;
+  private final long _Tick;
+  private final ReentrantLock _Lock;
 
-    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback, int priority)
-    {
-        _Cycle = cycle;
-        _Tick = delay.toMillis();
-        _Callback = callback;
-        _Priority = priority;
-        _Lock = new ReentrantLock();
+  public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback, int priority) {
+    _Cycle = cycle;
+    _Tick = delay.toMillis();
+    _Callback = callback;
+    _Priority = priority;
+    _Lock = new ReentrantLock();
+  }
+
+  public ScheduleHandler(Duration delay, boolean cycle) {
+    this(delay, cycle, null, PRIORITY_NORMAL);
+  }
+
+  public ScheduleHandler(Duration delay, Consumer<A> callback) {
+    this(delay, false, callback, PRIORITY_NORMAL);
+  }
+
+  public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback) {
+    this(delay, cycle, callback, PRIORITY_NORMAL);
+  }
+
+  @Override
+  public boolean isCycle() {
+    return _Cycle;
+  }
+
+  @Override
+  public A get() {
+    return attach;
+  }
+
+  @Override
+  public void beforeCall() {
+    long delta = expect - System.currentTimeMillis();
+  }
+
+  @Override
+  public void onCall() {
+    if (_Callback != null && attach != null && attach.isValid()) {
+      _Callback.accept(attach);
     }
+  }
 
-    public ScheduleHandler(Duration delay, boolean cycle)
-    {
-        this(delay, cycle, null, PRIORITY_NORMAL);
-    }
+  private long expect;
 
-    public ScheduleHandler(Duration delay, Consumer<A> callback)
-    {
-        this(delay, false, callback, PRIORITY_NORMAL);
-    }
+  public long getExpect() {
+    return expect;
+  }
 
-    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback)
-    {
-        this(delay, cycle, callback, PRIORITY_NORMAL);
-    }
+  @Override
+  public void setup() {
+    expect = System.currentTimeMillis() + _Tick;
+  }
 
-    @Override
-    public boolean isCycle()
-    {
-        return _Cycle;
-    }
+  @Override
+  public int getPriority() {
+    return _Priority;
+  }
 
-    @Override
-    public A get()
-    {
-        return attach;
-    }
+  @Override
+  public long getTick() {
+    return _Tick;
+  }
 
-    @Override
-    public void beforeCall()
-    {
-        long delta = expect - System.currentTimeMillis();
-    }
+  @Override
+  public void attach(A a) {
+    attach = a;
+  }
 
-    @Override
-    public void onCall()
-    {
-        if(_Callback != null && attach != null && attach.isValid()) {
-            _Callback.accept(attach);
-        }
-    }
+  @Override
+  public void lock() {
+    _Lock.lock();
+  }
 
-    private long expect;
+  @Override
+  public void unlock() {
+    _Lock.unlock();
+  }
 
-    public long getExpect()
-    {
-        return expect;
-    }
-
-    @Override
-    public void setup()
-    {
-        expect = System.currentTimeMillis() + _Tick;
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return _Priority;
-    }
-
-    @Override
-    public long getTick()
-    {
-        return _Tick;
-    }
-
-    @Override
-    public void attach(A a)
-    {
-        attach = a;
-    }
-
-    @Override
-    public void lock()
-    {
-        _Lock.lock();
-    }
-
-    @Override
-    public void unlock()
-    {
-        _Lock.unlock();
-    }
-
-    @Override
-    public String toString()
-    {
-        return "ScheduleHandler{" + "attach=" + attach + ", _Cycle=" + _Cycle + ", _Callback=" + _Callback +
-               ", _Priority=" + _Priority + ", _MilliTick=" + _Tick + '}';
-    }
-
+  @Override
+  public String toString() {
+    return "ScheduleHandler{"
+        + "attach="
+        + attach
+        + ", _Cycle="
+        + _Cycle
+        + ", _Callback="
+        + _Callback
+        + ", _Priority="
+        + _Priority
+        + ", _MilliTick="
+        + _Tick
+        + '}';
+  }
 }

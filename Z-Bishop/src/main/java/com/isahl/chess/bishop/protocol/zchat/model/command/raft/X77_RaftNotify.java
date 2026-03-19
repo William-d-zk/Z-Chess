@@ -23,103 +23,84 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
+
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 
-import static com.isahl.chess.king.config.KingCode.SUCCESS;
-
 /**
  * @author william.d.zk
  * @date 2020/4/11
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x77)
-public class X77_RaftNotify
-        extends ZCommand
-        implements IConsistency
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x77)
+public class X77_RaftNotify extends ZCommand implements IConsistency {
 
-    private long mOrigin;
-    private long mClient;
+  private long mOrigin;
+  private long mClient;
 
-    public X77_RaftNotify()
-    {
-        super();
-    }
+  public X77_RaftNotify() {
+    super();
+  }
 
-    public X77_RaftNotify(long msgId)
-    {
-        super(msgId);
-    }
+  public X77_RaftNotify(long msgId) {
+    super(msgId);
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public int code()
-    {
-        return SUCCESS;
-    }
+  @Override
+  public int code() {
+    return SUCCESS;
+  }
 
-    @Override
-    public long origin()
-    {
-        return mOrigin;
-    }
+  @Override
+  public long origin() {
+    return mOrigin;
+  }
 
-    public void origin(long origin)
-    {
-        mOrigin = origin;
-    }
+  public void origin(long origin) {
+    mOrigin = origin;
+  }
 
-    public long client()
-    {
-        return mClient;
-    }
+  public long client() {
+    return mClient;
+  }
 
-    public void client(long client)
-    {
-        mClient = client;
-    }
+  public void client(long client) {
+    mClient = client;
+  }
 
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mClient)
-                    .putLong(mOrigin);
-    }
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mClient).putLong(mOrigin);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        return remain - 16;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mClient = input.getLong();
+    mOrigin = input.getLong();
+    return remain - 16;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 16;
-    }
+  @Override
+  public int length() {
+    return super.length() + 16;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X77_RaftNotify { sub:%s from %#x → %#x }", subContent(), mClient, mOrigin);
-    }
-
+  @Override
+  public String toString() {
+    return String.format(
+        "X77_RaftNotify { sub:%s from %#x → %#x }", subContent(), mClient, mOrigin);
+  }
 }

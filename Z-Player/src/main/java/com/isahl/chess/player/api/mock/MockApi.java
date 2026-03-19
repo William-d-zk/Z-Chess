@@ -23,65 +23,57 @@
 
 package com.isahl.chess.player.api.mock;
 
+import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
+
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.service.RaftPeer;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
-
 @RestController
 @RequestMapping("mock")
-public class MockApi
-{
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+public class MockApi {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    final RaftPeer _Peer;
+  final RaftPeer _Peer;
 
-    @Autowired
-    public MockApi(RaftPeer peer) {_Peer = peer;}
+  @Autowired
+  public MockApi(RaftPeer peer) {
+    _Peer = peer;
+  }
 
-    @GetMapping("mapper")
-    public @ResponseBody ZResponse<?> mapper()
-    {
-        mockEntryInput().forEach(entry-> _Peer.mapper().append(entry));
-        _Peer.mapper()
-             .flush();
-        return ZResponse.of(CodeKing.SUCCESS, "-", "mapper test");
+  @GetMapping("mapper")
+  public @ResponseBody ZResponse<?> mapper() {
+    mockEntryInput().forEach(entry -> _Peer.mapper().append(entry));
+    _Peer.mapper().flush();
+    return ZResponse.of(CodeKing.SUCCESS, "-", "mapper test");
+  }
+
+  private List<LogEntry> mockEntryInput() {
+    long term = 1;
+    long index = MIN_START;
+    List<LogEntry> logs = new ArrayList<>();
+    for (long size = 10 + MIN_START; index <= size; index++) {
+      logs.add(
+          new LogEntry(
+              index,
+              term,
+              0xC002000000000000L,
+              0x6079376BC6400L,
+              QttFactory._Instance.serial(),
+              new byte[] {
+                (byte) 0x82, 0x66, (byte) 0xE2, 0x00, 0x04, 0x74, 0x65, 0x73, 0x74, 0x00
+              }));
     }
-
-    private List<LogEntry> mockEntryInput()
-    {
-        long term = 1;
-        long index = MIN_START;
-        List<LogEntry> logs = new ArrayList<>();
-        for(long size = 10 + MIN_START; index <= size; index++) {
-            logs.add(new LogEntry(index,
-                                  term,
-                                  0xC002000000000000L,
-                                  0x6079376BC6400L,
-                                  QttFactory._Instance.serial(),
-                                  new byte[]{ (byte) 0x82,
-                                              0x66,
-                                              (byte) 0xE2,
-                                              0x00,
-                                              0x04,
-                                              0x74,
-                                              0x65,
-                                              0x73,
-                                              0x74,
-                                              0x00 }));
-        }
-        return logs;
-    }
+    return logs;
+  }
 }

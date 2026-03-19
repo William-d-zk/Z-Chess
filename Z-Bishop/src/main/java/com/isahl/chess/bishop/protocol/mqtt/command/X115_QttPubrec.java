@@ -23,75 +23,63 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.routes.IRoutable;
 
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
-
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x115)
-public class X115_QttPubrec
-        extends QttCommand
-        implements IRoutable
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x115)
+public class X115_QttPubrec extends QttCommand implements IRoutable {
 
-    public X115_QttPubrec()
-    {
-        generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC);
+  public X115_QttPubrec() {
+    generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC);
+  }
+
+  private long mTarget;
+
+  @Override
+  public int prefix(ByteBuf input) {
+    msgId(input.getUnsignedShort());
+    return input.readableBytes();
+  }
+
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output.putShort(msgId());
+    if (mPayload != null) {
+      output.put(mPayload);
     }
+    return output;
+  }
 
-    private long mTarget;
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_09_CONFIRM_MESSAGE;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        msgId(input.getUnsignedShort());
-        return input.readableBytes();
-    }
+  @Override
+  public String toString() {
+    return String.format("x115 pubrec:{msg-id:%d}", msgId());
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output.putShort(msgId());
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
-        return output;
-    }
+  @Override
+  public long target() {
+    return mTarget;
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
-    }
+  public void target(long target) {
+    mTarget = target;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("x115 pubrec:{msg-id:%d}", msgId());
-    }
-
-    @Override
-    public long target()
-    {
-        return mTarget;
-    }
-
-    public void target(long target)
-    {
-        mTarget = target;
-    }
-
-    @Override
-    public String topic()
-    {
-        return null;
-    }
+  @Override
+  public String topic() {
+    return null;
+  }
 }

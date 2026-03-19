@@ -23,8 +23,7 @@
 
 package com.isahl.chess.knight.scheduler.domain;
 
-public enum NodeGroupType
-{
-    EXCLUSIVE,
-    SHARED
+public enum NodeGroupType {
+  EXCLUSIVE,
+  SHARED
 }

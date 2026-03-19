@@ -25,8 +25,4 @@ package com.isahl.chess.rook.graphic.model;
 
 import com.isahl.chess.rook.graphic.IEdge;
 
-public class GEdge
-        implements IEdge
-{
-
-}
+public class GEdge implements IEdge {}

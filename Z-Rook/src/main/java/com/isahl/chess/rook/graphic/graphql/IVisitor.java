@@ -26,7 +26,6 @@ package com.isahl.chess.rook.graphic.graphql;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.rook.graphic.model.GNode;
 
-public interface IVisitor<V extends IoSerial>
-{
-    void visit(GNode<V> Node);
+public interface IVisitor<V extends IoSerial> {
+  void visit(GNode<V> Node);
 }

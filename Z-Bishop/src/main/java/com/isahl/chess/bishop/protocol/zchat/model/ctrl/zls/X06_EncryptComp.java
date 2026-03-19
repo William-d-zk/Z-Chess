@@ -31,48 +31,38 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x06)
-public class X06_EncryptComp
-        extends ZControl
-{
-    private int mCode;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x06)
+public class X06_EncryptComp extends ZControl {
+  private int mCode;
 
-    public X06_EncryptComp withCode(int code)
-    {
-        mCode = code;
-        return this;
-    }
+  public X06_EncryptComp withCode(int code) {
+    mCode = code;
+    return this;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mCode = input.getInt();
-        return remain - 4;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mCode = input.getInt();
+    return remain - 4;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putInt(mCode);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putInt(mCode);
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 4;
-    }
+  @Override
+  public int length() {
+    return super.length() + 4;
+  }
 
-    public int getCode()
-    {
-        return mCode;
-    }
+  public int getCode() {
+    return mCode;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 }

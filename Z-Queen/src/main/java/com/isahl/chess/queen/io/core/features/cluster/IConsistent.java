@@ -28,8 +28,6 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 /**
  * @author william.d.zk
  */
-public interface IConsistent
-        extends  IoSerial
-{
-    int code();
+public interface IConsistent extends IoSerial {
+  int code();
 }

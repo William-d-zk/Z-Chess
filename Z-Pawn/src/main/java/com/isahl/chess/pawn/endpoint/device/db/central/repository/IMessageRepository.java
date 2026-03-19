@@ -32,8 +32,4 @@ import org.springframework.stereotype.Repository;
  * @date 2019-07-31
  */
 @Repository
-public interface IMessageRepository
-        extends BaseLongRepository<ZChatEntity>
-{
-
-}
+public interface IMessageRepository extends BaseLongRepository<ZChatEntity> {}

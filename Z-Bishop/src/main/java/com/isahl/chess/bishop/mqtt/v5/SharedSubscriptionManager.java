@@ -26,34 +26,21 @@ package com.isahl.chess.bishop.mqtt.v5;
 import com.isahl.chess.queen.io.core.net.socket.AioSession;
 import java.util.List;
 
-/**
- * MQTT 5.0 共享订阅管理器
- * 负责管理共享订阅组和消息分发
- */
+/** MQTT 5.0 共享订阅管理器 负责管理共享订阅组和消息分发 */
 public interface SharedSubscriptionManager {
 
-    /**
-     * 添加共享订阅
-     */
-    void addSubscription(String shareName, SharedSubscription subscription, AioSession<?> session);
+  /** 添加共享订阅 */
+  void addSubscription(String shareName, SharedSubscription subscription, AioSession<?> session);
 
-    /**
-     * 移除共享订阅
-     */
-    void removeSubscription(String shareName, String topic, AioSession<?> session);
+  /** 移除共享订阅 */
+  void removeSubscription(String shareName, String topic, AioSession<?> session);
 
-    /**
-     * 为消息选择消费者（轮询策略）
-     */
-    AioSession<?> selectConsumer(String shareName);
+  /** 为消息选择消费者（轮询策略） */
+  AioSession<?> selectConsumer(String shareName);
 
-    /**
-     * 获取共享订阅组的所有消费者
-     */
-    List<AioSession<?>> getConsumers(String shareName);
+  /** 获取共享订阅组的所有消费者 */
+  List<AioSession<?>> getConsumers(String shareName);
 
-    /**
-     * 清理会话相关的所有共享订阅
-     */
-    void cleanupSession(AioSession<?> session);
+  /** 清理会话相关的所有共享订阅 */
+  void cleanupSession(AioSession<?> session);
 }

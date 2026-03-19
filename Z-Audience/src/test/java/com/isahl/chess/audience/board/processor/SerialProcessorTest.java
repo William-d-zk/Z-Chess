@@ -25,12 +25,10 @@ package com.isahl.chess.board.processor;
 
 import org.junit.jupiter.api.Test;
 
-class SerialProcessorTest
-{
-    @Test
-    public void testDirectory()
-    {
-        System.out.println(System.getProperty("user.home"));
-        System.out.println(System.getProperties());
-    }
+class SerialProcessorTest {
+  @Test
+  public void testDirectory() {
+    System.out.println(System.getProperty("user.home"));
+    System.out.println(System.getProperties());
+  }
 }

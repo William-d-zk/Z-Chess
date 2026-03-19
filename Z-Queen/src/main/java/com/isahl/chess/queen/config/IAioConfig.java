@@ -27,11 +27,10 @@ package com.isahl.chess.queen.config;
  * @author william.d.zk
  * @date 2020/2/1
  */
-public interface IAioConfig
-{
-    boolean isDomainActive(int type);
+public interface IAioConfig {
+  boolean isDomainActive(int type);
 
-    int getSizePower(int type);
+  int getSizePower(int type);
 
-    ISocketConfig getSocketConfig(int type);
+  ISocketConfig getSocketConfig(int type);
 }

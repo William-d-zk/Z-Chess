@@ -29,7 +29,6 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.queen.message.InnerProtocol;
-
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -37,108 +36,104 @@ import java.io.Serializable;
  * @author william.d.zk
  */
 @ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL)
-public class LogEntry
-        extends InnerProtocol
-        implements ITraceable,
-                   Serializable
-{
-    @Serial
-    private final static long serialVersionUID = -3944638115324945253L;
+public class LogEntry extends InnerProtocol implements ITraceable, Serializable {
+  @Serial private static final long serialVersionUID = -3944638115324945253L;
 
-    private long mTerm;
-    /*
-    纪录哪个Raft-Client发起的当前这次一致性记录
-     */
-    private long mClient;
-    /*
-    完成一致性记录后，成功的消息反馈给哪个请求人
-    在Z-Chat体系中表达了device 终端，
-    web api 中表达了某次请求的session
-     */
-    private long mOrigin;
+  private long mTerm;
+  /*
+  纪录哪个Raft-Client发起的当前这次一致性记录
+   */
+  private long mClient;
+  /*
+  完成一致性记录后，成功的消息反馈给哪个请求人
+  在Z-Chat体系中表达了device 终端，
+  web api 中表达了某次请求的session
+   */
+  private long mOrigin;
 
-    private int mFactory;
+  private int mFactory;
 
-    public LogEntry(long index, long term, long client, long origin, int factory, byte[] content)
-    {
-        super(content);
-        pKey = index;
-        mTerm = term;
-        mClient = client;
-        mOrigin = origin;
-        mFactory = factory;
-    }
+  public LogEntry(long index, long term, long client, long origin, int factory, byte[] content) {
+    super(content);
+    pKey = index;
+    mTerm = term;
+    mClient = client;
+    mOrigin = origin;
+    mFactory = factory;
+  }
 
-    public LogEntry(ByteBuf input)
-    {
-        super(input);
-    }
+  public LogEntry(ByteBuf input) {
+    super(input);
+  }
 
-    public long term() {return mTerm;}
+  public long term() {
+    return mTerm;
+  }
 
-    public long index() {return primaryKey();}
+  public long index() {
+    return primaryKey();
+  }
 
-    public byte[] content() {return payload();}
+  public byte[] content() {
+    return payload();
+  }
 
-    public long client()
-    {
-        return mClient;
-    }
+  public long client() {
+    return mClient;
+  }
 
-    @Override
-    public long origin()
-    {
-        return mOrigin;
-    }
+  @Override
+  public long origin() {
+    return mOrigin;
+  }
 
-    public int factory()
-    {
-        return mFactory;
-    }
+  public int factory() {
+    return mFactory;
+  }
 
-    @Override
-    public int length()
-    {
-        return 8 + //term
-               8 + //client
-               8 + //origin
-               4 + //factory
-               super.length(); //pKey == index
-    }
+  @Override
+  public int length() {
+    return 8
+        + // term
+        8
+        + // client
+        8
+        + // origin
+        4
+        + // factory
+        super.length(); // pKey == index
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(term())
-                    .putLong(client())
-                    .putLong(origin())
-                    .putInt(factory());
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(term())
+        .putLong(client())
+        .putLong(origin())
+        .putInt(factory());
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mTerm = input.getLong();
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        mFactory = input.getInt();
-        return remain - 28;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mTerm = input.getLong();
+    mClient = input.getLong();
+    mOrigin = input.getLong();
+    mFactory = input.getInt();
+    return remain - 28;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("raft_log{ id: %d@%d, client:%#x, biz-session:%#x, %s → sub[%#x](%d) %s }",
-                             index(),
-                             term(),
-                             client(),
-                             origin(),
-                             IoUtil.int2Chars(factory()),
-                             _sub(),
-                             pLength(),
-                             IoUtil.bin2Hex(payload(), ","));
-    }
-
+  @Override
+  public String toString() {
+    return String.format(
+        "raft_log{ id: %d@%d, client:%#x, biz-session:%#x, %s → sub[%#x](%d) %s }",
+        index(),
+        term(),
+        client(),
+        origin(),
+        IoUtil.int2Chars(factory()),
+        _sub(),
+        pLength(),
+        IoUtil.bin2Hex(payload(), ","));
+  }
 }

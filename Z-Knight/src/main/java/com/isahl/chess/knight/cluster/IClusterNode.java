@@ -23,6 +23,8 @@
 
 package com.isahl.chess.knight.cluster;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
+
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
@@ -46,151 +48,132 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.stream.Stream;
-
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.SINGLE;
 
 /**
  * @author william.d.zk
  * @date 2020/4/23
  */
-public interface IClusterNode
-        extends ILocalPublisher,
-                IActivity
-{
-    default IAioConnector buildConnector(final String _Host,
-                                         final int _Port,
-                                         final ISocketConfig _SocketConfig,
-                                         final IAioClient _Client,
-                                         final IManager _Manager,
-                                         final ZSortHolder _ZSortHolder,
-                                         final IClusterPeer _ClusterPeer)
-    {
-        if(_ZSortHolder.getSort()
-                       .getMode() != ISort.Mode.CLUSTER)
-        {
-            throw new IllegalArgumentException("sort mode is wrong in cluster define");
+public interface IClusterNode extends ILocalPublisher, IActivity {
+  default IAioConnector buildConnector(
+      final String _Host,
+      final int _Port,
+      final ISocketConfig _SocketConfig,
+      final IAioClient _Client,
+      final IManager _Manager,
+      final ZSortHolder _ZSortHolder,
+      final IClusterPeer _ClusterPeer) {
+    if (_ZSortHolder.getSort().getMode() != ISort.Mode.CLUSTER) {
+      throw new IllegalArgumentException("sort mode is wrong in cluster define");
+    }
+    return new BaseAioConnector(_Host, _Port, _SocketConfig, _Client) {
+      @Override
+      public ISort.Mode getMode() {
+        return _ZSortHolder.getSort().getMode();
+      }
+
+      @Override
+      public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity)
+          throws IOException {
+        return new AioSession<>(
+            socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
+      }
+
+      @Override
+      public void onCreated(ISession session) {
+        super.onCreated(session);
+        _Client.onCreated(session);
+        _Manager.addSession(session);
+      }
+
+      @Override
+      public ITriple afterConnected(ISession session) {
+
+        if (session.getMode() == ISort.Mode.CLUSTER) {
+          return Triple.of(
+              new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
         }
-        return new BaseAioConnector(_Host, _Port, _SocketConfig, _Client)
-        {
-            @Override
-            public ISort.Mode getMode()
-            {
-                return _ZSortHolder.getSort()
-                                   .getMode();
-            }
+        return null;
+      }
 
-            @Override
-            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
-            {
-                return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
-            }
+      @Override
+      public String getProtocol() {
+        return _ZSortHolder.getSort().getProtocol();
+      }
+    };
+  }
 
-            @Override
-            public void onCreated(ISession session)
-            {
-                super.onCreated(session);
-                _Client.onCreated(session);
-                _Manager.addSession(session);
-            }
+  default IAioServer buildServer(
+      final String _Host,
+      final int _Port,
+      final ISocketConfig _SocketConfig,
+      final ZSortHolder _ZSortHolder,
+      final IManager _Manager,
+      final IDismiss _Dismiss,
+      final boolean _MultiBind,
+      final IClusterPeer _ClusterPeer) {
 
-            @Override
-            public ITriple afterConnected(ISession session)
-            {
+    return new BaseAioServer(_Host, _Port, _SocketConfig) {
+      @Override
+      public ISort.Mode getMode() {
+        return _ZSortHolder.getSort().getMode();
+      }
 
-                if(session.getMode() == ISort.Mode.CLUSTER) {
-                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
-                }
-                return null;
-            }
+      @Override
+      public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity)
+          throws IOException {
+        return new AioSession<>(
+            socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
+      }
 
-            @Override
-            public String getProtocol()
-            {
-                return _ZSortHolder.getSort()
-                                   .getProtocol();
-            }
-        };
+      @Override
+      public void onCreated(ISession session) {
+        _Manager.addSession(session);
+        session.ready();
+      }
+
+      @Override
+      public String getProtocol() {
+        return _ZSortHolder.getSort().getProtocol();
+      }
+
+      @Override
+      public ITriple afterConnected(ISession session) {
+        if (_ZSortHolder.getSort().getMode() == ISort.Mode.CLUSTER) {
+          return Triple.of(
+              new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
+        }
+        return null;
+      }
+    };
+  }
+
+  void setupPeer(String host, int port) throws IOException;
+
+  void setupGate(String host, int port) throws IOException;
+
+  boolean isOwnedBy(long origin);
+
+  IClusterPeer clusterPeer();
+
+  @Override
+  default boolean send(ISession session, OperateType type, IProtocol... outputs) {
+    if (session == null || outputs == null || outputs.length == 0) {
+      return false;
     }
+    return publish(
+        type,
+        session.encoder(),
+        Stream.of(outputs).map(pro -> Pair.of(pro, session)).toArray(IPair[]::new));
+  }
 
-    default IAioServer buildServer(final String _Host,
-                                   final int _Port,
-                                   final ISocketConfig _SocketConfig,
-                                   final ZSortHolder _ZSortHolder,
-                                   final IManager _Manager,
-                                   final IDismiss _Dismiss,
-                                   final boolean _MultiBind,
-                                   final IClusterPeer _ClusterPeer)
-    {
-
-        return new BaseAioServer(_Host, _Port, _SocketConfig)
-        {
-            @Override
-            public ISort.Mode getMode()
-            {
-                return _ZSortHolder.getSort()
-                                   .getMode();
-            }
-
-            @Override
-            public ISession create(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException
-            {
-                return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
-            }
-
-            @Override
-            public void onCreated(ISession session)
-            {
-                _Manager.addSession(session);
-                session.ready();
-            }
-
-            @Override
-            public String getProtocol()
-            {
-                return _ZSortHolder.getSort()
-                                   .getProtocol();
-            }
-
-            @Override
-            public ITriple afterConnected(ISession session)
-            {
-                if(_ZSortHolder.getSort()
-                               .getMode() == ISort.Mode.CLUSTER)
-                {
-                    return Triple.of(new X08_Identity(_ClusterPeer.peerId(), _ClusterPeer.generateId()), session, SINGLE);
-                }
-                return null;
-            }
-        };
+  @Override
+  default void close(ISession session, OperateType type) {
+    if (session == null) {
+      return;
     }
-
-    void setupPeer(String host, int port) throws IOException;
-
-    void setupGate(String host, int port) throws IOException;
-
-    boolean isOwnedBy(long origin);
-
-    IClusterPeer clusterPeer();
-
-    @Override
-    default boolean send(ISession session, OperateType type, IProtocol... outputs)
-    {
-        if(session == null || outputs == null || outputs.length == 0) {return false;}
-        return publish(type,
-                       session.encoder(),
-                       Stream.of(outputs)
-                             .map(pro->Pair.of(pro, session))
-                             .toArray(IPair[]::new));
-    }
-
-    @Override
-    default void close(ISession session, OperateType type)
-    {
-        if(session == null) {return;}
-        close(type, Pair.of(null, session), session.getCloser());
-    }
+    close(type, Pair.of(null, session), session.getCloser());
+  }
 }

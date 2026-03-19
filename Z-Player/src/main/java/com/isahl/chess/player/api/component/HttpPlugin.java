@@ -33,50 +33,40 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class HttpPlugin
-        implements IAccessService
-{
+public class HttpPlugin implements IAccessService {
 
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    @Override
-    public boolean isSupported(IoSerial input)
-    {
-        return input instanceof ZChatEntity;
-    }
+  @Override
+  public boolean isSupported(IoSerial input) {
+    return input instanceof ZChatEntity;
+  }
 
-    @Override
-    public boolean isSupported(ISession session)
-    {
-        return false;
-    }
+  @Override
+  public boolean isSupported(ISession session) {
+    return false;
+  }
 
-    @Override
-    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
-    {
+  @Override
+  public void onLogic(
+      IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load) {}
 
-    }
+  @Override
+  public ITriple onLink(IManager manager, ISession session, IProtocol input) {
+    return null;
+  }
 
-    @Override
-    public ITriple onLink(IManager manager, ISession session, IProtocol input)
-    {
-        return null;
-    }
+  public List<ITriple> onConsistency(
+      IManager manager, IConsistency backLoad, IoSerial consensusBody) {
+    return null;
+  }
 
-    public List<ITriple> onConsistency(IManager manager, IConsistency backLoad, IoSerial consensusBody)
-    {
-        return null;
-    }
-
-    @Override
-    public void consume(IExchanger exchanger, IoSerial request, List<ITriple> load)
-    {
-        _Logger.info(request);
-
-    }
+  @Override
+  public void consume(IExchanger exchanger, IoSerial request, List<ITriple> load) {
+    _Logger.info(request);
+  }
 }

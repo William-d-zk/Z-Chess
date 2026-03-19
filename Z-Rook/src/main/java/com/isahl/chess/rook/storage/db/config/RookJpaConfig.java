@@ -34,31 +34,27 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-
 @EnableJpaAuditing
 @EnableTransactionManagement
 @Configuration("base_jpa_config")
-@ConditionalOnMissingBean(name = { "jpaAuditingHandler" })
-@PropertySource({ "classpath:db.properties" })
-public class RookJpaConfig
-{
-    private final EhcacheConfig _CacheConfig;
+@ConditionalOnMissingBean(name = {"jpaAuditingHandler"})
+@PropertySource({"classpath:db.properties"})
+public class RookJpaConfig {
+  private final EhcacheConfig _CacheConfig;
 
-    @Autowired
-    public RookJpaConfig(EhcacheConfig cacheConfig) {_CacheConfig = cacheConfig;}
+  @Autowired
+  public RookJpaConfig(EhcacheConfig cacheConfig) {
+    _CacheConfig = cacheConfig;
+  }
 
-    @PostConstruct
-    private void initialize()
-    {
-        _CacheConfig.defaultDefine();
-    }
+  @PostConstruct
+  private void initialize() {
+    _CacheConfig.defaultDefine();
+  }
 
-    @Bean
-    @ConfigurationProperties(prefix = "z.rook")
-    public RookSource rookSource()
-    {
-        return new RookSource();
-    }
-
-
+  @Bean
+  @ConfigurationProperties(prefix = "z.rook")
+  public RookSource rookSource() {
+    return new RookSource();
+  }
 }

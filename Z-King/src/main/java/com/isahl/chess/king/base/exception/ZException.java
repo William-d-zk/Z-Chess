@@ -26,16 +26,12 @@ package com.isahl.chess.king.base.exception;
 /**
  * @author William.d.zk
  */
-public class ZException
-        extends RuntimeException
-{
-    public ZException(String formatter, Object... messages)
-    {
-        super(String.format(formatter, messages));
-    }
+public class ZException extends RuntimeException {
+  public ZException(String formatter, Object... messages) {
+    super(String.format(formatter, messages));
+  }
 
-    public ZException(Throwable cause, String message)
-    {
-        super(message, cause);
-    }
+  public ZException(Throwable cause, String message) {
+    super(message, cause);
+  }
 }

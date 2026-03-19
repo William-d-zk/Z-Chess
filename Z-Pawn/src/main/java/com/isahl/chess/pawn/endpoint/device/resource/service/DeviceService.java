@@ -55,164 +55,148 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 /**
- * @author william.d.zk
- * {@code @date} 2020-09-09
+ * @author william.d.zk {@code @date} 2020-09-09
  */
 @Service
-public class DeviceService
-        implements IDeviceService
-{
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+public class DeviceService implements IDeviceService {
+  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IDeviceRepository _DeviceRepository;
-    private final CacheManager      _CacheManager;
-    private final CryptoUtil        _CryptoUtil = new CryptoUtil();
-    private final MixConfig         _MixConfig;
-    private final IRaftConfig       _RaftConfig;
+  private final IDeviceRepository _DeviceRepository;
+  private final CacheManager _CacheManager;
+  private final CryptoUtil _CryptoUtil = new CryptoUtil();
+  private final MixConfig _MixConfig;
+  private final IRaftConfig _RaftConfig;
 
-    @Autowired
-    public DeviceService(IDeviceRepository deviceRepository,
-                         CacheManager cacheManager,
-                         MixConfig mixConfig,
-                         IRaftConfig raftConfig)
-    {
-        _DeviceRepository = deviceRepository;
-        _CacheManager = cacheManager;
-        _MixConfig = mixConfig;
-        _RaftConfig = raftConfig;
+  @Autowired
+  public DeviceService(
+      IDeviceRepository deviceRepository,
+      CacheManager cacheManager,
+      MixConfig mixConfig,
+      IRaftConfig raftConfig) {
+    _DeviceRepository = deviceRepository;
+    _CacheManager = cacheManager;
+    _MixConfig = mixConfig;
+    _RaftConfig = raftConfig;
+  }
+
+  @PostConstruct
+  public void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    EhcacheConfig.createCache(
+        _CacheManager,
+        "device_token_cache",
+        String.class,
+        DeviceEntity.class,
+        Duration.of(20, MINUTES));
+    EhcacheConfig.createCache(
+        _CacheManager, "device_id_cache", Long.class, DeviceEntity.class, Duration.of(15, MINUTES));
+  }
+
+  @CachePut(value = "device_token_cache", key = "#p0.token", condition = "#result != null")
+  public DeviceEntity saveDevice(DeviceEntity device) {
+    return _DeviceRepository.save(device);
+  }
+
+  @Override
+  public DeviceEntity updateDevice(DeviceEntity device) throws ZException {
+    return saveDevice(device);
+  }
+
+  @Override
+  public DeviceEntity upsertDevice(DeviceEntity device) throws ZException {
+    if (device.operation().getValue() > OP_INSERT.getValue()) { // update
+      DeviceEntity exist;
+      Optional<DeviceEntity> result = _DeviceRepository.findByDeviceId(device.primaryKey());
+      exist =
+          result.orElseThrow(
+              () ->
+                  new ZException(
+                      "entity_not_found_exception %s → %#x",
+                      device.operation().name(), device.primaryKey()));
+      if (exist.getInvalidAt().isBefore(LocalDateTime.now())
+          || device.getPasswordId() > exist.getPasswordId()) {
+        exist.setPassword(_CryptoUtil.randomPassword(17, 32, true));
+        exist.increasePasswordId();
+        exist.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
+        exist.setUpdatedById(device.getUpdatedById());
+        exist.setUpdatedAt(device.getUpdatedAt());
+      }
+      return saveDevice(exist);
+    } else {
+      DeviceEntity exist = null;
+      if (!isBlank(device.getNotice())) {
+        exist = _DeviceRepository.findByNotice(device.getNotice());
+      } else if (!isBlank(device.getToken())) {
+        exist = _DeviceRepository.findByToken(device.getToken());
+      }
+      DeviceEntity entity = exist == null ? device : exist;
+      if (exist == null) {
+        String source =
+            String.format(
+                "sn:%s,random %s%d",
+                device.getNotice(),
+                _MixConfig.getPasswordRandomSeed(),
+                Instant.now().toEpochMilli());
+        _Logger.debug("new device %s ", source);
+        entity.setToken(
+            IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
+        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setDeviceId(_RaftConfig.getZUID().getId(ZUID.TYPE_CONSUMER));
+      }
+      if (exist == null || exist.getInvalidAt().isBefore(LocalDateTime.now())) {
+        entity.setPassword(_CryptoUtil.randomPassword(17, 32, true));
+        entity.increasePasswordId();
+        entity.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
+        entity.setUpdatedAt(device.getUpdatedAt());
+        entity.setUpdatedById(device.getUpdatedById());
+      }
+      return saveDevice(entity);
     }
+  }
 
-    @PostConstruct
-    public void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
-    {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "device_token_cache",
-                                  String.class,
-                                  DeviceEntity.class,
-                                  Duration.of(20, MINUTES));
-        EhcacheConfig.createCache(_CacheManager,
-                                  "device_id_cache",
-                                  Long.class,
-                                  DeviceEntity.class,
-                                  Duration.of(15, MINUTES));
-    }
+  @Caching(
+      cacheable = {
+        @Cacheable(
+            value = "device_token_cache",
+            key = "#p0",
+            condition = "#p0 != null",
+            unless = "#result == null")
+      },
+      put = {
+        @CachePut(value = "device_id_cache", key = "#result.id", condition = "#result != null")
+      })
+  @Override
+  public DeviceEntity findByToken(String token) throws ZException {
+    return _DeviceRepository.findByToken(token);
+  }
 
-    @CachePut(value = "device_token_cache",
-              key = "#p0.token",
-              condition = "#result != null")
-    public DeviceEntity saveDevice(DeviceEntity device)
-    {
-        return _DeviceRepository.save(device);
-    }
+  @Override
+  public DeviceEntity findByNotice(String number) throws ZException {
+    return _DeviceRepository.findByNotice(number);
+  }
 
-    @Override
-    public DeviceEntity updateDevice(DeviceEntity device) throws ZException {
-        return saveDevice(device);
-    }
+  @Override
+  public List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable)
+      throws ZException {
+    return _DeviceRepository.findAll(condition, pageable).toList();
+  }
 
-    @Override
-    public DeviceEntity upsertDevice(DeviceEntity device) throws ZException
-    {
-        if(device.operation()
-                 .getValue() > OP_INSERT.getValue())
-        {   // update
-            DeviceEntity exist;
-            Optional<DeviceEntity> result = _DeviceRepository.findByDeviceId(device.primaryKey());
-            exist = result.orElseThrow(()->new ZException("entity_not_found_exception %s → %#x",
-                                                          device.operation()
-                                                                .name(),
-                                                          device.primaryKey()));
-            if(exist.getInvalidAt()
-                    .isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId())
-            {
-                exist.setPassword(_CryptoUtil.randomPassword(17, 32, true));
-                exist.increasePasswordId();
-                exist.setInvalidAt(LocalDateTime.now()
-                                                .plus(_MixConfig.getPasswordInvalidDays()));
-                exist.setUpdatedById(device.getUpdatedById());
-                exist.setUpdatedAt(device.getUpdatedAt());
-            }
-            return saveDevice(exist);
-        }
-        else {
-            DeviceEntity exist = null;
-            if(!isBlank(device.getNotice())) {
-                exist = _DeviceRepository.findByNotice(device.getNotice());
-            }
-            else if(!isBlank(device.getToken())) {
-                exist = _DeviceRepository.findByToken(device.getToken());
-            }
-            DeviceEntity entity = exist == null ? device : exist;
-            if(exist == null) {
-                String source = String.format("sn:%s,random %s%d",
-                                              device.getNotice(),
-                                              _MixConfig.getPasswordRandomSeed(),
-                                              Instant.now()
-                                                     .toEpochMilli());
-                _Logger.debug("new device %s ", source);
-                entity.setToken(IoUtil.bin2Hex(_CryptoUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
-                entity.setUpdatedAt(LocalDateTime.now());
-                entity.setDeviceId(_RaftConfig.getZUID().getId(ZUID.TYPE_CONSUMER));
-            }
-            if(exist == null || exist.getInvalidAt()
-                                     .isBefore(LocalDateTime.now()))
-            {
-                entity.setPassword(_CryptoUtil.randomPassword(17, 32, true));
-                entity.increasePasswordId();
-                entity.setInvalidAt(LocalDateTime.now()
-                                                 .plus(_MixConfig.getPasswordInvalidDays()));
-                entity.setUpdatedAt(device.getUpdatedAt());
-                entity.setUpdatedById(device.getUpdatedById());
-            }
-            return saveDevice(entity);
-        }
-    }
+  @Cacheable(
+      value = "device_id_cache",
+      key = "#p0",
+      condition = "#p0 != 0",
+      unless = "#result == null")
+  @Override
+  public DeviceEntity getOneDevice(long deviceId) {
+    return _DeviceRepository.findByDeviceId(deviceId).orElse(null);
+  }
 
-    @Caching(cacheable = { @Cacheable(value = "device_token_cache",
-                                      key = "#p0",
-                                      condition = "#p0 != null",
-                                      unless = "#result == null") },
-             put = { @CachePut(value = "device_id_cache",
-                               key = "#result.id",
-                               condition = "#result != null") })
-    @Override
-    public DeviceEntity findByToken(String token) throws ZException
-    {
-        return _DeviceRepository.findByToken(token);
-    }
+  @Override
+  public void deleteDevice(long id) {
+    _DeviceRepository.deleteById(id);
+  }
 
-    @Override
-    public DeviceEntity findByNotice(String number) throws ZException
-    {
-        return _DeviceRepository.findByNotice(number);
-    }
-
-    @Override
-    public List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException
-    {
-        return _DeviceRepository.findAll(condition, pageable)
-                                .toList();
-    }
-
-    @Cacheable(value = "device_id_cache",
-               key = "#p0",
-               condition = "#p0 != 0",
-               unless = "#result == null")
-    @Override
-    public DeviceEntity getOneDevice(long deviceId)
-    {
-        return _DeviceRepository.findByDeviceId(deviceId)
-                                .orElse(null);
-    }
-
-    @Override
-    public void deleteDevice(long id) {
-        _DeviceRepository.deleteById(id);
-    }
-
-    @Override
-    public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
-    {
-        return _DeviceRepository.findAllByDeviceIdIn(deviceIdList);
-    }
+  @Override
+  public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList) {
+    return _DeviceRepository.findAllByDeviceIdIn(deviceIdList);
+  }
 }

@@ -28,20 +28,18 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IPContext, O extends IProtocol, I extends IProtocol>
-{
-    I encode(C context, O output);
+public interface IFilter<C extends IPContext, O extends IProtocol, I extends IProtocol> {
+  I encode(C context, O output);
 
-    O decode(C context, I input);
+  O decode(C context, I input);
 
-    enum ResultType
-    {
-        ERROR,
-        NEED_DATA,
-        NEXT_STEP,
-        PROXY,
-        HANDLED,
-        IGNORE,
-        CANCEL
-    }
+  enum ResultType {
+    ERROR,
+    NEED_DATA,
+    NEXT_STEP,
+    PROXY,
+    HANDLED,
+    IGNORE,
+    CANCEL
+  }
 }

@@ -25,22 +25,19 @@ package com.isahl.chess.player.repository;
 
 import com.isahl.chess.player.domain.GroupMember;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface GroupMemberRepository
-        extends BaseLongRepository<GroupMember>
-{
-    List<GroupMember> findByGroupId(Long groupId);
+public interface GroupMemberRepository extends BaseLongRepository<GroupMember> {
+  List<GroupMember> findByGroupId(Long groupId);
 
-    List<GroupMember> findByUserId(Long userId);
+  List<GroupMember> findByUserId(Long userId);
 
-    Optional<GroupMember> findByGroupIdAndUserId(Long groupId, Long userId);
+  Optional<GroupMember> findByGroupIdAndUserId(Long groupId, Long userId);
 
-    boolean existsByGroupIdAndUserId(Long groupId, Long userId);
+  boolean existsByGroupIdAndUserId(Long groupId, Long userId);
 
-    void deleteByGroupIdAndUserId(Long groupId, Long userId);
+  void deleteByGroupIdAndUserId(Long groupId, Long userId);
 }

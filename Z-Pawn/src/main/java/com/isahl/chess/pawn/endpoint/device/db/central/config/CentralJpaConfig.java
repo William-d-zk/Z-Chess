@@ -34,30 +34,30 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.db.central.repository",
-                       entityManagerFactoryRef = "central-entity-manager-factory",
-                       transactionManagerRef = "central-transaction-manager")
-public class CentralJpaConfig
+@EnableJpaRepositories(
+    basePackages = "com.isahl.chess.pawn.endpoint.device.db.central.repository",
+    entityManagerFactoryRef = "central-entity-manager-factory",
+    transactionManagerRef = "central-transaction-manager")
+public class CentralJpaConfig {
 
-{
-    private final RookProvider _RookProvider;
+  private final RookProvider _RookProvider;
 
-    @Autowired
-    public CentralJpaConfig(RookProvider provider) {_RookProvider = provider;}
+  @Autowired
+  public CentralJpaConfig(RookProvider provider) {
+    _RookProvider = provider;
+  }
 
-    @Bean("central-entity-manager-factory")
-    public LocalContainerEntityManagerFactoryBean createMsgEntityManagerFactory()
-    {
-        return _RookProvider.buildEntityManager("0", "com.isahl.chess.pawn.endpoint.device.db.central.model");
-    }
+  @Bean("central-entity-manager-factory")
+  public LocalContainerEntityManagerFactoryBean createMsgEntityManagerFactory() {
+    return _RookProvider.buildEntityManager(
+        "0", "com.isahl.chess.pawn.endpoint.device.db.central.model");
+  }
 
-    @Bean("central-transaction-manager")
-    public PlatformTransactionManager createRemoteTransactionManager(
-            @Qualifier("central-entity-manager-factory")
-            LocalContainerEntityManagerFactoryBean factory)
-    {
-        JpaTransactionManager tm = new JpaTransactionManager();
-        tm.setEntityManagerFactory(factory.getObject());
-        return tm;
-    }
+  @Bean("central-transaction-manager")
+  public PlatformTransactionManager createRemoteTransactionManager(
+      @Qualifier("central-entity-manager-factory") LocalContainerEntityManagerFactoryBean factory) {
+    JpaTransactionManager tm = new JpaTransactionManager();
+    tm.setEntityManagerFactory(factory.getObject());
+    return tm;
+  }
 }

@@ -30,8 +30,6 @@ import com.isahl.chess.board.annotation.ISerialFactory;
  * @date 2019-05-08
  */
 @ISerialFactory(serial = ('S' << 24) | ('Y' << 16) | ('M' << 8) | 'M')
-public class ZSymmetryFactory
-        extends ZChatFactory
-{
-    public static final ZSymmetryFactory _Instance = new ZSymmetryFactory();
+public class ZSymmetryFactory extends ZChatFactory {
+  public static final ZSymmetryFactory _Instance = new ZSymmetryFactory();
 }

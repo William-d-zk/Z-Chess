@@ -27,38 +27,33 @@ package com.isahl.chess.queen.io.core.model;
  * @author william.d.zk
  * @date 2019-07-31
  */
-public enum Direction
-{
+public enum Direction {
+  SERVER_TO_CLIENT("S->C"),
+  CLIENT_TO_SERVER("C->S"),
+  LEADER_BR_FOLLOWER("L->F"),
+  FOLLOWER_RP_LEADER("F->L"),
+  PROPOSER_BR_ACCEPTOR("P->A"),
+  ELECTOR_RP_CANDIDATE("E->C");
 
-    SERVER_TO_CLIENT("S->C"),
-    CLIENT_TO_SERVER("C->S"),
-    LEADER_BR_FOLLOWER("L->F"),
-    FOLLOWER_RP_LEADER("F->L"),
-    PROPOSER_BR_ACCEPTOR("P->A"),
-    ELECTOR_RP_CANDIDATE("E->C");
+  private final String _Abbreviation;
 
-    private final String _Abbreviation;
+  Direction(String abbreviation) {
+    _Abbreviation = abbreviation;
+  }
 
-    Direction(String abbreviation)
-    {
-        _Abbreviation = abbreviation;
-    }
+  public String getShort() {
+    return _Abbreviation;
+  }
 
-    public String getShort()
-    {
-        return _Abbreviation;
-    }
-
-    public static Direction parseShort(String value)
-    {
-        return switch(value) {
-            case "S->C" -> SERVER_TO_CLIENT;
-            case "C->S" -> CLIENT_TO_SERVER;
-            case "L->F" -> LEADER_BR_FOLLOWER;
-            case "F->L" -> FOLLOWER_RP_LEADER;
-            case "P->A" -> PROPOSER_BR_ACCEPTOR;
-            case "E->C" -> ELECTOR_RP_CANDIDATE;
-            default -> throw new IllegalArgumentException();
-        };
-    }
+  public static Direction parseShort(String value) {
+    return switch (value) {
+      case "S->C" -> SERVER_TO_CLIENT;
+      case "C->S" -> CLIENT_TO_SERVER;
+      case "L->F" -> LEADER_BR_FOLLOWER;
+      case "F->L" -> FOLLOWER_RP_LEADER;
+      case "P->A" -> PROPOSER_BR_ACCEPTOR;
+      case "E->C" -> ELECTOR_RP_CANDIDATE;
+      default -> throw new IllegalArgumentException();
+    };
+  }
 }

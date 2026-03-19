@@ -24,59 +24,48 @@
 package com.isahl.chess.queen.io.core.features.model.session.ssl;
 
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
 /**
  * @author William.d.zk
  */
-public interface ISslOption
-        extends INetworkOption
-{
+public interface ISslOption extends INetworkOption {
 
-    default KeyManager[] getKeyManagers()
-    {
-        return null;
-    }
+  default KeyManager[] getKeyManagers() {
+    return null;
+  }
 
-    default TrustManager[] getTrustManagers()
-    {
-        return null;
-    }
+  default TrustManager[] getTrustManagers() {
+    return null;
+  }
 
-    default boolean isSslClientAuth()
-    {
-        return false;
-    }
+  default boolean isSslClientAuth() {
+    return false;
+  }
 
-    int getSslPacketSize();
+  int getSslPacketSize();
 
-    int getSslAppSize();
+  int getSslAppSize();
 
-    // KeyStore/TrustStore 路径（用于热重载）
-    default String getKeyStorePath()
-    {
-        return null;
-    }
+  // KeyStore/TrustStore 路径（用于热重载）
+  default String getKeyStorePath() {
+    return null;
+  }
 
-    default String getKeyStorePassword()
-    {
-        return null;
-    }
+  default String getKeyStorePassword() {
+    return null;
+  }
 
-    default String getTrustStorePath()
-    {
-        return null;
-    }
+  default String getTrustStorePath() {
+    return null;
+  }
 
-    default String getTrustStorePassword()
-    {
-        return null;
-    }
+  default String getTrustStorePassword() {
+    return null;
+  }
 
-    default boolean isHotReloadEnabled()
-    {
-        return false;
-    }
+  default boolean isHotReloadEnabled() {
+    return false;
+  }
 }

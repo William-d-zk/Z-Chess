@@ -27,63 +27,57 @@ import java.util.Objects;
 /**
  * @author william.d.zk
  */
-public interface IError
-{
+public interface IError {
 
-    int getCode();
+  int getCode();
 
-    String getMsg(Object... args);
+  String getMsg(Object... args);
 
-    enum Type
-            implements IError
-    {
+  enum Type implements IError {
+    CONNECT_FAILED(300, " 连接失败 "),
+    ACCEPT_FAILED(301, " 应答连接失败 "),
+    READ_ZERO(401, " 0Byte,缓存区触发读,无数据 "),
+    READ_EOF(402, " 读到流终止EOF "),
+    READ_FAILED(403, " 读取缓存失败 "),
+    WRITE_ZERO(501, " 写入0Byte "),
+    WRITE_EOF(502, " 写入出现EOF "),
+    WRITE_FAILED(503, " 写入缓存失败 "),
+    PASSIVE_CLOSE(602, " 被动链路关闭 "),
+    INITIATIVE_CLOSE(603, " 主动关闭链路"),
+    SSL_HANDSHAKE(701, " SSL握手失败 "),
+    FILTER_ENCODE(801, " 协议装箱失败 "),
+    FILTER_DECODE(802, " 协议拆箱失败 "),
+    OUT_OF_LENGTH(803, " 数据越界 "),
+    ILLEGAL_STATE(901, " 逻辑状态错误 "),
+    ILLEGAL_BIZ_STATE(902, " 业务状态错误 "),
+    SAVE_DATA(903, " 保存数据失败 %s "),
+    FIND_DATA(904, " 查询数据失败 %s "),
+    MAPPING_LOGIN_ERROR(905, " mapping 准入失败 %s"),
+    HANDLE_DATA(906, " 数据处理失败 %s "),
+    CONSISTENCY_REJECT(909, " 一致性请求 %s 拒绝"),
+    MAPPING_ERROR(910, " mapping %s"),
+    TIME_OUT(101, " 超时 "),
+    NO_ERROR(200, " 成功 "),
+    ;
 
-        CONNECT_FAILED(300, " 连接失败 "),
-        ACCEPT_FAILED(301, " 应答连接失败 "),
-        READ_ZERO(401, " 0Byte,缓存区触发读,无数据 "),
-        READ_EOF(402, " 读到流终止EOF "),
-        READ_FAILED(403, " 读取缓存失败 "),
-        WRITE_ZERO(501, " 写入0Byte "),
-        WRITE_EOF(502, " 写入出现EOF "),
-        WRITE_FAILED(503, " 写入缓存失败 "),
-        PASSIVE_CLOSE(602, " 被动链路关闭 "),
-        INITIATIVE_CLOSE(603, " 主动关闭链路"),
-        SSL_HANDSHAKE(701, " SSL握手失败 "),
-        FILTER_ENCODE(801, " 协议装箱失败 "),
-        FILTER_DECODE(802, " 协议拆箱失败 "),
-        OUT_OF_LENGTH(803, " 数据越界 "),
-        ILLEGAL_STATE(901, " 逻辑状态错误 "),
-        ILLEGAL_BIZ_STATE(902, " 业务状态错误 "),
-        SAVE_DATA(903, " 保存数据失败 %s "),
-        FIND_DATA(904, " 查询数据失败 %s "),
-        MAPPING_LOGIN_ERROR(905, " mapping 准入失败 %s"),
-        HANDLE_DATA(906, " 数据处理失败 %s "),
-        CONSISTENCY_REJECT(909, " 一致性请求 %s 拒绝"),
-        MAPPING_ERROR(910, " mapping %s"),
-        TIME_OUT(101, " 超时 "),
-        NO_ERROR(200, " 成功 "),
-        ;
+    private final int _Code;
+    private final String _MsgFormatter;
 
-        private final int    _Code;
-        private final String _MsgFormatter;
-
-        Type(int code, String formatter)
-        {
-            _Code = code;
-            _MsgFormatter = formatter;
-        }
-
-        @Override
-        public int getCode()
-        {
-            return _Code;
-        }
-
-        @Override
-        public String getMsg(Object... args)
-        {
-            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter : String.format(_MsgFormatter, args);
-        }
-
+    Type(int code, String formatter) {
+      _Code = code;
+      _MsgFormatter = formatter;
     }
+
+    @Override
+    public int getCode() {
+      return _Code;
+    }
+
+    @Override
+    public String getMsg(Object... args) {
+      return Objects.isNull(args) || args.length == 0
+          ? _MsgFormatter
+          : String.format(_MsgFormatter, args);
+    }
+  }
 }

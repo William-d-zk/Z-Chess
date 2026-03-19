@@ -31,76 +31,62 @@ import com.isahl.chess.king.base.util.IoUtil;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x03)
-public class X03_Cipher
-        extends ZControl
-{
-    private int mPubKeyId;
-    private int mSymmetricKeyId;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x03)
+public class X03_Cipher extends ZControl {
+  private int mPubKeyId;
+  private int mSymmetricKeyId;
 
-    @Override
-    public int length()
-    {
-        return super.length() + 6;
-    }
+  @Override
+  public int length() {
+    return super.length() + 6;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putInt(mPubKeyId)
-                    .putShort(mSymmetricKeyId);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putInt(mPubKeyId).putShort(mSymmetricKeyId);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPubKeyId = input.getInt();
-        mSymmetricKeyId = input.getShort();
-        return remain - 6;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPubKeyId = input.getInt();
+    mSymmetricKeyId = input.getShort();
+    return remain - 6;
+  }
 
-    public int getPubKeyId()
-    {
-        return mPubKeyId;
-    }
+  public int getPubKeyId() {
+    return mPubKeyId;
+  }
 
-    public void setPubKeyId(int pubKeyId)
-    {
-        this.mPubKeyId = pubKeyId;
-    }
+  public void setPubKeyId(int pubKeyId) {
+    this.mPubKeyId = pubKeyId;
+  }
 
-    public int getSymmetricKeyId()
-    {
-        return mSymmetricKeyId;
-    }
+  public int getSymmetricKeyId() {
+    return mSymmetricKeyId;
+  }
 
-    public void setSymmetricKeyId(int symmetricKeyId)
-    {
-        this.mSymmetricKeyId = symmetricKeyId;
-    }
+  public void setSymmetricKeyId(int symmetricKeyId) {
+    this.mSymmetricKeyId = symmetricKeyId;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s\npublic-key: %d | rc4-key: %d [%s]", super.toString(), mPubKeyId, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "%s\npublic-key: %d | rc4-key: %d [%s]",
+        super.toString(), mPubKeyId, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
+  }
 
-    public void setCipher(byte[] cipher)
-    {
-        mPayload = cipher;
-    }
+  public void setCipher(byte[] cipher) {
+    mPayload = cipher;
+  }
 
-    public byte[] getCipher()
-    {
-        return mPayload;
-    }
+  public byte[] getCipher() {
+    return mPayload;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 }

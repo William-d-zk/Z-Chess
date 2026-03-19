@@ -12,88 +12,88 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LcApiListResponse<T> {
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-    public static class Pagination {
-        private Integer page;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
+  public static class Pagination {
+    private Integer page;
 
-        private Integer pageSize;
+    private Integer pageSize;
 
-        public Integer getPage() {
-            return page;
-        }
-
-        public void setPage(Integer page) {
-            this.page = page;
-        }
-
-        public Integer getPageSize() {
-            return pageSize;
-        }
-
-        public void setPageSize(Integer pageSize) {
-            this.pageSize = pageSize;
-        }
+    public Integer getPage() {
+      return page;
     }
 
-    private String ask;
-
-    private String message;
-
-    private Pagination pagination;
-
-    @JsonAlias({"nextPage"})
-    private String next_page;
-
-    private String count;
-
-    private List<T> data;
-
-    public String getAsk() {
-        return ask;
+    public void setPage(Integer page) {
+      this.page = page;
     }
 
-    public void setAsk(String ask) {
-        this.ask = ask;
+    public Integer getPageSize() {
+      return pageSize;
     }
 
-    public String getMessage() {
-        return message;
+    public void setPageSize(Integer pageSize) {
+      this.pageSize = pageSize;
     }
+  }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+  private String ask;
 
-    public Pagination getPagination() {
-        return pagination;
-    }
+  private String message;
 
-    public void setPagination(Pagination pagination) {
-        this.pagination = pagination;
-    }
+  private Pagination pagination;
 
-    public String getNext_page() {
-        return next_page;
-    }
+  @JsonAlias({"nextPage"})
+  private String next_page;
 
-    public void setNext_page(String next_page) {
-        this.next_page = next_page;
-    }
+  private String count;
 
-    public String getCount() {
-        return count;
-    }
+  private List<T> data;
 
-    public void setCount(String count) {
-        this.count = count;
-    }
+  public String getAsk() {
+    return ask;
+  }
 
-    public List<T> getData() {
-        return data;
-    }
+  public void setAsk(String ask) {
+    this.ask = ask;
+  }
 
-    public void setData(List<T> data) {
-        this.data = data;
-    }
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
+  public Pagination getPagination() {
+    return pagination;
+  }
+
+  public void setPagination(Pagination pagination) {
+    this.pagination = pagination;
+  }
+
+  public String getNext_page() {
+    return next_page;
+  }
+
+  public void setNext_page(String next_page) {
+    this.next_page = next_page;
+  }
+
+  public String getCount() {
+    return count;
+  }
+
+  public void setCount(String count) {
+    this.count = count;
+  }
+
+  public List<T> getData() {
+    return data;
+  }
+
+  public void setData(List<T> data) {
+    this.data = data;
+  }
 }

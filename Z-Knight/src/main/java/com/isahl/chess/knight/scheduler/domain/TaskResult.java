@@ -25,82 +25,70 @@ package com.isahl.chess.knight.scheduler.domain;
 
 import java.util.List;
 
-public class TaskResult
-{
-    private String taskId;
-    private TaskStatus status;
-    private String aggregatedResult;
-    private List<SubTaskResultEntry> subTaskResults;
+public class TaskResult {
+  private String taskId;
+  private TaskStatus status;
+  private String aggregatedResult;
+  private List<SubTaskResultEntry> subTaskResults;
 
-    public TaskResult()
-    {
+  public TaskResult() {}
+
+  public TaskResult(
+      String taskId,
+      TaskStatus status,
+      String aggregatedResult,
+      List<SubTaskResultEntry> subTaskResults) {
+    this.taskId = taskId;
+    this.status = status;
+    this.aggregatedResult = aggregatedResult;
+    this.subTaskResults = subTaskResults;
+  }
+
+  public String getTaskId() {
+    return taskId;
+  }
+
+  public TaskStatus getStatus() {
+    return status;
+  }
+
+  public String getAggregatedResult() {
+    return aggregatedResult;
+  }
+
+  public List<SubTaskResultEntry> getSubTaskResults() {
+    return subTaskResults;
+  }
+
+  public static class SubTaskResultEntry {
+    private String subTaskId;
+    private String nodeId;
+    private String result;
+    private boolean success;
+
+    public SubTaskResultEntry() {}
+
+    public SubTaskResultEntry(String subTaskId, String nodeId, String result, boolean success) {
+      this.subTaskId = subTaskId;
+      this.nodeId = nodeId;
+      this.result = result;
+      this.success = success;
     }
 
-    public TaskResult(String taskId, TaskStatus status, String aggregatedResult, List<SubTaskResultEntry> subTaskResults)
-    {
-        this.taskId = taskId;
-        this.status = status;
-        this.aggregatedResult = aggregatedResult;
-        this.subTaskResults = subTaskResults;
+    public String getSubTaskId() {
+      return subTaskId;
     }
 
-    public String getTaskId()
-    {
-        return taskId;
+    public String getNodeId() {
+      return nodeId;
     }
 
-    public TaskStatus getStatus()
-    {
-        return status;
+    public String getResult() {
+      return result;
     }
 
-    public String getAggregatedResult()
-    {
-        return aggregatedResult;
+    public boolean isSuccess() {
+      return success;
     }
-
-    public List<SubTaskResultEntry> getSubTaskResults()
-    {
-        return subTaskResults;
-    }
-
-    public static class SubTaskResultEntry
-    {
-        private String subTaskId;
-        private String nodeId;
-        private String result;
-        private boolean success;
-
-        public SubTaskResultEntry()
-        {
-        }
-
-        public SubTaskResultEntry(String subTaskId, String nodeId, String result, boolean success)
-        {
-            this.subTaskId = subTaskId;
-            this.nodeId = nodeId;
-            this.result = result;
-            this.success = success;
-        }
-
-        public String getSubTaskId()
-        {
-            return subTaskId;
-        }
-
-        public String getNodeId()
-        {
-            return nodeId;
-        }
-
-        public String getResult()
-        {
-            return result;
-        }
-
-        public boolean isSuccess()
-        {
-            return success;
-        }
-    }
+  }
 }

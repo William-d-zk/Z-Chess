@@ -34,49 +34,46 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class HeartbeatScheduler
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(HeartbeatScheduler.class);
+public class HeartbeatScheduler {
+  private static final Logger _Logger = LoggerFactory.getLogger(HeartbeatScheduler.class);
 
-    private final EdgeConfig _Config;
-    private final RestTemplate _RestTemplate;
-    private volatile boolean _Running;
+  private final EdgeConfig _Config;
+  private final RestTemplate _RestTemplate;
+  private volatile boolean _Running;
 
-    @Autowired
-    public HeartbeatScheduler(EdgeConfig config)
-    {
-        _Config = config;
-        _RestTemplate = new RestTemplate();
-        _Running = false;
+  @Autowired
+  public HeartbeatScheduler(EdgeConfig config) {
+    _Config = config;
+    _RestTemplate = new RestTemplate();
+    _Running = false;
+  }
+
+  public void start() {
+    _Running = true;
+    _Logger.info(
+        "HeartbeatScheduler started: nodeId={}, interval={}ms",
+        _Config.getNodeId(),
+        _Config.getHeartbeatInterval());
+  }
+
+  public void stop() {
+    _Running = false;
+    _Logger.info("HeartbeatScheduler stopped");
+  }
+
+  @Scheduled(fixedRateString = "${z.chess.square.heartbeat-interval:30000}")
+  public void sendHeartbeat() {
+    if (!_Running) {
+      return;
     }
-
-    public void start()
-    {
-        _Running = true;
-        _Logger.info("HeartbeatScheduler started: nodeId={}, interval={}ms",
-                _Config.getNodeId(), _Config.getHeartbeatInterval());
+    try {
+      NodeInfo nodeInfo = NodeInfo.create(_Config.getNodeId());
+      String url = _Config.getSchedulerUrl() + "/api/scheduler/nodes/heartbeat";
+      ResponseEntity<Void> response = _RestTemplate.postForEntity(url, nodeInfo, Void.class);
+      _Logger.debug(
+          "Heartbeat sent: nodeId={}, status={}", _Config.getNodeId(), response.getStatusCode());
+    } catch (Exception e) {
+      _Logger.warn("Heartbeat failed: nodeId={}, error={}", _Config.getNodeId(), e.getMessage());
     }
-
-    public void stop()
-    {
-        _Running = false;
-        _Logger.info("HeartbeatScheduler stopped");
-    }
-
-    @Scheduled(fixedRateString = "${z.chess.square.heartbeat-interval:30000}")
-    public void sendHeartbeat()
-    {
-        if(!_Running) {
-            return;
-        }
-        try {
-            NodeInfo nodeInfo = NodeInfo.create(_Config.getNodeId());
-            String url = _Config.getSchedulerUrl() + "/api/scheduler/nodes/heartbeat";
-            ResponseEntity<Void> response = _RestTemplate.postForEntity(url, nodeInfo, Void.class);
-            _Logger.debug("Heartbeat sent: nodeId={}, status={}", _Config.getNodeId(), response.getStatusCode());
-        }
-        catch(Exception e) {
-            _Logger.warn("Heartbeat failed: nodeId={}, error={}", _Config.getNodeId(), e.getMessage());
-        }
-    }
+  }
 }

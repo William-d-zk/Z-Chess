@@ -31,44 +31,35 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.List;
 
 /**
  * @author william.d.zk
  * @date 2020/4/20
  */
-public class ZLinkCustom
-        extends ZBaseMappingCustom<ILinkCustom>
-        implements ILinkCustom
-{
+public class ZLinkCustom extends ZBaseMappingCustom<ILinkCustom> implements ILinkCustom {
 
-    public ZLinkCustom(ILinkCustom then)
-    {
-        super(then);
-    }
+  public ZLinkCustom(ILinkCustom then) {
+    super(then);
+  }
 
-    @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request)
-    {
-        return _Then != null ? _Then.onConsistency(manager, backload, request) : null;
-    }
+  @Override
+  public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request) {
+    return _Then != null ? _Then.onConsistency(manager, backload, request) : null;
+  }
 
-    @Override
-    public IProtocol onClose(ISession session)
-    {
-        return _Then != null ? _Then.onClose(session) : null;
-    }
+  @Override
+  public IProtocol onClose(ISession session) {
+    return _Then != null ? _Then.onClose(session) : null;
+  }
 
-    @Override
-    public IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox()
-    {
-        return this::unbox;
-    }
+  @Override
+  public IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox() {
+    return this::unbox;
+  }
 
-    @Override
-    public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistency input, IManager manager)
-    {
-        return _Then != null ? _Then.unbox(input, manager) : null;
-    }
+  @Override
+  public <OUTPUT extends IoSerial> OUTPUT unbox(IConsistency input, IManager manager) {
+    return _Then != null ? _Then.unbox(input, manager) : null;
+  }
 }

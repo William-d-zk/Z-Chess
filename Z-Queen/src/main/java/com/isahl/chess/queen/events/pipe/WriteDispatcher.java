@@ -23,6 +23,9 @@
 
 package com.isahl.chess.queen.events.pipe;
 
+import static com.isahl.chess.king.base.features.IError.Type.HANDLE_DATA;
+import static com.isahl.chess.king.base.features.IError.Type.INITIATIVE_CLOSE;
+
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
@@ -36,117 +39,115 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
-
 import java.io.IOException;
 import java.util.List;
-
-import static com.isahl.chess.king.base.features.IError.Type.HANDLE_DATA;
-import static com.isahl.chess.king.base.features.IError.Type.INITIATIVE_CLOSE;
 
 /**
  * @author william.d.zk
  */
-public class WriteDispatcher
-        implements IPipeHandler<QEvent>
-{
-    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
-    private final RingBuffer<QEvent>[] _Encoders;
-    private final RingBuffer<QEvent>   _Error;
-    private final int                  _Mask;
-    private final IHealth              _Health = new Health(-1);
+public class WriteDispatcher implements IPipeHandler<QEvent> {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+  private final RingBuffer<QEvent>[] _Encoders;
+  private final RingBuffer<QEvent> _Error;
+  private final int _Mask;
+  private final IHealth _Health = new Health(-1);
 
-    @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
-    {
-        _Error = error;
-        _Encoders = workers;
-        _Mask = _Encoders.length - 1;
-    }
+  @SafeVarargs
+  public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers) {
+    _Error = error;
+    _Encoders = workers;
+    _Mask = _Encoders.length - 1;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    private RingBuffer<QEvent> dispatchEncoder(int code)
-    {
-        return _Encoders[code & _Mask];
-    }
+  private RingBuffer<QEvent> dispatchEncoder(int code) {
+    return _Encoders[code & _Mask];
+  }
 
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        if(event.hasError()) {
-            if(event.getErrorType() == HANDLE_DATA) {// from logic handler
-                /*
-                 * logic 处理错误，转换为shutdown目标投递给 _Error
-                 * 交由 IoDispatcher转发给对应的MappingHandler 执行close
-                 */
-                error(_Error, HANDLE_DATA, event.getComponent(), event.getEventBinaryOp());
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    if (event.hasError()) {
+      if (event.getErrorType() == HANDLE_DATA) { // from logic handler
+        /*
+         * logic 处理错误，转换为shutdown目标投递给 _Error
+         * 交由 IoDispatcher转发给对应的MappingHandler 执行close
+         */
+        error(_Error, HANDLE_DATA, event.getComponent(), event.getEventBinaryOp());
+      }
+    } else {
+      switch (event.getEventType()) {
+          /*
+           * NULL: 在前一个处理器event.reset().
+           * IGNORE:没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+           */
+        case NULL, IGNORE -> {}
+        case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
+          IPair content = event.getComponent();
+          _Logger.debug("content:%s,%s", content, event.getEventType());
+          IProtocol cmd = content.getFirst();
+          ISession session = content.getSecond();
+          if (session != null) {
+            try {
+              cmd.transfer();
+              publish(
+                  dispatchEncoder(session.hashCode()),
+                  OperateType.WRITE,
+                  Pair.of(cmd, session),
+                  session.encoder());
+            } catch (IOException | ZException e) {
+              error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
             }
+          }
         }
-        else {
-            switch(event.getEventType()) {
-                /*
-                 * NULL: 在前一个处理器event.reset().
-                 * IGNORE:没有任何时间需要跨 Barrier 投递向下一层 Pipeline
-                 */
-                case NULL, IGNORE -> {
-                }
-                case BIZ_LOCAL, CLUSTER_LOCAL, WRITE -> {
-                    IPair content = event.getComponent();
-                    _Logger.debug("content:%s,%s", content, event.getEventType());
-                    IProtocol cmd = content.getFirst();
-                    ISession session = content.getSecond();
-                    if(session != null) {
-                        try {
-                            cmd.transfer();
-                            publish(dispatchEncoder(session.hashCode()), OperateType.WRITE, Pair.of(cmd, session), session.encoder());
-                        }
-                        catch(IOException | ZException e) {
-                            error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
-                        }
-                    }
-                }
-                // from io-wrote
-                case WROTE -> {
-                    IPair content = event.getComponent();
-                    int count = content.getFirst();
-                    ISession session = content.getSecond();
-                    if(session != null) {
-                        publish(dispatchEncoder(session.hashCode()), OperateType.WROTE, Pair.of(count, session), event.getEventBinaryOp());
-                    }
-                }
-                /*
-                 * LOGIC:from read->logic
-                 * DISPATCH:logic->batch->dispatch
-                 */
-                case LOGIC, DISPATCH -> {
-                    List<ITriple> contents = event.getResultList();
-                    for(ITriple content : contents) {
-                        IProtocol cmd = content.getFirst();
-                        ISession session = content.getSecond();
-                        _Logger.debug("→ %s", content);
-                        if(session != null) {
-                            try {
-                                cmd.transfer();
-                                publish(dispatchEncoder(session.hashCode()), OperateType.WRITE, Pair.of(cmd, session), content.getThird());
-                            }
-                            catch(IOException | ZException e) {
-                                error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
-                            }
-                        }
-                    }
-                }
-                default -> {}
+          // from io-wrote
+        case WROTE -> {
+          IPair content = event.getComponent();
+          int count = content.getFirst();
+          ISession session = content.getSecond();
+          if (session != null) {
+            publish(
+                dispatchEncoder(session.hashCode()),
+                OperateType.WROTE,
+                Pair.of(count, session),
+                event.getEventBinaryOp());
+          }
+        }
+          /*
+           * LOGIC:from read->logic
+           * DISPATCH:logic->batch->dispatch
+           */
+        case LOGIC, DISPATCH -> {
+          List<ITriple> contents = event.getResultList();
+          for (ITriple content : contents) {
+            IProtocol cmd = content.getFirst();
+            ISession session = content.getSecond();
+            _Logger.debug("→ %s", content);
+            if (session != null) {
+              try {
+                cmd.transfer();
+                publish(
+                    dispatchEncoder(session.hashCode()),
+                    OperateType.WRITE,
+                    Pair.of(cmd, session),
+                    content.getThird());
+              } catch (IOException | ZException e) {
+                error(_Error, INITIATIVE_CLOSE, Pair.of(e, session), session.getError());
+              }
             }
+          }
         }
+        default -> {}
+      }
     }
+  }
 
-    @Override
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

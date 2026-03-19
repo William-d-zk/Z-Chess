@@ -23,25 +23,20 @@
 
 package com.isahl.chess.audience.start;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+/** Application 基础测试 简化版本，不依赖完整 Spring 上下文 */
+class ApplicationAudienceTest {
+  @Test
+  void test() {
+    // 测试 LogEntry 基本创建
+    LogEntry logEntry = new LogEntry(1, 0, 0xc000000000000000L, 0x5f6291e987000L, 0x123, null);
 
-/**
- * Application 基础测试
- * 简化版本，不依赖完整 Spring 上下文
- */
-class ApplicationAudienceTest
-{
-    @Test
-    void test()
-    {
-        // 测试 LogEntry 基本创建
-        LogEntry logEntry = new LogEntry(1, 0, 0xc000000000000000L, 0x5f6291e987000L, 0x123, null);
-        
-        assertNotNull(logEntry);
-        assertEquals(1, logEntry.index());
-        assertEquals(0, logEntry.term());
-    }
+    assertNotNull(logEntry);
+    assertEquals(1, logEntry.index());
+    assertEquals(0, logEntry.term());
+  }
 }

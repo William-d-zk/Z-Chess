@@ -29,14 +29,12 @@ import com.isahl.chess.king.base.content.ByteBuf;
  * @author william.d.zk
  * @date 2019-07-14
  */
-public interface IEncode
-{
-    int sizeOf();
+public interface IEncode {
+  int sizeOf();
 
-    default ByteBuf encode()
-    {
-        return suffix(ByteBuf.allocate(sizeOf()));
-    }
+  default ByteBuf encode() {
+    return suffix(ByteBuf.allocate(sizeOf()));
+  }
 
-    ByteBuf suffix(ByteBuf output);
+  ByteBuf suffix(ByteBuf output);
 }

@@ -23,155 +23,153 @@
 
 package com.isahl.chess.bishop.protocol.mqtt;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * X113_QttPublish 测试类
- */
+/** X113_QttPublish 测试类 */
 class X113_QttPublishTest {
 
-    private QttContext createV5Context() {
-        MockNetworkOption option = new MockNetworkOption();
-        QttContext context = new QttContext(option, ISort.Mode.CLUSTER, ISort.Type.SYMMETRY);
-        context.setVersion(QttProtocol.VERSION_V5_0);
-        return context;
-    }
+  private QttContext createV5Context() {
+    MockNetworkOption option = new MockNetworkOption();
+    QttContext context = new QttContext(option, ISort.Mode.CLUSTER, ISort.Type.SYMMETRY);
+    context.setVersion(QttProtocol.VERSION_V5_0);
+    return context;
+  }
 
-    @Test
-    void testBasicPublish() {
-        X113_QttPublish publish = new X113_QttPublish();
-        publish.withTopic("test/topic");
-        publish.withSub("Hello MQTT".getBytes());
-        
-        assertThat(publish.topic()).isEqualTo("test/topic");
-        assertThat(publish.payload()).containsExactly("Hello MQTT".getBytes());
-        assertThat(publish.priority()).isEqualTo(X113_QttPublish.QOS_PRIORITY_07_ROUTE_MESSAGE);
-    }
+  @Test
+  void testBasicPublish() {
+    X113_QttPublish publish = new X113_QttPublish();
+    publish.withTopic("test/topic");
+    publish.withSub("Hello MQTT".getBytes());
 
-    @Test
-    void testV5Properties() {
-        X113_QttPublish publish = new X113_QttPublish();
-        publish.wrap(createV5Context());
-        
-        publish.withTopic("v5/topic");
-        publish.setMessageExpiryInterval(3600);
-        publish.setContentType("application/json");
-        publish.setPayloadFormatIndicator(1);
-        
-        assertThat(publish.isV5()).isTrue();
-        assertThat(publish.getMessageExpiryInterval()).isEqualTo(3600);
-        assertThat(publish.getContentType()).isEqualTo("application/json");
-        assertThat(publish.getPayloadFormatIndicator()).isEqualTo(1);
-        assertThat(publish.isPayloadUtf8()).isTrue();
-    }
+    assertThat(publish.topic()).isEqualTo("test/topic");
+    assertThat(publish.payload()).containsExactly("Hello MQTT".getBytes());
+    assertThat(publish.priority()).isEqualTo(X113_QttPublish.QOS_PRIORITY_07_ROUTE_MESSAGE);
+  }
 
-    @Test
-    void testTopicAlias() {
-        X113_QttPublish publish = new X113_QttPublish();
-        publish.wrap(createV5Context());
-        
-        publish.withTopic("original/topic");
-        publish.useTopicAlias(5);
-        
-        assertThat(publish.getTopicAlias()).isEqualTo(5);
-        assertThat(publish.topic()).isNull(); // 主题名被清空
-    }
+  @Test
+  void testV5Properties() {
+    X113_QttPublish publish = new X113_QttPublish();
+    publish.wrap(createV5Context());
 
-    @Test
-    void testMessageExpiry() {
-        X113_QttPublish publish = new X113_QttPublish();
-        publish.wrap(createV5Context());
-        
-        // 未设置时默认不过期
-        assertThat(publish.isExpired()).isFalse();
-        
-        // 设置过期时间
-        publish.setMessageExpiryInterval(300);
-        // 注意：isExpired 的实现可能需要考虑当前时间
-    }
+    publish.withTopic("v5/topic");
+    publish.setMessageExpiryInterval(3600);
+    publish.setContentType("application/json");
+    publish.setPayloadFormatIndicator(1);
 
-    @Test
-    void testPayloadFormatIndicator() {
-        X113_QttPublish publish = new X113_QttPublish();
-        publish.wrap(createV5Context());
-        
-        // 0 = 未指定字节流
-        publish.setPayloadFormatIndicator(0);
-        assertThat(publish.isPayloadUtf8()).isFalse();
-        
-        // 1 = UTF-8 字符串
-        publish.setPayloadFormatIndicator(1);
-        assertThat(publish.isPayloadUtf8()).isTrue();
-    }
+    assertThat(publish.isV5()).isTrue();
+    assertThat(publish.getMessageExpiryInterval()).isEqualTo(3600);
+    assertThat(publish.getContentType()).isEqualTo("application/json");
+    assertThat(publish.getPayloadFormatIndicator()).isEqualTo(1);
+    assertThat(publish.isPayloadUtf8()).isTrue();
+  }
 
-    @Test
-    void testDuplicate() {
-        X113_QttPublish original = new X113_QttPublish();
-        QttContext context = createV5Context();
-        original.wrap(context);
-        
-        original.withTopic("test/topic");
-        original.withSub("payload".getBytes());
-        original.setLevel(X113_QttPublish.Level.AT_LEAST_ONCE);
-        original.setContentType("application/json");
-        
-        X113_QttPublish copy = original.duplicate();
-        
-        assertThat(copy.topic()).isEqualTo(original.topic());
-        assertThat(copy.payload()).containsExactly(original.payload());
-        assertThat(copy.level()).isEqualTo(original.level());
-        assertThat(copy.getContentType()).isEqualTo(original.getContentType());
-    }
+  @Test
+  void testTopicAlias() {
+    X113_QttPublish publish = new X113_QttPublish();
+    publish.wrap(createV5Context());
 
-    @Test
-    void testToStringFormat() {
-        X113_QttPublish publish = new X113_QttPublish();
-        QttContext context = createV5Context();
-        publish.wrap(context);
-        
-        publish.withTopic("test/topic");
-        publish.withSub("test".getBytes());
-        publish.setMessageExpiryInterval(3600);
-        
-        String str = publish.toString();
-        assertThat(str).contains("X113 publish");
-        assertThat(str).contains("test/topic");
-    }
+    publish.withTopic("original/topic");
+    publish.useTopicAlias(5);
 
-    @Test
-    void testUserProperties() {
-        X113_QttPublish publish = new X113_QttPublish();
-        QttContext context = createV5Context();
-        publish.wrap(context);
-        
-        publish.addUserProperty("key1", "value1");
-        publish.addUserProperty("key2", "value2");
-        
-        assertThat(publish.getProperties().getUserProperties()).hasSize(2);
-    }
+    assertThat(publish.getTopicAlias()).isEqualTo(5);
+    assertThat(publish.topic()).isNull(); // 主题名被清空
+  }
 
-    @Test
-    void testResponseTopicAndCorrelationData() {
-        X113_QttPublish publish = new X113_QttPublish();
-        QttContext context = createV5Context();
-        publish.wrap(context);
-        
-        publish.setResponseTopic("response/topic");
-        publish.setCorrelationData(new byte[]{0x01, 0x02, 0x03});
-        
-        assertThat(publish.getResponseTopic()).isEqualTo("response/topic");
-        assertThat(publish.getCorrelationData()).containsExactly(0x01, 0x02, 0x03);
-    }
+  @Test
+  void testMessageExpiry() {
+    X113_QttPublish publish = new X113_QttPublish();
+    publish.wrap(createV5Context());
 
-    @Test
-    void testSerial() {
-        X113_QttPublish publish = new X113_QttPublish();
-        assertThat(publish.serial()).isEqualTo(0x113);
-    }
+    // 未设置时默认不过期
+    assertThat(publish.isExpired()).isFalse();
+
+    // 设置过期时间
+    publish.setMessageExpiryInterval(300);
+    // 注意：isExpired 的实现可能需要考虑当前时间
+  }
+
+  @Test
+  void testPayloadFormatIndicator() {
+    X113_QttPublish publish = new X113_QttPublish();
+    publish.wrap(createV5Context());
+
+    // 0 = 未指定字节流
+    publish.setPayloadFormatIndicator(0);
+    assertThat(publish.isPayloadUtf8()).isFalse();
+
+    // 1 = UTF-8 字符串
+    publish.setPayloadFormatIndicator(1);
+    assertThat(publish.isPayloadUtf8()).isTrue();
+  }
+
+  @Test
+  void testDuplicate() {
+    X113_QttPublish original = new X113_QttPublish();
+    QttContext context = createV5Context();
+    original.wrap(context);
+
+    original.withTopic("test/topic");
+    original.withSub("payload".getBytes());
+    original.setLevel(X113_QttPublish.Level.AT_LEAST_ONCE);
+    original.setContentType("application/json");
+
+    X113_QttPublish copy = original.duplicate();
+
+    assertThat(copy.topic()).isEqualTo(original.topic());
+    assertThat(copy.payload()).containsExactly(original.payload());
+    assertThat(copy.level()).isEqualTo(original.level());
+    assertThat(copy.getContentType()).isEqualTo(original.getContentType());
+  }
+
+  @Test
+  void testToStringFormat() {
+    X113_QttPublish publish = new X113_QttPublish();
+    QttContext context = createV5Context();
+    publish.wrap(context);
+
+    publish.withTopic("test/topic");
+    publish.withSub("test".getBytes());
+    publish.setMessageExpiryInterval(3600);
+
+    String str = publish.toString();
+    assertThat(str).contains("X113 publish");
+    assertThat(str).contains("test/topic");
+  }
+
+  @Test
+  void testUserProperties() {
+    X113_QttPublish publish = new X113_QttPublish();
+    QttContext context = createV5Context();
+    publish.wrap(context);
+
+    publish.addUserProperty("key1", "value1");
+    publish.addUserProperty("key2", "value2");
+
+    assertThat(publish.getProperties().getUserProperties()).hasSize(2);
+  }
+
+  @Test
+  void testResponseTopicAndCorrelationData() {
+    X113_QttPublish publish = new X113_QttPublish();
+    QttContext context = createV5Context();
+    publish.wrap(context);
+
+    publish.setResponseTopic("response/topic");
+    publish.setCorrelationData(new byte[] {0x01, 0x02, 0x03});
+
+    assertThat(publish.getResponseTopic()).isEqualTo("response/topic");
+    assertThat(publish.getCorrelationData()).containsExactly(0x01, 0x02, 0x03);
+  }
+
+  @Test
+  void testSerial() {
+    X113_QttPublish publish = new X113_QttPublish();
+    assertThat(publish.serial()).isEqualTo(0x113);
+  }
 }

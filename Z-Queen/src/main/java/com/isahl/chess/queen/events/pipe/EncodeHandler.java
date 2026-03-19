@@ -43,75 +43,67 @@ import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 /**
  * @author william.d.zk
  */
-public class EncodeHandler
-        implements IBatchHandler<QEvent>
-{
-    private final Logger     _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
-    private final IEncryptor _EncryptHandler;
-    private final IHealth    _Health;
+public class EncodeHandler implements IBatchHandler<QEvent> {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
+  private final IEncryptor _EncryptHandler;
+  private final IHealth _Health;
 
-    public EncodeHandler(IEncryptor encryptHandler, int slot)
-    {
-        _EncryptHandler = encryptHandler;
-        _Health = new Health(slot);
-    }
+  public EncodeHandler(IEncryptor encryptHandler, int slot) {
+    _EncryptHandler = encryptHandler;
+    _Health = new Health(slot);
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        if(event.hasError()) {
-            switch(event.getErrorType()) {
-                case FILTER_ENCODE, ILLEGAL_STATE, ILLEGAL_BIZ_STATE -> {}
-                default -> {
-                }
-                /*
-                 * 透传到 EncodedHandler 去投递 _Error
-                 */
-            }
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    if (event.hasError()) {
+      switch (event.getErrorType()) {
+        case FILTER_ENCODE, ILLEGAL_STATE, ILLEGAL_BIZ_STATE -> {}
+        default -> {}
+          /*
+           * 透传到 EncodedHandler 去投递 _Error
+           */
+      }
+    } else {
+      switch (event.getEventType()) {
+        case WRITE -> {
+          IPair pairWriteContent = event.getComponent();
+          IProtocol cmd = pairWriteContent.getFirst();
+          ISession session = pairWriteContent.getSecond();
+          IBinaryOperator<IProtocol, ISession, ITriple> writeOperator = event.getEventBinaryOp();
+          _Logger.debug("%s→  %s | %s", OperateType.WRITE, cmd, session);
+          encodeHandler(event, cmd, session, writeOperator);
         }
-        else {
-            switch(event.getEventType()) {
-                case WRITE -> {
-                    IPair pairWriteContent = event.getComponent();
-                    IProtocol cmd = pairWriteContent.getFirst();
-                    ISession session = pairWriteContent.getSecond();
-                    IBinaryOperator<IProtocol, ISession, ITriple> writeOperator = event.getEventBinaryOp();
-                    _Logger.debug("%s→  %s | %s", OperateType.WRITE, cmd, session);
-                    encodeHandler(event, cmd, session, writeOperator);
-                }
-                case WROTE -> {
-                    IPair pairWroteContent = event.getComponent();
-                    int wroteCnt = pairWroteContent.getFirst();
-                    ISession session = pairWroteContent.getSecond();
-                    IBinaryOperator<Integer, ISession, ITriple> wroteOperator = event.getEventBinaryOp();
-                    _Logger.debug("%s→  %s | %s", OperateType.WROTE, wroteCnt, session);
-                    encodeHandler(event, wroteCnt, session, wroteOperator);
-                }
-                default -> {
-                }
-            }
+        case WROTE -> {
+          IPair pairWroteContent = event.getComponent();
+          int wroteCnt = pairWroteContent.getFirst();
+          ISession session = pairWroteContent.getSecond();
+          IBinaryOperator<Integer, ISession, ITriple> wroteOperator = event.getEventBinaryOp();
+          _Logger.debug("%s→  %s | %s", OperateType.WROTE, wroteCnt, session);
+          encodeHandler(event, wroteCnt, session, wroteOperator);
         }
+        default -> {}
+      }
     }
+  }
 
-    private <A> void encodeHandler(QEvent event, A a, ISession session, IBinaryOperator<A, ISession, ITriple> operator)
-    {
-        IPContext context = session.getContext();
-        if(context instanceof IEContext eContext) {
-            eContext.setEncryptHandler(_EncryptHandler);
-        }
-        try {
-            operator.handle(a, session);
-        }
-        catch(Exception e) {
-            _Logger.warning(String.format("write encode error: %s", session.toString()), e);
-            context.advanceOutState(IPContext.ENCODE_ERROR);
-            event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
-        }
+  private <A> void encodeHandler(
+      QEvent event, A a, ISession session, IBinaryOperator<A, ISession, ITriple> operator) {
+    IPContext context = session.getContext();
+    if (context instanceof IEContext eContext) {
+      eContext.setEncryptHandler(_EncryptHandler);
     }
+    try {
+      operator.handle(a, session);
+    } catch (Exception e) {
+      _Logger.warning(String.format("write encode error: %s", session.toString()), e);
+      context.advanceOutState(IPContext.ENCODE_ERROR);
+      event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
+    }
+  }
 }

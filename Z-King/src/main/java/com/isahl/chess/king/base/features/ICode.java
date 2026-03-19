@@ -27,12 +27,10 @@ package com.isahl.chess.king.base.features;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface ICode
-{
-    int getCode(Object... condition);
+public interface ICode {
+  int getCode(Object... condition);
 
-    String format(Object... args);
+  String format(Object... args);
 
-    String formatter();
-
+  String formatter();
 }

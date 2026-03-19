@@ -28,9 +28,7 @@ import com.isahl.chess.rook.storage.db.repository.BaseStringRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IMsgStateRepository
-        extends BaseStringRepository<MsgStateEntity>
-{
+public interface IMsgStateRepository extends BaseStringRepository<MsgStateEntity> {
 
-    MsgStateEntity findByOriginAndMsgId(Long origin, Long msgId);
+  MsgStateEntity findByOriginAndMsgId(Long origin, Long msgId);
 }

@@ -25,44 +25,35 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x0B)
-public class X0B_Ping
-        extends ZControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x0B)
+public class X0B_Ping extends ZControl {
 
-    public X0B_Ping()
-    {
-        super();
-    }
+  public X0B_Ping() {
+    super();
+  }
 
-    public X0B_Ping(String msg)
-    {
-        this();
-        mPayload = msg.getBytes(StandardCharsets.UTF_8);
-    }
+  public X0B_Ping(String msg) {
+    this();
+    mPayload = msg.getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format(" %s ", getClass().getSimpleName());
-    }
+  @Override
+  public String toString() {
+    return String.format(" %s ", getClass().getSimpleName());
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return false;
-    }
+  @Override
+  public boolean isMapping() {
+    return false;
+  }
 }

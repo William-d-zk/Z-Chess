@@ -31,84 +31,78 @@ import java.security.SecureRandom;
 /**
  * @author William.d.zk
  */
-public class NtruUtil
-{
-    private static boolean LOADED_LIB = false;
-    private static int     CIPHER_BUFF_LEN;
-    private static int     PLAIN_TEXT_MAX;
-    private static OID     oid        = OID.ees401ep1;
+public class NtruUtil {
+  private static boolean LOADED_LIB = false;
+  private static int CIPHER_BUFF_LEN;
+  private static int PLAIN_TEXT_MAX;
+  private static OID oid = OID.ees401ep1;
 
-    static {
-        try {
-            LOADED_LIB = true;
-            switch(oid) {
-                case ees401ep1:
-                    CIPHER_BUFF_LEN = 552;
-                    PLAIN_TEXT_MAX = 60;
-                    break;
-                case ees449ep1:
-                    CIPHER_BUFF_LEN = 618;
-                    PLAIN_TEXT_MAX = 67;
-                default:
-                    break;
-            }
-            KeyParams.getKeyParams(oid);
-        }
-        catch(Throwable e) {
-            // Ignore
-        }
-
+  static {
+    try {
+      LOADED_LIB = true;
+      switch (oid) {
+        case ees401ep1:
+          CIPHER_BUFF_LEN = 552;
+          PLAIN_TEXT_MAX = 60;
+          break;
+        case ees449ep1:
+          CIPHER_BUFF_LEN = 618;
+          PLAIN_TEXT_MAX = 67;
+        default:
+          break;
+      }
+      KeyParams.getKeyParams(oid);
+    } catch (Throwable e) {
+      // Ignore
     }
+  }
 
-    public static void setOID(OID _oid)
-    {
-        oid = _oid;
+  public static void setOID(OID _oid) {
+    oid = _oid;
+  }
+
+  public byte[] getCipherBuf() {
+    return new byte[CIPHER_BUFF_LEN];
+  }
+
+  public byte[][] getKeys(byte[] seed) throws NtruException {
+    Random prng = new Random(seed);
+    NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
+    return new byte[][] {key.getPubKey(), key.getPrivKey()};
+  }
+
+  private static final Logger _Logger = Logger.getLogger(NtruUtil.class.getSimpleName());
+
+  public byte[] encrypt(byte[] message, byte[] pubKey) { // 客户端用的
+    byte[] seed = new byte[32];
+    SecureRandom rs = new SecureRandom();
+    rs.nextBytes(seed);
+    Random prng = new Random(seed);
+
+    try {
+      NtruEncryptKey ntruKey = new NtruEncryptKey(pubKey);
+      return ntruKey.encrypt(message, prng);
+    } catch (FormatNotSupportedException
+        | ParamSetNotSupportedException
+        | ObjectClosedException
+        | PlaintextBadLengthException e) {
+      _Logger.error("NTRU encryption failed: %s", e.getMessage());
+      return null;
     }
+  }
 
-    public byte[] getCipherBuf()
-    {
-        return new byte[CIPHER_BUFF_LEN];
+  public byte[] decrypt(byte[] cipher, byte[] priKey) {
+    try {
+      NtruEncryptKey ntruKey = new NtruEncryptKey(priKey);
+      return ntruKey.decrypt(cipher);
+    } catch (FormatNotSupportedException
+        | ParamSetNotSupportedException
+        | ObjectClosedException
+        | NoPrivateKeyException
+        | CiphertextBadLengthException
+        | DecryptionFailureException e) {
+      _Logger.error("NTRU decryption failed: %s", e.getMessage());
+      return null;
     }
-
-    public byte[][] getKeys(byte[] seed) throws NtruException
-    {
-        Random prng = new Random(seed);
-        NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
-        return new byte[][]{
-                key.getPubKey(),
-                key.getPrivKey()
-
-        };
-    }
-
-    private static final Logger _Logger = Logger.getLogger(NtruUtil.class.getSimpleName());
-
-    public byte[] encrypt(byte[] message, byte[] pubKey)
-    {// 客户端用的
-        byte[] seed = new byte[32];
-        SecureRandom rs = new SecureRandom();
-        rs.nextBytes(seed);
-        Random prng = new Random(seed);
-
-        try {
-            NtruEncryptKey ntruKey = new NtruEncryptKey(pubKey);
-            return ntruKey.encrypt(message, prng);
-        }
-        catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | PlaintextBadLengthException e) {
-            _Logger.error("NTRU encryption failed: %s", e.getMessage());
-            return null;
-        }
-    }
-
-    public byte[] decrypt(byte[] cipher, byte[] priKey)
-    {
-        try {
-            NtruEncryptKey ntruKey = new NtruEncryptKey(priKey);
-            return ntruKey.decrypt(cipher);
-        }
-        catch(FormatNotSupportedException | ParamSetNotSupportedException | ObjectClosedException | NoPrivateKeyException | CiphertextBadLengthException | DecryptionFailureException e) {
-            _Logger.error("NTRU decryption failed: %s", e.getMessage());
-            return null;
-        }
-    }
+  }
 }

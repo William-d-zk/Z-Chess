@@ -25,5 +25,4 @@ package com.isahl.chess.board.processor.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public record ParentClass(String name, AtomicInteger count, int self)
-{}
+public record ParentClass(String name, AtomicInteger count, int self) {}

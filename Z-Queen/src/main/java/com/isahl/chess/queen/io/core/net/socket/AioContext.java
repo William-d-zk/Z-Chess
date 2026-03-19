@@ -29,61 +29,59 @@ import com.isahl.chess.queen.io.core.features.model.session.IOption;
 /**
  * @author William.d.zk
  */
-public abstract class AioContext<O extends IOption>
-        implements IContext
-{
+public abstract class AioContext<O extends IOption> implements IContext {
 
-    private final ByteBuf _WrBuffer;
-    private final ByteBuf _RvBuffer;
+  private final ByteBuf _WrBuffer;
+  private final ByteBuf _RvBuffer;
 
-    private long mClientStartTime;
-    private long mServerArrivedTime;
-    private long mServerResponseTime;
-    private long mClientArrivedTime;
+  private long mClientStartTime;
+  private long mServerArrivedTime;
+  private long mServerResponseTime;
+  private long mClientArrivedTime;
 
-    protected AioContext(O option)
-    {
-        _RvBuffer = ByteBuf.allocate(option.getRcvByte());
-        _WrBuffer = ByteBuf.allocate(option.getSnfByte());
+  protected AioContext(O option) {
+    _RvBuffer = ByteBuf.allocate(option.getRcvByte());
+    _WrBuffer = ByteBuf.allocate(option.getSnfByte());
+  }
+
+  @Override
+  public void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived) {
+    if (mClientStartTime != 0) {
+      mClientStartTime = clientStart;
     }
-
-    @Override
-    public void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived)
-    {
-        if(mClientStartTime != 0) {mClientStartTime = clientStart;}
-        if(mServerArrivedTime != 0) {mServerArrivedTime = serverArrived;}
-        if(mServerResponseTime != 0) {mServerResponseTime = serverResponse;}
-        if(mClientArrivedTime != 0) {mClientArrivedTime = clientArrived;}
+    if (mServerArrivedTime != 0) {
+      mServerArrivedTime = serverArrived;
     }
-
-    @Override
-    public ByteBuf getRvBuffer()
-    {
-        return _RvBuffer;
+    if (mServerResponseTime != 0) {
+      mServerResponseTime = serverResponse;
     }
-
-    @Override
-    public ByteBuf getWrBuffer()
-    {
-        return _WrBuffer;
+    if (mClientArrivedTime != 0) {
+      mClientArrivedTime = clientArrived;
     }
+  }
 
-    @Override
-    public long getNetTransportDelay()
-    {
-        return (mClientArrivedTime - mClientStartTime - mServerResponseTime + mServerArrivedTime) >> 1;
-    }
+  @Override
+  public ByteBuf getRvBuffer() {
+    return _RvBuffer;
+  }
 
-    @Override
-    public long getDeltaTime()
-    {
-        return (mServerArrivedTime - mClientStartTime + mServerResponseTime - mClientArrivedTime) >> 1;
-    }
+  @Override
+  public ByteBuf getWrBuffer() {
+    return _WrBuffer;
+  }
 
-    @Override
-    public long getNtpArrivedTime()
-    {
-        return mServerArrivedTime;
-    }
+  @Override
+  public long getNetTransportDelay() {
+    return (mClientArrivedTime - mClientStartTime - mServerResponseTime + mServerArrivedTime) >> 1;
+  }
 
+  @Override
+  public long getDeltaTime() {
+    return (mServerArrivedTime - mClientStartTime + mServerResponseTime - mClientArrivedTime) >> 1;
+  }
+
+  @Override
+  public long getNtpArrivedTime() {
+    return mServerArrivedTime;
+  }
 }

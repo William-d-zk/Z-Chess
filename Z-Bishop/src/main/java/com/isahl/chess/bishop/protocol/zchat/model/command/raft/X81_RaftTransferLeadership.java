@@ -23,169 +23,137 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
+import static com.isahl.chess.king.config.KingCode.SUCCESS;
+
 import com.isahl.chess.bishop.protocol.zchat.model.command.ZCommand;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
-import static com.isahl.chess.king.config.KingCode.SUCCESS;
-
 /**
  * Leader 转让请求
- * 
- * 用于主动将 Leadership 转让给其他节点
- * 
+ *
+ * <p>用于主动将 Leadership 转让给其他节点
+ *
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x81)
-public class X81_RaftTransferLeadership
-        extends ZCommand
-        implements IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x81)
+public class X81_RaftTransferLeadership extends ZCommand implements IConsistent {
 
-    public X81_RaftTransferLeadership()
-    {
-        super();
-    }
+  public X81_RaftTransferLeadership() {
+    super();
+  }
 
-    public X81_RaftTransferLeadership(long msgId)
-    {
-        super(msgId);
-    }
+  public X81_RaftTransferLeadership(long msgId) {
+    super(msgId);
+  }
 
-    /**
-     * 转让目标节点ID
-     */
-    private long mTargetPeer;
-    
-    /**
-     * 当前 Leader 的 commit index
-     */
-    private long mLeaderCommit;
-    
-    /**
-     * 当前 Leader 的 log index
-     */
-    private long mLeaderIndex;
-    
-    /**
-     * 当前 term
-     */
-    private long mTerm;
-    
-    /**
-     * 转让超时时间（毫秒）
-     */
-    private long mTimeoutMs;
+  /** 转让目标节点ID */
+  private long mTargetPeer;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  /** 当前 Leader 的 commit index */
+  private long mLeaderCommit;
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  /** 当前 Leader 的 log index */
+  private long mLeaderIndex;
 
-    @Override
-    public int length()
-    {
-        return super.length() + 8 + 8 + 8 + 8 + 8;
-    }
+  /** 当前 term */
+  private long mTerm;
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mTargetPeer)
-                    .putLong(mLeaderCommit)
-                    .putLong(mLeaderIndex)
-                    .putLong(mTerm)
-                    .putLong(mTimeoutMs);
-    }
+  /** 转让超时时间（毫秒） */
+  private long mTimeoutMs;
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mTargetPeer = input.getLong();
-        remain -= 8;
-        mLeaderCommit = input.getLong();
-        remain -= 8;
-        mLeaderIndex = input.getLong();
-        remain -= 8;
-        mTerm = input.getLong();
-        remain -= 8;
-        mTimeoutMs = input.getLong();
-        remain -= 8;
-        return remain;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X81_RaftTransferLeadership { target:%#x, commit:%d, index:%d, term:%d, timeout:%dms }",
-                             mTargetPeer, mLeaderCommit, mLeaderIndex, mTerm, mTimeoutMs);
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public int code()
-    {
-        return SUCCESS;
-    }
+  @Override
+  public int length() {
+    return super.length() + 8 + 8 + 8 + 8 + 8;
+  }
 
-    public long getTargetPeer()
-    {
-        return mTargetPeer;
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(mTargetPeer)
+        .putLong(mLeaderCommit)
+        .putLong(mLeaderIndex)
+        .putLong(mTerm)
+        .putLong(mTimeoutMs);
+  }
 
-    public void setTargetPeer(long targetPeer)
-    {
-        mTargetPeer = targetPeer;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mTargetPeer = input.getLong();
+    remain -= 8;
+    mLeaderCommit = input.getLong();
+    remain -= 8;
+    mLeaderIndex = input.getLong();
+    remain -= 8;
+    mTerm = input.getLong();
+    remain -= 8;
+    mTimeoutMs = input.getLong();
+    remain -= 8;
+    return remain;
+  }
 
-    public long getLeaderCommit()
-    {
-        return mLeaderCommit;
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X81_RaftTransferLeadership { target:%#x, commit:%d, index:%d, term:%d, timeout:%dms }",
+        mTargetPeer, mLeaderCommit, mLeaderIndex, mTerm, mTimeoutMs);
+  }
 
-    public void setLeaderCommit(long leaderCommit)
-    {
-        mLeaderCommit = leaderCommit;
-    }
+  @Override
+  public int code() {
+    return SUCCESS;
+  }
 
-    public long getLeaderIndex()
-    {
-        return mLeaderIndex;
-    }
+  public long getTargetPeer() {
+    return mTargetPeer;
+  }
 
-    public void setLeaderIndex(long leaderIndex)
-    {
-        mLeaderIndex = leaderIndex;
-    }
+  public void setTargetPeer(long targetPeer) {
+    mTargetPeer = targetPeer;
+  }
 
-    public long getTerm()
-    {
-        return mTerm;
-    }
+  public long getLeaderCommit() {
+    return mLeaderCommit;
+  }
 
-    public void setTerm(long term)
-    {
-        mTerm = term;
-    }
+  public void setLeaderCommit(long leaderCommit) {
+    mLeaderCommit = leaderCommit;
+  }
 
-    public long getTimeoutMs()
-    {
-        return mTimeoutMs;
-    }
+  public long getLeaderIndex() {
+    return mLeaderIndex;
+  }
 
-    public void setTimeoutMs(long timeoutMs)
-    {
-        mTimeoutMs = timeoutMs;
-    }
+  public void setLeaderIndex(long leaderIndex) {
+    mLeaderIndex = leaderIndex;
+  }
+
+  public long getTerm() {
+    return mTerm;
+  }
+
+  public void setTerm(long term) {
+    mTerm = term;
+  }
+
+  public long getTimeoutMs() {
+    return mTimeoutMs;
+  }
+
+  public void setTimeoutMs(long timeoutMs) {
+    mTimeoutMs = timeoutMs;
+  }
 }

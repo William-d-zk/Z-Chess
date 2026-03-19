@@ -31,107 +31,83 @@ import com.isahl.chess.king.base.util.IoUtil;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x1F)
-public class X1F_Exchange
-        extends ZCommand
-{
-    public X1F_Exchange()
-    {
-        super();
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x1F)
+public class X1F_Exchange extends ZCommand {
+  public X1F_Exchange() {
+    super();
+  }
 
-    public X1F_Exchange(long msgId)
-    {
-        super(msgId);
-    }
+  public X1F_Exchange(long msgId) {
+    super(msgId);
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return false;
-    }
+  @Override
+  public boolean isMapping() {
+    return false;
+  }
 
-    private long mPeer;
-    private long mTarget;
+  private long mPeer;
+  private long mTarget;
 
-    private int mFactory;
+  private int mFactory;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X0F_Exchange { node-client:%#x, origin:%#x, factory:%s sub-size[%d]}",
-                             mPeer,
-                             mTarget,
-                             IoUtil.int2Chars(mFactory),
-                             payload() == null ? payload().length : 0);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X0F_Exchange { node-client:%#x, origin:%#x, factory:%s sub-size[%d]}",
+        mPeer, mTarget, IoUtil.int2Chars(mFactory), payload() == null ? payload().length : 0);
+  }
 
-    public void target(long target)
-    {
-        mTarget = target;
-    }
+  public void target(long target) {
+    mTarget = target;
+  }
 
-    public long target()
-    {
-        return mTarget;
-    }
+  public long target() {
+    return mTarget;
+  }
 
-    public int factory()
-    {
-        return mFactory;
-    }
+  public int factory() {
+    return mFactory;
+  }
 
-    public void factory(int factory)
-    {
-        mFactory = factory;
-    }
+  public void factory(int factory) {
+    mFactory = factory;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mPeer)
-                    .putLong(mTarget)
-                    .putInt(mFactory);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mPeer).putLong(mTarget).putInt(mFactory);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        mTarget = input.getLong();
-        mFactory = input.getInt();
-        return remain - 20;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    mTarget = input.getLong();
+    mFactory = input.getInt();
+    return remain - 20;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 20;
-    }
+  @Override
+  public int length() {
+    return super.length() + 20;
+  }
 
-    public long peer()
-    {
-        return mPeer;
-    }
+  public long peer() {
+    return mPeer;
+  }
 
-    public void peer(long peer)
-    {
-        mPeer = peer;
-    }
-
+  public void peer(long peer) {
+    mPeer = peer;
+  }
 }

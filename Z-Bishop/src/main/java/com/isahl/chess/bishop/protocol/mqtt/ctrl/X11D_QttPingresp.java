@@ -23,25 +23,21 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.ctrl;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x11D)
-public class X11D_QttPingresp
-        extends QttControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x11D)
+public class X11D_QttPingresp extends QttControl {
 
-    public X11D_QttPingresp()
-    {
-        generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP);
-        _Logger.debug("0x11D [pong]");
-    }
+  public X11D_QttPingresp() {
+    generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP);
+    _Logger.debug("0x11D [pong]");
+  }
 }

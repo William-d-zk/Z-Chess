@@ -23,159 +23,131 @@
 
 package com.isahl.chess.king.base.model;
 
+import static java.lang.String.format;
+
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.io.Serial;
 import java.io.Serializable;
 
-import static java.lang.String.format;
-
 /**
  * @author william.d.zk
- * @date 2021-12-22
- * 0                   1                   2                   3
- * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- * +-+-+-+-+-------+---------------+-------------------------------+
- * |         serial-id(16)         |  variable length [7bit](8~32) |
- * +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
- * |                               |  payload data                 |
- * +-------------------------------- - - - - - - - - - - - - - - - +
- * :                     payload data continued ...                :
- * + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+ * @date 2021-12-22 0 1 2 3 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *     +-+-+-+-+-------+---------------+-------------------------------+ | serial-id(16) | variable
+ *     length [7bit](8~32) | +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - + | |
+ *     payload data | +-------------------------------- - - - - - - - - - - - - - - - + : payload
+ *     data continued ... : + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class BinarySerial
-        implements IoSerial,
-                   Serializable
-{
-    @Serial
-    private static final long serialVersionUID = 483533699319926685L;
+public class BinarySerial implements IoSerial, Serializable {
+  @Serial private static final long serialVersionUID = 483533699319926685L;
 
-    public final static int SERIAL_POS = 0;
-    public final static int LENGTH_POS = 2;
+  public static final int SERIAL_POS = 0;
+  public static final int LENGTH_POS = 2;
 
-    @Override
-    public int sizeOf()
-    {
-        return ByteBuf.vSizeOf(length()) + LENGTH_POS;
+  @Override
+  public int sizeOf() {
+    return ByteBuf.vSizeOf(length()) + LENGTH_POS;
+  }
+
+  protected byte[] mPayload;
+  protected IoSerial mSubContent;
+
+  public BinarySerial() {}
+
+  public BinarySerial(ByteBuf input) {
+    decode(input);
+  }
+
+  public int skipHeader(ByteBuf input) {
+    int off = 2;
+    int left = input.vPeekLength(off);
+    off += ByteBuf.vLengthOff(left);
+    int pl = input.vPeekLength(off);
+    off += ByteBuf.vSizeOf(pl);
+    return off;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    int serial = input.getUnsignedShort();
+    int length = input.vLength();
+    if (serial != serial()) {
+      //            throw new ZException("serial[%d vs %d] no expected", serial, serial());
     }
+    mPayload = input.vGet();
+    return length - ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
+  }
 
-    protected byte[]   mPayload;
-    protected IoSerial mSubContent;
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return output.putShort(serial()).vPutLength(length()).vPut(mPayload);
+  }
 
-    public BinarySerial() {}
-
-    public BinarySerial(ByteBuf input)
-    {
-        decode(input);
+  @Override
+  public void fold(ByteBuf input, int remain) {
+    if (remain > 0) {
+      throw new IndexOutOfBoundsException(format("decode %s remain[%d]", this, remain));
     }
+  }
 
-    public int skipHeader(ByteBuf input)
-    {
-        int off = 2;
-        int left = input.vPeekLength(off);
-        off += ByteBuf.vLengthOff(left);
-        int pl = input.vPeekLength(off);
-        off += ByteBuf.vSizeOf(pl);
-        return off;
+  @Override
+  public <T extends IoSerial> T deserializeSub(IoFactory<T> factory) {
+    ByteBuf subBuffer = subEncoded();
+    if (subBuffer != null && factory != null) {
+      T t = factory.create(subBuffer);
+      t.decode(subBuffer);
+      mSubContent = t;
+      return t;
     }
+    return null;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int serial = input.getUnsignedShort();
-        int length = input.vLength();
-        if(serial != serial()) {
-            //            throw new ZException("serial[%d vs %d] no expected", serial, serial());
-        }
-        mPayload = input.vGet();
-        return length - ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
+  @Override
+  public int length() {
+    return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
+  }
+
+  @Override
+  public byte[] payload() {
+    return mPayload;
+  }
+
+  @Override
+  public BinarySerial withSub(IoSerial sub) {
+    mSubContent = sub;
+    if (mSubContent != null) {
+      ByteBuf encoded = mSubContent.encode();
+      if (encoded.capacity() > 0) {
+        mPayload = encoded.array();
+      }
     }
+    return this;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return output.putShort(serial())
-                     .vPutLength(length())
-                     .vPut(mPayload);
-    }
+  @Override
+  public IoSerial withSub(byte[] sub) {
+    mPayload = sub == null || sub.length > 0 ? sub : null;
+    return this;
+  }
 
-    @Override
-    public void fold(ByteBuf input, int remain)
-    {
-        if(remain > 0) {
-            throw new IndexOutOfBoundsException(format("decode %s remain[%d]", this, remain));
-        }
-    }
+  @Override
+  public IoSerial subContent() {
+    return mSubContent;
+  }
 
-    @Override
-    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
-    {
-        ByteBuf subBuffer = subEncoded();
-        if(subBuffer != null && factory != null) {
-            T t = factory.create(subBuffer);
-            t.decode(subBuffer);
-            mSubContent = t;
-            return t;
-        }
-        return null;
-    }
+  public void buildSub() {
+    mSubContent = mPayload == null ? null : new BinarySerial(ByteBuf.wrap(mPayload));
+  }
 
-    @Override
-    public int length()
-    {
-        return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
-    }
+  public int pLength() {
+    return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
+  }
 
-    @Override
-    public byte[] payload()
-    {
-        return mPayload;
-    }
-
-    @Override
-    public BinarySerial withSub(IoSerial sub)
-    {
-        mSubContent = sub;
-        if(mSubContent != null) {
-            ByteBuf encoded = mSubContent.encode();
-            if(encoded.capacity() > 0) {
-                mPayload = encoded.array();
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public IoSerial withSub(byte[] sub)
-    {
-        mPayload = sub == null || sub.length > 0 ? sub : null;
-        return this;
-    }
-
-    @Override
-    public IoSerial subContent()
-    {
-        return mSubContent;
-    }
-
-    public void buildSub()
-    {
-        mSubContent = mPayload == null ? null : new BinarySerial(ByteBuf.wrap(mPayload));
-    }
-
-    public int pLength()
-    {
-        return ByteBuf.vSizeOf(mPayload == null ? 0 : mPayload.length);
-    }
-
-    public static int seekSerial(ByteBuf buffer)
-    {
-        return buffer.peekUnsignedShort(0);
-    }
-
+  public static int seekSerial(ByteBuf buffer) {
+    return buffer.peekUnsignedShort(0);
+  }
 }

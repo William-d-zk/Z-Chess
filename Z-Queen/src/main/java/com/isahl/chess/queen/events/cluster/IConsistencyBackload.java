@@ -32,17 +32,15 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
 /**
  * @author william.d.zk
  */
-public interface IConsistencyBackload
-{
-    default IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox()
-    {
-        return this::unbox;
-    }
+public interface IConsistencyBackload {
+  default IBinaryOperator<IConsistency, IManager, IProtocol> getUnbox() {
+    return this::unbox;
+  }
 
-    /**
-     * @param input   需要进行一致处理的内容
-     * @param manager session-manager 获取 origin-session
-     * @return 一致性结果
-     */
-    <O extends IoSerial> O unbox(IConsistency input, IManager manager);
+  /**
+   * @param input 需要进行一致处理的内容
+   * @param manager session-manager 获取 origin-session
+   * @return 一致性结果
+   */
+  <O extends IoSerial> O unbox(IConsistency input, IManager manager);
 }

@@ -30,40 +30,35 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
  * @author william.d.zk
  * @date 2019-05-25
  */
-public abstract class QttProtocol
-        implements IProtocol
-{
-    protected final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+public abstract class QttProtocol implements IProtocol {
+  protected final Logger _Logger =
+      Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
-    public final static byte VERSION_V3_1_1 = 4;
-    public final static byte VERSION_V5_0   = 5;
+  public static final byte VERSION_V3_1_1 = 4;
+  public static final byte VERSION_V5_0 = 5;
 
-    protected final static byte DUPLICATE_FLAG = 1 << 3;
-    protected final static byte RETAIN_FLAG    = 1;
-    protected final static byte QOS_MASK       = 3 << 1;
+  protected static final byte DUPLICATE_FLAG = 1 << 3;
+  protected static final byte RETAIN_FLAG = 1;
+  protected static final byte QOS_MASK = 3 << 1;
 
-    protected byte   mFrameHeader;
-    protected byte[] mPayload;
+  protected byte mFrameHeader;
+  protected byte[] mPayload;
 
-    public QttType getType()
-    {
-        return QttType.valueOf(mFrameHeader);
-    }
+  public QttType getType() {
+    return QttType.valueOf(mFrameHeader);
+  }
 
-    public void setType(QttType type)
-    {
-        mFrameHeader |= (byte) type.getValue();
-    }
+  public void setType(QttType type) {
+    mFrameHeader |= (byte) type.getValue();
+  }
 
-    @Override
-    public int length()
-    {
-        return mPayload == null ? 0 : mPayload.length;
-    }
+  @Override
+  public int length() {
+    return mPayload == null ? 0 : mPayload.length;
+  }
 
-    @Override
-    public int sizeOf()
-    {
-        return length();
-    }
+  @Override
+  public int sizeOf() {
+    return length();
+  }
 }

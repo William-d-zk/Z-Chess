@@ -23,5 +23,4 @@
 
 package com.isahl.chess.board.processor.model;
 
-public record SerialClass(int parent, int self)
-{}
+public record SerialClass(int parent, int self) {}

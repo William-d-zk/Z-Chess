@@ -12,18 +12,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class XmlToJsonConverter {
 
-    public JsonNode convertXmlToJson(String xml) throws IOException {
-        XmlMapper xmlMapper = new XmlMapper();
-        ObjectMapper jsonMapper = new ObjectMapper();
+  public JsonNode convertXmlToJson(String xml) throws IOException {
+    XmlMapper xmlMapper = new XmlMapper();
+    ObjectMapper jsonMapper = new ObjectMapper();
 
-        // 将XML转换为JsonNode树
-        JsonNode xmlTree = xmlMapper.readTree(xml);
+    // 将XML转换为JsonNode树
+    JsonNode xmlTree = xmlMapper.readTree(xml);
 
-        // 将JsonNode树转换为JSON字符串
-        String json = jsonMapper.writeValueAsString(xmlTree);
+    // 将JsonNode树转换为JSON字符串
+    String json = jsonMapper.writeValueAsString(xmlTree);
 
-        // 返回JsonNode表示JSON字符串
-        return jsonMapper.readTree(json);
-    }
-
+    // 返回JsonNode表示JSON字符串
+    return jsonMapper.readTree(json);
+  }
 }

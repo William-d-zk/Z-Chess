@@ -30,51 +30,53 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 
-/**
- * 压力测试客户端处理器 - 简化版
- */
-public class StressClientHandler implements ILogicHandler
-{
-    private static final Logger _Logger = Logger.getLogger("stress.handler");
+/** 压力测试客户端处理器 - 简化版 */
+public class StressClientHandler implements ILogicHandler {
+  private static final Logger _Logger = Logger.getLogger("stress.handler");
 
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger getLogger() {
+    return _Logger;
+  }
 
-    @Override
-    public IExchanger getExchanger()
-    {
-        return null;
-    }
+  @Override
+  public IExchanger getExchanger() {
+    return null;
+  }
 
-    @Override
-    public IPipeTransfer logicTransfer()
-    {
-        return null;
-    }
+  @Override
+  public IPipeTransfer logicTransfer() {
+    return null;
+  }
 
-    @Override
-    public IPipeService serviceTransfer()
-    {
-        return null;
-    }
+  @Override
+  public IPipeService serviceTransfer() {
+    return null;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return new IHealth() {
-            @Override
-            public boolean isEnabled() { return false; }
-            @Override
-            public void collectOn(long time) {}
-            @Override
-            public void collectOff(long time) {}
-            @Override
-            public boolean isHealthy() { return true; }
-            @Override
-            public java.time.Duration averageEventHandling() { return java.time.Duration.ZERO; }
-        };
-    }
+  @Override
+  public IHealth _Health() {
+    return new IHealth() {
+      @Override
+      public boolean isEnabled() {
+        return false;
+      }
+
+      @Override
+      public void collectOn(long time) {}
+
+      @Override
+      public void collectOff(long time) {}
+
+      @Override
+      public boolean isHealthy() {
+        return true;
+      }
+
+      @Override
+      public java.time.Duration averageEventHandling() {
+        return java.time.Duration.ZERO;
+      }
+    };
+  }
 }

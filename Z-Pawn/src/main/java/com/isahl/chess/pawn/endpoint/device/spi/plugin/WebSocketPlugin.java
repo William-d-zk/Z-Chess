@@ -37,64 +37,61 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  * @author william.d.zk
  */
 @Component
-public class WebSocketPlugin
-        implements IAccessService
-{
+public class WebSocketPlugin implements IAccessService {
 
-    private final Logger _Logger = Logger.getLogger("pawn.endpoint." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("pawn.endpoint." + getClass().getSimpleName());
 
-    @Override
-    public boolean isSupported(IoSerial input)
-    {
-        return input.serial() >= 0x101 && input.serial() <= 0x105;
+  @Override
+  public boolean isSupported(IoSerial input) {
+    return input.serial() >= 0x101 && input.serial() <= 0x105;
+  }
+
+  @Override
+  public boolean isSupported(ISession session) {
+    return session.getContext(WsContext.class) != null;
+  }
+
+  @Override
+  public void onLogic(
+      IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load) {
+    _Logger.info("web socket recv:[ %s ]", content);
+
+    switch (content.serial()) {
+      case 0x101 -> {
+        X101_HandShake<?> request = (X101_HandShake<?>) content;
+        load.add(
+            Triple.of(request.context().getHandshake().with(session), session, session.encoder()));
+      }
+      case 0x102 -> {
+        load.add(Triple.of(content, session, session.encoder()));
+      }
+      case 0x103 -> {
+        load.add(Triple.of(new X104_Pong<>().with(session), session, session.encoder()));
+      }
+      case 0x105 -> {
+        load.add(
+            Triple.of(
+                new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session),
+                session,
+                session.encoder()));
+      }
     }
+  }
 
-    @Override
-    public boolean isSupported(ISession session)
-    {
-        return session.getContext(WsContext.class) != null;
-    }
+  @Override
+  public ITriple onLink(IManager manager, ISession session, IProtocol input) {
+    return null;
+  }
 
-    @Override
-    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
-    {
-        _Logger.info("web socket recv:[ %s ]", content);
-
-        switch(content.serial()) {
-            case 0x101 -> {
-                X101_HandShake<?> request = (X101_HandShake<?>) content;
-                load.add(Triple.of(request.context()
-                                          .getHandshake()
-                                          .with(session), session, session.encoder()));
-            }
-            case 0x102 -> {
-                load.add(Triple.of(content, session, session.encoder()));
-            }
-            case 0x103 -> {
-                load.add(Triple.of(new X104_Pong<>().with(session), session, session.encoder()));
-            }
-            case 0x105 -> {
-                load.add(Triple.of(new X105_Text<>(((X105_Text<?>) content).getText() + "OK\n").with(session), session, session.encoder()));
-            }
-        }
-    }
-
-    @Override
-    public ITriple onLink(IManager manager, ISession session, IProtocol input)
-    {
-        return null;
-    }
-
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
-    {
-        return null;
-    }
+  public List<ITriple> onConsistency(
+      IManager manager, IConsistency backload, IoSerial consensusBody) {
+    return null;
+  }
 }

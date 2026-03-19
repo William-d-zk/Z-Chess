@@ -24,105 +24,87 @@
 package com.isahl.chess.pawn.endpoint.device.config;
 
 import com.isahl.chess.king.base.cron.TimeWheel;
+import java.time.Duration;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.time.Duration;
-import java.util.List;
-
 @PropertySource("classpath:pawn.mix.properties")
 @ConfigurationProperties(prefix = "z.chess.pawn.mix")
 @Configuration("pawn_mix_config")
-public class MixConfig
-{
-    public static class Server
-    {
-        String host;
-        int    port;
-        String scheme;
+public class MixConfig {
+  public static class Server {
+    String host;
+    int port;
+    String scheme;
 
-        public String getHost()
-        {
-            return host;
-        }
-
-        public void setHost(String host)
-        {
-            this.host = host;
-        }
-
-        public int getPort()
-        {
-            return port;
-        }
-
-        public void setPort(int port)
-        {
-            this.port = port;
-        }
-
-        public String getScheme()
-        {
-            return scheme;
-        }
-
-        public void setScheme(String scheme)
-        {
-            this.scheme = scheme;
-        }
+    public String getHost() {
+      return host;
     }
 
-    private       List<Server> listeners;
-    private       Duration     passwordInvalidDays;
-    private       String       passwordRandomSeed;
-    private       boolean      multiBind;
-    private final TimeWheel    _TimeWheel = new TimeWheel();
-
-    public List<Server> getListeners()
-    {
-        return listeners;
+    public void setHost(String host) {
+      this.host = host;
     }
 
-    public void setListeners(List<Server> listeners)
-    {
-        this.listeners = listeners;
+    public int getPort() {
+      return port;
     }
 
-    public Duration getPasswordInvalidDays()
-    {
-        return passwordInvalidDays;
+    public void setPort(int port) {
+      this.port = port;
     }
 
-    public void setPasswordInvalidDays(Duration passwordInvalidDays)
-    {
-        this.passwordInvalidDays = passwordInvalidDays;
+    public String getScheme() {
+      return scheme;
     }
 
-    public String getPasswordRandomSeed()
-    {
-        return passwordRandomSeed;
+    public void setScheme(String scheme) {
+      this.scheme = scheme;
     }
+  }
 
-    public void setPasswordRandomSeed(String passwordRandomSeed)
-    {
-        this.passwordRandomSeed = passwordRandomSeed;
-    }
+  private List<Server> listeners;
+  private Duration passwordInvalidDays;
+  private String passwordRandomSeed;
+  private boolean multiBind;
+  private final TimeWheel _TimeWheel = new TimeWheel();
 
-    public boolean isMultiBind()
-    {
-        return multiBind;
-    }
+  public List<Server> getListeners() {
+    return listeners;
+  }
 
-    public void setMultiBind(boolean multiBind)
-    {
-        this.multiBind = multiBind;
-    }
+  public void setListeners(List<Server> listeners) {
+    this.listeners = listeners;
+  }
 
-    @Bean
-    public TimeWheel getTimeWheel()
-    {
-        return _TimeWheel;
-    }
+  public Duration getPasswordInvalidDays() {
+    return passwordInvalidDays;
+  }
+
+  public void setPasswordInvalidDays(Duration passwordInvalidDays) {
+    this.passwordInvalidDays = passwordInvalidDays;
+  }
+
+  public String getPasswordRandomSeed() {
+    return passwordRandomSeed;
+  }
+
+  public void setPasswordRandomSeed(String passwordRandomSeed) {
+    this.passwordRandomSeed = passwordRandomSeed;
+  }
+
+  public boolean isMultiBind() {
+    return multiBind;
+  }
+
+  public void setMultiBind(boolean multiBind) {
+    this.multiBind = multiBind;
+  }
+
+  @Bean
+  public TimeWheel getTimeWheel() {
+    return _TimeWheel;
+  }
 }

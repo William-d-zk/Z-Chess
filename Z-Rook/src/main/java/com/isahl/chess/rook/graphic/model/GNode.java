@@ -28,64 +28,52 @@ import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.model.MapSerial;
 import com.isahl.chess.rook.graphic.INode;
-
 import java.util.NavigableMap;
 
 /**
  * @author william.d.zk
  */
-public class GNode<V extends IoSerial>
-        extends MapSerial<String, V>
-        implements INode
-{
+public class GNode<V extends IoSerial> extends MapSerial<String, V> implements INode {
 
-    public GNode(IoFactory<V> factory)
-    {
-        super(factory);
-    }
+  public GNode(IoFactory<V> factory) {
+    super(factory);
+  }
 
-    public GNode(IoFactory<V> factory, NavigableMap<String, V> map)
-    {
-        super(factory, map);
-    }
+  public GNode(IoFactory<V> factory, NavigableMap<String, V> map) {
+    super(factory, map);
+  }
 
-    public GNode(ByteBuf input, IoFactory<V> factory)
-    {
-        super(input, factory);
-    }
+  public GNode(ByteBuf input, IoFactory<V> factory) {
+    super(input, factory);
+  }
 
-    private long mId;
+  private long mId;
 
-    @Override
-    public long id()
-    {
-        return mId;
-    }
+  @Override
+  public long id() {
+    return mId;
+  }
 
-    public void id(long id)
-    {
-        mId = id;
-    }
+  public void id(long id) {
+    mId = id;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mId = input.getLong();
-        return remain - 8;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mId = input.getLong();
+    return remain - 8;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output = super.suffix(output);
-        output.putLong(mId);
-        return output;
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output = super.suffix(output);
+    output.putLong(mId);
+    return output;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 8;
-    }
+  @Override
+  public int length() {
+    return super.length() + 8;
+  }
 }

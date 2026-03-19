@@ -27,6 +27,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BaseIntegerRepository<T>
-        extends JpaRepository<T, Integer>,
-                JpaSpecificationExecutor<T>
-{}
+    extends JpaRepository<T, Integer>, JpaSpecificationExecutor<T> {}

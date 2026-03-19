@@ -31,141 +31,112 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 /**
  * Lease Read 请求
- * 
- * 在 Leader 租约期内直接读取，无需等待 commit
- * 
+ *
+ * <p>在 Leader 租约期内直接读取，无需等待 commit
+ *
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x83)
-public class X83_RaftLeaseRead
-        extends ZCommand
-        implements IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x83)
+public class X83_RaftLeaseRead extends ZCommand implements IConsistent {
 
-    public X83_RaftLeaseRead()
-    {
-        super();
-    }
+  public X83_RaftLeaseRead() {
+    super();
+  }
 
-    public X83_RaftLeaseRead(long msgId)
-    {
-        super(msgId);
-    }
+  public X83_RaftLeaseRead(long msgId) {
+    super(msgId);
+  }
 
-    /**
-     * 读请求ID
-     */
-    private long mReadId;
-    
-    /**
-     * 客户端ID
-     */
-    private long mClient;
-    
-    /**
-     * 读操作类型（可选，用于区分不同类型的读）
-     */
-    private int mReadType;
-    
-    /**
-     * 原始请求来源
-     */
-    private long mOrigin;
+  /** 读请求ID */
+  private long mReadId;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  /** 客户端ID */
+  private long mClient;
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  /** 读操作类型（可选，用于区分不同类型的读） */
+  private int mReadType;
 
-    @Override
-    public int length()
-    {
-        return super.length() + 8 + 8 + 4 + 8;
-    }
+  /** 原始请求来源 */
+  private long mOrigin;
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mReadId)
-                    .putLong(mClient)
-                    .putInt(mReadType)
-                    .putLong(mOrigin);
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mReadId = input.getLong();
-        remain -= 8;
-        mClient = input.getLong();
-        remain -= 8;
-        mReadType = input.getInt();
-        remain -= 4;
-        mOrigin = input.getLong();
-        remain -= 8;
-        return remain;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X83_RaftLeaseRead { readId=%d, client=%#x, type=%d }",
-                             mReadId, mClient, mReadType);
-    }
+  @Override
+  public int length() {
+    return super.length() + 8 + 8 + 4 + 8;
+  }
 
-    @Override
-    public int code()
-    {
-        return 0;
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(mReadId)
+        .putLong(mClient)
+        .putInt(mReadType)
+        .putLong(mOrigin);
+  }
 
-    public long readId()
-    {
-        return mReadId;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mReadId = input.getLong();
+    remain -= 8;
+    mClient = input.getLong();
+    remain -= 8;
+    mReadType = input.getInt();
+    remain -= 4;
+    mOrigin = input.getLong();
+    remain -= 8;
+    return remain;
+  }
 
-    public void readId(long readId)
-    {
-        mReadId = readId;
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X83_RaftLeaseRead { readId=%d, client=%#x, type=%d }", mReadId, mClient, mReadType);
+  }
 
-    public long client()
-    {
-        return mClient;
-    }
+  @Override
+  public int code() {
+    return 0;
+  }
 
-    public void client(long client)
-    {
-        mClient = client;
-    }
+  public long readId() {
+    return mReadId;
+  }
 
-    public int readType()
-    {
-        return mReadType;
-    }
+  public void readId(long readId) {
+    mReadId = readId;
+  }
 
-    public void readType(int readType)
-    {
-        mReadType = readType;
-    }
-    
-    public long origin()
-    {
-        return mOrigin;
-    }
-    
-    public void origin(long origin)
-    {
-        mOrigin = origin;
-    }
+  public long client() {
+    return mClient;
+  }
+
+  public void client(long client) {
+    mClient = client;
+  }
+
+  public int readType() {
+    return mReadType;
+  }
+
+  public void readType(int readType) {
+    mReadType = readType;
+  }
+
+  public long origin() {
+    return mOrigin;
+  }
+
+  public void origin(long origin) {
+    mOrigin = origin;
+  }
 }

@@ -23,8 +23,7 @@
 
 package com.isahl.chess.rook.graphic.model;
 
-public enum Direction
-{
-    PERSPECTIVE,
-    TARGET
+public enum Direction {
+  PERSPECTIVE,
+  TARGET
 }

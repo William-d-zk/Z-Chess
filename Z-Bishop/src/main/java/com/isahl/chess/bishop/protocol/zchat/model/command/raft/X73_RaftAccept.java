@@ -31,155 +31,126 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x73)
-public class X73_RaftAccept
-        extends ZCommand
-        implements IRaftRecord
-{
-    public X73_RaftAccept()
-    {
-        super();
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x73)
+public class X73_RaftAccept extends ZCommand implements IRaftRecord {
+  public X73_RaftAccept() {
+    super();
+  }
 
-    public X73_RaftAccept(long msgId)
-    {
-        super(msgId);
-    }
+  public X73_RaftAccept(long msgId) {
+    super(msgId);
+  }
 
-    private long mFollower;
-    private long mTerm;
-    private long mCatchUp;
-    private long mCatchUpTerm;
-    private long mCommit;
-    private long mLeader;
+  private long mFollower;
+  private long mTerm;
+  private long mCatchUp;
+  private long mCatchUpTerm;
+  private long mCommit;
+  private long mLeader;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 48;
-    }
+  @Override
+  public int length() {
+    return super.length() + 48;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mFollower = input.getLong();
-        mTerm = input.getLong();
-        mCatchUp = input.getLong();
-        mCatchUpTerm = input.getLong();
-        mCommit = input.getLong();
-        mLeader = input.getLong();
-        return remain - 48;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mFollower = input.getLong();
+    mTerm = input.getLong();
+    mCatchUp = input.getLong();
+    mCatchUpTerm = input.getLong();
+    mCommit = input.getLong();
+    mLeader = input.getLong();
+    return remain - 48;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mFollower)
-                    .putLong(mTerm)
-                    .putLong(mCatchUp)
-                    .putLong(mCatchUpTerm)
-                    .putLong(mCommit)
-                    .putLong(mLeader);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(mFollower)
+        .putLong(mTerm)
+        .putLong(mCatchUp)
+        .putLong(mCatchUpTerm)
+        .putLong(mCommit)
+        .putLong(mLeader);
+  }
 
-    @Override
-    public long term()
-    {
-        return mTerm;
-    }
+  @Override
+  public long term() {
+    return mTerm;
+  }
 
-    public void term(long term)
-    {
-        mTerm = term;
-    }
+  public void term(long term) {
+    mTerm = term;
+  }
 
-    @Override
-    public long index()
-    {
-        return mCatchUp;
-    }
+  @Override
+  public long index() {
+    return mCatchUp;
+  }
 
-    public void index(long catchUp)
-    {
-        mCatchUp = catchUp;
-    }
+  public void index(long catchUp) {
+    mCatchUp = catchUp;
+  }
 
-    @Override
-    public long indexTerm()
-    {
-        return mCatchUpTerm;
-    }
+  @Override
+  public long indexTerm() {
+    return mCatchUpTerm;
+  }
 
-    public void indexTerm(long catchUpTerm)
-    {
-        mCatchUpTerm = catchUpTerm;
-    }
+  public void indexTerm(long catchUpTerm) {
+    mCatchUpTerm = catchUpTerm;
+  }
 
-    public void commit(long commit)
-    {
-        mCommit = commit;
-    }
+  public void commit(long commit) {
+    mCommit = commit;
+  }
 
-    @Override
-    public long commit()
-    {
-        return mCommit;
-    }
+  @Override
+  public long commit() {
+    return mCommit;
+  }
 
-    public long peer()
-    {
-        return mFollower;
-    }
+  public long peer() {
+    return mFollower;
+  }
 
-    public void peer(long peer)
-    {
-        mFollower = peer;
-    }
+  public void peer(long peer) {
+    mFollower = peer;
+  }
 
-    public void leader(long leader)
-    {
-        mLeader = leader;
-    }
+  public void leader(long leader) {
+    mLeader = leader;
+  }
 
-    @Override
-    public long leader()
-    {
-        return mLeader;
-    }
+  @Override
+  public long leader() {
+    return mLeader;
+  }
 
-    public long candidate()
-    {
-        return mLeader;
-    }
+  public long candidate() {
+    return mLeader;
+  }
 
-    public long accept()
-    {
-        return mCatchUp;
-    }
+  public long accept() {
+    return mCatchUp;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X73_RaftAccept{ follower:%#x@%d, catch_up:%d@%d }",
-                             mFollower,
-                             mTerm,
-                             mCatchUp,
-                             mCatchUpTerm);
-    }
-
+  @Override
+  public String toString() {
+    return String.format(
+        "X73_RaftAccept{ follower:%#x@%d, catch_up:%d@%d }",
+        mFollower, mTerm, mCatchUp, mCatchUpTerm);
+  }
 }

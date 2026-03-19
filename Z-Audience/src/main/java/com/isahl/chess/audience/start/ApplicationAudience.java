@@ -29,16 +29,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * @author william.d.zk
  */
+@SpringBootApplication(
+    scanBasePackages = {"com.isahl.chess.audience", "com.isahl.chess.knight.raft"})
+public class ApplicationAudience {
 
-@SpringBootApplication(scanBasePackages = {
-        "com.isahl.chess.audience",
-        "com.isahl.chess.knight.raft"
-})
-public class ApplicationAudience
-{
-
-    public static void main(String[] args)
-    {
-        SpringApplication.run(ApplicationAudience.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(ApplicationAudience.class, args);
+  }
 }

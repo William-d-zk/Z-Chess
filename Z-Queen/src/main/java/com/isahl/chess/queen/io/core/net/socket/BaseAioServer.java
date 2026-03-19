@@ -30,7 +30,6 @@ import com.isahl.chess.queen.events.functions.AcceptFailed;
 import com.isahl.chess.queen.events.functions.SocketConnected;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import com.isahl.chess.queen.io.core.net.socket.features.server.IAioServer;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
@@ -41,103 +40,88 @@ import java.nio.channels.AsynchronousSocketChannel;
 /**
  * @author william.d.zk
  */
-public abstract class BaseAioServer
-        extends AioCreator
-        implements IAioServer
-{
-    private final    AcceptFailed      _AcceptFailed    = new AcceptFailed();
-    private final    SocketConnected   _SocketConnected = new SocketConnected();
-    private final    InetSocketAddress _LocalBind;
-    private volatile boolean           vValid;
+public abstract class BaseAioServer extends AioCreator implements IAioServer {
+  private final AcceptFailed _AcceptFailed = new AcceptFailed();
+  private final SocketConnected _SocketConnected = new SocketConnected();
+  private final InetSocketAddress _LocalBind;
+  private volatile boolean vValid;
 
-    protected BaseAioServer(String serverHost, int serverPort, ISocketConfig socketConfig)
-    {
-        super(socketConfig);
-        _LocalBind = new InetSocketAddress(serverHost, serverPort);
+  protected BaseAioServer(String serverHost, int serverPort, ISocketConfig socketConfig) {
+    super(socketConfig);
+    _LocalBind = new InetSocketAddress(serverHost, serverPort);
+  }
+
+  private AsynchronousServerSocketChannel mServerChannel;
+
+  @Override
+  public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup)
+      throws IOException {
+    mServerChannel = AsynchronousServerSocketChannel.open(channelGroup);
+    mServerChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+    mServerChannel.bind(address, 1 << 6);
+  }
+
+  @Override
+  public void pendingAccept() {
+    if (mServerChannel != null && mServerChannel.isOpen()) {
+      mServerChannel.accept(this, this);
+      vValid = true;
     }
+  }
 
-    private AsynchronousServerSocketChannel mServerChannel;
+  @Override
+  public InetSocketAddress getRemoteAddress() {
+    throw new UnsupportedOperationException(" server hasn't remote address");
+  }
 
-    @Override
-    public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException
-    {
-        mServerChannel = AsynchronousServerSocketChannel.open(channelGroup);
-        mServerChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        mServerChannel.bind(address, 1 << 6);
-    }
+  @Override
+  public InetSocketAddress getLocalAddress() {
+    return _LocalBind;
+  }
 
-    @Override
-    public void pendingAccept()
-    {
-        if(mServerChannel != null && mServerChannel.isOpen()) {
-            mServerChannel.accept(this, this);
-            vValid = true;
-        }
-    }
+  @Override
+  public IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator() {
+    return _AcceptFailed;
+  }
 
-    @Override
-    public InetSocketAddress getRemoteAddress()
-    {
-        throw new UnsupportedOperationException(" server hasn't remote address");
-    }
+  @Override
+  public IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
+      getConnectedOperator() {
+    return _SocketConnected;
+  }
 
-    @Override
-    public InetSocketAddress getLocalAddress()
-    {
-        return _LocalBind;
-    }
+  @Override
+  public boolean isShutdown() {
+    return false;
+  }
 
-    @Override
-    public IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator()
-    {
-        return _AcceptFailed;
-    }
+  @Override
+  public boolean isRunning() {
+    return true;
+  }
 
-    @Override
-    public IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator()
-    {
-        return _SocketConnected;
-    }
+  @Override
+  public boolean isValid() {
+    return vValid;
+  }
 
-    @Override
-    public boolean isShutdown()
-    {
-        return false;
-    }
+  @Override
+  public boolean isInvalid() {
+    return !vValid;
+  }
 
-    @Override
-    public boolean isRunning()
-    {
-        return true;
-    }
+  @Override
+  public void shutdown() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public boolean isValid()
-    {
-        return vValid;
-    }
+  @Override
+  public boolean retry() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public boolean isInvalid()
-    {
-        return !vValid;
-    }
-
-    @Override
-    public void shutdown()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean retry()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void error()
-    {
-        // ignore
-    }
+  @Override
+  public void error() {
+    // ignore
+  }
 }

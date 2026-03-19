@@ -23,6 +23,8 @@
 
 package com.isahl.chess.bishop.protocol.zchat.custom;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
+
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
@@ -31,41 +33,35 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
-
 /**
  * @author william.d.zk
  * @date 2020/5/7
  */
-abstract class ZBaseMappingCustom<E extends IMappingCustom>
-        implements IMappingCustom
-{
+abstract class ZBaseMappingCustom<E extends IMappingCustom> implements IMappingCustom {
 
-    private final   Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
-    protected final E      _Then;
+  private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+  protected final E _Then;
 
-    protected ZBaseMappingCustom(E then)
-    {
-        _Then = then;
-    }
+  protected ZBaseMappingCustom(E then) {
+    _Then = then;
+  }
 
-    @Override
-    public ITriple inject(IManager manager, ISession session, IProtocol content)
-    {
-        _Logger.debug("mapping receive %s", content);
-        return switch (content.serial()) {
-            case 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 ->
-                /*
-                 * 内嵌逻辑，在ZCommandFilter中已经处理结束
-                 * 此处仅执行转发逻辑
-                 */
-                    new Triple<>(content, null, WRITE);
-            default -> {
-                if (_Then == null) {
-                    yield null;
-                }
-                yield _Then.inject(manager, session, content);
-            }
-        };
-    }
+  @Override
+  public ITriple inject(IManager manager, ISession session, IProtocol content) {
+    _Logger.debug("mapping receive %s", content);
+    return switch (content.serial()) {
+      case 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 ->
+      /*
+       * 内嵌逻辑，在ZCommandFilter中已经处理结束
+       * 此处仅执行转发逻辑
+       */
+      new Triple<>(content, null, WRITE);
+      default -> {
+        if (_Then == null) {
+          yield null;
+        }
+        yield _Then.inject(manager, session, content);
+      }
+    };
+  }
 }

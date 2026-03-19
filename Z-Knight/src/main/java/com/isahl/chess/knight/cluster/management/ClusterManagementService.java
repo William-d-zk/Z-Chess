@@ -28,39 +28,26 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * 集群管理服务接口
- * 
+ *
  * @author william.d.zk
  */
-public interface ClusterManagementService
-{
-    
-    /**
-     * 添加集群节点
-     */
-    CompletableFuture<Boolean> addNode(ClusterNode node);
-    
-    /**
-     * 移除集群节点
-     */
-    CompletableFuture<Boolean> removeNode(String nodeId);
-    
-    /**
-     * 获取集群成员列表
-     */
-    List<ClusterNode> getMembers();
-    
-    /**
-     * 获取集群状态
-     */
-    ClusterStatus getStatus();
-    
-    /**
-     * 获取当前 Leader 节点
-     */
-    ClusterNode getLeader();
-    
-    /**
-     * 检查当前节点是否为 Leader
-     */
-    boolean isLocalNodeLeader();
+public interface ClusterManagementService {
+
+  /** 添加集群节点 */
+  CompletableFuture<Boolean> addNode(ClusterNode node);
+
+  /** 移除集群节点 */
+  CompletableFuture<Boolean> removeNode(String nodeId);
+
+  /** 获取集群成员列表 */
+  List<ClusterNode> getMembers();
+
+  /** 获取集群状态 */
+  ClusterStatus getStatus();
+
+  /** 获取当前 Leader 节点 */
+  ClusterNode getLeader();
+
+  /** 检查当前节点是否为 Leader */
+  boolean isLocalNodeLeader();
 }

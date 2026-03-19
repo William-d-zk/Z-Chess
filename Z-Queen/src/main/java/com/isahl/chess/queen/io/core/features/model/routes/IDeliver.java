@@ -27,7 +27,6 @@ package com.isahl.chess.queen.io.core.features.model.routes;
  * @author william.d.zk
  * @date 2022-01-17
  */
-public interface IDeliver
-{
-    long target();
+public interface IDeliver {
+  long target();
 }

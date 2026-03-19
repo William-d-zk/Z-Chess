@@ -29,12 +29,7 @@ import org.ehcache.event.CacheEventListener;
 /**
  * @author william.d.zk
  */
-public class CacheExpiry
-        implements CacheEventListener<Object, Object>
-{
-    @Override
-    public void onEvent(CacheEvent<?, ?> cacheEvent)
-    {
-
-    }
+public class CacheExpiry implements CacheEventListener<Object, Object> {
+  @Override
+  public void onEvent(CacheEvent<?, ?> cacheEvent) {}
 }

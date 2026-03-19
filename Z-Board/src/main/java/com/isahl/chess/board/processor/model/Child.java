@@ -23,5 +23,4 @@
 
 package com.isahl.chess.board.processor.model;
 
-public record Child(String name, int serial, int parent)
-{}
+public record Child(String name, int serial, int parent) {}

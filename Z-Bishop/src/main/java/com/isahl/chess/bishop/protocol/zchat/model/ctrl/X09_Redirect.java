@@ -26,84 +26,68 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x09)
-public class X09_Redirect
-        extends ZControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x09)
+public class X09_Redirect extends ZControl {
 
-    private int mPort;
+  private int mPort;
 
-    public X09_Redirect()
-    {
-        super();
-    }
+  public X09_Redirect() {
+    super();
+  }
 
-    public String getHost()
-    {
-        return new String(mPayload, StandardCharsets.UTF_8);
-    }
+  public String getHost() {
+    return new String(mPayload, StandardCharsets.UTF_8);
+  }
 
-    public int getPort()
-    {
-        return mPort;
-    }
+  public int getPort() {
+    return mPort;
+  }
 
-    public void setHost(String host)
-    {
-        mPayload = host.getBytes(StandardCharsets.UTF_8);
-    }
+  public void setHost(String host) {
+    mPayload = host.getBytes(StandardCharsets.UTF_8);
+  }
 
-    public void setPort(int port)
-    {
-        mPort = port;
-    }
+  public void setPort(int port) {
+    mPort = port;
+  }
 
-    @Override
-    public X09_Redirect duplicate()
-    {
-        X09_Redirect x09 = new X09_Redirect();
-        x09.setHost(getHost());
-        x09.setPort(getPort());
-        return x09;
-    }
+  @Override
+  public X09_Redirect duplicate() {
+    X09_Redirect x09 = new X09_Redirect();
+    x09.setHost(getHost());
+    x09.setPort(getPort());
+    return x09;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPort = input.getUnsignedShort();
-        return remain - 2;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPort = input.getUnsignedShort();
+    return remain - 2;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putShort(mPort);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putShort(mPort);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 2;
-    }
+  @Override
+  public int length() {
+    return super.length() + 2;
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
+  @Override
+  public boolean isMapping() {
+    return true;
+  }
 }

@@ -23,101 +23,100 @@
 
 package com.isahl.chess.audience.queen.io.udp;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.net.udp.BaseUdpClient;
 import com.isahl.chess.queen.io.core.net.udp.BaseUdpServer;
 import com.isahl.chess.queen.io.core.net.udp.UdpPacket;
+import java.net.InetSocketAddress;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class UdpCommunicationTest {
-    
-    private BaseUdpServer server;
-    private BaseUdpClient client;
-    
-    @BeforeEach
-    void setUp() throws Exception {
-        server = new BaseUdpServer("127.0.0.1", 19999);
-        server.startReceiveLoop();
-        
-        client = new BaseUdpClient("127.0.0.1", 19999);
-        client.startReceiveLoop();
-        
-        Thread.sleep(100);
+
+  private BaseUdpServer server;
+  private BaseUdpClient client;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    server = new BaseUdpServer("127.0.0.1", 19999);
+    server.startReceiveLoop();
+
+    client = new BaseUdpClient("127.0.0.1", 19999);
+    client.startReceiveLoop();
+
+    Thread.sleep(100);
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    if (client != null) {
+      client.close();
     }
-    
-    @AfterEach
-    void tearDown() throws Exception {
-        if (client != null) {
-            client.close();
-        }
-        if (server != null) {
-            server.close();
-        }
+    if (server != null) {
+      server.close();
     }
-    
-    @Test
-    void testUdpSendAndReceive() throws Exception {
-        byte[] testData = "Hello UDP".getBytes();
-        
-        int sent = client.send(testData);
-        assertEquals(testData.length, sent);
-        
-        Thread.sleep(100);
-        
-        UdpPacket received = server.receive();
-        assertNotNull(received);
-        assertEquals(testData.length, received.length());
-        
-        ByteBuf buffer = received.getBuffer();
-        byte[] receivedData = new byte[buffer.readableBytes()];
-        buffer.get(receivedData);
-        
-        assertArrayEquals(testData, receivedData);
+  }
+
+  @Test
+  void testUdpSendAndReceive() throws Exception {
+    byte[] testData = "Hello UDP".getBytes();
+
+    int sent = client.send(testData);
+    assertEquals(testData.length, sent);
+
+    Thread.sleep(100);
+
+    UdpPacket received = server.receive();
+    assertNotNull(received);
+    assertEquals(testData.length, received.length());
+
+    ByteBuf buffer = received.getBuffer();
+    byte[] receivedData = new byte[buffer.readableBytes()];
+    buffer.get(receivedData);
+
+    assertArrayEquals(testData, receivedData);
+  }
+
+  @Test
+  void testServerSendClientReceive() throws Exception {
+    byte[] testData = "Server to Client".getBytes();
+
+    Thread.sleep(50);
+
+    InetSocketAddress clientAddress = client.localAddress();
+    int sent = server.send(testData, clientAddress);
+
+    Thread.sleep(200);
+
+    UdpPacket received = client.receive();
+    if (received != null) {
+      ByteBuf buffer = received.getBuffer();
+      byte[] receivedData = new byte[buffer.readableBytes()];
+      buffer.get(receivedData);
+      assertArrayEquals(testData, receivedData);
     }
-    
-    @Test
-    void testServerSendClientReceive() throws Exception {
-        byte[] testData = "Server to Client".getBytes();
-        
-        Thread.sleep(50);
-        
-        InetSocketAddress clientAddress = client.localAddress();
-        int sent = server.send(testData, clientAddress);
-        
-        Thread.sleep(200);
-        
-        UdpPacket received = client.receive();
-        if (received != null) {
-            ByteBuf buffer = received.getBuffer();
-            byte[] receivedData = new byte[buffer.readableBytes()];
-            buffer.get(receivedData);
-            assertArrayEquals(testData, receivedData);
-        }
-    }
-    
-    @Test
-    void testUdpChannelValid() {
-        assertTrue(server.isValid());
-        assertTrue(client.isValid());
-    }
-    
-    @Test
-    void testUdpChannelClose() throws Exception {
-        client.close();
-        Thread.sleep(50);
-        assertFalse(client.isValid());
-    }
-    
-    @Test
-    void testLocalAddress() {
-        assertNotNull(server.localAddress());
-        assertNotNull(client.localAddress());
-        assertEquals(19999, server.localAddress().getPort());
-    }
+  }
+
+  @Test
+  void testUdpChannelValid() {
+    assertTrue(server.isValid());
+    assertTrue(client.isValid());
+  }
+
+  @Test
+  void testUdpChannelClose() throws Exception {
+    client.close();
+    Thread.sleep(50);
+    assertFalse(client.isValid());
+  }
+
+  @Test
+  void testLocalAddress() {
+    assertNotNull(server.localAddress());
+    assertNotNull(client.localAddress());
+    assertEquals(19999, server.localAddress().getPort());
+  }
 }

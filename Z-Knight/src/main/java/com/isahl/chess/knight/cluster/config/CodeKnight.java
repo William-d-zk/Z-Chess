@@ -24,40 +24,32 @@
 package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.king.base.features.ICode;
-
 import java.util.Objects;
 
-public enum CodeKnight
-        implements ICode
-{
-    CLUSTER_NO_IN_CONGRESS(KnightCode.CLUSTER_NO_IN_CONGRESS, " 一致性请求失败 input: [ %s ]"),
-    CLUSTER_ELECTING(KnightCode.CLUSTER_ELECTING, "集群正在选举,当前不可用");
+public enum CodeKnight implements ICode {
+  CLUSTER_NO_IN_CONGRESS(KnightCode.CLUSTER_NO_IN_CONGRESS, " 一致性请求失败 input: [ %s ]"),
+  CLUSTER_ELECTING(KnightCode.CLUSTER_ELECTING, "集群正在选举,当前不可用");
 
-    private final int    _Code;
-    private final String _Formatter;
+  private final int _Code;
+  private final String _Formatter;
 
-    @Override
-    public int getCode(Object... condition)
-    {
-        return _Code;
-    }
+  @Override
+  public int getCode(Object... condition) {
+    return _Code;
+  }
 
-    @Override
-    public String format(Object... args)
-    {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
-    }
+  @Override
+  public String format(Object... args) {
+    return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
+  }
 
-    @Override
-    public String formatter()
-    {
-        return _Formatter;
-    }
+  @Override
+  public String formatter() {
+    return _Formatter;
+  }
 
-    CodeKnight(int code, String formatter)
-    {
-        this._Code = code;
-        this._Formatter = formatter;
-    }
-
+  CodeKnight(int code, String formatter) {
+    this._Code = code;
+    this._Formatter = formatter;
+  }
 }

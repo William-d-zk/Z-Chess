@@ -30,26 +30,20 @@ import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x0C)
-public class X0C_Pong
-        extends ZControl
-{
-    @Override
-    public IQoS.Level level()
-    {
-        return IQoS.Level.ALMOST_ONCE;
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x0C)
+public class X0C_Pong extends ZControl {
+  @Override
+  public IQoS.Level level() {
+    return IQoS.Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format(" %s ", getClass().getSimpleName());
-    }
+  @Override
+  public String toString() {
+    return String.format(" %s ", getClass().getSimpleName());
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return false;
-    }
+  @Override
+  public boolean isMapping() {
+    return false;
+  }
 }

@@ -25,18 +25,15 @@ package com.isahl.chess.king.base.disruptor.features.functions;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface IUnaryOperator<T>
-{
-    T handle(T t);
+public interface IUnaryOperator<T> {
+  T handle(T t);
 
-    default IUnaryOperator<T> andThen(IUnaryOperator<T> after)
-    {
-        Objects.requireNonNull(after);
-        return (t)->after.handle(handle(t));
-    }
+  default IUnaryOperator<T> andThen(IUnaryOperator<T> after) {
+    Objects.requireNonNull(after);
+    return (t) -> after.handle(handle(t));
+  }
 
-    default String getName()
-    {
-        return "unary-operator.";
-    }
+  default String getName() {
+    return "unary-operator.";
+  }
 }

@@ -25,33 +25,27 @@ package com.isahl.chess.queen.io.core.tasks.features;
 
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.*;
-
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author william.d.zk
  * @date 2020/4/21
  */
-public interface IPipeCore
-{
+public interface IPipeCore {
 
-    default RingBuffer<QEvent> createPipeline(int size, WaitStrategy waitStrategy)
-    {
-        return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, size, waitStrategy);
-    }
+  default RingBuffer<QEvent> createPipeline(int size, WaitStrategy waitStrategy) {
+    return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, size, waitStrategy);
+  }
 
-    default RingBuffer<QEvent> createPipelineYield(int size)
-    {
-        return createPipeline(size, new YieldingWaitStrategy());
-    }
+  default RingBuffer<QEvent> createPipelineYield(int size) {
+    return createPipeline(size, new YieldingWaitStrategy());
+  }
 
-    default RingBuffer<QEvent> createPipelineLite(int size)
-    {
-        return createPipeline(size, new LiteBlockingWaitStrategy());
-    }
+  default RingBuffer<QEvent> createPipelineLite(int size) {
+    return createPipeline(size, new LiteBlockingWaitStrategy());
+  }
 
-    default RingBuffer<QEvent> createPipelineTimeoutLite(int size)
-    {
-        return createPipeline(size, new LiteTimeoutBlockingWaitStrategy(5, TimeUnit.SECONDS));
-    }
+  default RingBuffer<QEvent> createPipelineTimeoutLite(int size) {
+    return createPipeline(size, new LiteTimeoutBlockingWaitStrategy(5, TimeUnit.SECONDS));
+  }
 }

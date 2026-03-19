@@ -23,21 +23,20 @@
 
 package com.isahl.chess.bishop.protocol.zchat.model.command.raft;
 
-public interface IRaftRecord
-{
-    long index();
+public interface IRaftRecord {
+  long index();
 
-    long indexTerm();
+  long indexTerm();
 
-    long term();
+  long term();
 
-    long accept();
+  long accept();
 
-    long commit();
+  long commit();
 
-    long peer();
+  long peer();
 
-    long candidate();
+  long candidate();
 
-    long leader();
+  long leader();
 }

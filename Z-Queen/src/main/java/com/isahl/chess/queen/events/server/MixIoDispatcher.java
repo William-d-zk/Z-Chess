@@ -31,24 +31,21 @@ import com.lmax.disruptor.RingBuffer;
 /**
  * @author william.d.zk
  */
-public class MixIoDispatcher
-        extends IoDispatcher
-{
-    private final RingBuffer<QEvent> _Link;
+public class MixIoDispatcher extends IoDispatcher {
+  private final RingBuffer<QEvent> _Link;
 
-    @SafeVarargs
-    public MixIoDispatcher(RingBuffer<QEvent> link,
-                           RingBuffer<QEvent> cluster,
-                           RingBuffer<QEvent> wrote,
-                           RingBuffer<QEvent>... read)
-    {
-        super(cluster, wrote, read);
-        _Link = link;
-    }
+  @SafeVarargs
+  public MixIoDispatcher(
+      RingBuffer<QEvent> link,
+      RingBuffer<QEvent> cluster,
+      RingBuffer<QEvent> wrote,
+      RingBuffer<QEvent>... read) {
+    super(cluster, wrote, read);
+    _Link = link;
+  }
 
-    @Override
-    protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
-    {
-        return mode == ISort.Mode.LINK ? _Link : super.getNextPipe(mode);
-    }
+  @Override
+  protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode) {
+    return mode == ISort.Mode.LINK ? _Link : super.getNextPipe(mode);
+  }
 }

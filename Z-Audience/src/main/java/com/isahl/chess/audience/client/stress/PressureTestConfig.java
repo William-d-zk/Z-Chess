@@ -23,284 +23,216 @@
 
 package com.isahl.chess.audience.client.stress;
 
+import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.time.Duration;
-
-/**
- * 压力测试配置类
- * 支持配置并发客户端数、请求速率、测试时长等参数
- */
+/** 压力测试配置类 支持配置并发客户端数、请求速率、测试时长等参数 */
 @Configuration("pressure_test_config")
 @ConfigurationProperties(prefix = "z.chess.pressure")
 @PropertySource("classpath:pressure-test.properties")
-public class PressureTestConfig
-{
-    /**
-     * 目标服务器配置
-     */
-    private Target target = new Target();
+public class PressureTestConfig {
+  /** 目标服务器配置 */
+  private Target target = new Target();
 
-    /**
-     * 并发连接数，默认 1000，最大支持 5000
-     */
-    private int concurrency = 1000;
+  /** 并发连接数，默认 1000，最大支持 5000 */
+  private int concurrency = 1000;
 
-    /**
-     * 每个连接每秒请求数，默认 10
-     */
-    private int requestsPerSecondPerClient = 10;
+  /** 每个连接每秒请求数，默认 10 */
+  private int requestsPerSecondPerClient = 10;
 
-    /**
-     * 测试持续时间，默认 60 秒
-     */
-    private Duration duration = Duration.ofSeconds(60);
+  /** 测试持续时间，默认 60 秒 */
+  private Duration duration = Duration.ofSeconds(60);
 
-    /**
-     * 连接建立超时时间，默认 10 秒
-     */
-    private Duration connectTimeout = Duration.ofSeconds(10);
+  /** 连接建立超时时间，默认 10 秒 */
+  private Duration connectTimeout = Duration.ofSeconds(10);
 
-    /**
-     * 请求超时时间，默认 5 秒
-     */
-    private Duration requestTimeout = Duration.ofSeconds(5);
+  /** 请求超时时间，默认 5 秒 */
+  private Duration requestTimeout = Duration.ofSeconds(5);
 
-    /**
-     * 连接建立速率（每秒新建连接数），默认 100
-     */
-    private int connectionRate = 100;
+  /** 连接建立速率（每秒新建连接数），默认 100 */
+  private int connectionRate = 100;
 
-    /**
-     * 是否使用心跳保持连接，默认 true
-     */
-    private boolean keepAlive = true;
+  /** 是否使用心跳保持连接，默认 true */
+  private boolean keepAlive = true;
 
-    /**
-     * 心跳间隔（秒），默认 30
-     */
-    private int heartbeatInterval = 30;
+  /** 心跳间隔（秒），默认 30 */
+  private int heartbeatInterval = 30;
 
-    /**
-     * 协议类型：mqtt, websocket, zchat
-     */
-    private String protocol = "mqtt";
+  /** 协议类型：mqtt, websocket, zchat */
+  private String protocol = "mqtt";
 
-    /**
-     * 消息 payload 大小（字节），默认 256
-     */
-    private int payloadSize = 256;
+  /** 消息 payload 大小（字节），默认 256 */
+  private int payloadSize = 256;
 
-    /**
-     * 是否打印详细日志，默认 false
-     */
-    private boolean verbose = false;
+  /** 是否打印详细日志，默认 false */
+  private boolean verbose = false;
 
-    /**
-     * 统计采样间隔（秒），默认 5
-     */
-    private int statsInterval = 5;
+  /** 统计采样间隔（秒），默认 5 */
+  private int statsInterval = 5;
 
-    /**
-     * 预热时间（秒），默认 5
-     */
-    private int warmUpSeconds = 5;
+  /** 预热时间（秒），默认 5 */
+  private int warmUpSeconds = 5;
 
-    public static class Target
-    {
-        private String host = "127.0.0.1";
-        private int port = 1883;
-        private String path = "/"; // WebSocket 路径
+  public static class Target {
+    private String host = "127.0.0.1";
+    private int port = 1883;
+    private String path = "/"; // WebSocket 路径
 
-        public String getHost()
-        {
-            return host;
-        }
-
-        public void setHost(String host)
-        {
-            this.host = host;
-        }
-
-        public int getPort()
-        {
-            return port;
-        }
-
-        public void setPort(int port)
-        {
-            this.port = port;
-        }
-
-        public String getPath()
-        {
-            return path;
-        }
-
-        public void setPath(String path)
-        {
-            this.path = path;
-        }
+    public String getHost() {
+      return host;
     }
 
-    // ==================== Getters & Setters ====================
-
-    public Target getTarget()
-    {
-        return target;
+    public void setHost(String host) {
+      this.host = host;
     }
 
-    public void setTarget(Target target)
-    {
-        this.target = target;
+    public int getPort() {
+      return port;
     }
 
-    public int getConcurrency()
-    {
-        return Math.min(concurrency, 5000);
+    public void setPort(int port) {
+      this.port = port;
     }
 
-    public void setConcurrency(int concurrency)
-    {
-        this.concurrency = Math.min(concurrency, 5000);
+    public String getPath() {
+      return path;
     }
 
-    public int getRequestsPerSecondPerClient()
-    {
-        return requestsPerSecondPerClient;
+    public void setPath(String path) {
+      this.path = path;
     }
+  }
 
-    public void setRequestsPerSecondPerClient(int requestsPerSecondPerClient)
-    {
-        this.requestsPerSecondPerClient = requestsPerSecondPerClient;
-    }
+  // ==================== Getters & Setters ====================
 
-    public Duration getDuration()
-    {
-        return duration;
-    }
+  public Target getTarget() {
+    return target;
+  }
 
-    public void setDuration(Duration duration)
-    {
-        this.duration = duration;
-    }
+  public void setTarget(Target target) {
+    this.target = target;
+  }
 
-    public Duration getConnectTimeout()
-    {
-        return connectTimeout;
-    }
+  public int getConcurrency() {
+    return Math.min(concurrency, 5000);
+  }
 
-    public void setConnectTimeout(Duration connectTimeout)
-    {
-        this.connectTimeout = connectTimeout;
-    }
+  public void setConcurrency(int concurrency) {
+    this.concurrency = Math.min(concurrency, 5000);
+  }
 
-    public Duration getRequestTimeout()
-    {
-        return requestTimeout;
-    }
+  public int getRequestsPerSecondPerClient() {
+    return requestsPerSecondPerClient;
+  }
 
-    public void setRequestTimeout(Duration requestTimeout)
-    {
-        this.requestTimeout = requestTimeout;
-    }
+  public void setRequestsPerSecondPerClient(int requestsPerSecondPerClient) {
+    this.requestsPerSecondPerClient = requestsPerSecondPerClient;
+  }
 
-    public int getConnectionRate()
-    {
-        return connectionRate;
-    }
+  public Duration getDuration() {
+    return duration;
+  }
 
-    public void setConnectionRate(int connectionRate)
-    {
-        this.connectionRate = connectionRate;
-    }
+  public void setDuration(Duration duration) {
+    this.duration = duration;
+  }
 
-    public boolean isKeepAlive()
-    {
-        return keepAlive;
-    }
+  public Duration getConnectTimeout() {
+    return connectTimeout;
+  }
 
-    public void setKeepAlive(boolean keepAlive)
-    {
-        this.keepAlive = keepAlive;
-    }
+  public void setConnectTimeout(Duration connectTimeout) {
+    this.connectTimeout = connectTimeout;
+  }
 
-    public int getHeartbeatInterval()
-    {
-        return heartbeatInterval;
-    }
+  public Duration getRequestTimeout() {
+    return requestTimeout;
+  }
 
-    public void setHeartbeatInterval(int heartbeatInterval)
-    {
-        this.heartbeatInterval = heartbeatInterval;
-    }
+  public void setRequestTimeout(Duration requestTimeout) {
+    this.requestTimeout = requestTimeout;
+  }
 
-    public String getProtocol()
-    {
-        return protocol;
-    }
+  public int getConnectionRate() {
+    return connectionRate;
+  }
 
-    public void setProtocol(String protocol)
-    {
-        this.protocol = protocol;
-    }
+  public void setConnectionRate(int connectionRate) {
+    this.connectionRate = connectionRate;
+  }
 
-    public int getPayloadSize()
-    {
-        return payloadSize;
-    }
+  public boolean isKeepAlive() {
+    return keepAlive;
+  }
 
-    public void setPayloadSize(int payloadSize)
-    {
-        this.payloadSize = payloadSize;
-    }
+  public void setKeepAlive(boolean keepAlive) {
+    this.keepAlive = keepAlive;
+  }
 
-    public boolean isVerbose()
-    {
-        return verbose;
-    }
+  public int getHeartbeatInterval() {
+    return heartbeatInterval;
+  }
 
-    public void setVerbose(boolean verbose)
-    {
-        this.verbose = verbose;
-    }
+  public void setHeartbeatInterval(int heartbeatInterval) {
+    this.heartbeatInterval = heartbeatInterval;
+  }
 
-    public int getStatsInterval()
-    {
-        return statsInterval;
-    }
+  public String getProtocol() {
+    return protocol;
+  }
 
-    public void setStatsInterval(int statsInterval)
-    {
-        this.statsInterval = statsInterval;
-    }
+  public void setProtocol(String protocol) {
+    this.protocol = protocol;
+  }
 
-    public int getWarmUpSeconds()
-    {
-        return warmUpSeconds;
-    }
+  public int getPayloadSize() {
+    return payloadSize;
+  }
 
-    public void setWarmUpSeconds(int warmUpSeconds)
-    {
-        this.warmUpSeconds = warmUpSeconds;
-    }
+  public void setPayloadSize(int payloadSize) {
+    this.payloadSize = payloadSize;
+  }
 
-    /**
-     * 获取总目标 QPS
-     */
-    public int getTargetTotalQps()
-    {
-        return concurrency * requestsPerSecondPerClient;
-    }
+  public boolean isVerbose() {
+    return verbose;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format(
-            "PressureTestConfig{target=%s:%d, concurrency=%d, qps=%d, duration=%ds, protocol=%s}",
-            target.getHost(), target.getPort(), concurrency, getTargetTotalQps(), 
-            duration.getSeconds(), protocol);
-    }
+  public void setVerbose(boolean verbose) {
+    this.verbose = verbose;
+  }
+
+  public int getStatsInterval() {
+    return statsInterval;
+  }
+
+  public void setStatsInterval(int statsInterval) {
+    this.statsInterval = statsInterval;
+  }
+
+  public int getWarmUpSeconds() {
+    return warmUpSeconds;
+  }
+
+  public void setWarmUpSeconds(int warmUpSeconds) {
+    this.warmUpSeconds = warmUpSeconds;
+  }
+
+  /** 获取总目标 QPS */
+  public int getTargetTotalQps() {
+    return concurrency * requestsPerSecondPerClient;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "PressureTestConfig{target=%s:%d, concurrency=%d, qps=%d, duration=%ds, protocol=%s}",
+        target.getHost(),
+        target.getPort(),
+        concurrency,
+        getTargetTotalQps(),
+        duration.getSeconds(),
+        protocol);
+  }
 }

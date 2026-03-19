@@ -27,18 +27,13 @@ import com.isahl.chess.queen.io.core.features.model.session.ICreated;
 import com.isahl.chess.queen.io.core.features.model.session.IDismiss;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
-
 import java.io.IOException;
 
 /**
  * @author William.d.zk
  */
-public interface IAioClient
-        extends IFailed<IAioConnector>,
-                ICreated,
-                IDismiss
-{
-    void connect(IAioConnector connector) throws IOException;
+public interface IAioClient extends IFailed<IAioConnector>, ICreated, IDismiss {
+  void connect(IAioConnector connector) throws IOException;
 
-    void shutdown(ISession session);
+  void shutdown(ISession session);
 }

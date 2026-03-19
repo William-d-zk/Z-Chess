@@ -26,11 +26,8 @@ package com.isahl.chess.king.base.exception;
 /**
  * @author William.d.zk
  */
-public class MissingParameterException
-        extends ZException
-{
-    public MissingParameterException(String function, String paramName)
-    {
-        super("function %s missing param %s", function, paramName);
-    }
+public class MissingParameterException extends ZException {
+  public MissingParameterException(String function, String paramName) {
+    super("function %s missing param %s", function, paramName);
+  }
 }

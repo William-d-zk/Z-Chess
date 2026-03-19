@@ -28,61 +28,50 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.square")
-public class EdgeConfig
-{
-    private String nodeId;
-    private String schedulerUrl = "http://localhost:8080";
-    private long heartbeatInterval = 30000;
-    private int cpuCores;
-    private long totalMemory;
+public class EdgeConfig {
+  private String nodeId;
+  private String schedulerUrl = "http://localhost:8080";
+  private long heartbeatInterval = 30000;
+  private int cpuCores;
+  private long totalMemory;
 
-    public void setNodeId(String nodeId)
-    {
-        this.nodeId = nodeId;
-    }
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
 
-    public String getNodeId()
-    {
-        return nodeId;
-    }
+  public String getNodeId() {
+    return nodeId;
+  }
 
-    public String getSchedulerUrl()
-    {
-        return schedulerUrl;
-    }
+  public String getSchedulerUrl() {
+    return schedulerUrl;
+  }
 
-    public void setSchedulerUrl(String schedulerUrl)
-    {
-        this.schedulerUrl = schedulerUrl;
-    }
+  public void setSchedulerUrl(String schedulerUrl) {
+    this.schedulerUrl = schedulerUrl;
+  }
 
-    public long getHeartbeatInterval()
-    {
-        return heartbeatInterval;
-    }
+  public long getHeartbeatInterval() {
+    return heartbeatInterval;
+  }
 
-    public void setHeartbeatInterval(long heartbeatInterval)
-    {
-        this.heartbeatInterval = heartbeatInterval;
-    }
+  public void setHeartbeatInterval(long heartbeatInterval) {
+    this.heartbeatInterval = heartbeatInterval;
+  }
 
-    public int getCpuCores()
-    {
-        return cpuCores > 0 ? cpuCores : Runtime.getRuntime().availableProcessors();
-    }
+  public int getCpuCores() {
+    return cpuCores > 0 ? cpuCores : Runtime.getRuntime().availableProcessors();
+  }
 
-    public void setCpuCores(int cpuCores)
-    {
-        this.cpuCores = cpuCores;
-    }
+  public void setCpuCores(int cpuCores) {
+    this.cpuCores = cpuCores;
+  }
 
-    public long getTotalMemory()
-    {
-        return totalMemory > 0 ? totalMemory : Runtime.getRuntime().maxMemory();
-    }
+  public long getTotalMemory() {
+    return totalMemory > 0 ? totalMemory : Runtime.getRuntime().maxMemory();
+  }
 
-    public void setTotalMemory(long totalMemory)
-    {
-        this.totalMemory = totalMemory;
-    }
+  public void setTotalMemory(long totalMemory) {
+    this.totalMemory = totalMemory;
+  }
 }

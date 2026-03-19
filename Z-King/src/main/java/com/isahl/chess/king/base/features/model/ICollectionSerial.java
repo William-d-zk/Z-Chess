@@ -25,98 +25,82 @@ package com.isahl.chess.king.base.features.model;
 
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-
 import java.util.Collection;
 
-public interface ICollectionSerial<T extends IoSerial>
-        extends IoSerial,
-                Collection<T>
-{
-    int SERIAL_POS = 0;
-    int LENGTH_POS = 2;
-    int SIZE_POS   = 6;
+public interface ICollectionSerial<T extends IoSerial> extends IoSerial, Collection<T> {
+  int SERIAL_POS = 0;
+  int LENGTH_POS = 2;
+  int SIZE_POS = 6;
 
-    IoFactory<T> factory();
+  IoFactory<T> factory();
 
-    default void fold(ByteBuf input, int remain)
-    {
-        if(remain > 0) {
-            throw new ZException("collection serial fold error [remain %d]", remain);
-        }
+  default void fold(ByteBuf input, int remain) {
+    if (remain > 0) {
+      throw new ZException("collection serial fold error [remain %d]", remain);
     }
+  }
 
-    @Override
-    default int prefix(ByteBuf input)
-    {
-        int serial = input.getUnsignedShort();
-        int length = input.getInt();
-        int size = input.getInt();
-        for(int i = 0; i < size; i++) {
-            T content = factory().create(input);
-            add(content);
-            length -= content.sizeOf();
-        }
-        return length - 4;
+  @Override
+  default int prefix(ByteBuf input) {
+    int serial = input.getUnsignedShort();
+    int length = input.getInt();
+    int size = input.getInt();
+    for (int i = 0; i < size; i++) {
+      T content = factory().create(input);
+      add(content);
+      length -= content.sizeOf();
     }
+    return length - 4;
+  }
 
-    @Override
-    default ByteBuf suffix(ByteBuf output)
-    {
-        output = output.putShort(serial())
-                       .putInt(length())
-                       .putInt(size());
-        for(IoSerial t : this) {
-            output.put(t.encode());
-        }
-        return output;
+  @Override
+  default ByteBuf suffix(ByteBuf output) {
+    output = output.putShort(serial()).putInt(length()).putInt(size());
+    for (IoSerial t : this) {
+      output.put(t.encode());
     }
+    return output;
+  }
 
-    @Override
-    default int length()
-    {
-        int length = 0;
-        for(IoSerial t : this) {
-            length += t.sizeOf();
-        }
-        return length;
+  @Override
+  default int length() {
+    int length = 0;
+    for (IoSerial t : this) {
+      length += t.sizeOf();
     }
+    return length;
+  }
 
-    @Override
-    default int sizeOf()
-    {
-        return 2 + // serial
-               4 + // length
-               4 + // size
-               length();
-    }
+  @Override
+  default int sizeOf() {
+    return 2 + // serial
+        4 + // length
+        4 + // size
+        length();
+  }
 
-    @Override
-    default IoSerial subContent()
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default IoSerial subContent() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default ICollectionSerial<T> withSub(IoSerial sub)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default ICollectionSerial<T> withSub(IoSerial sub) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default byte[] payload()
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default byte[] payload() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default IoSerial withSub(byte[] payload)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default IoSerial withSub(byte[] payload) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default <E extends IoSerial> E deserializeSub(IoFactory<E> factory)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default <E extends IoSerial> E deserializeSub(IoFactory<E> factory) {
+    throw new UnsupportedOperationException();
+  }
 }

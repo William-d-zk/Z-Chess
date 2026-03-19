@@ -23,53 +23,43 @@
 
 package com.isahl.chess.arena.gateway.service;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
-
+import java.time.Duration;
+import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import javax.cache.CacheManager;
-import java.time.Duration;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 @Service
-public class RookCacheService
-{
-    private final Logger _Logger = Logger.getLogger("arena." + getClass().getSimpleName());
+public class RookCacheService {
+  private final Logger _Logger = Logger.getLogger("arena." + getClass().getSimpleName());
 
-    @Cacheable(value = "areaOfCircleCache",
-               key = "#p0",
-               condition = "#p0 > 5")
-    public double areaOfCircle(int radius)
-    {
-        _Logger.info("calculate the area of a circle with a radius of {}", radius);
-        return Math.PI * Math.pow(radius, 2);
-    }
+  @Cacheable(value = "areaOfCircleCache", key = "#p0", condition = "#p0 > 5")
+  public double areaOfCircle(int radius) {
+    _Logger.info("calculate the area of a circle with a radius of {}", radius);
+    return Math.PI * Math.pow(radius, 2);
+  }
 
-    @Cacheable(value = "cache0",
-               key = "#p0",
-               condition = "#p0 > 5")
-    public double cache0(int radius)
-    {
-        _Logger.info("calculate the area of a circle with a radius of {}", radius);
-        return Math.PI * Math.pow(radius, 2);
-    }
+  @Cacheable(value = "cache0", key = "#p0", condition = "#p0 > 5")
+  public double cache0(int radius) {
+    _Logger.info("calculate the area of a circle with a radius of {}", radius);
+    return Math.PI * Math.pow(radius, 2);
+  }
 
-    final CacheManager _CacheManager;
+  final CacheManager _CacheManager;
 
-    @Autowired
-    public RookCacheService(CacheManager cacheManager)
-    {
-        _CacheManager = cacheManager;
-    }
+  @Autowired
+  public RookCacheService(CacheManager cacheManager) {
+    _CacheManager = cacheManager;
+  }
 
-    @PostConstruct
-    void post() throws ClassNotFoundException, InstantiationException, IllegalAccessException
-    {
-        EhcacheConfig.createCache(_CacheManager, "cache0", Integer.class, Double.class, Duration.of(20, MINUTES));
-    }
+  @PostConstruct
+  void post() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    EhcacheConfig.createCache(
+        _CacheManager, "cache0", Integer.class, Double.class, Duration.of(20, MINUTES));
+  }
 }

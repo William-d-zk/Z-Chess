@@ -24,42 +24,35 @@
 package com.isahl.chess.bishop.protocol;
 
 import com.isahl.chess.king.base.features.ICode;
-
 import java.util.Objects;
 
 /**
  * @author william.d.zk
  */
-public enum CodeBishop
-        implements ICode
-{
-    WS_HANDSHAKE(101, "web-socket plain text handshake"),
-    MQTT_COMMENT(111, "mqtt connect: %s");
+public enum CodeBishop implements ICode {
+  WS_HANDSHAKE(101, "web-socket plain text handshake"),
+  MQTT_COMMENT(111, "mqtt connect: %s");
 
-    private final int    _Code;
-    private final String _Formatter;
+  private final int _Code;
+  private final String _Formatter;
 
-    CodeBishop(int code, String formatter)
-    {
-        _Code = code;
-        _Formatter = formatter;
-    }
+  CodeBishop(int code, String formatter) {
+    _Code = code;
+    _Formatter = formatter;
+  }
 
-    @Override
-    public int getCode(Object... condition)
-    {
-        return _Code;
-    }
+  @Override
+  public int getCode(Object... condition) {
+    return _Code;
+  }
 
-    @Override
-    public String format(Object... args)
-    {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
-    }
+  @Override
+  public String format(Object... args) {
+    return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
+  }
 
-    @Override
-    public String formatter()
-    {
-        return _Formatter;
-    }
+  @Override
+  public String formatter() {
+    return _Formatter;
+  }
 }

@@ -33,117 +33,99 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.mqtt.session")
-public class MqttSessionConfig
-{
-    /**
-     * 默认会话过期时间（秒）
-     * <p>0 表示会话随连接断开而结束</p>
-     */
-    private long defaultSessionExpiryInterval = 0;
+public class MqttSessionConfig {
+  /**
+   * 默认会话过期时间（秒）
+   *
+   * <p>0 表示会话随连接断开而结束
+   */
+  private long defaultSessionExpiryInterval = 0;
 
-    /**
-     * 最大会话过期时间（秒）
-     */
-    private long maxSessionExpiryInterval = 604800; // 7 天
+  /** 最大会话过期时间（秒） */
+  private long maxSessionExpiryInterval = 604800; // 7 天
 
-    /**
-     * 最大遗嘱延迟时间（秒）
-     */
-    private long maxWillDelayInterval = 86400; // 1 天
+  /** 最大遗嘱延迟时间（秒） */
+  private long maxWillDelayInterval = 86400; // 1 天
 
-    /**
-     * 默认遗嘱延迟时间（秒）
-     */
-    private long defaultWillDelayInterval = 0;
+  /** 默认遗嘱延迟时间（秒） */
+  private long defaultWillDelayInterval = 0;
 
-    /**
-     * 服务端接收最大值（Receive Maximum）
-     * <p>限制同时处理的 QoS 1/2 消息数量</p>
-     */
-    private int serverReceiveMaximum = 65535;
+  /**
+   * 服务端接收最大值（Receive Maximum）
+   *
+   * <p>限制同时处理的 QoS 1/2 消息数量
+   */
+  private int serverReceiveMaximum = 65535;
 
-    /**
-     * 要求客户端的接收最大值
-     * <p>0 表示不限制客户端</p>
-     */
-    private int clientReceiveMaximum = 0;
+  /**
+   * 要求客户端的接收最大值
+   *
+   * <p>0 表示不限制客户端
+   */
+  private int clientReceiveMaximum = 0;
 
-    public long getDefaultSessionExpiryInterval()
-    {
-        return defaultSessionExpiryInterval;
+  public long getDefaultSessionExpiryInterval() {
+    return defaultSessionExpiryInterval;
+  }
+
+  public void setDefaultSessionExpiryInterval(long defaultSessionExpiryInterval) {
+    this.defaultSessionExpiryInterval = defaultSessionExpiryInterval;
+  }
+
+  public long getMaxSessionExpiryInterval() {
+    return maxSessionExpiryInterval;
+  }
+
+  public void setMaxSessionExpiryInterval(long maxSessionExpiryInterval) {
+    this.maxSessionExpiryInterval = maxSessionExpiryInterval;
+  }
+
+  public long getMaxWillDelayInterval() {
+    return maxWillDelayInterval;
+  }
+
+  public void setMaxWillDelayInterval(long maxWillDelayInterval) {
+    this.maxWillDelayInterval = maxWillDelayInterval;
+  }
+
+  public long getDefaultWillDelayInterval() {
+    return defaultWillDelayInterval;
+  }
+
+  public void setDefaultWillDelayInterval(long defaultWillDelayInterval) {
+    this.defaultWillDelayInterval = defaultWillDelayInterval;
+  }
+
+  public int getServerReceiveMaximum() {
+    return serverReceiveMaximum;
+  }
+
+  public void setServerReceiveMaximum(int serverReceiveMaximum) {
+    this.serverReceiveMaximum = serverReceiveMaximum;
+  }
+
+  public int getClientReceiveMaximum() {
+    return clientReceiveMaximum;
+  }
+
+  public void setClientReceiveMaximum(int clientReceiveMaximum) {
+    this.clientReceiveMaximum = clientReceiveMaximum;
+  }
+
+  public long getEffectiveSessionExpiryInterval(long clientInterval) {
+    if (clientInterval == 0) {
+      return defaultSessionExpiryInterval;
     }
-
-    public void setDefaultSessionExpiryInterval(long defaultSessionExpiryInterval)
-    {
-        this.defaultSessionExpiryInterval = defaultSessionExpiryInterval;
+    if (clientInterval > maxSessionExpiryInterval) {
+      return maxSessionExpiryInterval;
     }
+    return clientInterval;
+  }
 
-    public long getMaxSessionExpiryInterval()
-    {
-        return maxSessionExpiryInterval;
+  public int getEffectiveReceiveMaximum(int clientReceiveMax) {
+    if (clientReceiveMax == 0) {
+      return serverReceiveMaximum;
     }
-
-    public void setMaxSessionExpiryInterval(long maxSessionExpiryInterval)
-    {
-        this.maxSessionExpiryInterval = maxSessionExpiryInterval;
-    }
-
-    public long getMaxWillDelayInterval()
-    {
-        return maxWillDelayInterval;
-    }
-
-    public void setMaxWillDelayInterval(long maxWillDelayInterval)
-    {
-        this.maxWillDelayInterval = maxWillDelayInterval;
-    }
-
-    public long getDefaultWillDelayInterval()
-    {
-        return defaultWillDelayInterval;
-    }
-
-    public void setDefaultWillDelayInterval(long defaultWillDelayInterval)
-    {
-        this.defaultWillDelayInterval = defaultWillDelayInterval;
-    }
-
-    public int getServerReceiveMaximum()
-    {
-        return serverReceiveMaximum;
-    }
-
-    public void setServerReceiveMaximum(int serverReceiveMaximum)
-    {
-        this.serverReceiveMaximum = serverReceiveMaximum;
-    }
-
-    public int getClientReceiveMaximum()
-    {
-        return clientReceiveMaximum;
-    }
-
-    public void setClientReceiveMaximum(int clientReceiveMaximum)
-    {
-        this.clientReceiveMaximum = clientReceiveMaximum;
-    }
-
-    public long getEffectiveSessionExpiryInterval(long clientInterval)
-    {
-        if(clientInterval == 0) {
-            return defaultSessionExpiryInterval;
-        }
-        if(clientInterval > maxSessionExpiryInterval) {
-            return maxSessionExpiryInterval;
-        }
-        return clientInterval;
-    }
-
-    public int getEffectiveReceiveMaximum(int clientReceiveMax)
-    {
-        if(clientReceiveMax == 0) {
-            return serverReceiveMaximum;
-        }
-        return Math.min(clientReceiveMax, serverReceiveMaximum);
-    }
+    return Math.min(clientReceiveMax, serverReceiveMaximum);
+  }
 }

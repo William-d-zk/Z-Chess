@@ -29,58 +29,50 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 /**
  * @author William.d.zk
  */
+public interface IPacket extends IProtocol {
 
-public interface IPacket
-        extends IProtocol
+  boolean isSending();
 
-{
-    boolean isSending();
+  boolean isSent();
 
-    boolean isSent();
+  IPacket send();
 
-    IPacket send();
+  IPacket waitSend();
 
-    IPacket waitSend();
+  IPacket noSend();
 
-    IPacket noSend();
+  IPacket sent();
 
-    IPacket sent();
+  Status getStatus();
 
-    Status getStatus();
+  void setAbandon();
 
-    void setAbandon();
+  ByteBuf getBuffer();
 
-    ByteBuf getBuffer();
+  enum Status {
+    No_Send,
+    To_Send,
+    Sending,
+    Sent,
+    Abandon;
+  }
 
-    enum Status
-    {
-        No_Send,
-        To_Send,
-        Sending,
-        Sent,
-        Abandon;
-    }
+  @Override
+  default IoSerial subContent() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default IoSerial subContent()
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default IProtocol withSub(IoSerial sub) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    default IProtocol withSub(IoSerial sub)
-    {
-        throw new UnsupportedOperationException();
-    }
+  default IProtocol withSub(byte[] sub) {
+    throw new UnsupportedOperationException();
+  }
 
-    default IProtocol withSub(byte[] sub)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    default <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  default <T extends IoSerial> T deserializeSub(IoFactory<T> factory) {
+    throw new UnsupportedOperationException();
+  }
 }

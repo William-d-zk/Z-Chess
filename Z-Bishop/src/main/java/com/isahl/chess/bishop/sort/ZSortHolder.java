@@ -23,6 +23,8 @@
 
 package com.isahl.chess.bishop.sort;
 
+import static com.isahl.chess.king.env.ZUID.*;
+
 import com.isahl.chess.bishop.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.sort.ssl.SslZSort;
 import com.isahl.chess.bishop.sort.ws.WsTextZSort;
@@ -34,97 +36,96 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
-import static com.isahl.chess.king.env.ZUID.*;
-
 /**
  * @author william.d.zk
  * @date 2019-06-30
  */
-public enum ZSortHolder
-{
-    WS_PLAIN_TEXT_CONSUMER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
-    WS_PLAIN_TEXT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                              ISort.Type.CLIENT,
-                                              new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
-    WS_PLAIN_TEXT_SERVER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    WS_PLAIN_TEXT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                            ISort.Type.SERVER,
-                                            new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
-    QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
-    QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                    ISort.Type.CLIENT,
-                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
-    QTT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                  ISort.Type.SERVER,
-                                  new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    QTT_SYMMETRY_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                    ISort.Type.SYMMETRY,
-                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY))),
-    WS_QTT_CONSUMER(new WsProxyZSort<>(ISort.Mode.LINK,
-                                       ISort.Type.CLIENT,
-                                       new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
-    WS_QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                       ISort.Type.CLIENT,
-                                       new WsProxyZSort<>(ISort.Mode.LINK,
-                                                          ISort.Type.CLIENT,
-                                                          new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)))),
-    WS_QTT_SERVER(new WsProxyZSort<>(ISort.Mode.LINK,
-                                     ISort.Type.SERVER,
-                                     new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    WS_QTT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                     ISort.Type.SERVER,
-                                     new WsProxyZSort<>(ISort.Mode.LINK,
-                                                        ISort.Type.SERVER,
-                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
-    Z_CLUSTER_SYMMETRY(new ZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
-    Z_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY));
+public enum ZSortHolder {
+  WS_PLAIN_TEXT_CONSUMER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
+  WS_PLAIN_TEXT_CONSUMER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK, ISort.Type.CLIENT, new WsTextZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
+  WS_PLAIN_TEXT_SERVER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+  WS_PLAIN_TEXT_SERVER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK, ISort.Type.SERVER, new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+  QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
+  QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+  QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
+  QTT_CONSUMER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK, ISort.Type.CLIENT, new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
+  QTT_SERVER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK, ISort.Type.SERVER, new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+  QTT_SYMMETRY_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK,
+          ISort.Type.SYMMETRY,
+          new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY))),
+  WS_QTT_CONSUMER(
+      new WsProxyZSort<>(
+          ISort.Mode.LINK, ISort.Type.CLIENT, new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
+  WS_QTT_CONSUMER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK,
+          ISort.Type.CLIENT,
+          new WsProxyZSort<>(
+              ISort.Mode.LINK,
+              ISort.Type.CLIENT,
+              new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)))),
+  WS_QTT_SERVER(
+      new WsProxyZSort<>(
+          ISort.Mode.LINK, ISort.Type.SERVER, new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+  WS_QTT_SERVER_SSL(
+      new SslZSort<>(
+          ISort.Mode.LINK,
+          ISort.Type.SERVER,
+          new WsProxyZSort<>(
+              ISort.Mode.LINK,
+              ISort.Type.SERVER,
+              new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
+  Z_CLUSTER_SYMMETRY(new ZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
+  Z_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY));
 
-    private final IAioSort<?> _Sort;
+  private final IAioSort<?> _Sort;
 
-    <C extends IPContext> ZSortHolder(IAioSort<C> sort)
-    {
-        _Sort = sort;
-    }
+  <C extends IPContext> ZSortHolder(IAioSort<C> sort) {
+    _Sort = sort;
+  }
 
-    @SuppressWarnings("unchecked")
-    public <C extends IPContext> IAioSort<C> getSort()
-    {
-        return (IAioSort<C>) _Sort;
-    }
+  @SuppressWarnings("unchecked")
+  public <C extends IPContext> IAioSort<C> getSort() {
+    return (IAioSort<C>) _Sort;
+  }
 
-    public int getSlot()
-    {
-        return getAttribute().getFirst();
-    }
+  public int getSlot() {
+    return getAttribute().getFirst();
+  }
 
-    private Pair<Integer, Long> getAttribute()
-    {
-        ISort.Mode mode = _Sort.getMode();
-        ISort.Type type = _Sort.getType();
-        return switch(mode) {
-            case LINK -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CONSUMER);
-            case CLUSTER -> switch(type) {
-                case INNER -> Pair.of(TYPE_INTERNAL_SLOT, TYPE_INTERNAL);
-                case SERVER -> Pair.of(TYPE_PROVIDER_SLOT, TYPE_PROVIDER);
-                case SYMMETRY, CLIENT -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CLUSTER);
-            };
-        };
-    }
+  private Pair<Integer, Long> getAttribute() {
+    ISort.Mode mode = _Sort.getMode();
+    ISort.Type type = _Sort.getType();
+    return switch (mode) {
+      case LINK -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CONSUMER);
+      case CLUSTER -> switch (type) {
+        case INNER -> Pair.of(TYPE_INTERNAL_SLOT, TYPE_INTERNAL);
+        case SERVER -> Pair.of(TYPE_PROVIDER_SLOT, TYPE_PROVIDER);
+        case SYMMETRY, CLIENT -> Pair.of(TYPE_CLUSTER_SLOT, TYPE_CLUSTER);
+      };
+    };
+  }
 
-    public static ZSortHolder _Mapping(String protocol)
-    {
-        return switch(protocol) {
-            case "mqtt" -> ZSortHolder.QTT_SERVER;
-            case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
-            case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-            case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-            case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
-            case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
-            case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
-            default -> throw new UnsupportedOperationException(protocol);
-        };
-    }
-
+  public static ZSortHolder _Mapping(String protocol) {
+    return switch (protocol) {
+      case "mqtt" -> ZSortHolder.QTT_SERVER;
+      case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
+      case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
+      case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
+      case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
+      case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
+      case "z-chat" -> ZSortHolder.Z_CLUSTER_SYMMETRY;
+      default -> throw new UnsupportedOperationException(protocol);
+    };
+  }
 }

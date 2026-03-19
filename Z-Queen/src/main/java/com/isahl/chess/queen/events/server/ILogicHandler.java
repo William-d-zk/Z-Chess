@@ -23,6 +23,8 @@
 
 package com.isahl.chess.queen.events.server;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.DISPATCH;
+
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
@@ -39,103 +41,90 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.List;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.DISPATCH;
+public interface ILogicHandler extends IBatchHandler<QEvent> {
+  Logger getLogger();
 
-public interface ILogicHandler
-        extends IBatchHandler<QEvent>
-{
-    Logger getLogger();
+  IExchanger getExchanger();
 
-    IExchanger getExchanger();
+  @Override
+  default void onEvent(QEvent event, long sequence) {
+    switch (event.getEventType()) {
+      case SERVICE -> _ServiceHandle(event);
+      case LOGIC -> _LogicHandle(event);
+      case WRITE, IGNORE, NULL -> getLogger().info("ignore handler[%s]", event.getEventType());
+      default -> getLogger()
+          .warning(
+              "Unsupported type[%s] no handle, %s", event.getEventType(), event.getComponent());
+    }
+  }
 
-    @Override
-    default void onEvent(QEvent event, long sequence)
-    {
-        switch(event.getEventType()) {
-            case SERVICE -> _ServiceHandle(event);
-            case LOGIC -> _LogicHandle(event);
-            case WRITE, IGNORE, NULL -> getLogger().info("ignore handler[%s]", event.getEventType());
-            default -> getLogger().warning("Unsupported type[%s] no handle, %s",
-                                           event.getEventType(),
-                                           event.getComponent());
+  default void _LogicHandle(QEvent event) {
+    IPair content = event.getComponent();
+    if (content != null) {
+      IProtocol input = content.getFirst();
+      ISession session = content.getSecond();
+      IBinaryOperator<IProtocol, ISession, List<ITriple>> transfer = event.getEventBinaryOp();
+      if (transfer == null) {
+        transfer = logicTransfer();
+      }
+      if (input != null && transfer != null) {
+        try {
+          List<ITriple> responses = transfer.handle(input, session);
+          if (responses != null && !responses.isEmpty()) {
+            event.produce(DISPATCH, responses);
+            return;
+          }
+        } catch (Exception e) {
+          getLogger().warning("logic handler interface", e);
+          event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
+          return;
         }
+      }
     }
+    event.ignore();
+  }
 
-    default void _LogicHandle(QEvent event)
-    {
-        IPair content = event.getComponent();
-        if(content != null) {
-            IProtocol input = content.getFirst();
-            ISession session = content.getSecond();
-            IBinaryOperator<IProtocol, ISession, List<ITriple>> transfer = event.getEventBinaryOp();
-            if(transfer == null) {
-                transfer = logicTransfer();
-            }
-            if(input != null && transfer != null) {
-                try {
-                    List<ITriple> responses = transfer.handle(input, session);
-                    if(responses != null && !responses.isEmpty()) {
-                        event.produce(DISPATCH, responses);
-                        return;
-                    }
-                }
-                catch(Exception e) {
-                    getLogger().warning("logic handler interface", e);
-                    event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
-                    return;
-                }
-            }
+  default void _ServiceHandle(QEvent event) {
+    IPair content = event.getComponent();
+    if (content != null) {
+      IoSerial request = content.getFirst();
+      IOperator<IoSerial, List<ITriple>> transfer = event.getEventOp();
+      if (transfer == null) {
+        transfer = serviceTransfer();
+      }
+      if (request != null && transfer != null) {
+        try {
+          List<ITriple> responses = transfer.handle(request);
+          if (responses != null && !responses.isEmpty()) {
+            event.produce(DISPATCH, responses);
+            return;
+          }
+        } catch (Exception e) {
+          getLogger().warning("service handler %s", e, request);
+          event.error(IError.Type.HANDLE_DATA, e, serviceFailed());
+          return;
         }
-        event.ignore();
+      }
     }
+    event.ignore();
+  }
 
-    default void _ServiceHandle(QEvent event)
-    {
-        IPair content = event.getComponent();
-        if(content != null) {
-            IoSerial request = content.getFirst();
-            IOperator<IoSerial, List<ITriple>> transfer = event.getEventOp();
-            if(transfer == null) {
-                transfer = serviceTransfer();
-            }
-            if(request != null && transfer != null) {
-                try {
-                    List<ITriple> responses = transfer.handle(request);
-                    if(responses != null && !responses.isEmpty()) {
-                        event.produce(DISPATCH, responses);
-                        return;
-                    }
-                }
-                catch(Exception e) {
-                    getLogger().warning("service handler %s", e, request);
-                    event.error(IError.Type.HANDLE_DATA, e, serviceFailed());
-                    return;
-                }
-            }
-        }
-        event.ignore();
-    }
+  interface factory {
+    ILogicHandler create(int slot);
+  }
 
-    interface factory
-    {
-        ILogicHandler create(int slot);
-    }
+  IPipeTransfer logicTransfer();
 
-    IPipeTransfer logicTransfer();
+  IPipeService serviceTransfer();
 
-    IPipeService serviceTransfer();
+  default IPipeFailed serviceFailed() {
+    return this::onServiceFailed;
+  }
 
-    default IPipeFailed serviceFailed()
-    {
-        return this::onServiceFailed;
-    }
-
-    private Void onServiceFailed(Throwable t)
-    {
-        getLogger().warning(t);
-        return null;
-    }
+  private Void onServiceFailed(Throwable t) {
+    getLogger().warning(t);
+    return null;
+  }
 }

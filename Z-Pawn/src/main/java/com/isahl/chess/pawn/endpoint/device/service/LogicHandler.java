@@ -35,13 +35,11 @@ import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.channels.IActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFailed;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,133 +47,102 @@ import java.util.List;
  * @author william.d.zk
  */
 public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
-        implements ILogicHandler
-{
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    implements ILogicHandler {
+  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final T                    _ClusterNode;
-    private final IHealth              _Health;
-    private final List<IAccessService> _AccessService;
-    private final List<IHandleHook>    _HandleHooks;
+  private final T _ClusterNode;
+  private final IHealth _Health;
+  private final List<IAccessService> _AccessService;
+  private final List<IHandleHook> _HandleHooks;
 
-    public LogicHandler(T cluster, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks)
-    {
-        _ClusterNode = cluster;
-        _Health = new Health(slot);
-        _AccessService = accessAdapters;
-        _HandleHooks = hooks;
-    }
+  public LogicHandler(
+      T cluster, int slot, List<IAccessService> accessAdapters, List<IHandleHook> hooks) {
+    _ClusterNode = cluster;
+    _Health = new Health(slot);
+    _AccessService = accessAdapters;
+    _HandleHooks = hooks;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public IExchanger getExchanger()
-    {
-        return _ClusterNode;
-    }
+  @Override
+  public IExchanger getExchanger() {
+    return _ClusterNode;
+  }
 
-    @Override
-    public IPipeTransfer logicTransfer()
-    {
-        return this::logicHandle;
-    }
+  @Override
+  public IPipeTransfer logicTransfer() {
+    return this::logicHandle;
+  }
 
-    public IPipeService serviceTransfer()
-    {
-        return this::serviceHandle;
-    }
+  public IPipeService serviceTransfer() {
+    return this::serviceHandle;
+  }
 
-    private List<ITriple> logicHandle(IProtocol content, ISession session)
-    {
-        List<ITriple> results = new LinkedList<>();
-        for(IAccessService service : _AccessService) {
-            if(service.isSupported(content)) {
-                try {
-                    service.onLogic(getExchanger(), session, content, results);
-                }
-                catch(Exception e) {
-                    _Logger.warning("logic handle:%s",
-                                    e,
-                                    service.getClass()
-                                           .getSimpleName());
-                }
-            }
-            else if(content.serial() == 0x1F) {
-                try {
-                    X1F_Exchange x1F = (X1F_Exchange) content;
-                    IManager manager = getExchanger();
-                    IProtocol body = x1F.deserializeSub(manager.findIoFactoryBySerial(x1F.factory()));
-                    ISession ts = manager.findSessionByIndex(x1F.target());
-                    if(ts != null) {
-                        body.with(ts);
-                        service.onExchange(body, results);
-                    }
-                }
-                catch(Exception e) {
-                    _Logger.warning("on exchange,%s <- %s",
-                                    e,
-                                    content,
-                                    service.getClass()
-                                           .getSimpleName());
-                }
-            }
+  private List<ITriple> logicHandle(IProtocol content, ISession session) {
+    List<ITriple> results = new LinkedList<>();
+    for (IAccessService service : _AccessService) {
+      if (service.isSupported(content)) {
+        try {
+          service.onLogic(getExchanger(), session, content, results);
+        } catch (Exception e) {
+          _Logger.warning("logic handle:%s", e, service.getClass().getSimpleName());
         }
-        for(IHandleHook hook : _HandleHooks) {
-            if(hook.isExpect(content)) {
-                try {
-                    hook.afterLogic(content, results);
-                }
-                catch(Exception e) {
-                    _Logger.warning("hook:%s",
-                                    e,
-                                    hook.getClass()
-                                        .getSimpleName());
-                }
-            }
+      } else if (content.serial() == 0x1F) {
+        try {
+          X1F_Exchange x1F = (X1F_Exchange) content;
+          IManager manager = getExchanger();
+          IProtocol body = x1F.deserializeSub(manager.findIoFactoryBySerial(x1F.factory()));
+          ISession ts = manager.findSessionByIndex(x1F.target());
+          if (ts != null) {
+            body.with(ts);
+            service.onExchange(body, results);
+          }
+        } catch (Exception e) {
+          _Logger.warning("on exchange,%s <- %s", e, content, service.getClass().getSimpleName());
         }
-        return results.isEmpty() ? null : results;
+      }
     }
-
-    private List<ITriple> serviceHandle(IoSerial request)
-    {
-        List<ITriple> results = new LinkedList<>();
-        for(IAccessService service : _AccessService) {
-            if(service.isSupported(request)) {
-                try {
-                    service.consume(getExchanger(), request, results);
-                }
-                catch(Exception e) {
-                    _Logger.warning("service handle:%s",
-                                    e,
-                                    service.getClass()
-                                           .getSimpleName());
-                }
-            }
+    for (IHandleHook hook : _HandleHooks) {
+      if (hook.isExpect(content)) {
+        try {
+          hook.afterLogic(content, results);
+        } catch (Exception e) {
+          _Logger.warning("hook:%s", e, hook.getClass().getSimpleName());
         }
-        for(IHandleHook hook : _HandleHooks) {
-            if(hook.isExpect(request)) {
-                try {
-                    hook.afterConsume(request);
-                }
-                catch(Exception e) {
-                    _Logger.warning("hook:%s",
-                                    e,
-                                    hook.getClass()
-                                        .getSimpleName());
-                }
-            }
+      }
+    }
+    return results.isEmpty() ? null : results;
+  }
+
+  private List<ITriple> serviceHandle(IoSerial request) {
+    List<ITriple> results = new LinkedList<>();
+    for (IAccessService service : _AccessService) {
+      if (service.isSupported(request)) {
+        try {
+          service.consume(getExchanger(), request, results);
+        } catch (Exception e) {
+          _Logger.warning("service handle:%s", e, service.getClass().getSimpleName());
         }
-        return results;
+      }
     }
-
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
+    for (IHandleHook hook : _HandleHooks) {
+      if (hook.isExpect(request)) {
+        try {
+          hook.afterConsume(request);
+        } catch (Exception e) {
+          _Logger.warning("hook:%s", e, hook.getClass().getSimpleName());
+        }
+      }
     }
+    return results;
+  }
 
+  @Override
+  public Logger getLogger() {
+    return _Logger;
+  }
 }
