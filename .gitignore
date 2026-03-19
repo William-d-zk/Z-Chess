@@ -17,3 +17,7 @@ gradlew.bat
 .vscode
 .DS_Store
 .worktrees
+GTAGS
+GRTAGS
+GPATH
+docs_output/analysis_data.json
