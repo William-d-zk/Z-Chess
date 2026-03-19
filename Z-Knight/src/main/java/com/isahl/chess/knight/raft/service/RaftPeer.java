@@ -450,8 +450,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         && update.index() <= _SelfMachine.index()
         && update.term() > _SelfMachine.term()
         && update.accept() <= _SelfMachine.accept()
-        && update.candidate() == _SelfMachine.peer())
-    {
+        && update.candidate() == _SelfMachine.peer()) {
       return createVotes(vote4me(update.term()), manager);
     }
     _Logger.warning("check vote failed; now: %s\n%s", _SelfMachine, update);
@@ -515,8 +514,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       if (_SelfMachine.commit() > x70.commit()
           || _SelfMachine.accept() > x70.accept()
           || _SelfMachine.indexTerm() > x70.indexTerm()
-          || _SelfMachine.index() > x70.index())
-      {
+          || _SelfMachine.index() > x70.index()) {
         if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
           _Logger.debug(
               "less than me; reject[%s]  mine:[ %d@%d,a:%d | c:%d ] > candidate:[ %d@%d, a:%d | c:%d ] then vote4me[ follower → candidate ] ",
@@ -1097,8 +1095,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     {
       if (_SelfMachine.isGreaterThanState(FOLLOWER)
           && _SelfMachine.isLessThanState(LEADER)
-          && update.term() >= _SelfMachine.term())
-      {
+          && update.term() >= _SelfMachine.term()) {
         _Logger.debug("elect time out → turn to follower");
         stepDown(update.term());
         break CHECK;
@@ -1113,8 +1110,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         && _SelfMachine.term() >= update.term()
         && _SelfMachine.index() >= update.index()
         && _SelfMachine.indexTerm() >= update.indexTerm()
-        && _SelfMachine.commit() >= update.commit())
-    {
+        && _SelfMachine.commit() >= update.commit()) {
       mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
       // 使用 Pipeline 模式发送日志
       boolean usePipeline = mPipelineEnabled;

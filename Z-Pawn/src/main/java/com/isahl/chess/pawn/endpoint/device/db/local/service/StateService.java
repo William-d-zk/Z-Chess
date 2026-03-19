@@ -337,8 +337,7 @@ public class StateService implements IValid, IStateService {
       if (subscribe.computeIfPresent(
               session,
               (key, old) -> old.getValue() > topic.level().getValue() ? old : topic.level())
-          == null)
-      {
+          == null) {
         subscribe.onSubscribe(session, topic.level());
       }
     }
