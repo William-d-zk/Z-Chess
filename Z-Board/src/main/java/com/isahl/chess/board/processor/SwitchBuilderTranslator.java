@@ -73,7 +73,6 @@ public class SwitchBuilderTranslator extends TreeTranslator {
       int serial = serialClass.serial();
       _Logger.debug("case {} → ", serial);
 
-      // @formatter:off
       JCTree.JCCase _case =
           _Maker.Case(
               CaseTree.CaseKind.STATEMENT,
@@ -89,7 +88,6 @@ public class SwitchBuilderTranslator extends TreeTranslator {
                           List.nil(),
                           null))),
               null);
-      // @formatter:on
       jcCases.append(_case);
     }
 

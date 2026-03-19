@@ -65,12 +65,10 @@ public class QttCommandFilter extends AioFilterChain<QttContext, QttCommand, Qtt
         && output instanceof QttProtocol) {
       IPContext acting = context;
       do {
-        // @formatter:off
         if (acting.isOutConvert()
             && acting instanceof QttContext
             && output instanceof IControl c
             && !c.isCtrl()) {
-          // @formatter:on
           return Pair.of(ResultType.NEXT_STEP, acting);
         } else if (acting.isProxy()) {
           acting = ((IProxyContext<?>) acting).getActingContext();

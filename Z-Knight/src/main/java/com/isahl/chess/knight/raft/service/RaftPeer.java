@@ -446,13 +446,11 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
   }
 
   public List<ITriple> vote4me(IRaftMachine update, IManager manager) {
-    // @formatter:off
     if (_SelfMachine.isInState(FOLLOWER)
         && update.index() <= _SelfMachine.index()
         && update.term() > _SelfMachine.term()
         && update.accept() <= _SelfMachine.accept()
         && update.candidate() == _SelfMachine.peer())
-    // @formatter:on
     {
       return createVotes(vote4me(update.term()), manager);
     }
@@ -514,12 +512,10 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       return reject;
     } else if (_SelfMachine.isInState(FOLLOWER)) {
       // x70.term > my term → my term = x70.term
-      // @formatter:off
       if (_SelfMachine.commit() > x70.commit()
           || _SelfMachine.accept() > x70.accept()
           || _SelfMachine.indexTerm() > x70.indexTerm()
           || _SelfMachine.index() > x70.index())
-      // @formatter:on
       {
         if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
           _Logger.debug(
@@ -1099,11 +1095,9 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
   public List<ITriple> turnDown(IRaftMachine update) {
     CHECK:
     {
-      // @formatter:off
       if (_SelfMachine.isGreaterThanState(FOLLOWER)
           && _SelfMachine.isLessThanState(LEADER)
           && update.term() >= _SelfMachine.term())
-      // @formatter:on
       {
         _Logger.debug("elect time out → turn to follower");
         stepDown(update.term());
@@ -1115,13 +1109,11 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
   }
 
   public List<ITriple> logAppend(IRaftMachine update, IManager manager) {
-    // @formatter:off
     if (_SelfMachine.peer() == update.peer()
         && _SelfMachine.term() >= update.term()
         && _SelfMachine.index() >= update.index()
         && _SelfMachine.indexTerm() >= update.indexTerm()
         && _SelfMachine.commit() >= update.commit())
-    // @formatter:on
     {
       mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
       // 使用 Pipeline 模式发送日志
