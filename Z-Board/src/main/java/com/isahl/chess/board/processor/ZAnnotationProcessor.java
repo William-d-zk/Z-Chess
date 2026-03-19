@@ -64,7 +64,11 @@ public class ZAnnotationProcessor
         return true;
     }
 
-    public void addProcessor(IAnnotationProcessor processor) {_ProcessorQueue.add(processor);}
+    public void addProcessor(IAnnotationProcessor processor) {
+        _ProcessorQueue.add(processor);
+    }
 
-    public ProcessorContext getProcessorContext() {return mContext;}
+    public ProcessorContext getProcessorContext() {
+        return mContext;
+    }
 }
