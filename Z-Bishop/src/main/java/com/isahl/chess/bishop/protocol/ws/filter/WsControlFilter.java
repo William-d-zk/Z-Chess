@@ -73,9 +73,7 @@ public class WsControlFilter<T extends WsContext> extends AioFilterChain<T, WsCo
         && output instanceof WsControl c) {
       IPContext acting = context;
       do {
-        // @formatter:off
         if (acting.isOutConvert() && acting instanceof IWsContext && c.isCtrl()) {
-          // @formatter:on
           return Pair.of(ResultType.NEXT_STEP, acting);
         } else if (acting.isProxy()) {
           acting = ((IProxyContext<?>) acting).getActingContext();

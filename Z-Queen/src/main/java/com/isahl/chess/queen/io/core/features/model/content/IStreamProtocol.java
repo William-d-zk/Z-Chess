@@ -52,8 +52,6 @@ public interface IStreamProtocol<C extends IPContext> extends IProtocol {
   /**
    * 扩展IProtocol 未对IContext进行约定 编码过程
    *
-   * <p>//@formatter:off encode(ctx){ suffix(encode(){ suffix(output) } ,ctx) } //@formatter:on
-   *
    * @param ctx
    * @return
    */
@@ -62,9 +60,6 @@ public interface IStreamProtocol<C extends IPContext> extends IProtocol {
   }
 
   /**
-   * 扩展IProtocol 未对IContext进行约定 解码过程 //@formatter:off decode(input,ctx){ decode(input){ fold(input,
-   * prefix(input)) } fold(ctx) } //@formatter:on
-   *
    * @param input
    * @param ctx
    */

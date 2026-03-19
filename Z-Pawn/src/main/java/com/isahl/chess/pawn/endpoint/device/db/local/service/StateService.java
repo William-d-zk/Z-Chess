@@ -110,7 +110,6 @@ public class StateService implements IValid, IStateService {
   private static void cleanup(StateService self) {
     LocalDateTime idleTime = LocalDateTime.now().minusHours(1);
     try {
-      // @formatter:off
       List<MsgStateEntity> idleMsgHours =
           self._MsgStateRepository.findAll(
               (root, criteriaQuery, criteriaBuilder) ->
@@ -135,7 +134,6 @@ public class StateService implements IValid, IStateService {
                     .filter(entity -> self._ClientPool.containsKey(entity.getId()))
                     .toList());
       }
-      // @formatter:on
     } catch (Exception e) {
       self._Logger.warning("cycle cleaner x failed", e);
     }
@@ -336,12 +334,10 @@ public class StateService implements IValid, IStateService {
     }
     Subscribe subscribe = _Topic2Subscribe.computeIfAbsent(topic.pattern(), Subscribe::new);
     if (session != 0) {
-      // @formatter:off
       if (subscribe.computeIfPresent(
               session,
               (key, old) -> old.getValue() > topic.level().getValue() ? old : topic.level())
           == null)
-      // @formatter:on
       {
         subscribe.onSubscribe(session, topic.level());
       }
@@ -373,13 +369,11 @@ public class StateService implements IValid, IStateService {
   @Override
   public boolean exists(long origin, long msgId) {
     DeviceClient client = getClient(origin);
-    // @formatter:off
     return client == null
         || client.identifierReceivedMap().containsKey(msgId)
         || _MsgStateService.getMsgStateEntity(
                 String.format(MsgStateEntity.RECEIVER_PRIMARY_FORMAT, origin, msgId))
             != null;
-    // @formatter:on
   }
 
   @Override

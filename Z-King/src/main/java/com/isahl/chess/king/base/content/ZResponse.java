@@ -47,7 +47,6 @@ public class ZResponse<T> implements ICode, Serializable {
   private final String _Formatter;
   private final LocalDateTime _DateTime;
 
-  // @formatter:off
   @JsonCreator
   public ZResponse(
       @JsonProperty("code") int code,
@@ -65,7 +64,6 @@ public class ZResponse<T> implements ICode, Serializable {
     _DateTime = dateTime;
   }
 
-  // @formatter:on
   @Override
   public int getCode(Object... condition) {
     return _Code;
