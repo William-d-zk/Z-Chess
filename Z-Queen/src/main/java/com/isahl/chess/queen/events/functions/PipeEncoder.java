@@ -34,32 +34,28 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author william.d.zk
  * @date 2019-05-08
  */
-public class PipeEncoder
-        implements IPipeEncoder
-{
-    private final Logger    _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
-    private final AioWriter _AioWriter;
+public class PipeEncoder implements IPipeEncoder {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+  private final AioWriter _AioWriter;
 
-    public PipeEncoder(AioWriter aioWriter)
-    {
-        _AioWriter = aioWriter;
-    }
+  public PipeEncoder(AioWriter aioWriter) {
+    _AioWriter = aioWriter;
+  }
 
-    @Override
-    public ITriple handle(IProtocol output, ISession session)
-    {
-        IPacket send = protocolWrite(output, session);
-        //write 错误将向event handler 抛出异常，并终止向session 执行写操作。
-        if(send != null) {
-            _Logger.debug("%s ", output);
-            session.write(send, _AioWriter);
-        }
-        return null;
+  @Override
+  public ITriple handle(IProtocol output, ISession session) {
+    IPacket send = protocolWrite(output, session);
+    // write 错误将向event handler 抛出异常，并终止向session 执行写操作。
+    if (send != null) {
+      _Logger.debug("%s ", output);
+      session.write(send, _AioWriter);
     }
+    return null;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.pipe.encoder";
-    }
+  @Override
+  public String getName() {
+    return "operator.pipe.encoder";
+  }
 }

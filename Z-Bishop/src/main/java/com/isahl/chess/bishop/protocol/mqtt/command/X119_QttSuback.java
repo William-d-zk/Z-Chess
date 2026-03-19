@@ -23,85 +23,73 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x119)
-public class X119_QttSuback
-        extends QttCommand
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x119)
+public class X119_QttSuback extends QttCommand {
 
-    public X119_QttSuback()
-    {
-        generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK);
+  public X119_QttSuback() {
+    generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK);
+  }
+
+  private List<Level> mResultList;
+
+  public void addResult(Level qosLevel) {
+    if (mResultList == null) {
+      mResultList = new LinkedList<>();
     }
+    mResultList.add(qosLevel);
+  }
 
-    private List<Level> mResultList;
+  public List<Level> getQosLevels() {
+    return mResultList;
+  }
 
-    public void addResult(Level qosLevel)
-    {
-        if(mResultList == null) {
-            mResultList = new LinkedList<>();
-        }
-        mResultList.add(qosLevel);
+  @Override
+  public int length() {
+    return super.length() + (mResultList == null ? 0 : mResultList.size());
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    msgId(input.getUnsignedShort());
+    mResultList = new ArrayList<>();
+    while (input.isReadable()) {
+      mResultList.add(Level.valueOf(input.getUnsigned()));
     }
+    return 0;
+  }
 
-    public List<Level> getQosLevels()
-    {
-        return mResultList;
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output.putShort(msgId());
+    if (mResultList != null) {
+      for (Level qosLevel : mResultList) {
+        output.put(qosLevel.getValue());
+      }
     }
+    return output;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + (mResultList == null ? 0 : mResultList.size());
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_09_CONFIRM_MESSAGE;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        msgId(input.getUnsignedShort());
-        mResultList = new ArrayList<>();
-        while(input.isReadable()) {
-            mResultList.add(Level.valueOf(input.getUnsigned()));
-        }
-        return 0;
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output.putShort(msgId());
-        if(mResultList != null) {
-            for(Level qosLevel : mResultList) {
-                output.put(qosLevel.getValue());
-            }
-        }
-        return output;
-    }
-
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("%#x { suback msg-id %d, %s }", serial(), msgId(), getQosLevels());
-    }
+  @Override
+  public String toString() {
+    return String.format("%#x { suback msg-id %d, %s }", serial(), msgId(), getQosLevels());
+  }
 }

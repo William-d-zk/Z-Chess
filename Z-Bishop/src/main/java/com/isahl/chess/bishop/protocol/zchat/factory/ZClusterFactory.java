@@ -32,27 +32,24 @@ import com.isahl.chess.board.annotation.ISerialFactory;
  * @date 2019-05-08
  */
 @ISerialFactory(serial = ('C' << 24) | ('L' << 16) | ('U' << 8) | 'Z')
-public class ZClusterFactory
-        extends ZChatFactory
-{
-    public static final ZClusterFactory _Instance = new ZClusterFactory();
+public class ZClusterFactory extends ZChatFactory {
+  public static final ZClusterFactory _Instance = new ZClusterFactory();
 
-    protected ZControl build(int serial)
-    {
-        return switch(serial) {
-            case 0x70 -> new X70_RaftVote();
-            case 0x71 -> new X71_RaftBallot();
-            case 0x72 -> new X72_RaftAppend();
-            case 0x73 -> new X73_RaftAccept();
-            case 0x74 -> new X74_RaftReject();
-            case 0x75 -> new X75_RaftReq();
-            case 0x76 -> new X76_RaftResp();
-            case 0x77 -> new X77_RaftNotify();
-            case 0x78 -> new X78_RaftModify();
-            case 0x79 -> new X79_RaftConfirm();
-            case 0x7A -> new X7A_RaftJoint();
-            case 0x7B -> new X7B_RaftConfirm();
-            default -> super.build(serial);
-        };
-    }
+  protected ZControl build(int serial) {
+    return switch (serial) {
+      case 0x70 -> new X70_RaftVote();
+      case 0x71 -> new X71_RaftBallot();
+      case 0x72 -> new X72_RaftAppend();
+      case 0x73 -> new X73_RaftAccept();
+      case 0x74 -> new X74_RaftReject();
+      case 0x75 -> new X75_RaftReq();
+      case 0x76 -> new X76_RaftResp();
+      case 0x77 -> new X77_RaftNotify();
+      case 0x78 -> new X78_RaftModify();
+      case 0x79 -> new X79_RaftConfirm();
+      case 0x7A -> new X7A_RaftJoint();
+      case 0x7B -> new X7B_RaftConfirm();
+      default -> super.build(serial);
+    };
+  }
 }

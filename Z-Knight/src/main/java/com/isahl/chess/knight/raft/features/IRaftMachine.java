@@ -31,125 +31,116 @@ import com.isahl.chess.queen.db.model.IStorage;
  * @author william.d.zk
  * @date 2019/12/10
  */
-public interface IRaftMachine
-        extends IReset,
-                IStorage,
-                Comparable<IRaftMachine>
-{
-    long INDEX_NAN = -1;
-    long TERM_NAN  = -1;
-    long MIN_START = 1;
+public interface IRaftMachine extends IReset, IStorage, Comparable<IRaftMachine> {
+  long INDEX_NAN = -1;
+  long TERM_NAN = -1;
+  long MIN_START = 1;
 
-    /**
-     * @return 当前任期 自然数
-     */
-    long term();
+  /**
+   * @return 当前任期 自然数
+   */
+  long term();
 
-    /**
-     * @return 当前任期的 log-index
-     */
-    long index();
+  /**
+   * @return 当前任期的 log-index
+   */
+  long index();
 
-    long indexTerm();
+  long indexTerm();
 
-    /**
-     * @return 候选人 Id
-     */
-    long candidate();
+  /**
+   * @return 候选人 Id
+   */
+  long candidate();
 
-    /**
-     * @return 主节点 Id
-     */
-    long leader();
+  /**
+   * @return 主节点 Id
+   */
+  long leader();
 
-    /**
-     * @return 节点的全局ID
-     */
-    long peer();
+  /**
+   * @return 节点的全局ID
+   */
+  long peer();
 
-    /**
-     * @return 节点状态
-     */
-    int state();
+  /**
+   * @return 节点状态
+   */
+  int state();
 
-    /**
-     * @return 已知最大的已提交日志的索引值
-     */
-    long commit();
+  /**
+   * @return 已知最大的已提交日志的索引值
+   */
+  long commit();
 
-    /**
-     * @return 最后一条被应用到状态机的索引值
-     */
-    long accept();
+  /**
+   * @return 最后一条被应用到状态机的索引值
+   */
+  long accept();
 
-    long matchIndex();
+  long matchIndex();
 
-    void term(long term);
+  void term(long term);
 
-    void index(long index);
+  void index(long index);
 
-    void indexTerm(long term);
+  void indexTerm(long term);
 
-    void matchIndex(long matchIndex);
+  void matchIndex(long matchIndex);
 
-    void candidate(long candidate);
+  void candidate(long candidate);
 
-    void leader(long leader);
+  void leader(long leader);
 
-    void commit(long commit);
+  void commit(long commit);
 
-    void accept(long accept);
+  void accept(long accept);
 
-    void accept(long index, long indexTerm);
+  void accept(long index, long indexTerm);
 
-    void follow(long term, long leader, IRaftMapper mapper);
+  void follow(long term, long leader, IRaftMapper mapper);
 
-    void commit(long index, IRaftMapper mapper);
+  void commit(long index, IRaftMapper mapper);
 
-    void rollBack(long index, long indexTerm, IRaftMapper mapper);
+  void rollBack(long index, long indexTerm, IRaftMapper mapper);
 
-    /**
-     * @param state elector,candidate,leader,client,follow(重置)
-     *              follow → follow(long term, long leader, IRaftMapper mapper)
-     */
-    void approve(RaftState state);
+  /**
+   * @param state elector,candidate,leader,client,follow(重置) follow → follow(long term, long leader,
+   *     IRaftMapper mapper)
+   */
+  void approve(RaftState state);
 
-    void outside();
+  void outside();
 
-    void gate();
-    
-    /**
-     * 设置为 Learner 状态（非投票成员）
-     */
-    void learner();
+  void gate();
 
-    /**
-     * 确认集群变更完成
-     */
-    void confirm();
+  /** 设置为 Learner 状态（非投票成员） */
+  void learner();
 
-    /**
-     * 进入集群变更状态
-     */
-    void modify();
+  /** 确认集群变更完成 */
+  void confirm();
 
-    void modify(RaftState state);
+  /** 进入集群变更状态 */
+  void modify();
 
-    default boolean isInState(RaftState state) {return (state() & state.getCode()) != 0;}
+  void modify(RaftState state);
 
-    default boolean isGreaterThanState(RaftState state)
-    {
-        return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) > 0;
-    }
+  default boolean isInState(RaftState state) {
+    return (state() & state.getCode()) != 0;
+  }
 
-    default boolean isLessThanState(RaftState state) {return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) < 0;}
+  default boolean isGreaterThanState(RaftState state) {
+    return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) > 0;
+  }
 
-    @Override
-    default int compareTo(IRaftMachine o)
-    {
-        return Long.compare(peer(), o.peer());
-    }
+  default boolean isLessThanState(RaftState state) {
+    return (state() & RaftState.MASK.getCode()) - (state.getCode() & RaftState.MASK.getCode()) < 0;
+  }
 
-    String toPrimary();
+  @Override
+  default int compareTo(IRaftMachine o) {
+    return Long.compare(peer(), o.peer());
+  }
 
+  String toPrimary();
 }

@@ -29,16 +29,13 @@ import com.isahl.chess.king.base.features.IDuplicate;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface ITriple
-        extends IDuplicate
-{
+public interface ITriple extends IDuplicate {
 
-    <FIRST> FIRST getFirst();
+  <FIRST> FIRST getFirst();
 
-    <SECOND> SECOND getSecond();
+  <SECOND> SECOND getSecond();
 
-    <THIRD> THIRD getThird();
+  <THIRD> THIRD getThird();
 
-    ITriple duplicate();
-
+  ITriple duplicate();
 }

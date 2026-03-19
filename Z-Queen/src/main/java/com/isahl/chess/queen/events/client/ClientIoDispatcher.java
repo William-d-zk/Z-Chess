@@ -23,6 +23,9 @@
 
 package com.isahl.chess.queen.events.client;
 
+import static com.isahl.chess.king.base.features.IError.Type.INITIATIVE_CLOSE;
+import static com.isahl.chess.king.base.features.IError.Type.PASSIVE_CLOSE;
+
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
@@ -37,107 +40,109 @@ import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
-
 import java.nio.channels.AsynchronousSocketChannel;
-
-import static com.isahl.chess.king.base.features.IError.Type.INITIATIVE_CLOSE;
-import static com.isahl.chess.king.base.features.IError.Type.PASSIVE_CLOSE;
 
 /**
  * @author william.d.zk
  */
-public class ClientIoDispatcher
-        implements IPipeHandler<QEvent>
-{
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
-    private final RingBuffer<QEvent> _Reader;
-    private final RingBuffer<QEvent> _Wrote;
-    private final RingBuffer<QEvent> _Error;
-    private final IHealth            _Health = new Health(-1);
+public class ClientIoDispatcher implements IPipeHandler<QEvent> {
+  private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
+  private final RingBuffer<QEvent> _Reader;
+  private final RingBuffer<QEvent> _Wrote;
+  private final RingBuffer<QEvent> _Error;
+  private final IHealth _Health = new Health(-1);
 
-    public ClientIoDispatcher(RingBuffer<QEvent> readerPipe, RingBuffer<QEvent> wrotePipe, RingBuffer<QEvent> errorPipe)
-    {
+  public ClientIoDispatcher(
+      RingBuffer<QEvent> readerPipe, RingBuffer<QEvent> wrotePipe, RingBuffer<QEvent> errorPipe) {
 
-        _Reader = readerPipe;
-        _Wrote = wrotePipe;
-        _Error = errorPipe;
-    }
+    _Reader = readerPipe;
+    _Wrote = wrotePipe;
+    _Error = errorPipe;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        // convert & transfer
-        switch(event.getErrorType()) {
-            case CONNECT_FAILED -> {
-                IPair connectFailedContent = event.getComponent();
-                Throwable throwable = connectFailedContent.getFirst();
-                IConnectActivity connectActive = connectFailedContent.getSecond();
-                IBinaryOperator<Throwable, IConnectActivity, ITriple> connectFailedOperator = event.getEventBinaryOp();
-                error(_Reader, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    // convert & transfer
+    switch (event.getErrorType()) {
+      case CONNECT_FAILED -> {
+        IPair connectFailedContent = event.getComponent();
+        Throwable throwable = connectFailedContent.getFirst();
+        IConnectActivity connectActive = connectFailedContent.getSecond();
+        IBinaryOperator<Throwable, IConnectActivity, ITriple> connectFailedOperator =
+            event.getEventBinaryOp();
+        error(
+            _Reader,
+            event.getErrorType(),
+            new Pair<>(throwable, connectActive),
+            connectFailedOperator);
+      }
+      case NO_ERROR -> {
+        switch (event.getEventType()) {
+          case CONNECTED, ACCEPTED -> {
+            IPair connectContent = event.getComponent();
+            IConnectActivity connectActivity = connectContent.getFirst();
+            AsynchronousSocketChannel channel = connectContent.getSecond();
+            IBinaryOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator =
+                event.getEventBinaryOp();
+            publish(
+                _Reader,
+                event.getEventType(),
+                new Pair<>(connectActivity, channel),
+                connectOperator);
+          }
+          case READ -> {
+            IPair readContent = event.getComponent();
+            publish(_Reader, OperateType.DECODE, readContent, event.getEventBinaryOp());
+          }
+          case WROTE -> {
+            IPair wroteContent = event.getComponent();
+            publish(_Wrote, OperateType.WROTE, wroteContent, event.getEventBinaryOp());
+          }
+          case LOCAL_CLOSE -> {
+            IBinaryOperator<Void, ISession, Void> closeOperator = event.getEventBinaryOp();
+            IPair closeContent = event.getComponent();
+            ISession session = closeContent.getSecond();
+            if (!session.isClosed()) {
+              error(_Reader, INITIATIVE_CLOSE, closeContent, closeOperator);
             }
-            case NO_ERROR -> {
-                switch(event.getEventType()) {
-                    case CONNECTED, ACCEPTED -> {
-                        IPair connectContent = event.getComponent();
-                        IConnectActivity connectActivity = connectContent.getFirst();
-                        AsynchronousSocketChannel channel = connectContent.getSecond();
-                        IBinaryOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventBinaryOp();
-                        publish(_Reader, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
-                    }
-                    case READ -> {
-                        IPair readContent = event.getComponent();
-                        publish(_Reader, OperateType.DECODE, readContent, event.getEventBinaryOp());
-                    }
-                    case WROTE -> {
-                        IPair wroteContent = event.getComponent();
-                        publish(_Wrote, OperateType.WROTE, wroteContent, event.getEventBinaryOp());
-                    }
-                    case LOCAL_CLOSE -> {
-                        IBinaryOperator<Void, ISession, Void> closeOperator = event.getEventBinaryOp();
-                        IPair closeContent = event.getComponent();
-                        ISession session = closeContent.getSecond();
-                        if(!session.isClosed()) {
-                            error(_Reader, INITIATIVE_CLOSE, closeContent, closeOperator);
-                        }
-                    }
-                    default -> _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher",
-                                                             event.getEventType()));
-                }
-            }
-            case READ_EOF -> {
-                IPair errorContent = event.getComponent();
-                IBinaryOperator<Throwable, ISession, IPair> errorOperator = event.getEventBinaryOp();
-                ISession session = errorContent.getSecond();
-                Throwable throwable = errorContent.getFirst();
-                if(!session.isClosed()) {
-                    IPair transferResult = errorOperator.handle(throwable, session);
-                    error(_Reader,
-                          PASSIVE_CLOSE,
-                          new Pair<>(QueenCode.ERROR_CLOSE, session),
-                          transferResult.getSecond());
-                }
-            }
-            case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
-                IPair errorContent = event.getComponent();
-                String msg = errorContent.getFirst();
-                ISession session = errorContent.getSecond();
-                _Logger.warning("closed: [%s] -> %s", session.isClosed(), session);
-            }
-            default -> {
-                _Logger.warning(" default no handle %s", event);
-            }
+          }
+          default -> _Logger.warning(
+              String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
         }
+      }
+      case READ_EOF -> {
+        IPair errorContent = event.getComponent();
+        IBinaryOperator<Throwable, ISession, IPair> errorOperator = event.getEventBinaryOp();
+        ISession session = errorContent.getSecond();
+        Throwable throwable = errorContent.getFirst();
+        if (!session.isClosed()) {
+          IPair transferResult = errorOperator.handle(throwable, session);
+          error(
+              _Reader,
+              PASSIVE_CLOSE,
+              new Pair<>(QueenCode.ERROR_CLOSE, session),
+              transferResult.getSecond());
+        }
+      }
+      case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
+        IPair errorContent = event.getComponent();
+        String msg = errorContent.getFirst();
+        ISession session = errorContent.getSecond();
+        _Logger.warning("closed: [%s] -> %s", session.isClosed(), session);
+      }
+      default -> {
+        _Logger.warning(" default no handle %s", event);
+      }
     }
+  }
 
-    @Override
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

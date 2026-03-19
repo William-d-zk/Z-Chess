@@ -31,18 +31,14 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
  * @author William.d.zk
  * @date 2017-02-10
  */
-public class ZContext
-        extends ProtocolContext<ZFrame>
-{
-    public ZContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
-    {
-        super(option, mode, type);
-    }
+public class ZContext extends ProtocolContext<ZFrame> {
+  public ZContext(INetworkOption option, ISort.Mode mode, ISort.Type type) {
+    super(option, mode, type);
+  }
 
-    @Override
-    public void ready()
-    {
-        advanceOutState(ENCODE_PAYLOAD);
-        advanceInState(DECODE_FRAME);
-    }
+  @Override
+  public void ready() {
+    advanceOutState(ENCODE_PAYLOAD);
+    advanceInState(DECODE_FRAME);
+  }
 }

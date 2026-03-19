@@ -23,6 +23,8 @@
 
 package com.isahl.chess.knight.raft.model.replicate;
 
+import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,197 +33,166 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-
 import java.io.Serial;
 
-import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
-
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
-                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 1)
+@ISerialGenerator(
+    parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+    serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 1)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class LogMeta
-        extends BaseMeta
-{
-    @Serial
-    private static final long serialVersionUID = 401154084882121307L;
+public class LogMeta extends BaseMeta {
+  @Serial private static final long serialVersionUID = 401154084882121307L;
 
-    /**
-     * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
-     * <p>
-     * ``` 1 ``` 为首条日志index
-     */
-    private long mStart;
-    /**
-     * 本机存储日志的 index
-     */
-    private long mIndex;
-    /**
-     * 本机存储日志的 index-term
-     */
-    private long mIndexTerm;
-    /**
-     * 已存储的最大任期号
-     */
-    private long mTerm;
-    /**
-     * 集群中已知的最大的被提交的日志index
-     */
-    private long mCommit;
-    /**
-     * 已被应用到状态机日志index
-     */
-    private long mAccept;
+  /**
+   * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
+   *
+   * <p>``` 1 ``` 为首条日志index
+   */
+  private long mStart;
 
-    @Override
-    public int length()
-    {
-        return 8 + // start
-               8 + // term
-               8 + // index
-               8 + // index term
-               8 + // commit
-               8 + // applied
-               super.length(); //primary key => System.current-mills
-    }
+  /** 本机存储日志的 index */
+  private long mIndex;
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(getStart())
-                    .putLong(getTerm())
-                    .putLong(getIndex())
-                    .putLong(getIndexTerm())
-                    .putLong(getCommit())
-                    .putLong(getAccept());
-    }
+  /** 本机存储日志的 index-term */
+  private long mIndexTerm;
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        setStart(input.getLong());
-        setTerm(input.getLong());
-        setIndex(input.getLong());
-        setIndexTerm(input.getLong());
-        setCommit(input.getLong());
-        setAccept(input.getLong());
-        remain -= 48;
-        return remain;
-    }
+  /** 已存储的最大任期号 */
+  private long mTerm;
 
-    @Override
-    public void reset()
-    {
-        mStart = MIN_START;
-        mIndex = 0;
-        mIndexTerm = 0;
-        mTerm = 0;
-        mCommit = 0;
-        mAccept = 0;
-        flush();
-    }
+  /** 集群中已知的最大的被提交的日志index */
+  private long mCommit;
 
-    @JsonCreator
-    public LogMeta(
-            @JsonProperty("start")
-            long start,
-            @JsonProperty("term")
-            long term,
-            @JsonProperty("index")
-            long index,
-            @JsonProperty("index_term")
-            long indexTerm,
-            @JsonProperty("commit")
-            long commit,
-            @JsonProperty("accept")
-            long accept)
-    {
-        super(Operation.OP_INSERT, Strategy.RETAIN);
-        mStart = start;
-        mTerm = term;
-        mIndex = index;
-        mIndexTerm = indexTerm;
-        mCommit = commit;
-        mAccept = accept;
-    }
+  /** 已被应用到状态机日志index */
+  private long mAccept;
 
-    public LogMeta()
-    {
-        super();
-        mStart = MIN_START;
-    }
+  @Override
+  public int length() {
+    return 8
+        + // start
+        8
+        + // term
+        8
+        + // index
+        8
+        + // index term
+        8
+        + // commit
+        8
+        + // applied
+        super.length(); // primary key => System.current-mills
+  }
 
-    public LogMeta(ByteBuf input)
-    {
-        super(input);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(getStart())
+        .putLong(getTerm())
+        .putLong(getIndex())
+        .putLong(getIndexTerm())
+        .putLong(getCommit())
+        .putLong(getAccept());
+  }
 
-    public long getStart()
-    {
-        return mStart;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    setStart(input.getLong());
+    setTerm(input.getLong());
+    setIndex(input.getLong());
+    setIndexTerm(input.getLong());
+    setCommit(input.getLong());
+    setAccept(input.getLong());
+    remain -= 48;
+    return remain;
+  }
 
-    public void setStart(long start)
-    {
-        mStart = start;
-    }
+  @Override
+  public void reset() {
+    mStart = MIN_START;
+    mIndex = 0;
+    mIndexTerm = 0;
+    mTerm = 0;
+    mCommit = 0;
+    mAccept = 0;
+    flush();
+  }
 
-    public long getTerm()
-    {
-        return mTerm;
-    }
+  @JsonCreator
+  public LogMeta(
+      @JsonProperty("start") long start,
+      @JsonProperty("term") long term,
+      @JsonProperty("index") long index,
+      @JsonProperty("index_term") long indexTerm,
+      @JsonProperty("commit") long commit,
+      @JsonProperty("accept") long accept) {
+    super(Operation.OP_INSERT, Strategy.RETAIN);
+    mStart = start;
+    mTerm = term;
+    mIndex = index;
+    mIndexTerm = indexTerm;
+    mCommit = commit;
+    mAccept = accept;
+  }
 
-    public void setTerm(long term)
-    {
-        mTerm = term;
-    }
+  public LogMeta() {
+    super();
+    mStart = MIN_START;
+  }
 
-    public long getCommit()
-    {
-        return mCommit;
-    }
+  public LogMeta(ByteBuf input) {
+    super(input);
+  }
 
-    public void setCommit(long commit)
-    {
-        mCommit = commit;
-    }
+  public long getStart() {
+    return mStart;
+  }
 
-    public long getAccept()
-    {
-        return mAccept;
-    }
+  public void setStart(long start) {
+    mStart = start;
+  }
 
-    public void setAccept(long accept)
-    {
-        mAccept = accept;
-    }
+  public long getTerm() {
+    return mTerm;
+  }
 
-    public long getIndex()
-    {
-        return mIndex;
-    }
+  public void setTerm(long term) {
+    mTerm = term;
+  }
 
-    public void setIndex(long index)
-    {
-        this.mIndex = index;
-    }
+  public long getCommit() {
+    return mCommit;
+  }
 
-    public void setIndexTerm(long term)
-    {
-        mIndexTerm = term;
-    }
+  public void setCommit(long commit) {
+    mCommit = commit;
+  }
 
-    public long getIndexTerm()
-    {
-        return mIndexTerm;
-    }
+  public long getAccept() {
+    return mAccept;
+  }
 
-    public void accept(LogEntry end)
-    {
-        mAccept = mIndex = end.index();
-        mIndexTerm = end.term();
-    }
+  public void setAccept(long accept) {
+    mAccept = accept;
+  }
 
+  public long getIndex() {
+    return mIndex;
+  }
+
+  public void setIndex(long index) {
+    this.mIndex = index;
+  }
+
+  public void setIndexTerm(long term) {
+    mIndexTerm = term;
+  }
+
+  public long getIndexTerm() {
+    return mIndexTerm;
+  }
+
+  public void accept(LogEntry end) {
+    mAccept = mIndex = end.index();
+    mIndexTerm = end.term();
+  }
 }

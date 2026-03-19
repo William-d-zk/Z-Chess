@@ -23,23 +23,22 @@
 
 package com.isahl.chess.rook.storage.cache.ehcache;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-
 @Component
-public class CacheChecker
-{
-    private final CacheManager _CacheManager;
+public class CacheChecker {
+  private final CacheManager _CacheManager;
 
-    @Autowired
-    public CacheChecker(CacheManager cacheManager) {_CacheManager = cacheManager;}
+  @Autowired
+  public CacheChecker(CacheManager cacheManager) {
+    _CacheManager = cacheManager;
+  }
 
-    public <K, V> V check(String cacheName, K key)
-    {
-        Cache<K, V> cache = _CacheManager.getCache(cacheName);
-        return cache.get(key);
-    }
+  public <K, V> V check(String cacheName, K key) {
+    Cache<K, V> cache = _CacheManager.getCache(cacheName);
+    return cache.get(key);
+  }
 }

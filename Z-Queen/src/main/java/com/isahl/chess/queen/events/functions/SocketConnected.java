@@ -30,7 +30,6 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 
@@ -38,41 +37,36 @@ import java.nio.channels.AsynchronousSocketChannel;
  * @author william.d.zk
  */
 public class SocketConnected
-        implements IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple>
-{
-    private final Logger    _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final AioReader _AioReader = new AioReader();
+    implements IBinaryOperator<IAioConnection, AsynchronousSocketChannel, ITriple> {
+  private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+  private final AioReader _AioReader = new AioReader();
 
-    @Override
-    public ITriple handle(IAioConnection connection, AsynchronousSocketChannel channel) throws ZException
-    {
-        ISession session = null;
-        try {
-            session = connection.create(channel, connection);
-            // session == null 已经throw IOException了
-            connection.onCreated(session);
-            session.ready();
-            session.readNext(_AioReader);
-            return Triple.of(true, session, connection.afterConnected(session));
-        }
-        catch(IOException e) {
-            try {
-                channel.close();
-            }
-            catch(IOException ex) {
-                _Logger.warning("close channel error", ex);
-            }
-            return Triple.of(false, channel, e);
-        }
-        catch(Exception e) {
-            // 此时session!=null
-            return session != null ? Triple.of(false, session, e) : Triple.of(false, channel, e);
-        }
+  @Override
+  public ITriple handle(IAioConnection connection, AsynchronousSocketChannel channel)
+      throws ZException {
+    ISession session = null;
+    try {
+      session = connection.create(channel, connection);
+      // session == null 已经throw IOException了
+      connection.onCreated(session);
+      session.ready();
+      session.readNext(_AioReader);
+      return Triple.of(true, session, connection.afterConnected(session));
+    } catch (IOException e) {
+      try {
+        channel.close();
+      } catch (IOException ex) {
+        _Logger.warning("close channel error", ex);
+      }
+      return Triple.of(false, channel, e);
+    } catch (Exception e) {
+      // 此时session!=null
+      return session != null ? Triple.of(false, session, e) : Triple.of(false, channel, e);
     }
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.connected";
-    }
+  @Override
+  public String getName() {
+    return "operator.connected";
+  }
 }

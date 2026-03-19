@@ -26,35 +26,31 @@ package com.isahl.chess.king.base.features;
 /**
  * @author William.d.zk
  */
-public interface IDuplicate
-{
-    /**
-     * 获得副本
-     *
-     * @return
-     */
-    default IDuplicate duplicate()
-    {
-        throw new UnsupportedOperationException();
-    }
+public interface IDuplicate {
+  /**
+   * 获得副本
+   *
+   * @return
+   */
+  default IDuplicate duplicate() {
+    throw new UnsupportedOperationException();
+  }
 
-    /**
-     * 当前是否为副本
-     *
-     * @return
-     */
-    default boolean isDuplicate()
-    {
-        return false;
-    }
+  /**
+   * 当前是否为副本
+   *
+   * @return
+   */
+  default boolean isDuplicate() {
+    return false;
+  }
 
-    /**
-     * 标记为副本
-     *
-     * @return self.this;
-     */
-    default IDuplicate reference()
-    {
-        return this;
-    }
+  /**
+   * 标记为副本
+   *
+   * @return self.this;
+   */
+  default IDuplicate reference() {
+    return this;
+  }
 }

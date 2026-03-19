@@ -29,34 +29,27 @@ import com.isahl.chess.king.base.features.IStatus;
  * @author william.d.zk
  * @date 2019-06-16
  */
-public enum DeviceStatus
-        implements IStatus
-{
+public enum DeviceStatus implements IStatus {
+  MISS(CODE_MISS),
+  CREATED(CODE_CREATED),
+  INVALID(CODE_INVALID),
+  INCOMPLETE(CODE_INCOMPLETE),
+  AVAILABLE(CODE_AVAILABLE),
+  DISABLE(CODE_DISABLE);
 
-    MISS(CODE_MISS),
-    CREATED(CODE_CREATED),
-    INVALID(CODE_INVALID),
-    INCOMPLETE(CODE_INCOMPLETE),
-    AVAILABLE(CODE_AVAILABLE),
-    DISABLE(CODE_DISABLE);
+  private final int _Code;
 
-    private final int _Code;
+  DeviceStatus(int code) {
+    _Code = code;
+  }
 
-    DeviceStatus(int code)
-    {
-        _Code = code;
-    }
+  @Override
+  public String getStatus() {
+    return name();
+  }
 
-    @Override
-    public String getStatus()
-    {
-        return name();
-    }
-
-    @Override
-    public int getCode()
-    {
-        return _Code;
-    }
-
+  @Override
+  public int getCode() {
+    return _Code;
+  }
 }

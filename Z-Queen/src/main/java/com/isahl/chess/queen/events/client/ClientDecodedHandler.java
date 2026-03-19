@@ -23,6 +23,9 @@
 
 package com.isahl.chess.queen.events.client;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LOGIC;
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
+
 import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
@@ -31,62 +34,59 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
-
 import java.util.List;
-
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LOGIC;
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.WRITE;
 
 /**
  * @author william.d.zk
  * @date 2021-12-21
  */
-public class ClientDecodedHandler
-        implements IPipeHandler<QEvent>
-{
+public class ClientDecodedHandler implements IPipeHandler<QEvent> {
 
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
-    private final RingBuffer<QEvent> _LogicPublisher;
-    private final IHealth            _Health = new Health(-1);
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+  private final RingBuffer<QEvent> _LogicPublisher;
+  private final IHealth _Health = new Health(-1);
 
-    public ClientDecodedHandler(RingBuffer<QEvent> logicPublisher)
-    {
-        _LogicPublisher = logicPublisher;
-    }
+  public ClientDecodedHandler(RingBuffer<QEvent> logicPublisher) {
+    _LogicPublisher = logicPublisher;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        switch(event.getEventType()) {
-            case SINGLE -> publish(_LogicPublisher, LOGIC, event.getComponent(), event.getEventBinaryOp());
-            case BATCH -> {
-                List<ITriple> contents = event.getResultList();
-                for(ITriple content : contents) {
-                    publish(_LogicPublisher,
-                            LOGIC,
-                            Pair.of(content.getFirst(), content.getSecond()),
-                            content.getThird());
-                }
-            }
-            case WRITE -> publish(_LogicPublisher, WRITE, event.getComponent(), event.getEventBinaryOp());
-            case DISPATCH -> {
-                List<ITriple> outputs = event.getResultList();
-                for(ITriple output : outputs) {
-                    publish(_LogicPublisher, WRITE, Pair.of(output.getFirst(), output.getSecond()), output.getThird());
-                }
-            }
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    switch (event.getEventType()) {
+      case SINGLE -> publish(
+          _LogicPublisher, LOGIC, event.getComponent(), event.getEventBinaryOp());
+      case BATCH -> {
+        List<ITriple> contents = event.getResultList();
+        for (ITriple content : contents) {
+          publish(
+              _LogicPublisher,
+              LOGIC,
+              Pair.of(content.getFirst(), content.getSecond()),
+              content.getThird());
         }
+      }
+      case WRITE -> publish(_LogicPublisher, WRITE, event.getComponent(), event.getEventBinaryOp());
+      case DISPATCH -> {
+        List<ITriple> outputs = event.getResultList();
+        for (ITriple output : outputs) {
+          publish(
+              _LogicPublisher,
+              WRITE,
+              Pair.of(output.getFirst(), output.getSecond()),
+              output.getThird());
+        }
+      }
     }
+  }
 
-    @Override
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

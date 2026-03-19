@@ -23,13 +23,7 @@
 
 package com.isahl.chess.knight.scheduler.domain;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-public enum TaskType
-{
-    DISPATCH,
-    CLAIM
+public enum TaskType {
+  DISPATCH,
+  CLAIM
 }

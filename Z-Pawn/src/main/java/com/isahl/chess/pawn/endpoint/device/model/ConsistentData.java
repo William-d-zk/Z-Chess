@@ -23,114 +23,97 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
 
 /**
  * @author william.d.zk
  * @date 2022-01-01
  */
-public class ConsistentData
-        extends InnerProtocol
-{
-    static class entry
-    {
-        long                 mPeer;
-        long                 mSession;
-        String               mProtocol;
-        IoFactory<IProtocol> mFactory;
+public class ConsistentData extends InnerProtocol {
+  static class entry {
+    long mPeer;
+    long mSession;
+    String mProtocol;
+    IoFactory<IProtocol> mFactory;
 
-        public entry(long session, long peer, String protocol, IoFactory<IProtocol> factory)
-        {
-            this.mPeer = peer;
-            this.mSession = session;
-            this.mProtocol = protocol;
-            this.mFactory = factory;
-        }
-
-        int size()
-        {
-            Objects.requireNonNull(mProtocol);
-            return 8 + // sessionId
-                   8 + // peerId
-                   vSizeOf(mProtocol.length());// protocol.length
-        }
+    public entry(long session, long peer, String protocol, IoFactory<IProtocol> factory) {
+      this.mPeer = peer;
+      this.mSession = session;
+      this.mProtocol = protocol;
+      this.mFactory = factory;
     }
 
-    private final Map<Long, entry> _Data = new HashMap<>();
-
-    public void update(long session, long peerId, String protocol, IoFactory<IProtocol> factory)
-    {
-        entry old = _Data.putIfAbsent(session, new entry(session, peerId, protocol, factory));
-        old.mSession = session;
-        old.mPeer = peerId;
-        old.mProtocol = protocol;
-        old.mFactory = factory;
+    int size() {
+      Objects.requireNonNull(mProtocol);
+      return 8
+          + // sessionId
+          8
+          + // peerId
+          vSizeOf(mProtocol.length()); // protocol.length
     }
+  }
 
-    public void remove(long session)
-    {
-        _Data.remove(session);
-    }
+  private final Map<Long, entry> _Data = new HashMap<>();
 
-    public IoFactory<IProtocol> findFactoryBySessionId(long sessionId)
-    {
-        entry entry = _Data.get(sessionId);
-        return entry == null ? null : entry.mFactory;
-    }
+  public void update(long session, long peerId, String protocol, IoFactory<IProtocol> factory) {
+    entry old = _Data.putIfAbsent(session, new entry(session, peerId, protocol, factory));
+    old.mSession = session;
+    old.mPeer = peerId;
+    old.mProtocol = protocol;
+    old.mFactory = factory;
+  }
 
-    @Override
-    public int length()
-    {
-        return 4 + // entry-size
-               _Data.values()
-                    .stream()
-                    .mapToInt(entry::size)
-                    .sum() + // entry-size sum
-               super.length();
-    }
+  public void remove(long session) {
+    _Data.remove(session);
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output = super.suffix(output)
-                      .putInt(_Data.size());
-        for(entry e : _Data.values()) {
-            output = output.putLong(e.mSession)
-                           .putLong(e.mPeer)
-                           .putUTF(e.mProtocol);
-        }
-        return output;
-    }
+  public IoFactory<IProtocol> findFactoryBySessionId(long sessionId) {
+    entry entry = _Data.get(sessionId);
+    return entry == null ? null : entry.mFactory;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        int size = input.getInt();
-        for(int i = 0; i < size; i++) {
-            long session = input.getLong();
-            long peer = input.getLong();
-            int pl = input.vLength();
-            String protocol = input.readUTF(pl);
-            remain -= 8 + 8 + vSizeOf(pl);
-            _Data.put(session,
-                      new entry(session,
-                                peer,
-                                protocol,
-                                ZSortHolder._Mapping(protocol)
-                                           .getSort()
-                                           .getFactory()));
-        }
-        return remain;
+  @Override
+  public int length() {
+    return 4
+        + // entry-size
+        _Data.values().stream().mapToInt(entry::size).sum()
+        + // entry-size sum
+        super.length();
+  }
+
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output = super.suffix(output).putInt(_Data.size());
+    for (entry e : _Data.values()) {
+      output = output.putLong(e.mSession).putLong(e.mPeer).putUTF(e.mProtocol);
     }
+    return output;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    int size = input.getInt();
+    for (int i = 0; i < size; i++) {
+      long session = input.getLong();
+      long peer = input.getLong();
+      int pl = input.vLength();
+      String protocol = input.readUTF(pl);
+      remain -= 8 + 8 + vSizeOf(pl);
+      _Data.put(
+          session,
+          new entry(
+              session, peer, protocol, ZSortHolder._Mapping(protocol).getSort().getFactory()));
+    }
+    return remain;
+  }
 }

@@ -29,11 +29,6 @@ import com.isahl.chess.queen.io.core.features.model.session.ICreated;
  * @author William.d.zk
  */
 public interface IConnectActivity
-        extends IAddress,
-                IConnectMode,
-                ICreated,
-                IAfterConnected,
-                ILifeCycle
-{
-    String getProtocol();
+    extends IAddress, IConnectMode, ICreated, IAfterConnected, ILifeCycle {
+  String getProtocol();
 }

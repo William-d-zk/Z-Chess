@@ -23,7 +23,6 @@
 
 package com.isahl.chess.square.service;
 
-public interface TaskExecutor
-{
-    String execute(String payload) throws Exception;
+public interface TaskExecutor {
+  String execute(String payload) throws Exception;
 }

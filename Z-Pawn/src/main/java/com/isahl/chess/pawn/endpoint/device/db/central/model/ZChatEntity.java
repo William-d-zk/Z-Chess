@@ -23,6 +23,10 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.central.model;
 
+import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
+import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
+import static java.lang.String.format;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -39,19 +43,11 @@ import com.isahl.chess.pawn.endpoint.device.db.legacy.LegacyBinaryType;
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
-
 import java.io.Serial;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Set;
-
-import static com.isahl.chess.king.base.content.ByteBuf.vSizeOf;
-import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
-import static jakarta.persistence.TemporalType.TIMESTAMP;
-import static java.lang.String.format;
+import org.hibernate.annotations.Type;
 
 /**
  * @author william.d.zk
@@ -59,273 +55,258 @@ import static java.lang.String.format;
  * @since 2019-07-22
  */
 @Entity(name = "zc_id_msgs-zchat")
-@Table(indexes = { @Index(name = "idx_z_chat_fk_origin",
-                          columnList = "fk_origin"),
-                   @Index(name = "idx_z_chat_topic",
-                          columnList = "topic")})
+@Table(
+    indexes = {
+      @Index(name = "idx_z_chat_fk_origin", columnList = "fk_origin"),
+      @Index(name = "idx_z_chat_topic", columnList = "topic")
+    })
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
-public class ZChatEntity
-        extends AuditModel
-        implements ITraceable
-{
-    @Serial
-    private static final long serialVersionUID = -6502547239976531057L;
+public class ZChatEntity extends AuditModel implements ITraceable {
+  @Serial private static final long serialVersionUID = -6502547239976531057L;
 
-    @Transient
-    private long                   mOrigin;
-    @Transient
-    private String                 mTopic;
-    @Transient
-    private DateEntity             mDate;
-    @Transient
-    private String                 mComments;
-    @Transient
-    private String                 mNotice;
-    @Transient
-    private String                 mVNotice;
-    @Transient
-    private Set<MsgDeliveryStatus> mDeliveryStatus;
-    @Transient
-    private long                   mId;
-    @Transient
-    private Long                   dkScene;
-    @Transient
-    private Long                   dkFactor;
-    @Transient
-    private Long                   dkFunction;
+  @Transient private long mOrigin;
+  @Transient private String mTopic;
+  @Transient private DateEntity mDate;
+  @Transient private String mComments;
+  @Transient private String mNotice;
+  @Transient private String mVNotice;
+  @Transient private Set<MsgDeliveryStatus> mDeliveryStatus;
+  @Transient private long mId;
+  @Transient private Long dkScene;
+  @Transient private Long dkFactor;
+  @Transient private Long dkFunction;
 
-    public ZChatEntity()
-    {
-        super(OP_INSERT, Strategy.RETAIN);
+  public ZChatEntity() {
+    super(OP_INSERT, Strategy.RETAIN);
+  }
+
+  public ZChatEntity(ByteBuf input) {
+    super(input);
+  }
+
+  @Id
+  @JsonIgnore
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  public long getId() {
+    return mId;
+  }
+
+  @Override
+  @JsonIgnore
+  public long origin() {
+    return mOrigin;
+  }
+
+  @Column(name = "fk_origin", updatable = false, nullable = false)
+  public long getOrigin() {
+    return mOrigin;
+  }
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "qk_date",
+      referencedColumnName = "id",
+      foreignKey = @ForeignKey(name = "qk_date", value = ConstraintMode.NO_CONSTRAINT))
+  public DateEntity getDate() {
+    return mDate;
+  }
+
+  @Column(name = "topic", length = 511, nullable = false, updatable = false)
+  public String getTopic() {
+    return mTopic;
+  }
+
+  @Lob
+  @Column(name = "message")
+  @Type(LegacyBinaryType.class)
+  public byte[] getMessage() {
+    return payload();
+  }
+
+  public void setId(long id) {
+    mId = id;
+  }
+
+  @Column(nullable = false, name = "message_id")
+  public long getMessageId() {
+    return pKey;
+  }
+
+  public void setMessageId(long _Id) {
+    pKey = _Id;
+  }
+
+  public void setOrigin(long origin) {
+    mOrigin = origin;
+  }
+
+  public void setDate(DateEntity date) {
+    mDate = date;
+  }
+
+  @Transient
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  public LocalDateTime getNetAt() {
+    return mDate != null ? mDate.getDateTime() : null;
+  }
+
+  @Transient
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  public void setNetAt(LocalDateTime netAt) {
+    if (mDate == null) {
+      mDate = new DateEntity();
     }
+    mDate.setDateTime(netAt);
+  }
 
-    public ZChatEntity(ByteBuf input)
-    {
-        super(input);
-    }
+  public void setTopic(String topic) {
+    mTopic = topic;
+  }
 
-    @Id
-    @JsonIgnore
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long getId()
-    {
-        return mId;
-    }
+  public void setMessage(byte[] data) {
+    withSub(data);
+    if (data == null) return;
+    setComments(new String(data, StandardCharsets.UTF_8));
+  }
 
-    @Override
-    @JsonIgnore
-    public long origin()
-    {
-        return mOrigin;
-    }
+  @Column(name = "comments", columnDefinition = "text")
+  public String getComments() {
+    return mComments;
+  }
 
-    @Column(name = "fk_origin",
-            updatable = false,
-            nullable = false)
-    public long getOrigin()
-    {
-        return mOrigin;
-    }
+  public void setComments(String comments) {
+    mComments = comments;
+  }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "qk_date",
-                referencedColumnName = "id",
-                foreignKey = @ForeignKey(name = "qk_date", value = ConstraintMode.NO_CONSTRAINT))
-    public DateEntity getDate()
-    {
-        return mDate;
-    }
+  @Column(name = "notice")
+  public String getNotice() {
+    return mNotice;
+  }
 
-    @Column(name = "topic",
-            length = 511,
-            nullable = false,
-            updatable = false)
-    public String getTopic()
-    {
-        return mTopic;
-    }
+  public void setNotice(String notice) {
+    mNotice = notice;
+  }
 
-    @Lob
-    @Column(name = "message")
-    @Type(LegacyBinaryType.class)
-    public byte[] getMessage()
-    {
-        return payload();
-    }
+  public void genSummary() {
+    mVNotice = format("%d→@%s size:(%d)", mOrigin, getTopic(), length());
+  }
 
-    public void setId(long id)
-    {
-        mId = id;
-    }
+  @Column(name = "v_notice")
+  public String getVNotice() {
+    return mVNotice;
+  }
 
-    @Column(nullable = false, name = "message_id")
-    public long getMessageId()
-    {
-        return pKey;
-    }
+  public void setVNotice(String vNotice) {
+    mVNotice = vNotice;
+  }
 
-    public void setMessageId(long _Id)
-    {
-        pKey = _Id;
-    }
+  @Column(name = "dk_scene")
+  public long getDkScene() {
+    return dkScene;
+  }
 
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
-    }
+  public void setDkScene(long dkScene) {
+    this.dkScene = dkScene;
+  }
 
-    public void setDate(DateEntity date)
-    {
-        mDate = date;
-    }
+  @Column(name = "dk_factor")
+  public long getDkFactor() {
+    return dkFactor;
+  }
 
-    @Transient
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getNetAt()
-    {
-        return mDate != null ? mDate.getDateTime() : null;
-    }
+  public void setDkFactor(long dkFactor) {
+    this.dkFactor = dkFactor;
+  }
 
-    @Transient
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public void setNetAt(LocalDateTime netAt)
-    {
-        if (mDate == null) {
-            mDate = new DateEntity();
-        }
-        mDate.setDateTime(netAt);
-    }
+  @Column(name = "dk_function")
+  public long getDkFunction() {
+    return dkFunction;
+  }
 
-    public void setTopic(String topic)
-    {
-        mTopic = topic;
-    }
+  public void setDkFunction(long dkFunction) {
+    this.dkFunction = dkFunction;
+  }
 
-    public void setMessage(byte[] data)
-    {
-        withSub(data);
-        if(data == null) return;
-        setComments(new String(data, StandardCharsets.UTF_8));
-    }
+  @PrePersist
+  public void dataCoord() {
+    if (dkScene == null) dkScene = 12317L; // 数据传输
+    if (dkFactor == null) dkFactor = 8261L; // 载荷:通讯内容
+    if (dkFunction == null) dkFunction = 9321L; // 数据:信息承载
+  }
 
-    @Column(name = "comments",
-            columnDefinition = "text")
-    public String getComments()
-    {
-        return mComments;
-    }
+  @Override
+  public String toString() {
+    return format(
+        "MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s], rk_origin=%s}",
+        getId(),
+        primaryKey(),
+        origin(),
+        getTopic(),
+        getComments(),
+        getNetAt(),
+        origin(),
+        super.toString());
+  }
 
-    public void setComments(String comments)
-    {
-        mComments = comments;
-    }
+  @Override
+  public int length() {
+    return super.length()
+        + // content.length +  id.length
+        8
+        + // origin.length
+        8
+        + // date id (fk_date_id)
+        vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length); // topic.length
+  }
 
-    @Column(name = "notice")
-    public String getNotice() {return mNotice;}
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mOrigin = input.getLong();
+    // DateEntity is loaded by JPA, not serialized directly
+    // The date reference is handled through fk_date_id
+    input.getLong(); // skip 8 bytes reserved for date reference
+    remain -= 16;
+    int tl = input.vLength();
+    mTopic = input.readUTF(tl);
+    remain -= vSizeOf(tl);
+    return remain;
+  }
 
-    public void setNotice(String notice) {mNotice = notice;}
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(mOrigin)
+        .putLong(mDate != null ? mDate.getId() : 0L)
+        .putUTF(mTopic);
+  }
 
-    public void genSummary()
-    {
-        mVNotice = format("%d→@%s size:(%d)", mOrigin, getTopic(), length());
-    }
+  @ManyToMany
+  @JoinTable(
+      name = "zc_id_lifecycle_r_primary-status",
+      joinColumns = @JoinColumn(name = "ref_left"),
+      inverseJoinColumns = @JoinColumn(name = "ref_right"),
+      foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT),
+      inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+  public Set<MsgDeliveryStatus> getDeliveryStatusSet() {
+    return mDeliveryStatus;
+  }
 
-    @Column(name = "v_notice")
-    public String getVNotice() {return mVNotice;}
+  @Transient
+  public MsgDeliveryStatus getDeliveryStatus() {
+    return mDeliveryStatus.stream()
+        .findFirst()
+        .orElseThrow(() -> new ZException("DeliveryStatus not found"));
+  }
 
-    public void setVNotice(String vNotice) {mVNotice = vNotice;}
+  public void setDeliveryStatusSet(Set<MsgDeliveryStatus> status) {
+    mDeliveryStatus = status;
+  }
 
-    @Column(name = "dk_scene")
-    public long getDkScene() {return dkScene;}
-
-    public void setDkScene(long dkScene) {this.dkScene = dkScene;}
-
-    @Column(name = "dk_factor")
-    public long getDkFactor() {return dkFactor;}
-
-    public void setDkFactor(long dkFactor) {this.dkFactor = dkFactor;}
-
-    @Column(name = "dk_function")
-    public long getDkFunction() {return dkFunction;}
-    
-    public void setDkFunction(long dkFunction) {this.dkFunction = dkFunction;}
-    
-    @PrePersist
-    public void dataCoord(){
-        if(dkScene == null) dkScene = 12317L; // 数据传输
-        if(dkFactor == null) dkFactor = 8261L; // 载荷:通讯内容
-        if(dkFunction == null) dkFunction = 9321L; // 数据:信息承载
-    }
-
-    @Override
-    public String toString()
-    {
-        return format("MessageEntity{ id=%s, message_id=%#x, origin=%#x, topic:%s, msg:%s, netAt:%s[%s], rk_origin=%s}",
-                    getId(),
-                    primaryKey(),
-                    origin(),
-                    getTopic(),
-                    getComments(),
-                    getNetAt(),
-                    origin(),
-                    super.toString());
-    }
-
-    @Override
-    public int length()
-    {
-        return super.length() + // content.length +  id.length
-               8 +// origin.length
-               8 + // date id (fk_date_id)
-               vSizeOf(mTopic.getBytes(StandardCharsets.UTF_8).length); // topic.length
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mOrigin = input.getLong();
-        // DateEntity is loaded by JPA, not serialized directly
-        // The date reference is handled through fk_date_id
-        input.getLong(); // skip 8 bytes reserved for date reference
-        remain -= 16;
-        int tl = input.vLength();
-        mTopic = input.readUTF(tl);
-        remain -= vSizeOf(tl);
-        return remain;
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mOrigin)
-                    .putLong(mDate != null ? mDate.getId() : 0L)
-                    .putUTF(mTopic);
-    }
-
-    @ManyToMany
-    @JoinTable(name = "zc_id_lifecycle_r_primary-status",
-               joinColumns = @JoinColumn(name = "ref_left"),
-               inverseJoinColumns = @JoinColumn(name = "ref_right"),
-               foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT),
-               inverseForeignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    public Set<MsgDeliveryStatus> getDeliveryStatusSet() {return mDeliveryStatus;}
-
-    @Transient
-    public MsgDeliveryStatus getDeliveryStatus()
-    {
-        return mDeliveryStatus.stream()
-                              .findFirst()
-                              .orElseThrow(()->new ZException("DeliveryStatus not found"));
-    }
-
-    public void setDeliveryStatusSet(Set<MsgDeliveryStatus> status) {mDeliveryStatus = status;}
-
-    public void setDeliveryStatus(MsgDeliveryStatus status) {
-        mDeliveryStatus = Set.of(status);
-    }
+  public void setDeliveryStatus(MsgDeliveryStatus status) {
+    mDeliveryStatus = Set.of(status);
+  }
 }

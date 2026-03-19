@@ -23,10 +23,9 @@
 
 package com.isahl.chess.knight.scheduler.domain;
 
-public enum SubTaskStatus
-{
-    PENDING,
-    RUNNING,
-    COMPLETE,
-    FAILED
+public enum SubTaskStatus {
+  PENDING,
+  RUNNING,
+  COMPLETE,
+  FAILED
 }

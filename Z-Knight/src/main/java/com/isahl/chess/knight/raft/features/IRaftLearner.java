@@ -26,7 +26,4 @@ package com.isahl.chess.knight.raft.features;
 /**
  * @author william.d.zk
  */
-public interface IRaftLearner
-{
-
-}
+public interface IRaftLearner {}

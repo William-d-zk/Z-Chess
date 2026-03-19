@@ -25,18 +25,15 @@ package com.isahl.chess.pawn.endpoint.device.api.model;
 
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
+class MessageBodyTest {
 
-class MessageBodyTest
-{
+  @Test
+  void testJson() {
+    MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
 
-    @Test
-    void testJson()
-    {
-        MessageBody body = new MessageBody("test", "abc".getBytes(StandardCharsets.UTF_8));
-
-        System.out.println(JsonUtil.writeValueAsString(body));
-    }
+    System.out.println(JsonUtil.writeValueAsString(body));
+  }
 }

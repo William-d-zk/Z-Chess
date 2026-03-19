@@ -34,29 +34,29 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.db.local.repository",
-                       entityManagerFactoryRef = "state-entity-manager-factory",
-                       transactionManagerRef = "state-transaction-manager")
-public class LocalJpaConfig
-{
-    private final RookProvider _RookProvider;
+@EnableJpaRepositories(
+    basePackages = "com.isahl.chess.pawn.endpoint.device.db.local.repository",
+    entityManagerFactoryRef = "state-entity-manager-factory",
+    transactionManagerRef = "state-transaction-manager")
+public class LocalJpaConfig {
+  private final RookProvider _RookProvider;
 
-    @Autowired
-    public LocalJpaConfig(RookProvider rookProvider) {_RookProvider = rookProvider;}
+  @Autowired
+  public LocalJpaConfig(RookProvider rookProvider) {
+    _RookProvider = rookProvider;
+  }
 
-    @Bean("state-entity-manager-factory")
-    public LocalContainerEntityManagerFactoryBean createLocalEntityManagerFactory()
-    {
-        return _RookProvider.buildEntityManager("1", "com.isahl.chess.pawn.endpoint.device.db.local.model");
-    }
+  @Bean("state-entity-manager-factory")
+  public LocalContainerEntityManagerFactoryBean createLocalEntityManagerFactory() {
+    return _RookProvider.buildEntityManager(
+        "1", "com.isahl.chess.pawn.endpoint.device.db.local.model");
+  }
 
-    @Bean("state-transaction-manager")
-    public PlatformTransactionManager createLocalTransactionManager(
-            @Qualifier("state-entity-manager-factory")
-            LocalContainerEntityManagerFactoryBean factory)
-    {
-        JpaTransactionManager tm = new JpaTransactionManager();
-        tm.setEntityManagerFactory(factory.getObject());
-        return tm;
-    }
+  @Bean("state-transaction-manager")
+  public PlatformTransactionManager createLocalTransactionManager(
+      @Qualifier("state-entity-manager-factory") LocalContainerEntityManagerFactoryBean factory) {
+    JpaTransactionManager tm = new JpaTransactionManager();
+    tm.setEntityManagerFactory(factory.getObject());
+    return tm;
+  }
 }

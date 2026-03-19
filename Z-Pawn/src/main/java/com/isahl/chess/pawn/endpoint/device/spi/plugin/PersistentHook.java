@@ -34,122 +34,105 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author william.d.zk
  * @date 2021-08-07
  */
 @Component
-public class PersistentHook
-        implements IHandleHook,
-                   ICancelable
-{
-    private final static int BATCH_SIZE = 2;
+public class PersistentHook implements IHandleHook, ICancelable {
+  private static final int BATCH_SIZE = 2;
 
-    private final TimeWheel        _TimeWheel;
-    private final Queue<IoSerial>  _MainQueue;
-    private final List<ISubscribe> _Subscribes;
+  private final TimeWheel _TimeWheel;
+  private final Queue<IoSerial> _MainQueue;
+  private final List<ISubscribe> _Subscribes;
 
-    @Autowired
-    public PersistentHook(IRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes)
-    {
-        _TimeWheel = timeWheel;
-        _Subscribes = subscribes;
-        _MainQueue = new ConcurrentLinkedQueue<>();
-    }
+  @Autowired
+  public PersistentHook(IRaftConfig raftConfig, TimeWheel timeWheel, List<ISubscribe> subscribes) {
+    _TimeWheel = timeWheel;
+    _Subscribes = subscribes;
+    _MainQueue = new ConcurrentLinkedQueue<>();
+  }
 
-    @PostConstruct
-    void startTimer()
-    {
-        _TimeWheel.acquire(this, new ScheduleHandler<>(Duration.ofSeconds(5), true, this::batchPush));
-    }
+  @PostConstruct
+  void startTimer() {
+    _TimeWheel.acquire(this, new ScheduleHandler<>(Duration.ofSeconds(5), true, this::batchPush));
+  }
 
-    @Override
-    public void afterLogic(IoSerial content, List<ITriple> results)
-    {
-        if(content.serial() == 0x113) {
-            X113_QttPublish x113 = (X113_QttPublish) content;
-            if(!x113.isDuplicate()) {
-                String topic = x113.topic();
-                byte[] contents = x113.payload();
-                ZChatEntity msgEntity = new ZChatEntity();
-                msgEntity.setMessage(contents);
-                msgEntity.setTopic(topic);
-                msgEntity.setNetAt(LocalDateTime.now());
-                if(!ZUID.isClusterType(x113.session().index())) {
-                    //集群扩散消息不再向DB中提交
-                    msgEntity.genSummary();
-                    msgEntity.setOrigin(x113.session().index());
-                    _MainQueue.offer(msgEntity);
-                }
-            }
+  @Override
+  public void afterLogic(IoSerial content, List<ITriple> results) {
+    if (content.serial() == 0x113) {
+      X113_QttPublish x113 = (X113_QttPublish) content;
+      if (!x113.isDuplicate()) {
+        String topic = x113.topic();
+        byte[] contents = x113.payload();
+        ZChatEntity msgEntity = new ZChatEntity();
+        msgEntity.setMessage(contents);
+        msgEntity.setTopic(topic);
+        msgEntity.setNetAt(LocalDateTime.now());
+        if (!ZUID.isClusterType(x113.session().index())) {
+          // 集群扩散消息不再向DB中提交
+          msgEntity.genSummary();
+          msgEntity.setOrigin(x113.session().index());
+          _MainQueue.offer(msgEntity);
         }
-        else {
-            throw new IllegalStateException("Unexpected value: 0x" + Integer.toHexString(content.serial()));
+      }
+    } else {
+      throw new IllegalStateException(
+          "Unexpected value: 0x" + Integer.toHexString(content.serial()));
+    }
+  }
+
+  @Override
+  public void afterConsume(IoSerial content) {
+    if (content instanceof ZChatEntity msg) {
+      msg.genSummary();
+      _MainQueue.offer(msg);
+    }
+  }
+
+  private void batchPush(PersistentHook self) {
+    if (_MainQueue.isEmpty()) return;
+    List<IoSerial> cached = List.copyOf(_MainQueue);
+    if (cached.size() > BATCH_SIZE) {
+      for (ISubscribe subscribe : _Subscribes) {
+        subscribe.onBatch(cached);
+      }
+      for (int i = 0; i < cached.size(); i++) {
+        _MainQueue.poll();
+      }
+    } else {
+      for (int i = 0; i < cached.size(); i++) {
+        for (ISubscribe subscribe : _Subscribes) {
+          subscribe.onMessage(_MainQueue.poll());
         }
+      }
     }
+  }
 
-    @Override
-    public void afterConsume(IoSerial content)
-    {
-        if(content instanceof ZChatEntity msg) {
-            msg.genSummary();
-            _MainQueue.offer(msg);
-        }
-    }
+  @Override
+  public void cancel() {}
 
-    private void batchPush(PersistentHook self)
-    {
-        if(_MainQueue.isEmpty()) return;
-        List<IoSerial> cached = List.copyOf(_MainQueue);
-        if(cached.size() > BATCH_SIZE) {
-            for(ISubscribe subscribe : _Subscribes) {
-                subscribe.onBatch(cached);
-            }
-            for(int i = 0; i < cached.size(); i++) {
-                _MainQueue.poll();
-            }
-        }
-        else {
-            for(int i = 0; i < cached.size(); i++) {
-                for(ISubscribe subscribe : _Subscribes) {
-                    subscribe.onMessage(_MainQueue.poll());
-                }
-            }
-        }
+  public interface ISubscribe {
+    void onBatch(List<IoSerial> contents);
 
-    }
+    void onMessage(IoSerial content);
+  }
 
-    @Override
-    public void cancel()
-    {
+  @Override
+  public boolean isExpect(IoSerial content) {
+    return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof ZChatEntity;
+  }
 
-    }
-
-    public interface ISubscribe
-    {
-        void onBatch(List<IoSerial> contents);
-
-        void onMessage(IoSerial content);
-    }
-
-    @Override
-    public boolean isExpect(IoSerial content)
-    {
-        return content.serial() == 0x113 || content.serial() == 0x1D || content instanceof ZChatEntity;
-    }
-
-    @Override
-    public String toString()
-    {
-        return getClass().getSimpleName() + "{for handle MessageEntity persistent}";
-    }
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{for handle MessageEntity persistent}";
+  }
 }

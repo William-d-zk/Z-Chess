@@ -30,88 +30,72 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration("audience_client_config")
 @ConfigurationProperties(prefix = "z.chess.audience")
 @PropertySource("classpath:audience.properties")
-public class ClientConfig
-{
+public class ClientConfig {
 
-    public static class Target
-    {
-        private String name;
-        private String host;
-        private int    port;
+  public static class Target {
+    private String name;
+    private String host;
+    private int port;
 
-        public String getName()
-        {
-            return name;
-        }
-
-        public void setName(String name)
-        {
-            this.name = name;
-        }
-
-        public String getHost()
-        {
-            return host;
-        }
-
-        public void setHost(String host)
-        {
-            this.host = host;
-        }
-
-        public int getPort()
-        {
-            return port;
-        }
-
-        public void setPort(int port)
-        {
-            this.port = port;
-        }
+    public String getName() {
+      return name;
     }
 
-    private Target qtt;
-    private Target ws;
-    private Target chat;
-    private int    ioCount;
-
-    public Target getQtt()
-    {
-        return qtt;
+    public void setName(String name) {
+      this.name = name;
     }
 
-    public void setQtt(Target qtt)
-    {
-        this.qtt = qtt;
+    public String getHost() {
+      return host;
     }
 
-    public Target getWs()
-    {
-        return ws;
+    public void setHost(String host) {
+      this.host = host;
     }
 
-    public void setWs(Target ws)
-    {
-        this.ws = ws;
+    public int getPort() {
+      return port;
     }
 
-    public Target getChat()
-    {
-        return chat;
+    public void setPort(int port) {
+      this.port = port;
     }
+  }
 
-    public void setChat(Target chat)
-    {
-        this.chat = chat;
-    }
+  private Target qtt;
+  private Target ws;
+  private Target chat;
+  private int ioCount;
 
-    public int getIoCount()
-    {
-        return ioCount;
-    }
+  public Target getQtt() {
+    return qtt;
+  }
 
-    public void setIoCount(int ioCount)
-    {
-        this.ioCount = ioCount;
-    }
+  public void setQtt(Target qtt) {
+    this.qtt = qtt;
+  }
+
+  public Target getWs() {
+    return ws;
+  }
+
+  public void setWs(Target ws) {
+    this.ws = ws;
+  }
+
+  public Target getChat() {
+    return chat;
+  }
+
+  public void setChat(Target chat) {
+    this.chat = chat;
+  }
+
+  public int getIoCount() {
+    return ioCount;
+  }
+
+  public void setIoCount(int ioCount) {
+    this.ioCount = ioCount;
+  }
 }

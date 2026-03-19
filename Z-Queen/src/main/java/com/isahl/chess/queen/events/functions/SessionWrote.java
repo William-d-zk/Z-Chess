@@ -30,37 +30,30 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.features.model.channels.IWritable;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 
-public class SessionWrote
-        implements IBinaryOperator<Integer, ISession, ITriple>
-{
-    private final Logger    _Logger = Logger.getLogger(getName() + getClass().getSimpleName());
-    private final AioWriter _AioWrite;
+public class SessionWrote implements IBinaryOperator<Integer, ISession, ITriple> {
+  private final Logger _Logger = Logger.getLogger(getName() + getClass().getSimpleName());
+  private final AioWriter _AioWrite;
 
-    SessionWrote(AioWriter aioWriter)
-    {
-        _AioWrite = aioWriter;
-    }
+  SessionWrote(AioWriter aioWriter) {
+    _AioWrite = aioWriter;
+  }
 
-    @Override
-    public ITriple handle(Integer wroteCnt, ISession session)
-    {
-        try {
-            IWritable.WRITE_STATUS write_status = session.writeNext(wroteCnt, _AioWrite);
-            _Logger.trace("session %s->%s wrote :%s ",
-                          session.getLocalAddress(),
-                          session.getRemoteAddress(),
-                          write_status);
-        }
-        catch(Exception e) {
-            _Logger.warning("session write error", e);
-            return new Triple<>(e, session, session.getError());
-        }
-        return null;
+  @Override
+  public ITriple handle(Integer wroteCnt, ISession session) {
+    try {
+      IWritable.WRITE_STATUS write_status = session.writeNext(wroteCnt, _AioWrite);
+      _Logger.trace(
+          "session %s->%s wrote :%s ",
+          session.getLocalAddress(), session.getRemoteAddress(), write_status);
+    } catch (Exception e) {
+      _Logger.warning("session write error", e);
+      return new Triple<>(e, session, session.getError());
     }
+    return null;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.wrote";
-    }
+  @Override
+  public String getName() {
+    return "operator.wrote";
+  }
 }

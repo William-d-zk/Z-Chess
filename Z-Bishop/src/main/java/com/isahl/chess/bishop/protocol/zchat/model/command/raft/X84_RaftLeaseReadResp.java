@@ -31,197 +31,159 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 
 /**
  * Lease Read 响应
- * 
+ *
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x84)
-public class X84_RaftLeaseReadResp
-        extends ZCommand
-        implements IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x84)
+public class X84_RaftLeaseReadResp extends ZCommand implements IConsistent {
 
-    public X84_RaftLeaseReadResp()
-    {
-        super();
+  public X84_RaftLeaseReadResp() {
+    super();
+  }
+
+  public X84_RaftLeaseReadResp(long msgId) {
+    super(msgId);
+  }
+
+  /** 响应节点ID */
+  private long mPeer;
+
+  /** 读请求ID */
+  private long mReadId;
+
+  /** 状态码: 0=成功 */
+  private int mCode;
+
+  /** 读取时的 commit index */
+  private long mCommitIndex;
+
+  /** 租约剩余时间（毫秒） */
+  private long mLeaseRemainingMs;
+
+  /** 消息（可选） */
+  private String mMessage;
+
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
+
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
+
+  @Override
+  public int length() {
+    int messageLen = mMessage != null ? mMessage.getBytes().length : 0;
+    return super.length() + 8 + 8 + 4 + 8 + 8 + 4 + messageLen;
+  }
+
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    super.suffix(output);
+    output.putLong(mPeer);
+    output.putLong(mReadId);
+    output.putInt(mCode);
+    output.putLong(mCommitIndex);
+    output.putLong(mLeaseRemainingMs);
+
+    byte[] messageBytes = mMessage != null ? mMessage.getBytes() : new byte[0];
+    output.putInt(messageBytes.length);
+    output.put(messageBytes);
+
+    return output;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    remain -= 8;
+    mReadId = input.getLong();
+    remain -= 8;
+    mCode = input.getInt();
+    remain -= 4;
+    mCommitIndex = input.getLong();
+    remain -= 8;
+    mLeaseRemainingMs = input.getLong();
+    remain -= 8;
+
+    int messageLen = input.getInt();
+    remain -= 4;
+    if (messageLen > 0) {
+      byte[] messageBytes = new byte[messageLen];
+      input.get(messageBytes);
+      mMessage = new String(messageBytes);
+      remain -= messageLen;
+    } else {
+      mMessage = "";
     }
 
-    public X84_RaftLeaseReadResp(long msgId)
-    {
-        super(msgId);
-    }
+    return remain;
+  }
 
-    /**
-     * 响应节点ID
-     */
-    private long mPeer;
-    
-    /**
-     * 读请求ID
-     */
-    private long mReadId;
-    
-    /**
-     * 状态码: 0=成功
-     */
-    private int mCode;
-    
-    /**
-     * 读取时的 commit index
-     */
-    private long mCommitIndex;
-    
-    /**
-     * 租约剩余时间（毫秒）
-     */
-    private long mLeaseRemainingMs;
-    
-    /**
-     * 消息（可选）
-     */
-    private String mMessage;
+  @Override
+  public String toString() {
+    return String.format(
+        "X84_RaftLeaseReadResp { peer=%#x, readId=%d, code=%d, commit=%d, leaseRemaining=%dms }",
+        mPeer, mReadId, mCode, mCommitIndex, mLeaseRemainingMs);
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  public int getCode() {
+    return mCode;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  public void setCode(int code) {
+    mCode = code;
+  }
 
-    @Override
-    public int length()
-    {
-        int messageLen = mMessage != null ? mMessage.getBytes().length : 0;
-        return super.length() + 8 + 8 + 4 + 8 + 8 + 4 + messageLen;
-    }
+  @Override
+  public int code() {
+    return mCode;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        super.suffix(output);
-        output.putLong(mPeer);
-        output.putLong(mReadId);
-        output.putInt(mCode);
-        output.putLong(mCommitIndex);
-        output.putLong(mLeaseRemainingMs);
-        
-        byte[] messageBytes = mMessage != null ? mMessage.getBytes() : new byte[0];
-        output.putInt(messageBytes.length);
-        output.put(messageBytes);
-        
-        return output;
-    }
+  public long peer() {
+    return mPeer;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        remain -= 8;
-        mReadId = input.getLong();
-        remain -= 8;
-        mCode = input.getInt();
-        remain -= 4;
-        mCommitIndex = input.getLong();
-        remain -= 8;
-        mLeaseRemainingMs = input.getLong();
-        remain -= 8;
-        
-        int messageLen = input.getInt();
-        remain -= 4;
-        if(messageLen > 0) {
-            byte[] messageBytes = new byte[messageLen];
-            input.get(messageBytes);
-            mMessage = new String(messageBytes);
-            remain -= messageLen;
-        }
-        else {
-            mMessage = "";
-        }
-        
-        return remain;
-    }
+  public void peer(long peer) {
+    mPeer = peer;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X84_RaftLeaseReadResp { peer=%#x, readId=%d, code=%d, commit=%d, leaseRemaining=%dms }",
-                             mPeer, mReadId, mCode, mCommitIndex, mLeaseRemainingMs);
-    }
+  public long readId() {
+    return mReadId;
+  }
 
-    public int getCode()
-    {
-        return mCode;
-    }
+  public void readId(long readId) {
+    mReadId = readId;
+  }
 
-    public void setCode(int code)
-    {
-        mCode = code;
-    }
+  public long commitIndex() {
+    return mCommitIndex;
+  }
 
-    @Override
-    public int code()
-    {
-        return mCode;
-    }
+  public void commitIndex(long commitIndex) {
+    mCommitIndex = commitIndex;
+  }
 
-    public long peer()
-    {
-        return mPeer;
-    }
+  public long leaseRemainingMs() {
+    return mLeaseRemainingMs;
+  }
 
-    public void peer(long peer)
-    {
-        mPeer = peer;
-    }
+  public void leaseRemainingMs(long leaseRemainingMs) {
+    mLeaseRemainingMs = leaseRemainingMs;
+  }
 
-    public long readId()
-    {
-        return mReadId;
-    }
+  public String getMessage() {
+    return mMessage;
+  }
 
-    public void readId(long readId)
-    {
-        mReadId = readId;
-    }
+  public void setMessage(String message) {
+    mMessage = message;
+  }
 
-    public long commitIndex()
-    {
-        return mCommitIndex;
-    }
-
-    public void commitIndex(long commitIndex)
-    {
-        mCommitIndex = commitIndex;
-    }
-
-    public long leaseRemainingMs()
-    {
-        return mLeaseRemainingMs;
-    }
-
-    public void leaseRemainingMs(long leaseRemainingMs)
-    {
-        mLeaseRemainingMs = leaseRemainingMs;
-    }
-
-    public String getMessage()
-    {
-        return mMessage;
-    }
-
-    public void setMessage(String message)
-    {
-        mMessage = message;
-    }
-
-    public boolean isSuccess()
-    {
-        return mCode == 0;
-    }
+  public boolean isSuccess() {
+    return mCode == 0;
+  }
 }

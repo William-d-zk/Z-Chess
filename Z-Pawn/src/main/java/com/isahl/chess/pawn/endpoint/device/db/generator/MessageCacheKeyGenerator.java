@@ -23,40 +23,30 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.generator;
 
-import org.springframework.cache.interceptor.KeyGenerator;
-
 import java.lang.reflect.Method;
+import org.springframework.cache.interceptor.KeyGenerator;
 
 /**
  * @author william.d.zk
  * @date 2021/5/15
  */
-public class MessageCacheKeyGenerator
-        implements KeyGenerator
-{
+public class MessageCacheKeyGenerator implements KeyGenerator {
 
-    @Override
-    public final Object generate(Object target, Method method, Object... params)
-    {
-        String _KeyPrefix = "mc0_";
-        StringBuilder sb = new StringBuilder();
-        sb.append(_KeyPrefix);
-        sb.append(target.getClass()
-                        .getSimpleName());
-        sb.append('_');
-        sb.append(method.getName());
-        if(params.length > 0) {
-            for(Object param : params) {
-                sb.append(param.getClass()
-                               .getSimpleName())
-                  .append(':')
-                  .append(param)
-                  .append('_');
-            }
-        }
-        else {
-            sb.append('0');
-        }
-        return sb.toString();
+  @Override
+  public final Object generate(Object target, Method method, Object... params) {
+    String _KeyPrefix = "mc0_";
+    StringBuilder sb = new StringBuilder();
+    sb.append(_KeyPrefix);
+    sb.append(target.getClass().getSimpleName());
+    sb.append('_');
+    sb.append(method.getName());
+    if (params.length > 0) {
+      for (Object param : params) {
+        sb.append(param.getClass().getSimpleName()).append(':').append(param).append('_');
+      }
+    } else {
+      sb.append('0');
     }
+    return sb.toString();
+  }
 }

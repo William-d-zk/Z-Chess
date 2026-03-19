@@ -38,22 +38,18 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("api")
-public class ConsistencyController
-{
-    private final Logger              _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final IConsistencyService _ConsistencyService;
+public class ConsistencyController {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final IConsistencyService _ConsistencyService;
 
-    @Autowired
-    public ConsistencyController(IConsistencyService consistentService)
-    {
-        _ConsistencyService = consistentService;
-    }
+  @Autowired
+  public ConsistencyController(IConsistencyService consistentService) {
+    _ConsistencyService = consistentService;
+  }
 
-    @PostMapping("/consistent")
-    public @ResponseBody
-    ZResponse<?> consistency(String input)
-    {
-        ICode result = _ConsistencyService.submit(input);
-        return ZResponse.of(result, input, "consistency submit");
-    }
+  @PostMapping("/consistent")
+  public @ResponseBody ZResponse<?> consistency(String input) {
+    ICode result = _ConsistencyService.submit(input);
+    return ZResponse.of(result, input, "consistency submit");
+  }
 }

@@ -25,55 +25,46 @@ package com.isahl.chess.bishop.protocol.zchat.model.command;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
  * @date 2021/2/14
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x1D)
-public class X1D_PlainText
-        extends ZCommand
-{
-    public X1D_PlainText()
-    {
-        super();
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x1D)
+public class X1D_PlainText extends ZCommand {
+  public X1D_PlainText() {
+    super();
+  }
 
-    public X1D_PlainText(long msgId)
-    {
-        super();
-        msgId(msgId);
-    }
+  public X1D_PlainText(long msgId) {
+    super();
+    msgId(msgId);
+  }
 
-    public X1D_PlainText setText(String text)
-    {
-        if(text != null) {mPayload = text.getBytes(StandardCharsets.UTF_8);}
-        return this;
+  public X1D_PlainText setText(String text) {
+    if (text != null) {
+      mPayload = text.getBytes(StandardCharsets.UTF_8);
     }
+    return this;
+  }
 
-    public String getText()
-    {
-        return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "No Content!";
-    }
+  public String getText() {
+    return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "No Content!";
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public boolean isMapping()
-    {
-        return false;
-    }
+  @Override
+  public boolean isMapping() {
+    return false;
+  }
 }

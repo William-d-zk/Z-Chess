@@ -27,92 +27,75 @@ import com.isahl.chess.bishop.protocol.zchat.model.ctrl.ZControl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x05)
-public class X05_EncryptStart
-        extends ZControl
-{
-    private int mSymmetricKeyId;
-    private int mSalt;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x05)
+public class X05_EncryptStart extends ZControl {
+  private int mSymmetricKeyId;
+  private int mSalt;
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mSymmetricKeyId = input.getUnsignedShort();
-        int a = input.get();
-        int b = input.get();
-        int c = input.get();
-        mSalt = a | (b << 8) | (c << 16);
-        return remain - 5;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mSymmetricKeyId = input.getUnsignedShort();
+    int a = input.get();
+    int b = input.get();
+    int c = input.get();
+    mSalt = a | (b << 8) | (c << 16);
+    return remain - 5;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 5;
-    }
+  @Override
+  public int length() {
+    return super.length() + 5;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putShort(mSymmetricKeyId)
-                    .put(mSalt)
-                    .put(mSalt >> 8)
-                    .put(mSalt >> 16);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putShort(mSymmetricKeyId)
+        .put(mSalt)
+        .put(mSalt >> 8)
+        .put(mSalt >> 16);
+  }
 
-    @Override
-    public void fold(ZContext ctx)
-    {
-        Objects.requireNonNull(ctx)
-               .promotionIn();
-    }
+  @Override
+  public void fold(ZContext ctx) {
+    Objects.requireNonNull(ctx).promotionIn();
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output, ZContext ctx)
-    {
-        Objects.requireNonNull(ctx)
-               .promotionOut();
-        return output;
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output, ZContext ctx) {
+    Objects.requireNonNull(ctx).promotionOut();
+    return output;
+  }
 
-    public int getSymmetricKeyId()
-    {
-        return mSymmetricKeyId;
-    }
+  public int getSymmetricKeyId() {
+    return mSymmetricKeyId;
+  }
 
-    public void setSymmetricKeyId(int symmetricKeyId)
-    {
-        this.mSymmetricKeyId = symmetricKeyId;
-    }
+  public void setSymmetricKeyId(int symmetricKeyId) {
+    this.mSymmetricKeyId = symmetricKeyId;
+  }
 
-    public int getSalt()
-    {
-        return mSalt;
-    }
+  public int getSalt() {
+    return mSalt;
+  }
 
-    public void setSalt(int salt)
-    {
-        this.mSalt = salt;
-    }
+  public void setSalt(int salt) {
+    this.mSalt = salt;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s,rc4-key:%d", super.toString(), mSymmetricKeyId);
-    }
+  @Override
+  public String toString() {
+    return String.format("%s,rc4-key:%d", super.toString(), mSymmetricKeyId);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 }

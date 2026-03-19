@@ -25,9 +25,6 @@ package com.isahl.chess.queen.io.core.features.cluster;
 
 import com.isahl.chess.queen.io.core.features.model.routes.ITraceable;
 
-public interface IConsistency
-        extends IConsistent,
-                ITraceable
-{
-    long client();
+public interface IConsistency extends IConsistent, ITraceable {
+  long client();
 }

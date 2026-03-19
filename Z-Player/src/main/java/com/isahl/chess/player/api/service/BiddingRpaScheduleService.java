@@ -7,13 +7,13 @@ import com.isahl.chess.player.api.model.BiddingRpaApiResponse;
 import com.isahl.chess.player.api.model.BiddingRpaDO;
 import com.isahl.chess.player.api.model.RpaAuthDo;
 import com.isahl.chess.player.api.model.RpaTaskDO;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.security.SecureRandom;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,170 +30,173 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class BiddingRpaScheduleService {
 
-    private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private RestTemplate restTemplate;
+  private RestTemplate restTemplate;
 
-    private ObjectMapper objectMapper;
+  private ObjectMapper objectMapper;
 
-    private PlayerConfig playerConfig;
+  private PlayerConfig playerConfig;
 
-    private AliothApiService aliothApiService;
+  private AliothApiService aliothApiService;
 
-    private SecureRandom random = new SecureRandom();
+  private SecureRandom random = new SecureRandom();
 
-
-    public BiddingRpaScheduleService(
-        RestTemplateBuilder restTemplateBuilder,
-        ObjectMapper objectMapper,
-        PlayerConfig playerConfig,
-        AliothApiService aliothApiService) {
-        this.objectMapper = objectMapper;
-        this.playerConfig = playerConfig;
-        this.restTemplate = restTemplateBuilder
+  public BiddingRpaScheduleService(
+      RestTemplateBuilder restTemplateBuilder,
+      ObjectMapper objectMapper,
+      PlayerConfig playerConfig,
+      AliothApiService aliothApiService) {
+    this.objectMapper = objectMapper;
+    this.playerConfig = playerConfig;
+    this.restTemplate =
+        restTemplateBuilder
             .connectTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .readTimeout(Duration.ofMillis(PlayerConfig.TIMEOUT))
             .build();
-        this.aliothApiService = aliothApiService;
+    this.aliothApiService = aliothApiService;
+  }
+
+  /**
+   * 取消订舱
+   *
+   * @param bookingTaskId: 需要取消的订舱任务id，为空则表示取消所有任务
+   */
+  public void cancelBooking(Long bookingTaskId) {
+    if (bookingTaskId != null) {
+      cancelTask(bookingTaskId);
+    } else {
+      List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
+      for (RpaTaskDO rpaTaskDO : rpaTaskDOList) {
+        cancelTask(rpaTaskDO.getTask_id());
+      }
+    }
+  }
+
+  /**
+   * 取消订舱任务
+   *
+   * @param taskId
+   */
+  private void cancelTask(Long taskId) {
+    if (taskId == null) {
+      log.warning("taskId is empty, skipping cancel task!");
+      return;
+    }
+    MultiValueMap<String, String> headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    Map<String, Long> bodyMap = new HashMap<>();
+    bodyMap.put("taskId", taskId);
+    try {
+      HttpEntity<Map<String, Long>> requestEntity = new HttpEntity<>(bodyMap, headers);
+      LinkedHashMap<String, Object> result =
+          restTemplate.postForObject(
+              playerConfig.getCancelRpaApiUrl(), requestEntity, LinkedHashMap.class);
+      if (result != null) {
+        BiddingRpaApiResponse biddingRpaApiResponse =
+            objectMapper.convertValue(result, BiddingRpaApiResponse.class);
+        log.info("调用取消竞拍api结果: " + biddingRpaApiResponse);
+      }
+    } catch (Exception e) {
+      log.fetal("执行取消订舱任务遇到异常, task = " + taskId, e);
+    }
+  }
+
+  /**
+   * 查询并订舱
+   *
+   * @param taskId : 需要处理的任务id，为空则表示处理所有履约状态的任务
+   */
+  public void queryAndBooking(Long taskId) {
+    List<RpaTaskDO> rpaTaskDOList;
+    if (taskId != null) {
+      rpaTaskDOList = aliothApiService.fetchSpecificTask(taskId);
+    } else {
+      rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
+    }
+    if (CollectionUtils.isEmpty(rpaTaskDOList)) {
+      log.info("有效订舱任务列表为空，skipping");
+      return;
     }
 
-    /**
-     * 取消订舱
-     *
-     * @param bookingTaskId: 需要取消的订舱任务id，为空则表示取消所有任务
-     */
-    public void cancelBooking(Long bookingTaskId){
-        if(bookingTaskId != null){
-            cancelTask(bookingTaskId);
-        }else{
-            List<RpaTaskDO> rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
-            for(RpaTaskDO rpaTaskDO : rpaTaskDOList){
-                cancelTask(rpaTaskDO.getTask_id());
-            }
+    List<RpaAuthDo> rpaAuthDoList = aliothApiService.fetchAuthInfos();
+    List<RpaAuthDo> rpaQueryAuthDos = new ArrayList<>(8);
+    List<RpaAuthDo> rpaBookingAuthDos = new ArrayList<>(8);
+    if (!CollectionUtils.isEmpty(rpaAuthDoList)) {
+      for (RpaAuthDo authDo : rpaAuthDoList) {
+        if ("拍仓查询".equals(authDo.getAuth_config_notice())
+            || "拍舱查询".equals(authDo.getAuth_config_notice())) {
+          rpaQueryAuthDos.add(authDo);
+        } else if ("订舱".equals(authDo.getAuth_config_notice())) {
+          rpaBookingAuthDos.add(authDo);
         }
+      }
+    }
+    if (CollectionUtils.isEmpty(rpaQueryAuthDos)) {
+      log.warning("rpa auth info for query is empty, please check!");
+      return;
     }
 
-    /**
-     * 取消订舱任务
-     * @param taskId
-     */
-    private void cancelTask(Long taskId){
-        if(taskId == null){
-            log.warning("taskId is empty, skipping cancel task!");
-            return;
-        }
+    for (RpaTaskDO taskDO : rpaTaskDOList) {
+      try {
+        Thread.sleep(30000);
         MultiValueMap<String, String> headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        Map<String,Long> bodyMap = new HashMap<>();
-        bodyMap.put("taskId",taskId);
-        try{
-            HttpEntity<Map<String,Long>> requestEntity = new HttpEntity<>(bodyMap, headers);
-            LinkedHashMap<String, Object> result = restTemplate.postForObject(playerConfig.getCancelRpaApiUrl(),
-                requestEntity,
-                LinkedHashMap.class);
-            if (result != null) {
-                BiddingRpaApiResponse biddingRpaApiResponse = objectMapper.convertValue(result,
-                    BiddingRpaApiResponse.class);
-                log.info("调用取消竞拍api结果: " + biddingRpaApiResponse);
-            }
-        } catch (Exception e) {
-            log.fetal("执行取消订舱任务遇到异常, task = " + taskId, e);
+        // fixme 这里后续可以根据多账户进行任务分配，目前采取随机选择方式
+        RpaAuthDo queryAuth = rpaQueryAuthDos.get(random.nextInt(rpaQueryAuthDos.size()));
+        BiddingRpaDO biddingRpaDO = new BiddingRpaDO();
+        biddingRpaDO.setNickname(queryAuth.getAuth_username());
+        biddingRpaDO.setPassword(queryAuth.getAuth_password());
+        String sendingAddress;
+        if ("msk".equals(taskDO.getPickup_place_alias_title())
+            && !ObjectUtils.isEmpty(taskDO.getPickup_place_alias())) {
+          sendingAddress = taskDO.getPickup_place_alias();
+        } else {
+          sendingAddress = taskDO.getPickup_place();
         }
+        biddingRpaDO.setSendingAddress(sendingAddress);
+        String deliveryAddress;
+        if ("msk".equals(taskDO.getDestination_place_alias_title())
+            && !ObjectUtils.isEmpty(taskDO.getDestination_place_alias())) {
+          deliveryAddress = taskDO.getDestination_place_alias();
+        } else {
+          deliveryAddress = taskDO.getDestination_place();
+        }
+        biddingRpaDO.setDeliveryAddress(deliveryAddress);
+        biddingRpaDO.setProductName(taskDO.getCargo_type());
+        biddingRpaDO.setBox(taskDO.getContainer_type());
+        biddingRpaDO.setBoxNum(taskDO.getCabin_amount());
+        biddingRpaDO.setWeight(taskDO.getCargo_weight());
+        biddingRpaDO.setDate(taskDO.getDepart_date());
+        biddingRpaDO.setStartDate(taskDO.getPickup_date());
+        biddingRpaDO.setMaxPrice(taskDO.getMaxprice());
+        biddingRpaDO.setTaskId(taskDO.getTask_id());
+        if (CollectionUtils.isEmpty(rpaBookingAuthDos)) {
+          biddingRpaDO.setOrderNickname("");
+          biddingRpaDO.setOrderPassword("");
+        } else {
+          RpaAuthDo bookingAuth = rpaBookingAuthDos.get(random.nextInt(rpaBookingAuthDos.size()));
+          if (playerConfig.getDisableBooking()) {
+            // 关闭订舱操作,订舱账户密码为空即可
+            biddingRpaDO.setOrderNickname("");
+            biddingRpaDO.setOrderPassword("");
+          } else {
+            biddingRpaDO.setOrderNickname(bookingAuth.getAuth_username());
+            biddingRpaDO.setOrderPassword(bookingAuth.getAuth_password());
+          }
+        }
+        HttpEntity<BiddingRpaDO> requestEntity = new HttpEntity<>(biddingRpaDO, headers);
+        LinkedHashMap<String, Object> result =
+            restTemplate.postForObject(
+                playerConfig.getBiddingRpaApiUrl(), requestEntity, LinkedHashMap.class);
+        if (result != null) {
+          BiddingRpaApiResponse biddingRpaApiResponse =
+              objectMapper.convertValue(result, BiddingRpaApiResponse.class);
+          log.info("调用查询及竞拍api结果: " + biddingRpaApiResponse);
+        }
+      } catch (Exception e) {
+        log.fetal("执行查询并订舱任务遇到异常, task = " + taskDO.toString(), e);
+      }
     }
-
-    /**
-     * 查询并订舱
-     * @param taskId : 需要处理的任务id，为空则表示处理所有履约状态的任务
-     */
-    public void queryAndBooking(Long taskId) {
-        List<RpaTaskDO> rpaTaskDOList;
-        if(taskId != null){
-            rpaTaskDOList = aliothApiService.fetchSpecificTask(taskId);
-        }else{
-            rpaTaskDOList = aliothApiService.fetchUnfinishedTaskList();
-        }
-        if (CollectionUtils.isEmpty(rpaTaskDOList)) {
-            log.info("有效订舱任务列表为空，skipping");
-            return;
-        }
-
-        List<RpaAuthDo> rpaAuthDoList = aliothApiService.fetchAuthInfos();
-        List<RpaAuthDo> rpaQueryAuthDos = new ArrayList<>(8);
-        List<RpaAuthDo> rpaBookingAuthDos = new ArrayList<>(8);
-        if (!CollectionUtils.isEmpty(rpaAuthDoList)) {
-            for (RpaAuthDo authDo : rpaAuthDoList) {
-                if ("拍仓查询".equals(authDo.getAuth_config_notice()) || "拍舱查询".equals(authDo.getAuth_config_notice())) {
-                    rpaQueryAuthDos.add(authDo);
-                } else if ("订舱".equals(authDo.getAuth_config_notice())) {
-                    rpaBookingAuthDos.add(authDo);
-                }
-            }
-        }
-        if (CollectionUtils.isEmpty(rpaQueryAuthDos)) {
-            log.warning("rpa auth info for query is empty, please check!");
-            return;
-        }
-
-        for (RpaTaskDO taskDO : rpaTaskDOList) {
-            try {
-                Thread.sleep(30000);
-                MultiValueMap<String, String> headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-                // fixme 这里后续可以根据多账户进行任务分配，目前采取随机选择方式
-                RpaAuthDo queryAuth = rpaQueryAuthDos.get(random.nextInt(rpaQueryAuthDos.size()));
-                BiddingRpaDO biddingRpaDO = new BiddingRpaDO();
-                biddingRpaDO.setNickname(queryAuth.getAuth_username());
-                biddingRpaDO.setPassword(queryAuth.getAuth_password());
-                String sendingAddress;
-                if ("msk".equals(taskDO.getPickup_place_alias_title()) && !ObjectUtils.isEmpty(
-                    taskDO.getPickup_place_alias())) {
-                    sendingAddress = taskDO.getPickup_place_alias();
-                } else {
-                    sendingAddress = taskDO.getPickup_place();
-                }
-                biddingRpaDO.setSendingAddress(sendingAddress);
-                String deliveryAddress;
-                if ("msk".equals(taskDO.getDestination_place_alias_title()) && !ObjectUtils.isEmpty(
-                    taskDO.getDestination_place_alias())) {
-                    deliveryAddress = taskDO.getDestination_place_alias();
-                } else {
-                    deliveryAddress = taskDO.getDestination_place();
-                }
-                biddingRpaDO.setDeliveryAddress(deliveryAddress);
-                biddingRpaDO.setProductName(taskDO.getCargo_type());
-                biddingRpaDO.setBox(taskDO.getContainer_type());
-                biddingRpaDO.setBoxNum(taskDO.getCabin_amount());
-                biddingRpaDO.setWeight(taskDO.getCargo_weight());
-                biddingRpaDO.setDate(taskDO.getDepart_date());
-                biddingRpaDO.setStartDate(taskDO.getPickup_date());
-                biddingRpaDO.setMaxPrice(taskDO.getMaxprice());
-                biddingRpaDO.setTaskId(taskDO.getTask_id());
-                if(CollectionUtils.isEmpty(rpaBookingAuthDos)){
-                    biddingRpaDO.setOrderNickname("");
-                    biddingRpaDO.setOrderPassword("");
-                }else{
-                    RpaAuthDo bookingAuth = rpaBookingAuthDos.get(random.nextInt(rpaBookingAuthDos.size()));
-                    if (playerConfig.getDisableBooking()) {
-                        // 关闭订舱操作,订舱账户密码为空即可
-                        biddingRpaDO.setOrderNickname("");
-                        biddingRpaDO.setOrderPassword("");
-                    } else {
-                        biddingRpaDO.setOrderNickname(bookingAuth.getAuth_username());
-                        biddingRpaDO.setOrderPassword(bookingAuth.getAuth_password());
-                    }
-                }
-                HttpEntity<BiddingRpaDO> requestEntity = new HttpEntity<>(biddingRpaDO, headers);
-                LinkedHashMap<String, Object> result = restTemplate.postForObject(playerConfig.getBiddingRpaApiUrl(),
-                    requestEntity,
-                    LinkedHashMap.class);
-                if (result != null) {
-                    BiddingRpaApiResponse biddingRpaApiResponse = objectMapper.convertValue(result,
-                        BiddingRpaApiResponse.class);
-                    log.info("调用查询及竞拍api结果: " + biddingRpaApiResponse);
-                }
-            } catch (Exception e) {
-                log.fetal("执行查询并订舱任务遇到异常, task = " + taskDO.toString(), e);
-            }
-        }
-    }
+  }
 }

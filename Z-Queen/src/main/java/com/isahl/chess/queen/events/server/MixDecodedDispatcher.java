@@ -23,6 +23,8 @@
 
 package com.isahl.chess.queen.events.server;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LINK;
+
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
@@ -33,39 +35,34 @@ import com.isahl.chess.queen.io.core.features.model.session.IMessage;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.LINK;
-
 /**
  * @author william.d.zk
  */
-public class MixDecodedDispatcher
-        extends DecodedDispatcher
-{
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
-    private final RingBuffer<QEvent> _Link;
+public class MixDecodedDispatcher extends DecodedDispatcher {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+  private final RingBuffer<QEvent> _Link;
 
-    public MixDecodedDispatcher(RingBuffer<QEvent> link,
-                                RingBuffer<QEvent> cluster,
-                                RingBuffer<QEvent> error,
-                                RingBuffer<QEvent>[] workers)
-    {
-        super(cluster, error, workers);
-        _Link = link;
-    }
+  public MixDecodedDispatcher(
+      RingBuffer<QEvent> link,
+      RingBuffer<QEvent> cluster,
+      RingBuffer<QEvent> error,
+      RingBuffer<QEvent>[] workers) {
+    super(cluster, error, workers);
+    _Link = link;
+  }
 
-    @Override
-    protected IPair getNextPipe(ISort.Mode mode, IoSerial input)
-    {
-        if(input instanceof IMessage msg) {
-            if(mode == ISort.Mode.LINK && msg.isMapping()) {
-                return Pair.of(_Link, LINK);
-            }
-        }
-        return super.getNextPipe(mode, input);
+  @Override
+  protected IPair getNextPipe(ISort.Mode mode, IoSerial input) {
+    if (input instanceof IMessage msg) {
+      if (mode == ISort.Mode.LINK && msg.isMapping()) {
+        return Pair.of(_Link, LINK);
+      }
     }
+    return super.getNextPipe(mode, input);
+  }
 
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

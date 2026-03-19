@@ -25,13 +25,10 @@ package com.isahl.chess.player.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
 import com.isahl.chess.queen.db.model.IStorage;
-
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -40,101 +37,84 @@ import java.nio.charset.StandardCharsets;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class MessageDo
-{
-    @JsonIgnore
-    private IStorage.Operation mOperation;
+public class MessageDo {
+  @JsonIgnore private IStorage.Operation mOperation;
 
-    private long   mOrigin;
-    private String mNumber;
-    private String mTopic;
-    private byte[] mPayload;
-    private String mContent;
-    private String mProtocol;
+  private long mOrigin;
+  private String mNumber;
+  private String mTopic;
+  private byte[] mPayload;
+  private String mContent;
+  private String mProtocol;
 
-    @JsonIgnore
-    public IStorage.Operation getOperation()
-    {
-        return mOperation;
-    }
+  @JsonIgnore
+  public IStorage.Operation getOperation() {
+    return mOperation;
+  }
 
-    @JsonIgnore
-    public void setOperation(IStorage.Operation operation)
-    {
-        mOperation = operation;
-    }
+  @JsonIgnore
+  public void setOperation(IStorage.Operation operation) {
+    mOperation = operation;
+  }
 
-    public long getOrigin()
-    {
-        return mOrigin;
-    }
+  public long getOrigin() {
+    return mOrigin;
+  }
 
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
-    }
+  public void setOrigin(long origin) {
+    mOrigin = origin;
+  }
 
-    public String getTopic()
-    {
-        return mTopic;
-    }
+  public String getTopic() {
+    return mTopic;
+  }
 
-    public void setTopic(String topic)
-    {
-        mTopic = topic;
-    }
+  public void setTopic(String topic) {
+    mTopic = topic;
+  }
 
-    public void setPayload(byte[] payload)
-    {
-        mPayload = payload;
-    }
+  public void setPayload(byte[] payload) {
+    mPayload = payload;
+  }
 
-    public byte[] getPayload()
-    {
-        return mPayload;
-    }
+  public byte[] getPayload() {
+    return mPayload;
+  }
 
-    public void setNumber(String number)
-    {
-        mNumber = number;
-    }
+  public void setNumber(String number) {
+    mNumber = number;
+  }
 
-    public String getNumber()
-    {
-        return mNumber;
-    }
+  public String getNumber() {
+    return mNumber;
+  }
 
-    public void setContent(String content)
-    {
-        mContent = content;
+  public void setContent(String content) {
+    mContent = content;
+  }
 
-    }
+  public String getContent() {
+    return mContent;
+  }
 
-    public String getContent()
-    {
-        return mContent;
-    }
+  public void setProtocol(String protocol) {
+    mProtocol = protocol;
+  }
 
-    public void setProtocol(String protocol)
-    {
-        mProtocol = protocol;
-    }
+  public String getProtocol() {
+    return mProtocol;
+  }
 
-    public String getProtocol()
-    {
-        return mProtocol;
-    }
-
-    public void afterEncode()
-    {
-        switch(mProtocol) {
-            case "mqtt", "z-chat" -> {
-                if(mContent == null && mPayload != null) {mContent = new String(mPayload, StandardCharsets.UTF_8);}
-                else if(!IoUtil.isBlank(mContent) && mPayload == null) {
-                    mPayload = mContent.getBytes(StandardCharsets.UTF_8);
-                }
-            }
-            default -> throw new IllegalArgumentException("unsupported protocol:< " + mProtocol + '>');
+  public void afterEncode() {
+    switch (mProtocol) {
+      case "mqtt", "z-chat" -> {
+        if (mContent == null && mPayload != null) {
+          mContent = new String(mPayload, StandardCharsets.UTF_8);
+        } else if (!IoUtil.isBlank(mContent) && mPayload == null) {
+          mPayload = mContent.getBytes(StandardCharsets.UTF_8);
         }
+      }
+      default -> throw new IllegalArgumentException("unsupported protocol:< " + mProtocol + '>');
     }
+  }
 }

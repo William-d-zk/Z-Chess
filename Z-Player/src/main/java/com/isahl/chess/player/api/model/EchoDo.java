@@ -33,8 +33,4 @@ import com.isahl.chess.king.base.model.TextSerial;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
-public class EchoDo
-        extends TextSerial
-{
-
-}
+public class EchoDo extends TextSerial {}

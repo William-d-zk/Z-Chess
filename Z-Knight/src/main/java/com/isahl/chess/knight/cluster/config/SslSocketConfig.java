@@ -26,13 +26,7 @@ package com.isahl.chess.knight.cluster.config;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.config.ISocketConfig;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.util.unit.DataSize;
-
 import jakarta.annotation.PostConstruct;
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -41,16 +35,20 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
+import javax.net.ssl.*;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.util.unit.DataSize;
 
 /**
  * TLS/SSL 配置类
- * 
- * 为 zchat 协议提供完整的 TLS 接入能力支持
- * 
- * 配置前缀: z.chess.pawn.io.{consumer,provider,cluster,internal}.ssl
- * 
+ *
+ * <p>为 zchat 协议提供完整的 TLS 接入能力支持
+ *
+ * <p>配置前缀: z.chess.pawn.io.{consumer,provider,cluster,internal}.ssl
+ *
  * @author william.d.zk
  */
 @Configuration
@@ -58,332 +56,477 @@ import java.util.List;
 @PropertySource("classpath:pawn.io.ssl.properties")
 public class SslSocketConfig implements ISocketConfig {
 
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    // ==================== 服务端配置 ====================
-    private SslConfig provider = new SslConfig();
-    
-    // ==================== 客户端配置 ====================
-    private SslConfig consumer = new SslConfig();
-    
-    // ==================== 集群配置 ====================
-    private SslConfig cluster = new SslConfig();
-    
-    // ==================== 内部服务配置 ====================
-    private SslConfig internal = new SslConfig();
-    
-    // ==================== 全局 TLS 配置 ====================
-    private DataSize sslPacketBufferSize = DataSize.ofKilobytes(16);
-    private DataSize sslAppBufferSize = DataSize.ofKilobytes(16);
-    private boolean enableSessionCreation = true;
-    private int sessionTimeout = 300;
+  // ==================== 服务端配置 ====================
+  private SslConfig provider = new SslConfig();
 
-    /**
-     * TLS 配置子类
-     */
-    public static class SslConfig {
-        private boolean enabled = false;
-        private String keyStorePath;
-        private String keyStorePassword;
-        private String trustStorePath;
-        private String trustStorePassword;
-        private boolean clientAuth = false;
-        private String protocol = "TLSv1.2";
-        private List<String> ciphers;
-        private boolean verifyHostname = true;
-        private String keyStoreType = "PKCS12";
-        
-        // ==================== TLS 1.3 配置 ====================
-        private boolean tls13Enabled = false;  // 是否启用 TLS 1.3
-        private boolean zeroRttEnabled = false;  // 是否启用 0-RTT (TLS 1.3)
-        
-        // ==================== 证书热更新配置 ====================
-        private boolean hotReloadEnabled = false;  // 是否启用证书热更新
-        private long hotReloadDebounceMs = 5000;  // 热更新防抖时间（毫秒）
-        
-        // 缓存的 SSL 上下文
-        private volatile SSLContext sslContext;
-        public volatile KeyManager[] keyManagers;  // public for test access
-        public volatile TrustManager[] trustManagers;  // public for test access
+  // ==================== 客户端配置 ====================
+  private SslConfig consumer = new SslConfig();
 
-        // Getters and Setters
-        public boolean isEnabled() { return enabled; }
-        public void setEnabled(boolean enabled) { this.enabled = enabled; }
-        
-        public String getKeyStorePath() { return keyStorePath; }
-        public void setKeyStorePath(String keyStorePath) { this.keyStorePath = keyStorePath; }
-        
-        public String getKeyStorePassword() { return keyStorePassword; }
-        public void setKeyStorePassword(String keyStorePassword) { this.keyStorePassword = keyStorePassword; }
-        
-        public String getTrustStorePath() { return trustStorePath; }
-        public void setTrustStorePath(String trustStorePath) { this.trustStorePath = trustStorePath; }
-        
-        public String getTrustStorePassword() { return trustStorePassword; }
-        public void setTrustStorePassword(String trustStorePassword) { this.trustStorePassword = trustStorePassword; }
-        
-        public boolean isClientAuth() { return clientAuth; }
-        public void setClientAuth(boolean clientAuth) { this.clientAuth = clientAuth; }
-        
-        public String getProtocol() { return protocol; }
-        public void setProtocol(String protocol) { this.protocol = protocol; }
-        
-        public List<String> getCiphers() { return ciphers; }
-        public void setCiphers(List<String> ciphers) { this.ciphers = ciphers; }
-        
-        public boolean isVerifyHostname() { return verifyHostname; }
-        public void setVerifyHostname(boolean verifyHostname) { this.verifyHostname = verifyHostname; }
-        
-        public String getKeyStoreType() { return keyStoreType; }
-        public void setKeyStoreType(String keyStoreType) { this.keyStoreType = keyStoreType; }
-        
-        // ==================== TLS 1.3 Getters/Setters ====================
-        public boolean isTls13Enabled() { return tls13Enabled; }
-        public void setTls13Enabled(boolean tls13Enabled) { this.tls13Enabled = tls13Enabled; }
-        
-        public boolean isZeroRttEnabled() { return zeroRttEnabled; }
-        public void setZeroRttEnabled(boolean zeroRttEnabled) { this.zeroRttEnabled = zeroRttEnabled; }
-        
-        // ==================== 热更新 Getters/Setters ====================
-        public boolean isHotReloadEnabled() { return hotReloadEnabled; }
-        public void setHotReloadEnabled(boolean hotReloadEnabled) { this.hotReloadEnabled = hotReloadEnabled; }
-        
-        public long getHotReloadDebounceMs() { return hotReloadDebounceMs; }
-        public void setHotReloadDebounceMs(long hotReloadDebounceMs) { this.hotReloadDebounceMs = hotReloadDebounceMs; }
+  // ==================== 集群配置 ====================
+  private SslConfig cluster = new SslConfig();
+
+  // ==================== 内部服务配置 ====================
+  private SslConfig internal = new SslConfig();
+
+  // ==================== 全局 TLS 配置 ====================
+  private DataSize sslPacketBufferSize = DataSize.ofKilobytes(16);
+  private DataSize sslAppBufferSize = DataSize.ofKilobytes(16);
+  private boolean enableSessionCreation = true;
+  private int sessionTimeout = 300;
+
+  /** TLS 配置子类 */
+  public static class SslConfig {
+    private boolean enabled = false;
+    private String keyStorePath;
+    private String keyStorePassword;
+    private String trustStorePath;
+    private String trustStorePassword;
+    private boolean clientAuth = false;
+    private String protocol = "TLSv1.2";
+    private List<String> ciphers;
+    private boolean verifyHostname = true;
+    private String keyStoreType = "PKCS12";
+
+    // ==================== TLS 1.3 配置 ====================
+    private boolean tls13Enabled = false; // 是否启用 TLS 1.3
+    private boolean zeroRttEnabled = false; // 是否启用 0-RTT (TLS 1.3)
+
+    // ==================== 证书热更新配置 ====================
+    private boolean hotReloadEnabled = false; // 是否启用证书热更新
+    private long hotReloadDebounceMs = 5000; // 热更新防抖时间（毫秒）
+
+    // 缓存的 SSL 上下文
+    private volatile SSLContext sslContext;
+    public volatile KeyManager[] keyManagers; // public for test access
+    public volatile TrustManager[] trustManagers; // public for test access
+
+    // Getters and Setters
+    public boolean isEnabled() {
+      return enabled;
     }
 
-    @PostConstruct
-    public void init() {
-        _Logger.info("Initializing TLS configuration...");
-        _Logger.info("Provider enabled: %s, KeyStore: %s, TLS1.3: %s, HotReload: %s", 
-                     provider.isEnabled(), provider.getKeyStorePath(), 
-                     provider.isTls13Enabled(), provider.isHotReloadEnabled());
-        _Logger.info("Consumer enabled: %s", consumer.isEnabled());
-        _Logger.info("Cluster enabled: %s, TLS1.3: %s, HotReload: %s", 
-                     cluster.isEnabled(), cluster.isTls13Enabled(), cluster.isHotReloadEnabled());
-        _Logger.info("Internal enabled: %s", internal.isEnabled());
-        
-        // 初始化各组件的 SSL 上下文
-        if (provider.isEnabled()) {
-            initSslContext(provider, "provider");
-        } else {
-            _Logger.warning("Provider SSL is not enabled");
-        }
-        if (consumer.isEnabled()) {
-            initSslContext(consumer, "consumer");
-        }
-        if (cluster.isEnabled()) {
-            initSslContext(cluster, "cluster");
-        }
-        if (internal.isEnabled()) {
-            initSslContext(internal, "internal");
-        }
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
     }
 
-    /**
-     * 初始化 SSL 上下文
-     */
-    private void initSslContext(SslConfig config, String name) {
-        try {
-            _Logger.info("Initializing SSL context for %s", name);
-            
-            // 确定协议版本
-            String protocol = config.getProtocol();
-            if (config.isTls13Enabled()) {
-                // 如果启用 TLS 1.3，使用 TLSv1.3 协议
-                protocol = "TLSv1.3";
-                _Logger.info("TLS 1.3 enabled for %s", name);
-                if (config.isZeroRttEnabled()) {
-                    _Logger.info("0-RTT enabled for %s (TLS 1.3)", name);
-                }
-            }
-            
-            // 加载密钥管理器
-            if (config.getKeyStorePath() != null && config.getKeyStorePassword() != null) {
-                config.keyManagers = loadKeyManagers(config);
-                _Logger.debug("Loaded key managers for %s from %s", name, config.getKeyStorePath());
-            }
-            
-            // 加载信任管理器
-            if (config.getTrustStorePath() != null && config.getTrustStorePassword() != null) {
-                config.trustManagers = loadTrustManagers(config);
-                _Logger.debug("Loaded trust managers for %s from %s", name, config.getTrustStorePath());
-            }
-            
-            // 创建 SSL 上下文
-            config.sslContext = SSLContext.getInstance(protocol);
-            config.sslContext.init(config.keyManagers, config.trustManagers, null);
-            
-            _Logger.info("SSL context initialized for %s using protocol %s (TLS1.3=%s, HotReload=%s)", 
-                        name, protocol, config.isTls13Enabled(), config.isHotReloadEnabled());
-            
-        } catch (Exception e) {
-            _Logger.warning("Failed to initialize SSL context for %s: %s", name, e.getMessage());
-            throw new ZException(e, "SSL initialization failed for " + name);
+    public String getKeyStorePath() {
+      return keyStorePath;
+    }
+
+    public void setKeyStorePath(String keyStorePath) {
+      this.keyStorePath = keyStorePath;
+    }
+
+    public String getKeyStorePassword() {
+      return keyStorePassword;
+    }
+
+    public void setKeyStorePassword(String keyStorePassword) {
+      this.keyStorePassword = keyStorePassword;
+    }
+
+    public String getTrustStorePath() {
+      return trustStorePath;
+    }
+
+    public void setTrustStorePath(String trustStorePath) {
+      this.trustStorePath = trustStorePath;
+    }
+
+    public String getTrustStorePassword() {
+      return trustStorePassword;
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+      this.trustStorePassword = trustStorePassword;
+    }
+
+    public boolean isClientAuth() {
+      return clientAuth;
+    }
+
+    public void setClientAuth(boolean clientAuth) {
+      this.clientAuth = clientAuth;
+    }
+
+    public String getProtocol() {
+      return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+      this.protocol = protocol;
+    }
+
+    public List<String> getCiphers() {
+      return ciphers;
+    }
+
+    public void setCiphers(List<String> ciphers) {
+      this.ciphers = ciphers;
+    }
+
+    public boolean isVerifyHostname() {
+      return verifyHostname;
+    }
+
+    public void setVerifyHostname(boolean verifyHostname) {
+      this.verifyHostname = verifyHostname;
+    }
+
+    public String getKeyStoreType() {
+      return keyStoreType;
+    }
+
+    public void setKeyStoreType(String keyStoreType) {
+      this.keyStoreType = keyStoreType;
+    }
+
+    // ==================== TLS 1.3 Getters/Setters ====================
+    public boolean isTls13Enabled() {
+      return tls13Enabled;
+    }
+
+    public void setTls13Enabled(boolean tls13Enabled) {
+      this.tls13Enabled = tls13Enabled;
+    }
+
+    public boolean isZeroRttEnabled() {
+      return zeroRttEnabled;
+    }
+
+    public void setZeroRttEnabled(boolean zeroRttEnabled) {
+      this.zeroRttEnabled = zeroRttEnabled;
+    }
+
+    // ==================== 热更新 Getters/Setters ====================
+    public boolean isHotReloadEnabled() {
+      return hotReloadEnabled;
+    }
+
+    public void setHotReloadEnabled(boolean hotReloadEnabled) {
+      this.hotReloadEnabled = hotReloadEnabled;
+    }
+
+    public long getHotReloadDebounceMs() {
+      return hotReloadDebounceMs;
+    }
+
+    public void setHotReloadDebounceMs(long hotReloadDebounceMs) {
+      this.hotReloadDebounceMs = hotReloadDebounceMs;
+    }
+  }
+
+  @PostConstruct
+  public void init() {
+    _Logger.info("Initializing TLS configuration...");
+    _Logger.info(
+        "Provider enabled: %s, KeyStore: %s, TLS1.3: %s, HotReload: %s",
+        provider.isEnabled(),
+        provider.getKeyStorePath(),
+        provider.isTls13Enabled(),
+        provider.isHotReloadEnabled());
+    _Logger.info("Consumer enabled: %s", consumer.isEnabled());
+    _Logger.info(
+        "Cluster enabled: %s, TLS1.3: %s, HotReload: %s",
+        cluster.isEnabled(), cluster.isTls13Enabled(), cluster.isHotReloadEnabled());
+    _Logger.info("Internal enabled: %s", internal.isEnabled());
+
+    // 初始化各组件的 SSL 上下文
+    if (provider.isEnabled()) {
+      initSslContext(provider, "provider");
+    } else {
+      _Logger.warning("Provider SSL is not enabled");
+    }
+    if (consumer.isEnabled()) {
+      initSslContext(consumer, "consumer");
+    }
+    if (cluster.isEnabled()) {
+      initSslContext(cluster, "cluster");
+    }
+    if (internal.isEnabled()) {
+      initSslContext(internal, "internal");
+    }
+  }
+
+  /** 初始化 SSL 上下文 */
+  private void initSslContext(SslConfig config, String name) {
+    try {
+      _Logger.info("Initializing SSL context for %s", name);
+
+      // 确定协议版本
+      String protocol = config.getProtocol();
+      if (config.isTls13Enabled()) {
+        // 如果启用 TLS 1.3，使用 TLSv1.3 协议
+        protocol = "TLSv1.3";
+        _Logger.info("TLS 1.3 enabled for %s", name);
+        if (config.isZeroRttEnabled()) {
+          _Logger.info("0-RTT enabled for %s (TLS 1.3)", name);
         }
+      }
+
+      // 加载密钥管理器
+      if (config.getKeyStorePath() != null && config.getKeyStorePassword() != null) {
+        config.keyManagers = loadKeyManagers(config);
+        _Logger.debug("Loaded key managers for %s from %s", name, config.getKeyStorePath());
+      }
+
+      // 加载信任管理器
+      if (config.getTrustStorePath() != null && config.getTrustStorePassword() != null) {
+        config.trustManagers = loadTrustManagers(config);
+        _Logger.debug("Loaded trust managers for %s from %s", name, config.getTrustStorePath());
+      }
+
+      // 创建 SSL 上下文
+      config.sslContext = SSLContext.getInstance(protocol);
+      config.sslContext.init(config.keyManagers, config.trustManagers, null);
+
+      _Logger.info(
+          "SSL context initialized for %s using protocol %s (TLS1.3=%s, HotReload=%s)",
+          name, protocol, config.isTls13Enabled(), config.isHotReloadEnabled());
+
+    } catch (Exception e) {
+      _Logger.warning("Failed to initialize SSL context for %s: %s", name, e.getMessage());
+      throw new ZException(e, "SSL initialization failed for " + name);
+    }
+  }
+
+  /** 加载密钥管理器 */
+  private KeyManager[] loadKeyManagers(SslConfig config)
+      throws KeyStoreException,
+          NoSuchAlgorithmException,
+          CertificateException,
+          IOException,
+          UnrecoverableKeyException {
+
+    KeyStore keyStore = KeyStore.getInstance(config.getKeyStoreType());
+
+    try (InputStream is = loadKeyStoreStream(config.getKeyStorePath())) {
+      keyStore.load(is, config.getKeyStorePassword().toCharArray());
     }
 
-    /**
-     * 加载密钥管理器
-     */
-    private KeyManager[] loadKeyManagers(SslConfig config) 
-            throws KeyStoreException, NoSuchAlgorithmException, 
-                   CertificateException, IOException, UnrecoverableKeyException {
-        
-        KeyStore keyStore = KeyStore.getInstance(config.getKeyStoreType());
-        
-        try (InputStream is = loadKeyStoreStream(config.getKeyStorePath())) {
-            keyStore.load(is, config.getKeyStorePassword().toCharArray());
-        }
-        
-        KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        factory.init(keyStore, config.getKeyStorePassword().toCharArray());
-        
-        return factory.getKeyManagers();
+    KeyManagerFactory factory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    factory.init(keyStore, config.getKeyStorePassword().toCharArray());
+
+    return factory.getKeyManagers();
+  }
+
+  /** 加载信任管理器 */
+  private TrustManager[] loadTrustManagers(SslConfig config)
+      throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+
+    KeyStore trustStore = KeyStore.getInstance(config.getKeyStoreType());
+
+    try (InputStream is = loadKeyStoreStream(config.getTrustStorePath())) {
+      trustStore.load(is, config.getTrustStorePassword().toCharArray());
     }
 
-    /**
-     * 加载信任管理器
-     */
-    private TrustManager[] loadTrustManagers(SslConfig config) 
-            throws KeyStoreException, NoSuchAlgorithmException, 
-                   CertificateException, IOException {
-        
-        KeyStore trustStore = KeyStore.getInstance(config.getKeyStoreType());
-        
-        try (InputStream is = loadKeyStoreStream(config.getTrustStorePath())) {
-            trustStore.load(is, config.getTrustStorePassword().toCharArray());
-        }
-        
-        TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        factory.init(trustStore);
-        
-        return factory.getTrustManagers();
+    TrustManagerFactory factory =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    factory.init(trustStore);
+
+    return factory.getTrustManagers();
+  }
+
+  /** 加载密钥库文件流 */
+  private InputStream loadKeyStoreStream(String path) throws IOException {
+    // 首先尝试从文件系统加载
+    Path filePath = Paths.get(path);
+    if (Files.exists(filePath)) {
+      return Files.newInputStream(filePath);
     }
 
-    /**
-     * 加载密钥库文件流
-     */
-    private InputStream loadKeyStoreStream(String path) throws IOException {
-        // 首先尝试从文件系统加载
-        Path filePath = Paths.get(path);
-        if (Files.exists(filePath)) {
-            return Files.newInputStream(filePath);
-        }
-        
-        // 然后尝试从类路径加载
-        InputStream is = getClass().getClassLoader().getResourceAsStream(path);
-        if (is != null) {
-            return is;
-        }
-        
-        throw new IOException("KeyStore not found: " + path);
+    // 然后尝试从类路径加载
+    InputStream is = getClass().getClassLoader().getResourceAsStream(path);
+    if (is != null) {
+      return is;
     }
 
-    // ==================== ISocketConfig 实现 ====================
+    throw new IOException("KeyStore not found: " + path);
+  }
 
-    @Override
-    public boolean isKeepAlive() { return false; }
+  // ==================== ISocketConfig 实现 ====================
 
-    @Override
-    public Duration getConnectTimeoutInSecond() { return Duration.ofSeconds(5); }
+  @Override
+  public boolean isKeepAlive() {
+    return false;
+  }
 
-    @Override
-    public Duration getWriteTimeoutInSecond() { return Duration.ofSeconds(15); }
+  @Override
+  public Duration getConnectTimeoutInSecond() {
+    return Duration.ofSeconds(5);
+  }
 
-    @Override
-    public Duration getReadTimeoutInMinute() { return Duration.ofMinutes(5); }
+  @Override
+  public Duration getWriteTimeoutInSecond() {
+    return Duration.ofSeconds(15);
+  }
 
-    @Override
-    public Duration getSoLingerInSecond() { return Duration.ofSeconds(10); }
+  @Override
+  public Duration getReadTimeoutInMinute() {
+    return Duration.ofMinutes(5);
+  }
 
-    @Override
-    public int getRcvInByte() { return (int) sslPacketBufferSize.toBytes(); }
+  @Override
+  public Duration getSoLingerInSecond() {
+    return Duration.ofSeconds(10);
+  }
 
-    @Override
-    public int getSnfInByte() { return (int) sslPacketBufferSize.toBytes(); }
+  @Override
+  public int getRcvInByte() {
+    return (int) sslPacketBufferSize.toBytes();
+  }
 
-    @Override
-    public int getSendQueueMax() { return 8; }
+  @Override
+  public int getSnfInByte() {
+    return (int) sslPacketBufferSize.toBytes();
+  }
 
-    @Override
-    public boolean isTcpNoDelay() { return true; }
+  @Override
+  public int getSendQueueMax() {
+    return 8;
+  }
 
-    @Override
-    public KeyManager[] getKeyManagers() { return consumer.keyManagers; }
+  @Override
+  public boolean isTcpNoDelay() {
+    return true;
+  }
 
-    @Override
-    public TrustManager[] getTrustManagers() { return consumer.trustManagers; }
+  @Override
+  public KeyManager[] getKeyManagers() {
+    return consumer.keyManagers;
+  }
 
-    @Override
-    public boolean isClientAuth() { return consumer.isClientAuth(); }
+  @Override
+  public TrustManager[] getTrustManagers() {
+    return consumer.trustManagers;
+  }
 
-    @Override
-    public int getSslPacketBufferSize() { return (int) sslPacketBufferSize.toBytes(); }
-    
-    public DataSize getSslPacketBufferSizeValue() { return sslPacketBufferSize; }
-    public void setSslPacketBufferSize(DataSize sslPacketBufferSize) { this.sslPacketBufferSize = sslPacketBufferSize; }
+  @Override
+  public boolean isClientAuth() {
+    return consumer.isClientAuth();
+  }
 
-    @Override
-    public int getSslAppBufferSize() { return (int) sslAppBufferSize.toBytes(); }
-    
-    public DataSize getSslAppBufferSizeValue() { return sslAppBufferSize; }
-    public void setSslAppBufferSize(DataSize sslAppBufferSize) { this.sslAppBufferSize = sslAppBufferSize; }
+  @Override
+  public int getSslPacketBufferSize() {
+    return (int) sslPacketBufferSize.toBytes();
+  }
 
-    // ==================== 获取各组件配置 ====================
+  public DataSize getSslPacketBufferSizeValue() {
+    return sslPacketBufferSize;
+  }
 
-    public SslConfig getProvider() { return provider; }
-    public void setProvider(SslConfig provider) { this.provider = provider; }
+  public void setSslPacketBufferSize(DataSize sslPacketBufferSize) {
+    this.sslPacketBufferSize = sslPacketBufferSize;
+  }
 
-    public SslConfig getConsumer() { return consumer; }
-    public void setConsumer(SslConfig consumer) { this.consumer = consumer; }
+  @Override
+  public int getSslAppBufferSize() {
+    return (int) sslAppBufferSize.toBytes();
+  }
 
-    public SslConfig getCluster() { return cluster; }
-    public void setCluster(SslConfig cluster) { this.cluster = cluster; }
+  public DataSize getSslAppBufferSizeValue() {
+    return sslAppBufferSize;
+  }
 
-    public SslConfig getInternal() { return internal; }
-    public void setInternal(SslConfig internal) { this.internal = internal; }
+  public void setSslAppBufferSize(DataSize sslAppBufferSize) {
+    this.sslAppBufferSize = sslAppBufferSize;
+  }
 
-    public SSLContext getProviderSslContext() { return provider.sslContext; }
-    public SSLContext getConsumerSslContext() { return consumer.sslContext; }
-    public SSLContext getClusterSslContext() { return cluster.sslContext; }
-    public SSLContext getInternalSslContext() { return internal.sslContext; }
+  // ==================== 获取各组件配置 ====================
 
-    public boolean isEnableSessionCreation() { return enableSessionCreation; }
-    public void setEnableSessionCreation(boolean enableSessionCreation) { this.enableSessionCreation = enableSessionCreation; }
+  public SslConfig getProvider() {
+    return provider;
+  }
 
-    public int getSessionTimeout() { return sessionTimeout; }
-    public void setSessionTimeout(int sessionTimeout) { this.sessionTimeout = sessionTimeout; }
+  public void setProvider(SslConfig provider) {
+    this.provider = provider;
+  }
 
-    /**
-     * 检查指定组件是否启用 TLS
-     */
-    public boolean isSslEnabled(String component) {
-        return switch (component.toLowerCase()) {
-            case "provider" -> provider.isEnabled();
-            case "consumer" -> consumer.isEnabled();
-            case "cluster" -> cluster.isEnabled();
-            case "internal" -> internal.isEnabled();
-            default -> false;
-        };
-    }
+  public SslConfig getConsumer() {
+    return consumer;
+  }
 
-    /**
-     * 获取指定组件的 SSL 上下文
-     */
-    public SSLContext getSslContext(String component) {
-        return switch (component.toLowerCase()) {
-            case "provider" -> provider.sslContext;
-            case "consumer" -> consumer.sslContext;
-            case "cluster" -> cluster.sslContext;
-            case "internal" -> internal.sslContext;
-            default -> null;
-        };
-    }
+  public void setConsumer(SslConfig consumer) {
+    this.consumer = consumer;
+  }
 
-    @Override
-    public String toString() {
-        return String.format("SslSocketConfig{provider=%s, consumer=%s, cluster=%s, internal=%s}",
-                provider.isEnabled(), consumer.isEnabled(), cluster.isEnabled(), internal.isEnabled());
-    }
+  public SslConfig getCluster() {
+    return cluster;
+  }
+
+  public void setCluster(SslConfig cluster) {
+    this.cluster = cluster;
+  }
+
+  public SslConfig getInternal() {
+    return internal;
+  }
+
+  public void setInternal(SslConfig internal) {
+    this.internal = internal;
+  }
+
+  public SSLContext getProviderSslContext() {
+    return provider.sslContext;
+  }
+
+  public SSLContext getConsumerSslContext() {
+    return consumer.sslContext;
+  }
+
+  public SSLContext getClusterSslContext() {
+    return cluster.sslContext;
+  }
+
+  public SSLContext getInternalSslContext() {
+    return internal.sslContext;
+  }
+
+  public boolean isEnableSessionCreation() {
+    return enableSessionCreation;
+  }
+
+  public void setEnableSessionCreation(boolean enableSessionCreation) {
+    this.enableSessionCreation = enableSessionCreation;
+  }
+
+  public int getSessionTimeout() {
+    return sessionTimeout;
+  }
+
+  public void setSessionTimeout(int sessionTimeout) {
+    this.sessionTimeout = sessionTimeout;
+  }
+
+  /** 检查指定组件是否启用 TLS */
+  public boolean isSslEnabled(String component) {
+    return switch (component.toLowerCase()) {
+      case "provider" -> provider.isEnabled();
+      case "consumer" -> consumer.isEnabled();
+      case "cluster" -> cluster.isEnabled();
+      case "internal" -> internal.isEnabled();
+      default -> false;
+    };
+  }
+
+  /** 获取指定组件的 SSL 上下文 */
+  public SSLContext getSslContext(String component) {
+    return switch (component.toLowerCase()) {
+      case "provider" -> provider.sslContext;
+      case "consumer" -> consumer.sslContext;
+      case "cluster" -> cluster.sslContext;
+      case "internal" -> internal.sslContext;
+      default -> null;
+    };
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "SslSocketConfig{provider=%s, consumer=%s, cluster=%s, internal=%s}",
+        provider.isEnabled(), consumer.isEnabled(), cluster.isEnabled(), internal.isEnabled());
+  }
 }

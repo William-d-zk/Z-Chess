@@ -35,40 +35,35 @@ import com.lmax.disruptor.RingBuffer;
 /**
  * @author william.d.zk
  */
-public class EncodedHandler
-        implements IPipeHandler<QEvent>
-{
-    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+public class EncodedHandler implements IPipeHandler<QEvent> {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
-    private final RingBuffer<QEvent> _Error;
-    private final IHealth            _Health = new Health(-1);
+  private final RingBuffer<QEvent> _Error;
+  private final IHealth _Health = new Health(-1);
 
-    public EncodedHandler(RingBuffer<QEvent> error)
-    {
-        _Error = error;
+  public EncodedHandler(RingBuffer<QEvent> error) {
+    _Error = error;
+  }
+
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
+
+  @Override
+  public void onEvent(QEvent event, long sequence) throws Exception {
+    if (event.hasError()) {
+      IPair errorContent = event.getComponent();
+      ISession session = errorContent.getSecond();
+      if (session.isValid()) {
+        error(_Error, event.getErrorType(), errorContent, event.getEventBinaryOp());
+      }
     }
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
-
-    @Override
-    public void onEvent(QEvent event, long sequence) throws Exception
-    {
-        if(event.hasError()) {
-            IPair errorContent = event.getComponent();
-            ISession session = errorContent.getSecond();
-            if(session.isValid()) {
-                error(_Error, event.getErrorType(), errorContent, event.getEventBinaryOp());
-            }
-        }
-    }
-
-    @Override
-    public Logger _Logger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger _Logger() {
+    return _Logger;
+  }
 }

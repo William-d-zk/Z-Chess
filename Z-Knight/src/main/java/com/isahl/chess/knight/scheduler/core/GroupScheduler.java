@@ -24,14 +24,13 @@
 package com.isahl.chess.knight.scheduler.core;
 
 import com.isahl.chess.knight.scheduler.domain.Task;
-
 import java.util.List;
 
-public interface GroupScheduler
-{
-    Task dispatchToGroup(String taskId, String payload, String groupId, List<String> targetNodes, int timeoutSeconds);
+public interface GroupScheduler {
+  Task dispatchToGroup(
+      String taskId, String payload, String groupId, List<String> targetNodes, int timeoutSeconds);
 
-    Task broadcastToGroup(String taskId, String payload, String groupId, int timeoutSeconds);
+  Task broadcastToGroup(String taskId, String payload, String groupId, int timeoutSeconds);
 
-    int getGroupPendingCount(String groupId);
+  int getGroupPendingCount(String groupId);
 }

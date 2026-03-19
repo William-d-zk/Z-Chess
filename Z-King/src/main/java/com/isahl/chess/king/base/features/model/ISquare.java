@@ -29,16 +29,14 @@ import com.isahl.chess.king.base.features.IDuplicate;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface ISquare
-        extends IDuplicate
-{
-    <FIRST> FIRST getFirst();
+public interface ISquare extends IDuplicate {
+  <FIRST> FIRST getFirst();
 
-    <SECOND> SECOND getSecond();
+  <SECOND> SECOND getSecond();
 
-    <THIRD> THIRD getThird();
+  <THIRD> THIRD getThird();
 
-    <FOURTH> FOURTH getFourth();
+  <FOURTH> FOURTH getFourth();
 
-    ISquare duplicate();
+  ISquare duplicate();
 }

@@ -26,38 +26,29 @@ package com.isahl.chess.king.base.model;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_JSON_SERIAL)
-public class TextSerial
-        extends BinarySerial
-{
+public class TextSerial extends BinarySerial {
 
-    public TextSerial(String text)
-    {
-        mPayload = text.getBytes(StandardCharsets.UTF_8);
-    }
+  public TextSerial(String text) {
+    mPayload = text.getBytes(StandardCharsets.UTF_8);
+  }
 
-    public TextSerial()
-    {
-    }
+  public TextSerial() {}
 
-    public TextSerial(ByteBuf input)
-    {
-        super(input);
-    }
+  public TextSerial(ByteBuf input) {
+    super(input);
+  }
 
-    public String getText()
-    {
-        return mPayload == null ? null : new String(mPayload, StandardCharsets.UTF_8);
-    }
+  public String getText() {
+    return mPayload == null ? null : new String(mPayload, StandardCharsets.UTF_8);
+  }
 
-    public void setText(String text)
-    {
-        mPayload = text.getBytes(StandardCharsets.UTF_8);
-    }
+  public void setText(String text) {
+    mPayload = text.getBytes(StandardCharsets.UTF_8);
+  }
 }

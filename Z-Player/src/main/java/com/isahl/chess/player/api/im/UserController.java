@@ -26,53 +26,48 @@ package com.isahl.chess.player.api.im;
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.player.domain.User;
 import com.isahl.chess.player.repository.UserRepository;
+import java.util.Map;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("api/im/users")
-public class UserController
-{
-    private final UserRepository _UserRepository;
+public class UserController {
+  private final UserRepository _UserRepository;
 
-    @Autowired
-    public UserController(UserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
+  @Autowired
+  public UserController(UserRepository userRepository) {
+    _UserRepository = userRepository;
+  }
 
-    @GetMapping("{userId}")
-    public ZResponse<?> getUser(@PathVariable Long userId)
-    {
-        Optional<User> userOpt = _UserRepository.findById(userId);
-        if(userOpt.isEmpty()) {
-            return ZResponse.error("User not found");
-        }
-        User user = userOpt.get();
-        return ZResponse.success(Map.of(
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "displayName", user.getDisplayName(),
-                "email", user.getEmail() != null ? user.getEmail() : "",
-                "online", user.getOnline()
-        ));
+  @GetMapping("{userId}")
+  public ZResponse<?> getUser(@PathVariable Long userId) {
+    Optional<User> userOpt = _UserRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      return ZResponse.error("User not found");
     }
+    User user = userOpt.get();
+    return ZResponse.success(
+        Map.of(
+            "userId", user.getId(),
+            "username", user.getUsername(),
+            "displayName", user.getDisplayName(),
+            "email", user.getEmail() != null ? user.getEmail() : "",
+            "online", user.getOnline()));
+  }
 
-    @GetMapping("search")
-    public ZResponse<?> searchUsers(@RequestParam String username)
-    {
-        Optional<User> userOpt = _UserRepository.findByUsername(username);
-        if(userOpt.isEmpty()) {
-            return ZResponse.error("User not found");
-        }
-        User user = userOpt.get();
-        return ZResponse.success(Map.of(
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "displayName", user.getDisplayName()
-        ));
+  @GetMapping("search")
+  public ZResponse<?> searchUsers(@RequestParam String username) {
+    Optional<User> userOpt = _UserRepository.findByUsername(username);
+    if (userOpt.isEmpty()) {
+      return ZResponse.error("User not found");
     }
+    User user = userOpt.get();
+    return ZResponse.success(
+        Map.of(
+            "userId", user.getId(),
+            "username", user.getUsername(),
+            "displayName", user.getDisplayName()));
+  }
 }

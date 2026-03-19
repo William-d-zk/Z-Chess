@@ -25,99 +25,78 @@ package com.isahl.chess.square.model;
 
 import java.time.Instant;
 
-public class NodeInfo
-{
-    private String nodeId;
-    private int cpuCores;
-    private long totalMemory;
-    private long freeMemory;
-    private String status;
-    private Instant timestamp;
+public class NodeInfo {
+  private String nodeId;
+  private int cpuCores;
+  private long totalMemory;
+  private long freeMemory;
+  private String status;
+  private Instant timestamp;
 
-    public NodeInfo()
-    {
-        this.timestamp = Instant.now();
-    }
+  public NodeInfo() {
+    this.timestamp = Instant.now();
+  }
 
-    public NodeInfo(String nodeId, int cpuCores, long totalMemory, long freeMemory, String status)
-    {
-        this.nodeId = nodeId;
-        this.cpuCores = cpuCores;
-        this.totalMemory = totalMemory;
-        this.freeMemory = freeMemory;
-        this.status = status;
-        this.timestamp = Instant.now();
-    }
+  public NodeInfo(String nodeId, int cpuCores, long totalMemory, long freeMemory, String status) {
+    this.nodeId = nodeId;
+    this.cpuCores = cpuCores;
+    this.totalMemory = totalMemory;
+    this.freeMemory = freeMemory;
+    this.status = status;
+    this.timestamp = Instant.now();
+  }
 
-    public static NodeInfo create(String nodeId)
-    {
-        Runtime runtime = Runtime.getRuntime();
-        return new NodeInfo(
-                nodeId,
-                runtime.availableProcessors(),
-                runtime.maxMemory(),
-                runtime.freeMemory(),
-                "ONLINE"
-        );
-    }
+  public static NodeInfo create(String nodeId) {
+    Runtime runtime = Runtime.getRuntime();
+    return new NodeInfo(
+        nodeId, runtime.availableProcessors(), runtime.maxMemory(), runtime.freeMemory(), "ONLINE");
+  }
 
-    public String getNodeId()
-    {
-        return nodeId;
-    }
+  public String getNodeId() {
+    return nodeId;
+  }
 
-    public void setNodeId(String nodeId)
-    {
-        this.nodeId = nodeId;
-    }
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
 
-    public int getCpuCores()
-    {
-        return cpuCores;
-    }
+  public int getCpuCores() {
+    return cpuCores;
+  }
 
-    public void setCpuCores(int cpuCores)
-    {
-        this.cpuCores = cpuCores;
-    }
+  public void setCpuCores(int cpuCores) {
+    this.cpuCores = cpuCores;
+  }
 
-    public long getTotalMemory()
-    {
-        return totalMemory;
-    }
+  public long getTotalMemory() {
+    return totalMemory;
+  }
 
-    public void setTotalMemory(long totalMemory)
-    {
-        this.totalMemory = totalMemory;
-    }
+  public void setTotalMemory(long totalMemory) {
+    this.totalMemory = totalMemory;
+  }
 
-    public long getFreeMemory()
-    {
-        return freeMemory;
-    }
+  public long getFreeMemory() {
+    return freeMemory;
+  }
 
-    public void setFreeMemory(long freeMemory)
-    {
-        this.freeMemory = freeMemory;
-    }
+  public void setFreeMemory(long freeMemory) {
+    this.freeMemory = freeMemory;
+  }
 
-    public String getStatus()
-    {
-        return status;
-    }
+  public String getStatus() {
+    return status;
+  }
 
-    public void setStatus(String status)
-    {
-        this.status = status;
-    }
+  public void setStatus(String status) {
+    this.status = status;
+  }
 
-    public Instant getTimestamp()
-    {
-        return timestamp;
-    }
+  public Instant getTimestamp() {
+    return timestamp;
+  }
 
-    public void setTimestamp(Instant timestamp)
-    {
-        this.timestamp = timestamp;
-    }
+  public void setTimestamp(Instant timestamp) {
+    this.timestamp = timestamp;
+  }
 }

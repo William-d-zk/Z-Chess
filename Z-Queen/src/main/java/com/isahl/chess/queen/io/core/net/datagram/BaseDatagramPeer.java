@@ -29,7 +29,6 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
@@ -42,69 +41,54 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author William.d.zk
  */
-public class BaseDatagramPeer
-        implements IAioClient
-{
+public class BaseDatagramPeer implements IAioClient {
 
-    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
+  private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
 
-    private final TimeWheel                                            _TimeWheel;
-    private final Selector                                             _Selector;
-    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new ConcurrentHashMap<>();
+  private final TimeWheel _TimeWheel;
+  private final Selector _Selector;
+  private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap =
+      new ConcurrentHashMap<>();
 
-    public BaseDatagramPeer(TimeWheel timeWheel) throws IOException
-    {
-        _TimeWheel = timeWheel;
-        _Selector = Selector.open();
+  public BaseDatagramPeer(TimeWheel timeWheel) throws IOException {
+    _TimeWheel = timeWheel;
+    _Selector = Selector.open();
+  }
+
+  private final ReentrantLock _Lock = new ReentrantLock();
+
+  @Override
+  public void connect(IAioConnector connector) throws IOException {
+    _Lock.lock();
+    try {
+      InetSocketAddress remoteAddress = connector.getRemoteAddress();
+      DatagramChannel _DatagramChannel = DatagramChannel.open();
+      _DatagramChannel.bind(connector.getLocalAddress());
+      _DatagramChannel.connect(remoteAddress);
+      _DatagramChannel.configureBlocking(false);
+      _DatagramChannel.register(_Selector, SelectionKey.OP_READ, connector);
+      Pair<Integer, IAioConnector> pair =
+          _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
+      int retryCount = 0;
+      if (pair != null) {
+        retryCount = pair.getFirst();
+        pair.setFirst(++retryCount);
+      }
+      _Logger.info("udp peer connect to %s,@ %d", remoteAddress, retryCount);
+    } finally {
+      _Lock.unlock();
     }
+  }
 
-    private final ReentrantLock _Lock = new ReentrantLock();
+  @Override
+  public void shutdown(ISession session) {}
 
-    @Override
-    public void connect(IAioConnector connector) throws IOException
-    {
-        _Lock.lock();
-        try {
-            InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            DatagramChannel _DatagramChannel = DatagramChannel.open();
-            _DatagramChannel.bind(connector.getLocalAddress());
-            _DatagramChannel.connect(remoteAddress);
-            _DatagramChannel.configureBlocking(false);
-            _DatagramChannel.register(_Selector, SelectionKey.OP_READ, connector);
-            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
-            int retryCount = 0;
-            if(pair != null) {
-                retryCount = pair.getFirst();
-                pair.setFirst(++retryCount);
-            }
-            _Logger.info("udp peer connect to %s,@ %d", remoteAddress, retryCount);
-        }
-        finally {
-            _Lock.unlock();
-        }
-    }
+  @Override
+  public void onFailed(IAioConnector iAioConnector) {}
 
-    @Override
-    public void shutdown(ISession session)
-    {
+  @Override
+  public void onCreated(ISession session) {}
 
-    }
-
-    @Override
-    public void onFailed(IAioConnector iAioConnector)
-    {
-
-    }
-
-    @Override
-    public void onCreated(ISession session)
-    {
-
-    }
-
-    @Override
-    public void onDismiss(ISession session)
-    {
-
-    }
+  @Override
+  public void onDismiss(ISession session) {}
 }

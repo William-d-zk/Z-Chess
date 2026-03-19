@@ -25,20 +25,17 @@ package com.isahl.chess.knight.scheduler.repository;
 
 import com.isahl.chess.knight.scheduler.domain.SubTask;
 import com.isahl.chess.knight.scheduler.domain.SubTaskStatus;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface SubTaskRepository
-        extends JpaRepository<SubTask, String>
-{
-    List<SubTask> findByTaskId(String taskId);
+public interface SubTaskRepository extends JpaRepository<SubTask, String> {
+  List<SubTask> findByTaskId(String taskId);
 
-    List<SubTask> findByStatus(SubTaskStatus status);
+  List<SubTask> findByStatus(SubTaskStatus status);
 
-    List<SubTask> findByStatusAndTargetNode(SubTaskStatus status, String nodeId);
+  List<SubTask> findByStatusAndTargetNode(SubTaskStatus status, String nodeId);
 
-    List<SubTask> findByTaskIdAndStatus(String taskId, SubTaskStatus status);
+  List<SubTask> findByTaskIdAndStatus(String taskId, SubTaskStatus status);
 }

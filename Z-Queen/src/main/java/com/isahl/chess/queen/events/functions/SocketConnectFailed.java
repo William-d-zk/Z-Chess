@@ -30,23 +30,20 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 /**
  * @author william.d.zk
  */
-public class SocketConnectFailed
-        implements IBinaryOperator<Throwable, IAioConnection, Void>
-{
+public class SocketConnectFailed implements IBinaryOperator<Throwable, IAioConnection, Void> {
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
-    @Override
-    public Void handle(Throwable throwable, IAioConnection connector)
-    {
-        _Logger.warning("handler connect failed!@[ %s ]", throwable, connector.getRemoteAddress());
-        connector.error();
-        return null;
-    }
+  @Override
+  public Void handle(Throwable throwable, IAioConnection connector) {
+    _Logger.warning("handler connect failed!@[ %s ]", throwable, connector.getRemoteAddress());
+    connector.error();
+    return null;
+  }
 
-    @Override
-    public String getName()
-    {
-        return "operator.connected-failed";
-    }
+  @Override
+  public String getName() {
+    return "operator.connected-failed";
+  }
 }

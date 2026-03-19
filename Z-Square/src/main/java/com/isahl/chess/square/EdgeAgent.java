@@ -39,36 +39,35 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableConfigurationProperties(EdgeConfig.class)
 @EnableScheduling
-public class EdgeAgent
-        implements CommandLineRunner
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(EdgeAgent.class);
+public class EdgeAgent implements CommandLineRunner {
+  private static final Logger _Logger = LoggerFactory.getLogger(EdgeAgent.class);
 
-    private final EdgeConfig _Config;
-    private final EdgeClient _Client;
-    private final TaskExecutor _Executor;
-    private final HeartbeatScheduler _Heartbeat;
+  private final EdgeConfig _Config;
+  private final EdgeClient _Client;
+  private final TaskExecutor _Executor;
+  private final HeartbeatScheduler _Heartbeat;
 
-    @Autowired
-    public EdgeAgent(EdgeConfig config, EdgeClient client, TaskExecutor executor, HeartbeatScheduler heartbeat)
-    {
-        _Config = config;
-        _Client = client;
-        _Executor = executor;
-        _Heartbeat = heartbeat;
-    }
+  @Autowired
+  public EdgeAgent(
+      EdgeConfig config, EdgeClient client, TaskExecutor executor, HeartbeatScheduler heartbeat) {
+    _Config = config;
+    _Client = client;
+    _Executor = executor;
+    _Heartbeat = heartbeat;
+  }
 
-    public static void main(String[] args)
-    {
-        SpringApplication.run(EdgeAgent.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(EdgeAgent.class, args);
+  }
 
-    @Override
-    public void run(String... args)
-    {
-        _Logger.info("Starting Z-Square Agent: nodeId={}, schedulerUrl={}", _Config.getNodeId(), _Config.getSchedulerUrl());
-        _Heartbeat.start();
-        _Client.startListening(_Executor);
-        _Logger.info("Z-Square Agent started successfully");
-    }
+  @Override
+  public void run(String... args) {
+    _Logger.info(
+        "Starting Z-Square Agent: nodeId={}, schedulerUrl={}",
+        _Config.getNodeId(),
+        _Config.getSchedulerUrl());
+    _Heartbeat.start();
+    _Client.startListening(_Executor);
+    _Logger.info("Z-Square Agent started successfully");
+  }
 }

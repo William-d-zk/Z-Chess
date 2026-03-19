@@ -29,8 +29,6 @@ import java.nio.channels.AsynchronousChannelGroup;
 /**
  * @author William.d.zk
  */
-public interface IClusterCore
-        extends IPipeCore
-{
-    AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
+public interface IClusterCore extends IPipeCore {
+  AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
 }

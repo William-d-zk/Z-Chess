@@ -28,18 +28,13 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectError;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnected;
 import com.isahl.chess.queen.io.core.features.model.session.ICreator;
-
 import java.nio.channels.AsynchronousSocketChannel;
 
 /**
  * @author william.d.zk
  */
 public interface IAioConnection
-        extends ICreator<AsynchronousSocketChannel>,
-                IConnectActivity,
-                IConnectError,
-                IConnected
-{
-    @Override
-    IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator();
+    extends ICreator<AsynchronousSocketChannel>, IConnectActivity, IConnectError, IConnected {
+  @Override
+  IBinaryOperator<Throwable, IAioConnection, Void> getErrorOperator();
 }

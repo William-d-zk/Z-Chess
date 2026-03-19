@@ -23,58 +23,51 @@
 
 package com.isahl.chess.queen.events.functions;
 
+import static com.isahl.chess.king.base.features.IError.Type.*;
+
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
-
 import java.io.EOFException;
 import java.nio.channels.CompletionHandler;
-
-import static com.isahl.chess.king.base.features.IError.Type.*;
 
 /**
  * @author william.d.zk
  */
-public class AioReader
-        implements CompletionHandler<Integer, ISession>
-{
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+public class AioReader implements CompletionHandler<Integer, ISession> {
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
-    @Override
-    public void completed(Integer result, ISession session)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        switch(result) {
-            case -1 -> worker.publishReadError(session.getError(),
-                                               READ_EOF,
-                                               new EOFException("Read Negative"),
-                                               session);
-            case 0 -> {
-                worker.publishReadError(session.getError(), READ_ZERO, new IllegalStateException("Read Zero"), session);
-                try {
-                    session.readNext(this);
-                }
-                catch(Exception e) {
-                    _Logger.debug("Failed to read next: %s", e.getMessage());
-                }
-            }
-            default -> {
-                _Logger.debug("read count: %d | %s", result, session);
-                try {
-                    worker.publishRead(session.getDecoder(), new AioPacket(session.read(result)), session);
-                }
-                catch(Exception e) {
-                    worker.publishReadError(session.getError(), READ_FAILED, e, session);
-                }
-            }
+  @Override
+  public void completed(Integer result, ISession session) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    switch (result) {
+      case -1 -> worker.publishReadError(
+          session.getError(), READ_EOF, new EOFException("Read Negative"), session);
+      case 0 -> {
+        worker.publishReadError(
+            session.getError(), READ_ZERO, new IllegalStateException("Read Zero"), session);
+        try {
+          session.readNext(this);
+        } catch (Exception e) {
+          _Logger.debug("Failed to read next: %s", e.getMessage());
         }
+      }
+      default -> {
+        _Logger.debug("read count: %d | %s", result, session);
+        try {
+          worker.publishRead(session.getDecoder(), new AioPacket(session.read(result)), session);
+        } catch (Exception e) {
+          worker.publishReadError(session.getError(), READ_FAILED, e, session);
+        }
+      }
     }
+  }
 
-    @Override
-    public void failed(Throwable exc, ISession session)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishReadError(session.getError(), READ_FAILED, exc, session);
-    }
+  @Override
+  public void failed(Throwable exc, ISession session) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    worker.publishReadError(session.getError(), READ_FAILED, exc, session);
+  }
 }

@@ -23,7 +23,4 @@
 
 package com.isahl.chess.queen.io.core.features.model.session.ssl;
 
-public interface ISslContext
-{
-
-}
+public interface ISslContext {}

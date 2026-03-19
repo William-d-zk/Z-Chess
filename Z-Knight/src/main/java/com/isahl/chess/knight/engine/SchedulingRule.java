@@ -24,46 +24,38 @@
 package com.isahl.chess.knight.engine;
 
 import com.isahl.chess.knight.policy.Policy;
-
 import java.util.List;
 
-public interface SchedulingRule
-{
-    String getRuleId();
+public interface SchedulingRule {
+  String getRuleId();
 
-    String getRuleType();
+  String getRuleType();
 
-    boolean validate();
+  boolean validate();
 
-    List<String> resolveTargetNodes(SchedulerEngine.TaskContext context);
+  List<String> resolveTargetNodes(SchedulerEngine.TaskContext context);
 
-    Policy getPolicy(String policyType);
+  Policy getPolicy(String policyType);
 
-    interface DispatchRule
-            extends SchedulingRule
-    {
-        List<String> getTargetNodes();
+  interface DispatchRule extends SchedulingRule {
+    List<String> getTargetNodes();
 
-        boolean isBroadcast();
-    }
+    boolean isBroadcast();
+  }
 
-    interface ClaimRule
-            extends SchedulingRule
-    {
-        int getMaxClaimCount();
+  interface ClaimRule extends SchedulingRule {
+    int getMaxClaimCount();
 
-        long getClaimIntervalMs();
+    long getClaimIntervalMs();
 
-        boolean isExclusive();
-    }
+    boolean isExclusive();
+  }
 
-    interface GroupRule
-            extends SchedulingRule
-    {
-        String getGroupId();
+  interface GroupRule extends SchedulingRule {
+    String getGroupId();
 
-        int getMinNodesRequired();
+    int getMinNodesRequired();
 
-        boolean allowCrossGroup();
-    }
+    boolean allowCrossGroup();
+  }
 }

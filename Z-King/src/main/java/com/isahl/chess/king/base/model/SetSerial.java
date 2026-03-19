@@ -29,7 +29,6 @@ import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.ICollectionSerial;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -38,35 +37,28 @@ import java.util.TreeSet;
  * @date 2022-01-07
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class SetSerial<T extends IoSerial & Comparable<T>>
-        extends TreeSet<T>
-        implements ICollectionSerial<T>
-{
-    private final IoFactory<T> _Factory;
+public class SetSerial<T extends IoSerial & Comparable<T>> extends TreeSet<T>
+    implements ICollectionSerial<T> {
+  private final IoFactory<T> _Factory;
 
-    public SetSerial(IoFactory<T> factory)
-    {
-        super();
-        _Factory = factory;
-    }
+  public SetSerial(IoFactory<T> factory) {
+    super();
+    _Factory = factory;
+  }
 
-    public SetSerial(IoFactory<T> factory, Collection<T> e)
-    {
-        super(e);
-        _Factory = factory;
-    }
+  public SetSerial(IoFactory<T> factory, Collection<T> e) {
+    super(e);
+    _Factory = factory;
+  }
 
-    public SetSerial(ByteBuf input, IoFactory<T> factory)
-    {
-        super();
-        _Factory = factory;
-        decode(input);
-    }
+  public SetSerial(ByteBuf input, IoFactory<T> factory) {
+    super();
+    _Factory = factory;
+    decode(input);
+  }
 
-    @Override
-    public IoFactory<T> factory()
-    {
-        return _Factory;
-    }
-
+  @Override
+  public IoFactory<T> factory() {
+    return _Factory;
+  }
 }

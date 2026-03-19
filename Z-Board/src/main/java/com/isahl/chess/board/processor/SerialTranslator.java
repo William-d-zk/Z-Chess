@@ -35,71 +35,73 @@ import com.sun.tools.javac.util.Names;
 /**
  * @author william.d.zk
  */
-public class SerialTranslator
-        extends TreeTranslator
-{
-    private final Context _Context;
-    private final int     _Parent, _Serial;
-    private final SerialProcessor _Processor;
+public class SerialTranslator extends TreeTranslator {
+  private final Context _Context;
+  private final int _Parent, _Serial;
+  private final SerialProcessor _Processor;
 
-    public SerialTranslator(SerialProcessor processor, Context context, int parent, int serial)
-    {
-        _Processor = processor;
-        _Context = context;
-        _Parent = parent;
-        _Serial = serial;
+  public SerialTranslator(SerialProcessor processor, Context context, int parent, int serial) {
+    _Processor = processor;
+    _Context = context;
+    _Parent = parent;
+    _Serial = serial;
+  }
+
+  @Override
+  public void visitClassDef(JCTree.JCClassDecl clazz) {
+    super.visitClassDef(clazz);
+    final TreeMaker _Maker = TreeMaker.instance(_Context);
+    final Names _Names = Names.instance(_Context);
+    final Symtab _Symtab = Symtab.instance(_Context);
+    if (!_Processor.existMethodSerial()) {
+      final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
+      final JCTree.JCBlock _Block = _Maker.Block(0, List.of(_Maker.Return(_SerialValue)));
+      clazz.defs =
+          clazz.defs.append(
+              _Maker.MethodDef(
+                  _Maker.Modifiers(Flags.PUBLIC),
+                  _Names.fromString("serial"),
+                  _Maker.Type(_Symtab.intType),
+                  List.nil(),
+                  List.nil(),
+                  List.nil(),
+                  _Block,
+                  null));
     }
-
-    @Override
-    public void visitClassDef(JCTree.JCClassDecl clazz)
-    {
-        super.visitClassDef(clazz);
-        final TreeMaker _Maker = TreeMaker.instance(_Context);
-        final Names _Names = Names.instance(_Context);
-        final Symtab _Symtab = Symtab.instance(_Context);
-        if(!_Processor.existMethodSerial()) {
-            final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
-            final JCTree.JCBlock _Block = _Maker.Block(0, List.of(_Maker.Return(_SerialValue)));
-            clazz.defs = clazz.defs.append(_Maker.MethodDef(_Maker.Modifiers(Flags.PUBLIC),
-                                                            _Names.fromString("serial"),
-                                                            _Maker.Type(_Symtab.intType),
-                                                            List.nil(),
-                                                            List.nil(),
-                                                            List.nil(),
-                                                            _Block,
-                                                            null));
-        }
-        if(!_Processor.existMethodSuper()) {
-            final JCTree.JCExpression _SuperValue = _Maker.Literal(_Parent);
-            final JCTree.JCBlock _Block = _Maker.Block(0, List.of(_Maker.Return(_SuperValue)));
-            clazz.defs = clazz.defs.append(_Maker.MethodDef(_Maker.Modifiers(Flags.PUBLIC),
-                                                            _Names.fromString("_super"),
-                                                            _Maker.Type(_Symtab.intType),
-                                                            List.nil(),
-                                                            List.nil(),
-                                                            List.nil(),
-                                                            _Block,
-                                                            null));
-        }
-        /*
-        if(_Processor.existFieldSerial()) {
-            for(JCTree tree : clazz.defs) {
-                if(tree.getKind() == Tree.Kind.VARIABLE && tree.toString()
-                                                               .contains("_SERIAL"))
-                {
-                    JCTree.JCVariableDecl x = (JCTree.JCVariableDecl) tree;
-                    x.init = _Maker.Literal(_Serial);
-                }
+    if (!_Processor.existMethodSuper()) {
+      final JCTree.JCExpression _SuperValue = _Maker.Literal(_Parent);
+      final JCTree.JCBlock _Block = _Maker.Block(0, List.of(_Maker.Return(_SuperValue)));
+      clazz.defs =
+          clazz.defs.append(
+              _Maker.MethodDef(
+                  _Maker.Modifiers(Flags.PUBLIC),
+                  _Names.fromString("_super"),
+                  _Maker.Type(_Symtab.intType),
+                  List.nil(),
+                  List.nil(),
+                  List.nil(),
+                  _Block,
+                  null));
+    }
+    /*
+    if(_Processor.existFieldSerial()) {
+        for(JCTree tree : clazz.defs) {
+            if(tree.getKind() == Tree.Kind.VARIABLE && tree.toString()
+                                                           .contains("_SERIAL"))
+            {
+                JCTree.JCVariableDecl x = (JCTree.JCVariableDecl) tree;
+                x.init = _Maker.Literal(_Serial);
             }
         }
-        else {
-            final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
-            clazz.defs = clazz.defs.append(_Maker.VarDef(_Maker.Modifiers(Flags.PUBLIC | Flags.STATIC | Flags.FINAL),
-                                                         _Names.fromString("_SERIAL"),
-                                                         _Maker.Type(_Symtab.intType),
-                                                         _SerialValue));
-        }
-
-         */
     }
+    else {
+        final JCTree.JCExpression _SerialValue = _Maker.Literal(_Serial);
+        clazz.defs = clazz.defs.append(_Maker.VarDef(_Maker.Modifiers(Flags.PUBLIC | Flags.STATIC | Flags.FINAL),
+                                                     _Names.fromString("_SERIAL"),
+                                                     _Maker.Type(_Symtab.intType),
+                                                     _SerialValue));
+    }
+
+     */
+  }
 }

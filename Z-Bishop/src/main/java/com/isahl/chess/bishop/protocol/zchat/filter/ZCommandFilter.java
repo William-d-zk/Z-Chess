@@ -33,102 +33,86 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
-
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public class ZCommandFilter
-        extends AioFilterChain<ZContext, ZCommand, ZFrame>
-{
+public class ZCommandFilter extends AioFilterChain<ZContext, ZCommand, ZFrame> {
 
-    private final ZChatFactory _ZFactory;
+  private final ZChatFactory _ZFactory;
 
-    public ZCommandFilter(ZChatFactory factory)
-    {
-        super("z_command");
-        _ZFactory = Objects.requireNonNull(factory);
-    }
+  public ZCommandFilter(ZChatFactory factory) {
+    super("z_command");
+    _ZFactory = Objects.requireNonNull(factory);
+  }
 
-    @Override
-    public ZFrame encode(ZContext context, ZCommand output)
-    {
-        ZFrame frame = new ZFrame();
-        frame.header(output.header());
-        frame.withSub(output.encode(context)
-                            .array());
-        context.promotionOut();
-        return frame;
-    }
+  @Override
+  public ZFrame encode(ZContext context, ZCommand output) {
+    ZFrame frame = new ZFrame();
+    frame.header(output.header());
+    frame.withSub(output.encode(context).array());
+    context.promotionOut();
+    return frame;
+  }
 
-    @Override
-    public ZCommand decode(ZContext context, ZFrame input)
-    {
-        context.demotionIn();
-        return (ZCommand) _ZFactory.create(input, context);
-    }
+  @Override
+  public ZCommand decode(ZContext context, ZFrame input) {
+    context.demotionIn();
+    return (ZCommand) _ZFactory.create(input, context);
+  }
 
-    @Override
-    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
-    {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL) && output instanceof ZProtocol) {
-            IPContext acting = context;
-            do {
-                //@formatter:off
-                if(acting.isOutConvert() &&
-                   acting instanceof ZContext &&
-                   output instanceof IControl c &&
-                  !c.isCtrl())
-                {
-                //@formatter:on
-                    return Pair.of(ResultType.NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output) {
+    if (checkType(output, IProtocol.PROTOCOL_BISHOP_COMMAND_SERIAL)
+        && output instanceof ZProtocol) {
+      IPContext acting = context;
+      do {
+        // @formatter:off
+        if (acting.isOutConvert()
+            && acting instanceof ZContext
+            && output instanceof IControl c
+            && !c.isCtrl()) {
+          // @formatter:on
+          return Pair.of(ResultType.NEXT_STEP, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
-    {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof ZFrame f && !f.isCtrl()) {
-            IPContext acting = context;
-            do {
-                if(acting.isInConvert() && acting instanceof ZContext) {
-                    return Pair.of(ResultType.HANDLED, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input) {
+    if (checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)
+        && input instanceof ZFrame f
+        && !f.isCtrl()) {
+      IPContext acting = context;
+      do {
+        if (acting.isInConvert() && acting instanceof ZContext) {
+          return Pair.of(ResultType.HANDLED, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
-    {
-        return (I) encode((ZContext) context, (ZCommand) output);
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output) {
+    return (I) encode((ZContext) context, (ZCommand) output);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
-    {
-        return (O) decode((ZContext) context, (ZFrame) input);
-    }
-
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input) {
+    return (O) decode((ZContext) context, (ZFrame) input);
+  }
 }

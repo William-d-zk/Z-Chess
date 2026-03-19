@@ -34,7 +34,6 @@ import com.isahl.chess.queen.io.core.tasks.ServerCore;
 import com.isahl.chess.queen.io.core.tasks.features.IBizCore;
 import com.isahl.chess.queen.io.core.tasks.features.IClusterCore;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.function.Supplier;
@@ -42,42 +41,33 @@ import java.util.function.Supplier;
 /**
  * @author william.d.zk
  */
-public abstract class MixManager
-        extends AioManager
-        implements IBizCore,
-                   IClusterCore
-{
-    private final ServerCore _ServerCore;
+public abstract class MixManager extends AioManager implements IBizCore, IClusterCore {
+  private final ServerCore _ServerCore;
 
-    public MixManager(IAioConfig config, ServerCore serverCore)
-    {
-        super(config);
-        _ServerCore = serverCore;
-    }
+  public MixManager(IAioConfig config, ServerCore serverCore) {
+    super(config);
+    _ServerCore = serverCore;
+  }
 
-    public <T extends IStorage> void build(ILogicHandler.factory logicFactory,
-                                           ILinkCustom linkCustom,
-                                           IClusterCustom<T> clusterCustom,
-                                           Supplier<IEncryptor> encryptSupplier)
-    {
-        _ServerCore.build(this, logicFactory, linkCustom, clusterCustom, encryptSupplier);
-    }
+  public <T extends IStorage> void build(
+      ILogicHandler.factory logicFactory,
+      ILinkCustom linkCustom,
+      IClusterCustom<T> clusterCustom,
+      Supplier<IEncryptor> encryptSupplier) {
+    _ServerCore.build(this, logicFactory, linkCustom, clusterCustom, encryptSupplier);
+  }
 
-    @Override
-    public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
-    {
-        return _ServerCore.getServiceChannelGroup();
-    }
+  @Override
+  public AsynchronousChannelGroup getServiceChannelGroup() throws IOException {
+    return _ServerCore.getServiceChannelGroup();
+  }
 
-    @Override
-    public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
-    {
-        return _ServerCore.getClusterChannelGroup();
-    }
+  @Override
+  public AsynchronousChannelGroup getClusterChannelGroup() throws IOException {
+    return _ServerCore.getClusterChannelGroup();
+  }
 
-    public ILocalPublisher getLocalPublisher()
-    {
-        return _ServerCore;
-    }
-
+  public ILocalPublisher getLocalPublisher() {
+    return _ServerCore;
+  }
 }

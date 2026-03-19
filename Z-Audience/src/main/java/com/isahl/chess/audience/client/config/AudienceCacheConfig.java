@@ -24,45 +24,42 @@
 package com.isahl.chess.audience.client.config;
 
 import jakarta.annotation.PostConstruct;
+import java.lang.reflect.Field;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.spi.CachingProvider;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import javax.cache.CacheManager;
-import javax.cache.Caching;
-import javax.cache.spi.CachingProvider;
-import java.lang.reflect.Field;
-
-/**
- * Z-Audience 缓存配置类
- * 用于初始化 EhcacheConfig 中的静态配置并提供 CacheManager
- */
+/** Z-Audience 缓存配置类 用于初始化 EhcacheConfig 中的静态配置并提供 CacheManager */
 @Configuration
 @EnableCaching
 public class AudienceCacheConfig {
 
-    @PostConstruct
-    public void init() throws Exception {
-        // 加载 ehcache.xml 并通过反射设置 EhcacheConfig.RookConfig
-        XmlConfiguration config = new XmlConfiguration(getClass().getResource("/ehcache.xml"));
-        
-        // 获取 EhcacheConfig 类并设置静态字段
-        try {
-            Class<?> ehcacheConfigClass = Class.forName("com.isahl.chess.rook.storage.cache.config.EhcacheConfig");
-            Field rookConfigField = ehcacheConfigClass.getDeclaredField("RookConfig");
-            rookConfigField.setAccessible(true);
-            rookConfigField.set(null, config);
-        } catch (ClassNotFoundException e) {
-            // EhcacheConfig 类不存在，忽略
-        }
-    }
+  @PostConstruct
+  public void init() throws Exception {
+    // 加载 ehcache.xml 并通过反射设置 EhcacheConfig.RookConfig
+    XmlConfiguration config = new XmlConfiguration(getClass().getResource("/ehcache.xml"));
 
-    @Bean
-    @Primary
-    public CacheManager jcacheCacheManager() {
-        CachingProvider provider = Caching.getCachingProvider();
-        return provider.getCacheManager();
+    // 获取 EhcacheConfig 类并设置静态字段
+    try {
+      Class<?> ehcacheConfigClass =
+          Class.forName("com.isahl.chess.rook.storage.cache.config.EhcacheConfig");
+      Field rookConfigField = ehcacheConfigClass.getDeclaredField("RookConfig");
+      rookConfigField.setAccessible(true);
+      rookConfigField.set(null, config);
+    } catch (ClassNotFoundException e) {
+      // EhcacheConfig 类不存在，忽略
     }
+  }
+
+  @Bean
+  @Primary
+  public CacheManager jcacheCacheManager() {
+    CachingProvider provider = Caching.getCachingProvider();
+    return provider.getCacheManager();
+  }
 }

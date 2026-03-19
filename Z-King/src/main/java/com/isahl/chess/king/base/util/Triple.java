@@ -23,111 +23,92 @@
 package com.isahl.chess.king.base.util;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
 public class Triple<FIRST, SECOND, THIRD>
-        implements ITriple,
-                   Comparable<Triple<FIRST, SECOND, THIRD>>
-{
-    private FIRST  first;
-    private SECOND second;
-    private THIRD  third;
+    implements ITriple, Comparable<Triple<FIRST, SECOND, THIRD>> {
+  private FIRST first;
+  private SECOND second;
+  private THIRD third;
 
-    public Triple(FIRST first, SECOND second, THIRD third)
-    {
-        this.first = first;
-        this.second = second;
-        this.third = third;
-    }
+  public Triple(FIRST first, SECOND second, THIRD third) {
+    this.first = first;
+    this.second = second;
+    this.third = third;
+  }
 
-    public Triple()
-    {
-    }
+  public Triple() {}
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public FIRST getFirst()
-    {
-        return first;
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public FIRST getFirst() {
+    return first;
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public SECOND getSecond()
-    {
-        return second;
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public SECOND getSecond() {
+    return second;
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public THIRD getThird()
-    {
-        return third;
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public THIRD getThird() {
+    return third;
+  }
 
-    public void setFirst(FIRST f)
-    {
-        first = f;
-    }
+  public void setFirst(FIRST f) {
+    first = f;
+  }
 
-    public void setSecond(SECOND s)
-    {
-        second = s;
-    }
+  public void setSecond(SECOND s) {
+    second = s;
+  }
 
-    public void setThird(THIRD t)
-    {
-        third = t;
-    }
+  public void setThird(THIRD t) {
+    third = t;
+  }
 
-    @Override
-    public Triple<FIRST, SECOND, THIRD> duplicate()
-    {
-        return new Triple<>(first, second, third);
-    }
+  @Override
+  public Triple<FIRST, SECOND, THIRD> duplicate() {
+    return new Triple<>(first, second, third);
+  }
 
-    public static <F, S, T> Triple<F, S, T> of(F f, S s, T t)
-    {
-        return new Triple<>(f, s, t);
-    }
+  public static <F, S, T> Triple<F, S, T> of(F f, S s, T t) {
+    return new Triple<>(f, s, t);
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if(!(obj instanceof Triple)) {return false;}
-        if(this != obj) {
-            @SuppressWarnings("unchecked")
-            Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
-            return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
-        }
-        return true;
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Triple)) {
+      return false;
     }
+    if (this != obj) {
+      @SuppressWarnings("unchecked")
+      Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
+      return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
+    }
+    return true;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("< %s, %s, %s >", first, second, third);
-    }
+  @Override
+  public String toString() {
+    return String.format("< %s, %s, %s >", first, second, third);
+  }
 
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(first, second, third);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(first, second, third);
+  }
 
-    @Override
-    public int compareTo(Triple<FIRST, SECOND, THIRD> o)
-    {
-        int a = first.toString()
-                     .compareTo(o.first.toString());
-        int b = second.toString()
-                      .compareTo(o.second.toString());
-        int c = third.toString()
-                     .compareTo(o.third.toString());
-        return a == 0 ? b == 0 ? c : b : a;
-    }
+  @Override
+  public int compareTo(Triple<FIRST, SECOND, THIRD> o) {
+    int a = first.toString().compareTo(o.first.toString());
+    int b = second.toString().compareTo(o.second.toString());
+    int c = third.toString().compareTo(o.third.toString());
+    return a == 0 ? b == 0 ? c : b : a;
+  }
 }

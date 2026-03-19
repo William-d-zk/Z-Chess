@@ -27,26 +27,25 @@ import java.time.Duration;
 /**
  * @author William.d.zk
  */
-public interface IOption
-{
-    int SO_TCP_MTU      = 1500 - 40;
-    int SO_TCP_BIG_MTU  = 9000 - 40;
-    int SO_TCP_HUGE_MTU = 64000 - 40;
-    int INC_RECV_SIZE   = 1 << 12;
-    int INC_SEND_SIZE   = 1 << 12;
-    int INC_QUEUE_SIZE  = 64;
+public interface IOption {
+  int SO_TCP_MTU = 1500 - 40;
+  int SO_TCP_BIG_MTU = 9000 - 40;
+  int SO_TCP_HUGE_MTU = 64000 - 40;
+  int INC_RECV_SIZE = 1 << 12;
+  int INC_SEND_SIZE = 1 << 12;
+  int INC_QUEUE_SIZE = 64;
 
-    int getSnfByte();
+  int getSnfByte();
 
-    int getRcvByte();
+  int getRcvByte();
 
-    int getSendQueueMax();
+  int getSendQueueMax();
 
-    int getReadTimeOutInSecond();
+  int getReadTimeOutInSecond();
 
-    int getWriteTimeOutInSecond();
+  int getWriteTimeOutInSecond();
 
-    boolean isKeepAlive();
+  boolean isKeepAlive();
 
-    Duration getConnectTimeout();
+  Duration getConnectTimeout();
 }

@@ -34,20 +34,14 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  * @author William.d.zk
  * @see ISession
  */
-public interface IControl<C extends IPContext>
-        extends IFrame,
-                IMessage,
-                IStreamProtocol<C>
-{
-    C context();
+public interface IControl<C extends IPContext> extends IFrame, IMessage, IStreamProtocol<C> {
+  C context();
 
-    IControl<C> wrap(C context);
+  IControl<C> wrap(C context);
 
-    default void failed(ICode code) {}
+  default void failed(ICode code) {}
 
-    default int lack(ByteBuf input)
-    {
-        return 0;
-    }
-
+  default int lack(ByteBuf input) {
+    return 0;
+  }
 }

@@ -29,134 +29,124 @@ import com.isahl.chess.knight.scheduler.domain.SubTask;
 import com.isahl.chess.knight.scheduler.domain.Task;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("api/scheduler")
-public class SchedulerController
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(SchedulerController.class);
+public class SchedulerController {
+  private static final Logger _Logger = LoggerFactory.getLogger(SchedulerController.class);
 
-    private final TaskScheduler _DispatchScheduler;
-    private final TaskScheduler _ClaimScheduler;
+  private final TaskScheduler _DispatchScheduler;
+  private final TaskScheduler _ClaimScheduler;
 
-    @Autowired
-    public SchedulerController(TaskScheduler dispatchScheduler, TaskScheduler claimScheduler)
-    {
-        _DispatchScheduler = dispatchScheduler;
-        _ClaimScheduler = claimScheduler;
+  @Autowired
+  public SchedulerController(TaskScheduler dispatchScheduler, TaskScheduler claimScheduler) {
+    _DispatchScheduler = dispatchScheduler;
+    _ClaimScheduler = claimScheduler;
+  }
+
+  @PostMapping("tasks/dispatch")
+  public ZResponse<?> dispatchTask(@RequestBody DispatchRequest request) {
+    if (request.taskId == null || request.taskId.isEmpty()) {
+      request.taskId = UUID.randomUUID().toString();
     }
+    Task task =
+        _DispatchScheduler.dispatchTask(
+            request.taskId, request.payload, request.targetNodes, request.timeoutSeconds);
+    _Logger.info("Created dispatch task: {}", task.getTaskId());
+    return ZResponse.success(
+        Map.of(
+            "taskId", task.getTaskId(),
+            "status", task.getStatus(),
+            "subTaskCount", task.getSubTasks().size()));
+  }
 
-    @PostMapping("tasks/dispatch")
-    public ZResponse<?> dispatchTask(@RequestBody DispatchRequest request)
-    {
-        if(request.taskId == null || request.taskId.isEmpty()) {
-            request.taskId = UUID.randomUUID().toString();
-        }
-        Task task = _DispatchScheduler.dispatchTask(
-                request.taskId,
-                request.payload,
-                request.targetNodes,
-                request.timeoutSeconds
-        );
-        _Logger.info("Created dispatch task: {}", task.getTaskId());
-        return ZResponse.success(Map.of(
-                "taskId", task.getTaskId(),
-                "status", task.getStatus(),
-                "subTaskCount", task.getSubTasks().size()
-        ));
+  @PostMapping("tasks/claim")
+  public ZResponse<?> claimTask(@RequestBody ClaimRequest request) {
+    if (request.taskId == null || request.taskId.isEmpty()) {
+      request.taskId = UUID.randomUUID().toString();
     }
+    Task task =
+        _ClaimScheduler.claimTask(
+            request.taskId, request.payload, request.subTaskCount, request.timeoutSeconds);
+    _Logger.info("Created claim task: {}", task.getTaskId());
+    return ZResponse.success(
+        Map.of(
+            "taskId", task.getTaskId(),
+            "status", task.getStatus(),
+            "subTaskCount", task.getSubTasks().size()));
+  }
 
-    @PostMapping("tasks/claim")
-    public ZResponse<?> claimTask(@RequestBody ClaimRequest request)
-    {
-        if(request.taskId == null || request.taskId.isEmpty()) {
-            request.taskId = UUID.randomUUID().toString();
-        }
-        Task task = _ClaimScheduler.claimTask(
-                request.taskId,
-                request.payload,
-                request.subTaskCount,
-                request.timeoutSeconds
-        );
-        _Logger.info("Created claim task: {}", task.getTaskId());
-        return ZResponse.success(Map.of(
-                "taskId", task.getTaskId(),
-                "status", task.getStatus(),
-                "subTaskCount", task.getSubTasks().size()
-        ));
+  @PostMapping("tasks/{taskId}/claim")
+  public ZResponse<?> nodeClaim(
+      @PathVariable String taskId,
+      @RequestParam String nodeId,
+      @RequestParam(defaultValue = "1") int maxCount) {
+    Optional<SubTask> claimed = _ClaimScheduler.claimSubTasks(nodeId, maxCount);
+    if (claimed.isPresent()) {
+      SubTask st = claimed.get();
+      return ZResponse.success(
+          Map.of(
+              "subTaskId", st.getSubTaskId(),
+              "taskId", st.getTaskId(),
+              "payload", st.getPayload() != null ? st.getPayload() : ""));
     }
+    return ZResponse.success("No tasks available");
+  }
 
-    @PostMapping("tasks/{taskId}/claim")
-    public ZResponse<?> nodeClaim(@PathVariable String taskId, @RequestParam String nodeId, @RequestParam(defaultValue = "1") int maxCount)
-    {
-        Optional<SubTask> claimed = _ClaimScheduler.claimSubTasks(nodeId, maxCount);
-        if(claimed.isPresent()) {
-            SubTask st = claimed.get();
-            return ZResponse.success(Map.of(
-                    "subTaskId", st.getSubTaskId(),
-                    "taskId", st.getTaskId(),
-                    "payload", st.getPayload() != null ? st.getPayload() : ""
-            ));
-        }
-        return ZResponse.success("No tasks available");
-    }
+  @PostMapping("results")
+  public ZResponse<?> reportResult(@RequestBody ResultRequest request) {
+    _ClaimScheduler.reportResult(request.subTaskId, request.result, request.success);
+    _Logger.info("Reported result for subTask {}: success={}", request.subTaskId, request.success);
+    return ZResponse.success("Result recorded");
+  }
 
-    @PostMapping("results")
-    public ZResponse<?> reportResult(@RequestBody ResultRequest request)
-    {
-        _ClaimScheduler.reportResult(request.subTaskId, request.result, request.success);
-        _Logger.info("Reported result for subTask {}: success={}", request.subTaskId, request.success);
-        return ZResponse.success("Result recorded");
+  @GetMapping("tasks/{taskId}")
+  public ZResponse<?> getTaskStatus(@PathVariable String taskId) {
+    TaskStatus status = _DispatchScheduler.getTaskStatus(taskId);
+    if (status == null) {
+      status = _ClaimScheduler.getTaskStatus(taskId);
     }
+    if (status == null) {
+      return ZResponse.error("Task not found");
+    }
+    TaskResult result = _ClaimScheduler.getTaskResult(taskId);
+    return ZResponse.success(
+        Map.of(
+            "taskId",
+            taskId,
+            "status",
+            status,
+            "result",
+            result != null ? result.getAggregatedResult() : "",
+            "progress",
+            result != null ? result.getSubTaskResults().size() : 0));
+  }
 
-    @GetMapping("tasks/{taskId}")
-    public ZResponse<?> getTaskStatus(@PathVariable String taskId)
-    {
-        TaskStatus status = _DispatchScheduler.getTaskStatus(taskId);
-        if(status == null) {
-            status = _ClaimScheduler.getTaskStatus(taskId);
-        }
-        if(status == null) {
-            return ZResponse.error("Task not found");
-        }
-        TaskResult result = _ClaimScheduler.getTaskResult(taskId);
-        return ZResponse.success(Map.of(
-                "taskId", taskId,
-                "status", status,
-                "result", result != null ? result.getAggregatedResult() : "",
-                "progress", result != null ? result.getSubTaskResults().size() : 0
-        ));
-    }
+  public static class DispatchRequest {
+    public String taskId;
+    public String payload;
+    public List<String> targetNodes;
+    public int timeoutSeconds = 3600;
+  }
 
-    public static class DispatchRequest
-    {
-        public String taskId;
-        public String payload;
-        public List<String> targetNodes;
-        public int timeoutSeconds = 3600;
-    }
+  public static class ClaimRequest {
+    public String taskId;
+    public String payload;
+    public int subTaskCount;
+    public int timeoutSeconds = 3600;
+  }
 
-    public static class ClaimRequest
-    {
-        public String taskId;
-        public String payload;
-        public int subTaskCount;
-        public int timeoutSeconds = 3600;
-    }
-
-    public static class ResultRequest
-    {
-        public String subTaskId;
-        public String result;
-        public boolean success;
-    }
+  public static class ResultRequest {
+    public String subTaskId;
+    public String result;
+    public boolean success;
+  }
 }

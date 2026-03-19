@@ -23,93 +23,80 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
-
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x11A)
-public class X11A_QttUnsubscribe
-        extends QttCommand
-{
-    public X11A_QttUnsubscribe()
-    {
-        generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE);
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x11A)
+public class X11A_QttUnsubscribe extends QttCommand {
+  public X11A_QttUnsubscribe() {
+    generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE);
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_06_META_CREATE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_06_META_CREATE;
+  }
 
-    @Override
-    public int length()
-    {
-        int length = 0;
-        for(String topic : _Topics) {
-            length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
-        }
-        return length + super.length();
+  @Override
+  public int length() {
+    int length = 0;
+    for (String topic : _Topics) {
+      length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
     }
+    return length + super.length();
+  }
 
-    private final List<String> _Topics = new ArrayList<>(3);
+  private final List<String> _Topics = new ArrayList<>(3);
 
-    public List<String> getTopics()
-    {
-        return _Topics;
+  public List<String> getTopics() {
+    return _Topics;
+  }
+
+  public void setTopics(String... topics) {
+    Collections.addAll(_Topics, topics);
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    msgId(input.getUnsignedShort());
+    while (input.isReadable()) {
+      int topicLength = input.getUnsignedShort();
+      String topic = input.readUTF(topicLength);
+      _Topics.add(topic);
     }
+    return 0;
+  }
 
-    public void setTopics(String... topics)
-    {
-        Collections.addAll(_Topics, topics);
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output.putShort(msgId());
+    for (String topic : _Topics) {
+      byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
+      output.putShort(topicBytes.length);
+      output.put(topicBytes);
     }
+    return output;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        msgId(input.getUnsignedShort());
-        while(input.isReadable()) {
-            int topicLength = input.getUnsignedShort();
-            String topic = input.readUTF(topicLength);
-            _Topics.add(topic);
-        }
-        return 0;
-    }
+  @Override
+  public String toString() {
+    return String.format("unsubscribe msg-id:%d topics:%s", msgId(), _Topics);
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output.putShort(msgId());
-        for(String topic : _Topics) {
-            byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
-            output.putShort(topicBytes.length);
-            output.put(topicBytes);
-        }
-        return output;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("unsubscribe msg-id:%d topics:%s", msgId(), _Topics);
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
+  @Override
+  public boolean isMapping() {
+    return true;
+  }
 }

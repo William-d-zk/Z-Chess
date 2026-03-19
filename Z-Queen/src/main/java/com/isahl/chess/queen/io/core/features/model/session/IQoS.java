@@ -25,101 +25,72 @@ package com.isahl.chess.queen.io.core.features.model.session;
 /**
  * @author William.d.zk
  */
-public interface IQoS
-        extends ISequence,
-                Comparable<IQoS>
-{
-    int QOS_PRIORITY_00_NETWORK_CONTROL    = 4;
-    int QOS_PRIORITY_01_CLUSTER_CONTROL    = 4 << 1;
-    int QOS_PRIORITY_02_MQ_CONTROL         = 4 << 2;
-    int QOS_PRIORITY_03_CLUSTER_EXCHANGE   = 4 << 3;
-    int QOS_PRIORITY_04_MQ_EXCHANGE        = 4 << 4;
-    int QOS_PRIORITY_05_SYNC_MODIFY        = 4 << 5;
-    int QOS_PRIORITY_06_META_CREATE        = 4 << 6;
-    int QOS_PRIORITY_07_ROUTE_MESSAGE      = 4 << 7;
-    int QOS_PRIORITY_08_IMMEDIATE_MESSAGE  = 4 << 8;
-    int QOS_PRIORITY_09_CONFIRM_MESSAGE    = 4 << 9;
-    int QOS_PRIORITY_10_QUERY_MESSAGE      = 4 << 10;
-    int QOS_PRIORITY_11_MQ_MODIFY          = 4 << 11;
-    int QOS_PRIORITY_12_PUSH_MESSAGE       = 4 << 12;
-    int QOS_PRIORITY_13_POSTPONE_MESSAGE   = 4 << 13;
-    int QOS_PRIORITY_14_NO_CONFIRM_MESSAGE = 4 << 14;
-    int QOS_PRIORITY_15_INNER_CMD          = 4 << 15;
+public interface IQoS extends ISequence, Comparable<IQoS> {
+  int QOS_PRIORITY_00_NETWORK_CONTROL = 4;
+  int QOS_PRIORITY_01_CLUSTER_CONTROL = 4 << 1;
+  int QOS_PRIORITY_02_MQ_CONTROL = 4 << 2;
+  int QOS_PRIORITY_03_CLUSTER_EXCHANGE = 4 << 3;
+  int QOS_PRIORITY_04_MQ_EXCHANGE = 4 << 4;
+  int QOS_PRIORITY_05_SYNC_MODIFY = 4 << 5;
+  int QOS_PRIORITY_06_META_CREATE = 4 << 6;
+  int QOS_PRIORITY_07_ROUTE_MESSAGE = 4 << 7;
+  int QOS_PRIORITY_08_IMMEDIATE_MESSAGE = 4 << 8;
+  int QOS_PRIORITY_09_CONFIRM_MESSAGE = 4 << 9;
+  int QOS_PRIORITY_10_QUERY_MESSAGE = 4 << 10;
+  int QOS_PRIORITY_11_MQ_MODIFY = 4 << 11;
+  int QOS_PRIORITY_12_PUSH_MESSAGE = 4 << 12;
+  int QOS_PRIORITY_13_POSTPONE_MESSAGE = 4 << 13;
+  int QOS_PRIORITY_14_NO_CONFIRM_MESSAGE = 4 << 14;
+  int QOS_PRIORITY_15_INNER_CMD = 4 << 15;
 
-    int priority();
+  int priority();
 
-    @Override
-    default int compareTo(IQoS o)
-    {
-        long seqDiff = getSequence() - o.getSequence();
-        int priorityDiff = priority() - o.priority();
-        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode() : (seqDiff > 0 ? 1 : -1)) : priorityDiff;
+  @Override
+  default int compareTo(IQoS o) {
+    long seqDiff = getSequence() - o.getSequence();
+    int priorityDiff = priority() - o.priority();
+    return priorityDiff == 0
+        ? (seqDiff == 0 ? hashCode() - o.hashCode() : (seqDiff > 0 ? 1 : -1))
+        : priorityDiff;
+  }
+
+  Level level();
+
+  /** 数据传输质量等级 */
+  enum Level {
+
+    /** 最多传输成功1次 确保送达 但不确认接收方是否完成处理 近似TCP */
+    AT_LEAST_ONCE(1),
+    /** 只传输1次 不确保送达 类似UDP */
+    ALMOST_ONCE(0),
+
+    /** 至少成功传输1次 确保送达 确认接收方完成接收处理 至少成功传输一次 */
+    EXACTLY_ONCE(2),
+    /** 不符合预期设定的QoS 等级 */
+    NO_EXPECTED(3),
+    /** 故障 */
+    FAILURE(0x80);
+
+    final int _Value;
+
+    Level(int value) {
+      _Value = value;
     }
 
-    Level level();
-
-    /**
-     * 数据传输质量等级
-     */
-    enum Level
-    {
-
-        /**
-         * 最多传输成功1次
-         * 确保送达
-         * 但不确认接收方是否完成处理
-         * 近似TCP
-         */
-        AT_LEAST_ONCE(1),
-        /**
-         * 只传输1次
-         * 不确保送达
-         * 类似UDP
-         */
-        ALMOST_ONCE(0),
-
-        /**
-         * 至少成功传输1次
-         * 确保送达
-         * 确认接收方完成接收处理
-         * 至少成功传输一次
-         */
-        EXACTLY_ONCE(2),
-        /**
-         * 不符合预期设定的QoS 等级
-         */
-        NO_EXPECTED(3),
-        /**
-         * 故障
-         */
-        FAILURE(0x80);
-
-        final int _Value;
-
-        Level(int value)
-        {
-            _Value = value;
-        }
-
-        public int getValue()
-        {
-            return _Value;
-        }
-
-        public static Level valueOf(int level)
-        {
-            return switch(level) {
-                case 0 -> ALMOST_ONCE;
-                case 1 -> AT_LEAST_ONCE;
-                case 2 -> EXACTLY_ONCE;
-                case 3 -> NO_EXPECTED;
-                case 0x80 -> FAILURE;
-                default -> throw new UnsupportedOperationException(String.format("wrong level code %d,%#x",
-                                                                                 level,
-                                                                                 level));
-            };
-        }
-
-
+    public int getValue() {
+      return _Value;
     }
+
+    public static Level valueOf(int level) {
+      return switch (level) {
+        case 0 -> ALMOST_ONCE;
+        case 1 -> AT_LEAST_ONCE;
+        case 2 -> EXACTLY_ONCE;
+        case 3 -> NO_EXPECTED;
+        case 0x80 -> FAILURE;
+        default -> throw new UnsupportedOperationException(
+            String.format("wrong level code %d,%#x", level, level));
+      };
+    }
+  }
 }

@@ -23,20 +23,16 @@
 
 package com.isahl.chess.knight.scheduler.core;
 
-public class RetryConfig
-{
-    public int maxRetries = 3;
-    public long retryDelayMs = 1000;
-    public long timeoutMs = 30000;
+public class RetryConfig {
+  public int maxRetries = 3;
+  public long retryDelayMs = 1000;
+  public long timeoutMs = 30000;
 
-    public RetryConfig()
-    {
-    }
+  public RetryConfig() {}
 
-    public RetryConfig(int maxRetries, long retryDelayMs, long timeoutMs)
-    {
-        this.maxRetries = maxRetries;
-        this.retryDelayMs = retryDelayMs;
-        this.timeoutMs = timeoutMs;
-    }
+  public RetryConfig(int maxRetries, long retryDelayMs, long timeoutMs) {
+    this.maxRetries = maxRetries;
+    this.retryDelayMs = retryDelayMs;
+    this.timeoutMs = timeoutMs;
+  }
 }

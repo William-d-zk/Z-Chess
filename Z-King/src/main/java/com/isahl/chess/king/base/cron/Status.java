@@ -28,69 +28,61 @@ import com.isahl.chess.king.base.cron.features.ITask;
 /**
  * @author william.d.zk
  */
-public enum Status
-{
-
-    MISS(-1 << ITask.RETRY_COUNT_BITS),
-    CREATED(0) {
-        @Override
-        public boolean isTerminated()
-        {
-            return false;
-        }
-    },
-    PENDING(1 << ITask.RETRY_COUNT_BITS) {
-        @Override
-        public boolean isTerminated()
-        {
-            return false;
-        }
-    },
-    RUNNING(2 << ITask.RETRY_COUNT_BITS) {
-        @Override
-        public boolean isTerminated()
-        {
-            return false;
-        }
-    },
-    STOP(3 << ITask.RETRY_COUNT_BITS),
-    CANCEL((4 | 1) << ITask.RETRY_COUNT_BITS),
-    COMPLETED((4 | 2) << ITask.RETRY_COUNT_BITS),
-    ERROR(8 << ITask.RETRY_COUNT_BITS),
-    TIME_OUT((16 | 8) << ITask.RETRY_COUNT_BITS),
-    FAILED((32 | 8) << ITask.RETRY_COUNT_BITS);
-
-    private final int _Code;
-
-    public boolean isTerminated()
-    {
-        return true;
+public enum Status {
+  MISS(-1 << ITask.RETRY_COUNT_BITS),
+  CREATED(0) {
+    @Override
+    public boolean isTerminated() {
+      return false;
     }
-
-    Status(int code)
-    {
-        _Code = code;
+  },
+  PENDING(1 << ITask.RETRY_COUNT_BITS) {
+    @Override
+    public boolean isTerminated() {
+      return false;
     }
-
-    public int getCode()
-    {
-        return _Code;
+  },
+  RUNNING(2 << ITask.RETRY_COUNT_BITS) {
+    @Override
+    public boolean isTerminated() {
+      return false;
     }
+  },
+  STOP(3 << ITask.RETRY_COUNT_BITS),
+  CANCEL((4 | 1) << ITask.RETRY_COUNT_BITS),
+  COMPLETED((4 | 2) << ITask.RETRY_COUNT_BITS),
+  ERROR(8 << ITask.RETRY_COUNT_BITS),
+  TIME_OUT((16 | 8) << ITask.RETRY_COUNT_BITS),
+  FAILED((32 | 8) << ITask.RETRY_COUNT_BITS);
 
-    public static Status valueOf(int code)
-    {
-        return switch(code & ~ITask.RETRY_LIMIT) {
-            case -1 << ITask.RETRY_COUNT_BITS -> MISS;
-            case 0 -> CREATED;
-            case 1 << ITask.RETRY_COUNT_BITS -> PENDING;
-            case 2 << ITask.RETRY_COUNT_BITS -> RUNNING;
-            case 3 << ITask.RETRY_COUNT_BITS -> STOP;
-            case (4 | 1) << ITask.RETRY_COUNT_BITS -> CANCEL;
-            case (4 | 2) << ITask.RETRY_COUNT_BITS -> COMPLETED;
-            case 8 << ITask.RETRY_COUNT_BITS -> ERROR;
-            case (16 | 8) << ITask.RETRY_COUNT_BITS -> TIME_OUT;
-            case (32 | 8) << ITask.RETRY_COUNT_BITS -> FAILED;
-            default -> throw new IllegalStateException("Unexpected value: " + (code & ~ITask.RETRY_LIMIT));
-        };
-    }
+  private final int _Code;
+
+  public boolean isTerminated() {
+    return true;
+  }
+
+  Status(int code) {
+    _Code = code;
+  }
+
+  public int getCode() {
+    return _Code;
+  }
+
+  public static Status valueOf(int code) {
+    return switch (code & ~ITask.RETRY_LIMIT) {
+      case -1 << ITask.RETRY_COUNT_BITS -> MISS;
+      case 0 -> CREATED;
+      case 1 << ITask.RETRY_COUNT_BITS -> PENDING;
+      case 2 << ITask.RETRY_COUNT_BITS -> RUNNING;
+      case 3 << ITask.RETRY_COUNT_BITS -> STOP;
+      case (4 | 1) << ITask.RETRY_COUNT_BITS -> CANCEL;
+      case (4 | 2) << ITask.RETRY_COUNT_BITS -> COMPLETED;
+      case 8 << ITask.RETRY_COUNT_BITS -> ERROR;
+      case (16 | 8) << ITask.RETRY_COUNT_BITS -> TIME_OUT;
+      case (32 | 8) << ITask.RETRY_COUNT_BITS -> FAILED;
+      default -> throw new IllegalStateException(
+          "Unexpected value: " + (code & ~ITask.RETRY_LIMIT));
+    };
+  }
 }

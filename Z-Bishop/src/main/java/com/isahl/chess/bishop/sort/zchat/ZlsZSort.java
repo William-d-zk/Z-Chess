@@ -35,43 +35,37 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 
-public class ZlsZSort
-        extends BaseSort<EZContext>
-{
-    private final ZEFilter<EZContext> _Head;
+public class ZlsZSort extends BaseSort<EZContext> {
+  private final ZEFilter<EZContext> _Head;
 
-    public ZlsZSort(Mode mode, Type type)
-    {
-        super(mode, type, "zchat-ls");
-        _Head = new ZEFilter<>();
-        _Head.linkFront(new ZFrameFilter())
-             .linkFront(new ZControlFilter((ZChatFactory) getFactory()))
-             .linkFront(new ZCommandFilter((ZChatFactory) getFactory()));
-    }
+  public ZlsZSort(Mode mode, Type type) {
+    super(mode, type, "zchat-ls");
+    _Head = new ZEFilter<>();
+    _Head.linkFront(new ZFrameFilter())
+        .linkFront(new ZControlFilter((ZChatFactory) getFactory()))
+        .linkFront(new ZCommandFilter((ZChatFactory) getFactory()));
+  }
 
-    @Override
-    public IFilterChain getFilterChain()
-    {
-        return _Head;
-    }
+  @Override
+  public IFilterChain getFilterChain() {
+    return _Head;
+  }
 
-    @Override
-    public EZContext newContext(INetworkOption option)
-    {
-        return new EZContext(option, getMode(), getType());
-    }
+  @Override
+  public EZContext newContext(INetworkOption option) {
+    return new EZContext(option, getMode(), getType());
+  }
 
-    @Override
-    public IoFactory<IProtocol> _SelectFactory()
-    {
-        return switch(getMode()) {
-            case CLUSTER -> ZClusterFactory._Instance;
-            case LINK -> switch(getType()) {
-                case SERVER -> ZServerFactory._Instance;
-                case SYMMETRY -> ZSymmetryFactory._Instance;
-                case CLIENT -> ZConsumerFactory._Instance;
-                case INNER -> ZInnerFactory._Instance;
-            };
-        };
-    }
+  @Override
+  public IoFactory<IProtocol> _SelectFactory() {
+    return switch (getMode()) {
+      case CLUSTER -> ZClusterFactory._Instance;
+      case LINK -> switch (getType()) {
+        case SERVER -> ZServerFactory._Instance;
+        case SYMMETRY -> ZSymmetryFactory._Instance;
+        case CLIENT -> ZConsumerFactory._Instance;
+        case INNER -> ZInnerFactory._Instance;
+      };
+    };
+  }
 }

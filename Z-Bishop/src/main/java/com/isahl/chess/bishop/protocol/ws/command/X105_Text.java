@@ -23,44 +23,35 @@
 
 package com.isahl.chess.bishop.protocol.ws.command;
 
+import static com.isahl.chess.board.base.ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL;
+
 import com.isahl.chess.bishop.protocol.ws.WsContext;
 import com.isahl.chess.bishop.protocol.ws.model.WsControl;
 import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
-
 import java.nio.charset.StandardCharsets;
-
-import static com.isahl.chess.board.base.ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL;
 
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x105)
-public class X105_Text<T extends WsContext>
-        extends WsControl<T>
-{
+@ISerialGenerator(parent = PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x105)
+public class X105_Text<T extends WsContext> extends WsControl<T> {
 
-    public X105_Text()
-    {
-        super(WsFrame.frame_op_code_ctrl_text);
-    }
+  public X105_Text() {
+    super(WsFrame.frame_op_code_ctrl_text);
+  }
 
-    public X105_Text(String resp)
-    {
-        this();
-        mPayload = resp.getBytes(StandardCharsets.UTF_8);
-    }
+  public X105_Text(String resp) {
+    this();
+    mPayload = resp.getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    public String getText()
-    {
-        return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : null;
-    }
-
+  public String getText() {
+    return mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : null;
+  }
 }

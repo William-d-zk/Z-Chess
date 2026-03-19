@@ -33,48 +33,41 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class EchoPlugin
-        implements IAccessService
-{
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+public class EchoPlugin implements IAccessService {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    @Override
-    public boolean isSupported(IoSerial input)
-    {
-        return input.serial() == 0x1D;
-    }
+  @Override
+  public boolean isSupported(IoSerial input) {
+    return input.serial() == 0x1D;
+  }
 
-    @Override
-    public boolean isSupported(ISession session)
-    {
-        return false;
-    }
+  @Override
+  public boolean isSupported(ISession session) {
+    return false;
+  }
 
-    @Override
-    public void onLogic(IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public void onLogic(
+      IExchanger exchanger, ISession session, IProtocol content, List<ITriple> load) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public ITriple onLink(IManager manager, ISession session, IProtocol input)
-    {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public ITriple onLink(IManager manager, ISession session, IProtocol input) {
+    throw new UnsupportedOperationException();
+  }
 
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial consensusBody)
-    {
-        throw new UnsupportedOperationException();
-    }
+  public List<ITriple> onConsistency(
+      IManager manager, IConsistency backload, IoSerial consensusBody) {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public void consume(IExchanger exchanger, IoSerial request, List<ITriple> load)
-    {
-        EchoDo echo = (EchoDo) request;
-    }
+  @Override
+  public void consume(IExchanger exchanger, IoSerial request, List<ITriple> load) {
+    EchoDo echo = (EchoDo) request;
+  }
 }

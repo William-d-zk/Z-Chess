@@ -32,99 +32,77 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x79)
-public class X79_RaftConfirm
-        extends ZCommand
-        implements IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x79)
+public class X79_RaftConfirm extends ZCommand implements IConsistent {
 
-    public X79_RaftConfirm()
-    {
-        super();
-    }
+  public X79_RaftConfirm() {
+    super();
+  }
 
-    public X79_RaftConfirm(long msgId)
-    {
-        super(msgId);
-    }
+  public X79_RaftConfirm(long msgId) {
+    super(msgId);
+  }
 
-    private long mPeer;
-    private int  mState;
-    private int  mCode;
+  private long mPeer;
+  private int mState;
+  private int mCode;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X79_RaftConfirm { state:%d, code:%d}", mState, mCode);
-    }
+  @Override
+  public String toString() {
+    return String.format("X79_RaftConfirm { state:%d, code:%d}", mState, mCode);
+  }
 
-    @Override
-    public int code()
-    {
-        return mCode;
-    }
+  @Override
+  public int code() {
+    return mCode;
+  }
 
-    public void code(int code)
-    {
-        mCode = code;
-    }
+  public void code(int code) {
+    mCode = code;
+  }
 
-    public int state()
-    {
-        return mState;
-    }
+  public int state() {
+    return mState;
+  }
 
-    public void state(int state)
-    {
-        this.mState = state;
-    }
+  public void state(int state) {
+    this.mState = state;
+  }
 
-    public long peer()
-    {
-        return mPeer;
-    }
+  public long peer() {
+    return mPeer;
+  }
 
-    public void peer(long peer)
-    {
-        mPeer = peer;
-    }
+  public void peer(long peer) {
+    mPeer = peer;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mPeer)
-                    .put(mState)
-                    .putInt(mCode);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mPeer).put(mState).putInt(mCode);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        mState = input.get();
-        mCode = input.getInt();
-        return remain - 13;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    mState = input.get();
+    mCode = input.getInt();
+    return remain - 13;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 13;
-    }
-
+  @Override
+  public int length() {
+    return super.length() + 13;
+  }
 }

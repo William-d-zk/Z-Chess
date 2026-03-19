@@ -23,39 +23,32 @@
 
 package com.isahl.chess.board.processor.services;
 
+import static ch.qos.logback.classic.spi.Configurator.ExecutionStatus.NEUTRAL;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.spi.ContextAwareBase;
+import java.net.URL;
 import org.slf4j.helpers.Util;
 
-import java.net.URL;
-
-import static ch.qos.logback.classic.spi.Configurator.ExecutionStatus.NEUTRAL;
-
-public class BoardLogLoader
-        extends ContextAwareBase
-        implements Configurator
-{
-    public ExecutionStatus configure(LoggerContext loggerContext)
-    {
-        this.addInfo("Setting up retail default configuration.");
-        // 清除loggerContext已加载配置，重新加载
-        loggerContext.reset();
-        JoranConfigurator configurator = new JoranConfigurator();
-        try {
-            //  获取jar中默认配置文件路径
-            URL url = Configurator.class.getClassLoader()
-                                        .getResource("logback-board.xml");
-            // 设置loggerContext到JoranConfigurator
-            configurator.setContext(loggerContext);
-            // 加载默认配置
-            configurator.doConfigure(url);
-        }
-        catch(JoranException e) {
-            Util.report("Failed to instantiate [" + LoggerContext.class.getName() + "]", e);
-        }
-        return NEUTRAL;
+public class BoardLogLoader extends ContextAwareBase implements Configurator {
+  public ExecutionStatus configure(LoggerContext loggerContext) {
+    this.addInfo("Setting up retail default configuration.");
+    // 清除loggerContext已加载配置，重新加载
+    loggerContext.reset();
+    JoranConfigurator configurator = new JoranConfigurator();
+    try {
+      //  获取jar中默认配置文件路径
+      URL url = Configurator.class.getClassLoader().getResource("logback-board.xml");
+      // 设置loggerContext到JoranConfigurator
+      configurator.setContext(loggerContext);
+      // 加载默认配置
+      configurator.doConfigure(url);
+    } catch (JoranException e) {
+      Util.report("Failed to instantiate [" + LoggerContext.class.getName() + "]", e);
     }
+    return NEUTRAL;
+  }
 }

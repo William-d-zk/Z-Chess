@@ -29,44 +29,48 @@ import java.util.regex.Pattern;
  * @author william.d.zk
  * @date 2018/1/3
  */
-public class RegExUtil
-{
-    public static String  BOOLEAN_PATTERN_STRING      =
-            "([tT][rR][uU][eE])|" + "([fF][aA][lL][sS][eE])|" + "([yY][eE][sS])|" + "([nN][oO])|" +
-            "([eE][nN][aA][bB][lL][eE])|" + "([dD][iI][sS][aA][bB][lL][eE])";
-    public static String  BOOLEAN_TRUE_PATTERN_STRING =
-            "([tT][rR][uU][eE])|" + "([yY][eE][sS])|" + "([eE][nN][aA][bB][lL][eE])";
-    public static String  INTEGER_PATTERN_STRING      = "([-+]?\\d+\\s*,?)";
-    public static String  DOUBLE_PATTERN_STRING       = "(([-+]?((\\d+(\\.\\d*)?)|(\\.\\d+)))([eE](([-+]?([012]?\\d{1,2}|30[0-7]))|-3([01]?[4-9]|[012]?[0-3])))?[dD]?\\s*,?)";
-    public static String  STRING_PATTERN_STRING       = "(\\w+\\s*,?)";
-    public static Pattern BOOLEAN_PATTERN             = Pattern.compile(BOOLEAN_PATTERN_STRING);
-    public static Pattern INTEGER_PATTERN             = Pattern.compile(INTEGER_PATTERN_STRING);
-    public static Pattern INTEGER_ARRAY_PATTERN       = Pattern.compile("\\{(\\s*" + INTEGER_PATTERN_STRING + "*)}");
-    public static Pattern DOUBLE_PATTERN              = Pattern.compile(DOUBLE_PATTERN_STRING);
-    public static Pattern DOUBLE_ARRAY_PATTERN        = Pattern.compile("\\{(\\s*" + DOUBLE_PATTERN_STRING + "*)}");
-    public static Pattern STRING_PATTERN              = Pattern.compile(STRING_PATTERN_STRING);
-    public static Pattern STRING_ARRAY_PATTERN        = Pattern.compile("\\{(\\s*" + STRING_PATTERN_STRING + "*)}");
+public class RegExUtil {
+  public static String BOOLEAN_PATTERN_STRING =
+      "([tT][rR][uU][eE])|"
+          + "([fF][aA][lL][sS][eE])|"
+          + "([yY][eE][sS])|"
+          + "([nN][oO])|"
+          + "([eE][nN][aA][bB][lL][eE])|"
+          + "([dD][iI][sS][aA][bB][lL][eE])";
+  public static String BOOLEAN_TRUE_PATTERN_STRING =
+      "([tT][rR][uU][eE])|" + "([yY][eE][sS])|" + "([eE][nN][aA][bB][lL][eE])";
+  public static String INTEGER_PATTERN_STRING = "([-+]?\\d+\\s*,?)";
+  public static String DOUBLE_PATTERN_STRING =
+      "(([-+]?((\\d+(\\.\\d*)?)|(\\.\\d+)))([eE](([-+]?([012]?\\d{1,2}|30[0-7]))|-3([01]?[4-9]|[012]?[0-3])))?[dD]?\\s*,?)";
+  public static String STRING_PATTERN_STRING = "(\\w+\\s*,?)";
+  public static Pattern BOOLEAN_PATTERN = Pattern.compile(BOOLEAN_PATTERN_STRING);
+  public static Pattern INTEGER_PATTERN = Pattern.compile(INTEGER_PATTERN_STRING);
+  public static Pattern INTEGER_ARRAY_PATTERN =
+      Pattern.compile("\\{(\\s*" + INTEGER_PATTERN_STRING + "*)}");
+  public static Pattern DOUBLE_PATTERN = Pattern.compile(DOUBLE_PATTERN_STRING);
+  public static Pattern DOUBLE_ARRAY_PATTERN =
+      Pattern.compile("\\{(\\s*" + DOUBLE_PATTERN_STRING + "*)}");
+  public static Pattern STRING_PATTERN = Pattern.compile(STRING_PATTERN_STRING);
+  public static Pattern STRING_ARRAY_PATTERN =
+      Pattern.compile("\\{(\\s*" + STRING_PATTERN_STRING + "*)}");
 
-    public static Class<?> testType(String value)
-    {
-        if(value.matches(BOOLEAN_PATTERN_STRING)) {
-            return Boolean.TYPE;
-        }
-        else if(value.matches(INTEGER_PATTERN_STRING)) {
-            return Integer.TYPE;
-        }
-        else if(value.matches(DOUBLE_PATTERN_STRING)) {return Double.TYPE;}
-        return String.class;
+  public static Class<?> testType(String value) {
+    if (value.matches(BOOLEAN_PATTERN_STRING)) {
+      return Boolean.TYPE;
+    } else if (value.matches(INTEGER_PATTERN_STRING)) {
+      return Integer.TYPE;
+    } else if (value.matches(DOUBLE_PATTERN_STRING)) {
+      return Double.TYPE;
     }
+    return String.class;
+  }
 
-    public static String splitFormatter(String regex, int count)
-    {
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0, size = count - 1; i < size; i++) {
-            sb.append("%s")
-              .append(regex);
-        }
-        sb.append("%s");
-        return sb.toString();
+  public static String splitFormatter(String regex, int count) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0, size = count - 1; i < size; i++) {
+      sb.append("%s").append(regex);
     }
+    sb.append("%s");
+    return sb.toString();
+  }
 }

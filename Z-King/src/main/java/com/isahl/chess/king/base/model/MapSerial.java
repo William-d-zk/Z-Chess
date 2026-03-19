@@ -23,107 +23,101 @@
 
 package com.isahl.chess.king.base.model;
 
+import static com.isahl.chess.king.base.features.model.IMapSerial.KeyType.*;
+
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IMapSerial;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.nio.charset.StandardCharsets;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
-import static com.isahl.chess.king.base.features.model.IMapSerial.KeyType.*;
 
 /**
  * @author william.d.zk
  * @date 2022-01-07
  */
 @ISerialGenerator(parent = ISerial.CORE_KING_INTERNAL_SERIAL)
-public class MapSerial<K extends Comparable<K>, V extends IoSerial>
-        extends TreeMap<K, V>
-        implements IMapSerial<K, V>
-{
-    private final IoFactory<V> _Factory;
+public class MapSerial<K extends Comparable<K>, V extends IoSerial> extends TreeMap<K, V>
+    implements IMapSerial<K, V> {
+  private final IoFactory<V> _Factory;
 
-    public MapSerial(IoFactory<V> factory)
-    {
-        super();
-        _Factory = factory;
+  public MapSerial(IoFactory<V> factory) {
+    super();
+    _Factory = factory;
+  }
+
+  public MapSerial(IoFactory<V> factory, NavigableMap<K, V> map) {
+    super(map);
+    _Factory = factory;
+  }
+
+  public MapSerial(ByteBuf input, IoFactory<V> factory) {
+    super();
+    _Factory = factory;
+    decode(input);
+  }
+
+  @Override
+  public IoFactory<V> factory() {
+    return _Factory;
+  }
+
+  @Override
+  public int sizeOf(K k) {
+    switch (KeyType.typeOf(k.getClass().getTypeName())) {
+      case _String -> {
+        byte[] b = ((String) k).getBytes(StandardCharsets.UTF_8);
+        return ByteBuf.vSizeOf(b.length);
+      }
+      case _Byte -> {
+        return 1;
+      }
+      case _Integer -> {
+        return 4;
+      }
+      case _Long -> {
+        return 8;
+      }
+      default -> throw new UnsupportedOperationException();
     }
+  }
 
-    public MapSerial(IoFactory<V> factory, NavigableMap<K, V> map)
-    {
-        super(map);
-        _Factory = factory;
-    }
-
-    public MapSerial(ByteBuf input, IoFactory<V> factory)
-    {
-        super();
-        _Factory = factory;
-        decode(input);
-    }
-
-    @Override
-    public IoFactory<V> factory()
-    {
-        return _Factory;
-    }
-
-    @Override
-    public int sizeOf(K k)
-    {
-        switch(KeyType.typeOf(k.getClass()
-                               .getTypeName())) {
-            case _String -> {
-                byte[] b = ((String) k).getBytes(StandardCharsets.UTF_8);
-                return ByteBuf.vSizeOf(b.length);
-            }
-            case _Byte -> {return 1;}
-            case _Integer -> {return 4;}
-            case _Long -> {return 8;}
-            default -> throw new UnsupportedOperationException();
-        }
-    }
-
-    @Override
-    public K nextKey(ByteBuf input)
-    {
-        byte id = input.get();
-        return (K) switch(KeyType.idOf(id)) {
-            case _String -> new String(input.vGet());
-            case _Long -> input.getLong();
-            case _Integer -> input.getInt();
-            case _Byte -> input.get();
+  @Override
+  public K nextKey(ByteBuf input) {
+    byte id = input.get();
+    return (K)
+        switch (KeyType.idOf(id)) {
+          case _String -> new String(input.vGet());
+          case _Long -> input.getLong();
+          case _Integer -> input.getInt();
+          case _Byte -> input.get();
         };
-    }
+  }
 
-    @Override
-    public void key(ByteBuf output, K k)
-    {
-        switch(KeyType.valueOf(k.getClass()
-                                .getTypeName())) {
-            case _String -> {
-                byte[] b = ((String) k).getBytes(StandardCharsets.UTF_8);
-                output.put(_String.id());
-                output.vPut(b);
-            }
-            case _Byte -> {
-                output.put(_Byte.id());
-                output.put((Byte) k);
-            }
-            case _Integer -> {
-                output.put(_Integer.id());
-                output.putInt((Integer) k);
-            }
-            case _Long -> {
-                output.put(_Long.id());
-                output.putLong((Long) k);
-            }
-            default -> throw new UnsupportedOperationException();
-        }
+  @Override
+  public void key(ByteBuf output, K k) {
+    switch (KeyType.valueOf(k.getClass().getTypeName())) {
+      case _String -> {
+        byte[] b = ((String) k).getBytes(StandardCharsets.UTF_8);
+        output.put(_String.id());
+        output.vPut(b);
+      }
+      case _Byte -> {
+        output.put(_Byte.id());
+        output.put((Byte) k);
+      }
+      case _Integer -> {
+        output.put(_Integer.id());
+        output.putInt((Integer) k);
+      }
+      case _Long -> {
+        output.put(_Long.id());
+        output.putLong((Long) k);
+      }
+      default -> throw new UnsupportedOperationException();
     }
-
+  }
 }

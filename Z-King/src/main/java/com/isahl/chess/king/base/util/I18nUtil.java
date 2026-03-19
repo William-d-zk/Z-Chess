@@ -28,65 +28,91 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author William.d.zk
  */
-public interface I18nUtil
-{
-    int CHARSET_ASCII       = 0x00;
-    int CHARSET_UTF_8       = 0x01;
-    int CHARSET_UTF_8_NB    = 0x02;
-    int CHARSET_UTC_BE      = 0x03;
-    int CHARSET_UTC_LE      = 0x04;
-    int CHARSET_GBK         = 0x05;
-    int CHARSET_GB2312      = 0x06;
-    int CHARSET_GB18030     = 0x07;
-    int CHARSET_ISO_8859_1  = 0x08;
-    int CHARSET_ISO_8859_15 = 0x09;
+public interface I18nUtil {
+  int CHARSET_ASCII = 0x00;
+  int CHARSET_UTF_8 = 0x01;
+  int CHARSET_UTF_8_NB = 0x02;
+  int CHARSET_UTC_BE = 0x03;
+  int CHARSET_UTC_LE = 0x04;
+  int CHARSET_GBK = 0x05;
+  int CHARSET_GB2312 = 0x06;
+  int CHARSET_GB18030 = 0x07;
+  int CHARSET_ISO_8859_1 = 0x08;
+  int CHARSET_ISO_8859_15 = 0x09;
 
-    static Charset getCharset(byte data)
-    {
-        return switch(data & 0x0F) {
-            case CHARSET_ASCII -> StandardCharsets.US_ASCII;
-            case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
-            case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
-            case CHARSET_UTC_LE -> StandardCharsets.UTF_16LE;
-            case CHARSET_GBK -> Charset.forName("GBK");
-            case CHARSET_GB2312 -> Charset.forName("GB2312");
-            case CHARSET_GB18030 -> Charset.forName("GB18030");
-            case CHARSET_ISO_8859_1 -> StandardCharsets.ISO_8859_1;
-            default -> StandardCharsets.UTF_8;
-        };
+  static Charset getCharset(byte data) {
+    return switch (data & 0x0F) {
+      case CHARSET_ASCII -> StandardCharsets.US_ASCII;
+      case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
+      case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
+      case CHARSET_UTC_LE -> StandardCharsets.UTF_16LE;
+      case CHARSET_GBK -> Charset.forName("GBK");
+      case CHARSET_GB2312 -> Charset.forName("GB2312");
+      case CHARSET_GB18030 -> Charset.forName("GB18030");
+      case CHARSET_ISO_8859_1 -> StandardCharsets.ISO_8859_1;
+      default -> StandardCharsets.UTF_8;
+    };
+  }
+
+  static int getCharsetCode(String charset) {
+    if (charset.equals("ASCII")) {
+      return CHARSET_ASCII;
     }
-
-    static int getCharsetCode(String charset)
-    {
-        if(charset.equals("ASCII")) {return CHARSET_ASCII;}
-        if(charset.equals("UTF-8")) {return CHARSET_UTF_8;}
-        if(charset.equals("UTF-16")) {return CHARSET_UTF_8_NB;}
-        if(charset.equals("UTF-16BE")) {return CHARSET_UTC_BE;}
-        if(charset.equals("UTF-16LE")) {return CHARSET_UTC_LE;}
-        if(charset.equals("GBK")) {return CHARSET_GBK;}
-        if(charset.equals("GB2312")) {return CHARSET_GB2312;}
-        if(charset.equals("GB18030")) {return CHARSET_GB18030;}
-        if(charset.equals("ISO-8859-1")) {return CHARSET_ISO_8859_1;}
-        if(charset.equals("ISO-8859-15")) {return CHARSET_ISO_8859_15;}
-        return CHARSET_UTF_8;
+    if (charset.equals("UTF-8")) {
+      return CHARSET_UTF_8;
     }
-
-    static int getCharsetCode(Charset charset)
-    {
-        if(StandardCharsets.US_ASCII.equals(charset)) {return CHARSET_ASCII;}
-        if(StandardCharsets.UTF_8.equals(charset)) {return CHARSET_UTF_8;}
-        if(StandardCharsets.UTF_16.equals(charset)) {return CHARSET_UTF_8_NB;}
-        if(StandardCharsets.UTF_16BE.equals(charset)) {return CHARSET_UTC_BE;}
-        if(StandardCharsets.UTF_16LE.equals(charset)) {return CHARSET_UTC_LE;}
-        if(StandardCharsets.ISO_8859_1.equals(charset)) {return CHARSET_ISO_8859_1;}
-        return switch(charset.name()
-                             .toUpperCase()) {
-            case "GBK" -> CHARSET_GBK;
-            case "GB2312" -> CHARSET_GB2312;
-            case "GB18030" -> CHARSET_GB18030;
-            case "ISO-8859-15" -> CHARSET_ISO_8859_15;
-            default -> CHARSET_UTF_8;
-        };
+    if (charset.equals("UTF-16")) {
+      return CHARSET_UTF_8_NB;
     }
+    if (charset.equals("UTF-16BE")) {
+      return CHARSET_UTC_BE;
+    }
+    if (charset.equals("UTF-16LE")) {
+      return CHARSET_UTC_LE;
+    }
+    if (charset.equals("GBK")) {
+      return CHARSET_GBK;
+    }
+    if (charset.equals("GB2312")) {
+      return CHARSET_GB2312;
+    }
+    if (charset.equals("GB18030")) {
+      return CHARSET_GB18030;
+    }
+    if (charset.equals("ISO-8859-1")) {
+      return CHARSET_ISO_8859_1;
+    }
+    if (charset.equals("ISO-8859-15")) {
+      return CHARSET_ISO_8859_15;
+    }
+    return CHARSET_UTF_8;
+  }
 
+  static int getCharsetCode(Charset charset) {
+    if (StandardCharsets.US_ASCII.equals(charset)) {
+      return CHARSET_ASCII;
+    }
+    if (StandardCharsets.UTF_8.equals(charset)) {
+      return CHARSET_UTF_8;
+    }
+    if (StandardCharsets.UTF_16.equals(charset)) {
+      return CHARSET_UTF_8_NB;
+    }
+    if (StandardCharsets.UTF_16BE.equals(charset)) {
+      return CHARSET_UTC_BE;
+    }
+    if (StandardCharsets.UTF_16LE.equals(charset)) {
+      return CHARSET_UTC_LE;
+    }
+    if (StandardCharsets.ISO_8859_1.equals(charset)) {
+      return CHARSET_ISO_8859_1;
+    }
+    return switch (charset.name().toUpperCase()) {
+      case "GBK" -> CHARSET_GBK;
+      case "GB2312" -> CHARSET_GB2312;
+      case "GB18030" -> CHARSET_GB18030;
+      case "ISO-8859-15" -> CHARSET_ISO_8859_15;
+      default -> CHARSET_UTF_8;
+    };
+  }
 }

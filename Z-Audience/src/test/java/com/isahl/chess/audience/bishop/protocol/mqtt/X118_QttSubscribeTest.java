@@ -23,96 +23,93 @@
 
 package com.isahl.chess.bishop.protocol.mqtt;
 
-import com.isahl.chess.bishop.protocol.mqtt.command.X118_QttSubscribe;
-import com.isahl.chess.queen.io.core.features.model.session.IQoS;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * X118_QttSubscribe 测试类
- */
+import com.isahl.chess.bishop.protocol.mqtt.command.X118_QttSubscribe;
+import com.isahl.chess.queen.io.core.features.model.session.IQoS;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+
+/** X118_QttSubscribe 测试类 */
 class X118_QttSubscribeTest {
 
-    @Test
-    void testBasicSubscribe() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        subscribe.msgId(12345);
-        subscribe.addSubscribe("test/topic", IQoS.Level.AT_LEAST_ONCE);
-        
-        assertThat(subscribe.msgId()).isEqualTo(12345);
-        assertThat(subscribe.getSubscribes()).containsKey("test/topic");
-        assertThat(subscribe.getSubscribes().get("test/topic")).isEqualTo(IQoS.Level.AT_LEAST_ONCE);
-    }
+  @Test
+  void testBasicSubscribe() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    subscribe.msgId(12345);
+    subscribe.addSubscribe("test/topic", IQoS.Level.AT_LEAST_ONCE);
 
-    @Test
-    void testMultiTopicSubscribe() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        subscribe.msgId(42);
-        subscribe.addSubscribe("topic/a", IQoS.Level.ALMOST_ONCE);
-        subscribe.addSubscribe("topic/b", IQoS.Level.AT_LEAST_ONCE);
-        subscribe.addSubscribe("topic/c", IQoS.Level.EXACTLY_ONCE);
-        
-        Map<String, IQoS.Level> subscribes = subscribe.getSubscribes();
-        assertThat(subscribes).hasSize(3);
-        assertThat(subscribes.get("topic/a")).isEqualTo(IQoS.Level.ALMOST_ONCE);
-        assertThat(subscribes.get("topic/b")).isEqualTo(IQoS.Level.AT_LEAST_ONCE);
-        assertThat(subscribes.get("topic/c")).isEqualTo(IQoS.Level.EXACTLY_ONCE);
-    }
+    assertThat(subscribe.msgId()).isEqualTo(12345);
+    assertThat(subscribe.getSubscribes()).containsKey("test/topic");
+    assertThat(subscribe.getSubscribes().get("test/topic")).isEqualTo(IQoS.Level.AT_LEAST_ONCE);
+  }
 
-    @Test
-    void testWildcardTopics() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        subscribe.msgId(1);
-        
-        subscribe.addSubscribe("test/+", IQoS.Level.AT_LEAST_ONCE);
-        subscribe.addSubscribe("test/#", IQoS.Level.ALMOST_ONCE);
-        subscribe.addSubscribe("sensor/+/temperature", IQoS.Level.EXACTLY_ONCE);
-        
-        assertThat(subscribe.getSubscribes()).hasSize(3);
-        assertThat(subscribe.getSubscribes()).containsKeys("test/+", "test/#", "sensor/+/temperature");
-    }
+  @Test
+  void testMultiTopicSubscribe() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    subscribe.msgId(42);
+    subscribe.addSubscribe("topic/a", IQoS.Level.ALMOST_ONCE);
+    subscribe.addSubscribe("topic/b", IQoS.Level.AT_LEAST_ONCE);
+    subscribe.addSubscribe("topic/c", IQoS.Level.EXACTLY_ONCE);
 
-    @Test
-    void testSharedSubscription() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        subscribe.msgId(1);
-        
-        // 共享订阅主题
-        subscribe.addSubscribe("$share/group1/sensors/+", IQoS.Level.AT_LEAST_ONCE);
-        
-        assertThat(subscribe.getSubscribes()).containsKey("$share/group1/sensors/+");
-    }
+    Map<String, IQoS.Level> subscribes = subscribe.getSubscribes();
+    assertThat(subscribes).hasSize(3);
+    assertThat(subscribes.get("topic/a")).isEqualTo(IQoS.Level.ALMOST_ONCE);
+    assertThat(subscribes.get("topic/b")).isEqualTo(IQoS.Level.AT_LEAST_ONCE);
+    assertThat(subscribes.get("topic/c")).isEqualTo(IQoS.Level.EXACTLY_ONCE);
+  }
 
-    @Test
-    void testPriority() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        assertThat(subscribe.priority()).isEqualTo(X118_QttSubscribe.QOS_PRIORITY_06_META_CREATE);
-    }
+  @Test
+  void testWildcardTopics() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    subscribe.msgId(1);
 
-    @Test
-    void testSerial() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        assertThat(subscribe.serial()).isEqualTo(0x118);
-    }
+    subscribe.addSubscribe("test/+", IQoS.Level.AT_LEAST_ONCE);
+    subscribe.addSubscribe("test/#", IQoS.Level.ALMOST_ONCE);
+    subscribe.addSubscribe("sensor/+/temperature", IQoS.Level.EXACTLY_ONCE);
 
-    @Test
-    void testIsMapping() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        assertThat(subscribe.isMapping()).isTrue();
-    }
+    assertThat(subscribe.getSubscribes()).hasSize(3);
+    assertThat(subscribe.getSubscribes()).containsKeys("test/+", "test/#", "sensor/+/temperature");
+  }
 
-    @Test
-    void testToStringFormat() {
-        X118_QttSubscribe subscribe = new X118_QttSubscribe();
-        subscribe.msgId(42);
-        subscribe.addSubscribe("topic/a", IQoS.Level.AT_LEAST_ONCE);
-        
-        String str = subscribe.toString();
-        assertThat(str).contains("subscribe");
-        assertThat(str).contains("42");
-        assertThat(str).contains("topic/a");
-    }
+  @Test
+  void testSharedSubscription() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    subscribe.msgId(1);
+
+    // 共享订阅主题
+    subscribe.addSubscribe("$share/group1/sensors/+", IQoS.Level.AT_LEAST_ONCE);
+
+    assertThat(subscribe.getSubscribes()).containsKey("$share/group1/sensors/+");
+  }
+
+  @Test
+  void testPriority() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    assertThat(subscribe.priority()).isEqualTo(X118_QttSubscribe.QOS_PRIORITY_06_META_CREATE);
+  }
+
+  @Test
+  void testSerial() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    assertThat(subscribe.serial()).isEqualTo(0x118);
+  }
+
+  @Test
+  void testIsMapping() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    assertThat(subscribe.isMapping()).isTrue();
+  }
+
+  @Test
+  void testToStringFormat() {
+    X118_QttSubscribe subscribe = new X118_QttSubscribe();
+    subscribe.msgId(42);
+    subscribe.addSubscribe("topic/a", IQoS.Level.AT_LEAST_ONCE);
+
+    String str = subscribe.toString();
+    assertThat(str).contains("subscribe");
+    assertThat(str).contains("42");
+    assertThat(str).contains("topic/a");
+  }
 }

@@ -28,65 +28,54 @@ import static com.isahl.chess.queen.io.core.features.model.session.ISession.COUN
 /**
  * @author william.d.zk
  */
-public interface IPContext
-        extends IContext
-{
-    void advanceOutState(int state);
+public interface IPContext extends IContext {
+  void advanceOutState(int state);
 
-    void advanceInState(int state);
+  void advanceInState(int state);
 
-    void recedeOutState(int state);
+  void recedeOutState(int state);
 
-    void recedeInState(int state);
+  void recedeInState(int state);
 
-    default boolean isProxy()
-    {
-        return false;
-    }
+  default boolean isProxy() {
+    return false;
+  }
 
-    default void promotionOut()
-    {
-    }
+  default void promotionOut() {}
 
-    default void promotionIn()
-    {
-    }
+  default void promotionIn() {}
 
-    default void demotionOut()
-    {
-    }
+  default void demotionOut() {}
 
-    default void demotionIn()
-    {
-    }
+  default void demotionIn() {}
 
-    int DECODE_NULL    = -2 << COUNT_BITS;
-    int DECODE_FRAME   = -1 << COUNT_BITS;
-    int DECODE_PAYLOAD = 1 << COUNT_BITS;
-    int DECODE_ERROR   = 3 << COUNT_BITS;
+  int DECODE_NULL = -2 << COUNT_BITS;
+  int DECODE_FRAME = -1 << COUNT_BITS;
+  int DECODE_PAYLOAD = 1 << COUNT_BITS;
+  int DECODE_ERROR = 3 << COUNT_BITS;
 
-    int ENCODE_ERROR   = -2 << COUNT_BITS;
-    int ENCODE_FRAME   = -1 << COUNT_BITS;
-    int ENCODE_PAYLOAD = 1 << COUNT_BITS;
-    int ENCODE_NULL    = 3 << COUNT_BITS;
+  int ENCODE_ERROR = -2 << COUNT_BITS;
+  int ENCODE_FRAME = -1 << COUNT_BITS;
+  int ENCODE_PAYLOAD = 1 << COUNT_BITS;
+  int ENCODE_NULL = 3 << COUNT_BITS;
 
-    boolean isInConvert();
+  boolean isInConvert();
 
-    boolean isOutConvert();
+  boolean isOutConvert();
 
-    boolean isInFrame();
+  boolean isInFrame();
 
-    boolean isOutFrame();
+  boolean isOutFrame();
 
-    int inState();
+  int inState();
 
-    int outState();
+  int outState();
 
-    boolean isInErrorState();
+  boolean isInErrorState();
 
-    boolean isOutErrorState();
+  boolean isOutErrorState();
 
-    boolean isOutInit();
+  boolean isOutInit();
 
-    boolean isInInit();
+  boolean isInInit();
 }

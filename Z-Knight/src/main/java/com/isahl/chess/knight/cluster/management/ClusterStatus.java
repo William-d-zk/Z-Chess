@@ -28,86 +28,71 @@ import java.util.Map;
 
 /**
  * 集群状态信息
- * 
+ *
  * @author william.d.zk
  */
-public class ClusterStatus
-{
-    private int clusterSize;
-    private int quorumSize;
-    private String leaderId;
-    private long lastElectionTime;
-    private long commitIndex;
-    private Map<String, ClusterNode.NodeStatus> nodeStatusMap = new HashMap<>();
-    private Map<String, Long> replicationLag = new HashMap<>();
-    
-    public int getClusterSize()
-    {
-        return clusterSize;
-    }
-    
-    public void setClusterSize(int clusterSize)
-    {
-        this.clusterSize = clusterSize;
-    }
-    
-    public int getQuorumSize()
-    {
-        return quorumSize;
-    }
-    
-    public void setQuorumSize(int quorumSize)
-    {
-        this.quorumSize = quorumSize;
-    }
-    
-    public String getLeaderId()
-    {
-        return leaderId;
-    }
-    
-    public void setLeaderId(String leaderId)
-    {
-        this.leaderId = leaderId;
-    }
-    
-    public long getLastElectionTime()
-    {
-        return lastElectionTime;
-    }
-    
-    public void setLastElectionTime(long lastElectionTime)
-    {
-        this.lastElectionTime = lastElectionTime;
-    }
-    
-    public long getCommitIndex()
-    {
-        return commitIndex;
-    }
-    
-    public void setCommitIndex(long commitIndex)
-    {
-        this.commitIndex = commitIndex;
-    }
-    
-    public Map<String, ClusterNode.NodeStatus> getNodeStatusMap()
-    {
-        return nodeStatusMap;
-    }
-    
-    public void setNodeStatusMap(Map<String, ClusterNode.NodeStatus> nodeStatusMap)
-    {
-        this.nodeStatusMap = nodeStatusMap;
-    }
-    
-    public Map<String, Long> getReplicationLag()
-    {
-        return replicationLag;
-    }
-    
-    public void setReplicationLag(Map<String, Long> replicationLag)
-    {
-        this.replicationLag = replicationLag;
-    }
+public class ClusterStatus {
+  private int clusterSize;
+  private int quorumSize;
+  private String leaderId;
+  private long lastElectionTime;
+  private long commitIndex;
+  private Map<String, ClusterNode.NodeStatus> nodeStatusMap = new HashMap<>();
+  private Map<String, Long> replicationLag = new HashMap<>();
+
+  public int getClusterSize() {
+    return clusterSize;
+  }
+
+  public void setClusterSize(int clusterSize) {
+    this.clusterSize = clusterSize;
+  }
+
+  public int getQuorumSize() {
+    return quorumSize;
+  }
+
+  public void setQuorumSize(int quorumSize) {
+    this.quorumSize = quorumSize;
+  }
+
+  public String getLeaderId() {
+    return leaderId;
+  }
+
+  public void setLeaderId(String leaderId) {
+    this.leaderId = leaderId;
+  }
+
+  public long getLastElectionTime() {
+    return lastElectionTime;
+  }
+
+  public void setLastElectionTime(long lastElectionTime) {
+    this.lastElectionTime = lastElectionTime;
+  }
+
+  public long getCommitIndex() {
+    return commitIndex;
+  }
+
+  public void setCommitIndex(long commitIndex) {
+    this.commitIndex = commitIndex;
+  }
+
+  public Map<String, ClusterNode.NodeStatus> getNodeStatusMap() {
+    return nodeStatusMap;
+  }
+
+  public void setNodeStatusMap(Map<String, ClusterNode.NodeStatus> nodeStatusMap) {
+    this.nodeStatusMap = nodeStatusMap;
+  }
+
+  public Map<String, Long> getReplicationLag() {
+    return replicationLag;
+  }
+
+  public void setReplicationLag(Map<String, Long> replicationLag) {
+    this.replicationLag = replicationLag;
+  }
 }

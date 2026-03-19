@@ -30,53 +30,42 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x01)
-public class X01_EncryptRequest
-        extends ZControl
-{
-    private int mPubKeyId = -1;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x01)
+public class X01_EncryptRequest extends ZControl {
+  private int mPubKeyId = -1;
 
-    public int getPubKeyId()
-    {
-        return mPubKeyId;
-    }
+  public int getPubKeyId() {
+    return mPubKeyId;
+  }
 
-    public void setPubKeyId(int pubKeyId)
-    {
-        mPubKeyId = pubKeyId;
-    }
+  public void setPubKeyId(int pubKeyId) {
+    mPubKeyId = pubKeyId;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 4;
-    }
+  @Override
+  public int length() {
+    return super.length() + 4;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s\npublic-key-id:%d", super.toString(), mPubKeyId);
-    }
+  @Override
+  public String toString() {
+    return String.format("%s\npublic-key-id:%d", super.toString(), mPubKeyId);
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putInt(mPubKeyId);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putInt(mPubKeyId);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPubKeyId = input.getInt();
-        return remain - 4;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPubKeyId = input.getInt();
+    return remain - 4;
+  }
 }

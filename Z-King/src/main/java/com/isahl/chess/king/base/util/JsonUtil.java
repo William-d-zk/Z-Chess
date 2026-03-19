@@ -40,7 +40,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.isahl.chess.king.base.log.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,233 +48,225 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class JsonUtil
-{
-    private final static Logger       _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
-    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+public class JsonUtil {
+  private static final Logger _Logger = Logger.getLogger(JsonUtil.class.getSimpleName());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    static {
-        String STANDARD_PATTERN = "yyyy-MM-dd HH:mm:ss";
-        String DATE_PATTERN = "yyyy-MM-dd";
-        String TIME_PATTERN = "HH:mm:ss";
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(STANDARD_PATTERN);
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter));
-        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter));
+  static {
+    String STANDARD_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    String DATE_PATTERN = "yyyy-MM-dd";
+    String TIME_PATTERN = "HH:mm:ss";
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(STANDARD_PATTERN);
+    javaTimeModule.addSerializer(
+        LocalDateTime.class, new LocalDateTimeSerializer(dateTimeFormatter));
+    javaTimeModule.addDeserializer(
+        LocalDateTime.class, new LocalDateTimeDeserializer(dateTimeFormatter));
 
-        //处理LocalDate
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-        javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
-        javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
+    // 处理LocalDate
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
+    javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
+    javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
 
-        //处理LocalTime
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(TIME_PATTERN);
-        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
-        javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
+    // 处理LocalTime
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(TIME_PATTERN);
+    javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
+    javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
 
-        OBJECT_MAPPER.registerModules(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES),
-                                      new Jdk8Module(),
-                                      javaTimeModule);
-        OBJECT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        OBJECT_MAPPER.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
-        OBJECT_MAPPER.enable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);
+    OBJECT_MAPPER.registerModules(
+        new ParameterNamesModule(JsonCreator.Mode.PROPERTIES), new Jdk8Module(), javaTimeModule);
+    OBJECT_MAPPER.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    OBJECT_MAPPER.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+    OBJECT_MAPPER.enable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);
+  }
+
+  public static <T> T readValue(byte[] input, Class<T> clazz) {
+    if (input == null) {
+      return null;
     }
-
-    public static <T> T readValue(byte[] input, Class<T> clazz)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(input, clazz);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
-        }
-        return null;
+    try {
+      return OBJECT_MAPPER.readValue(input, clazz);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
     }
+    return null;
+  }
 
-    public static <T> T readValue(String input, Class<T> clazz)
-    {
-        if(IoUtil.isBlank(input)) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(input, clazz);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json[%s] error with %s", input, clazz, e);
-        }
-        return null;
+  public static <T> T readValue(String input, Class<T> clazz) {
+    if (IoUtil.isBlank(input)) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(input, clazz);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json[%s] error with %s", input, clazz, e);
+    }
+    return null;
+  }
 
-    public static <T> T readValue(File file, Class<T> clazz)
-    {
-        if(file == null || file.isDirectory() || !file.exists()) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(file, clazz);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json[%s] error with %s", file, clazz, e);
-        }
-        return null;
+  public static <T> T readValue(File file, Class<T> clazz) {
+    if (file == null || file.isDirectory() || !file.exists()) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(file, clazz);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json[%s] error with %s", file, clazz, e);
+    }
+    return null;
+  }
 
-    public static <T> T readValue(byte[] input, TypeReference<T> type)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(input, type);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
-        }
-        return null;
+  public static <T> T readValue(byte[] input, TypeReference<T> type) {
+    if (input == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(input, type);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
+    }
+    return null;
+  }
 
-    public static <T> T readValue(String input, TypeReference<T> type)
-    {
-        if(IoUtil.isBlank(input)) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(input, type);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json[%s] error with %s", input, type, e);
-        }
-        return null;
+  public static <T> T readValue(String input, TypeReference<T> type) {
+    if (IoUtil.isBlank(input)) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(input, type);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json[%s] error with %s", input, type, e);
+    }
+    return null;
+  }
 
-    public static <T> T readValue(InputStream input, TypeReference<T> type)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(input, type);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON from input stream: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json error with %s", type, e);
-        }
-        return null;
+  public static <T> T readValue(InputStream input, TypeReference<T> type) {
+    if (input == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(input, type);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON from input stream: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json error with %s", type, e);
+    }
+    return null;
+  }
 
-    public static <T> T readValue(File file, TypeReference<T> type)
-    {
-        if(file == null) {return null;}
-        try {
-            return OBJECT_MAPPER.readValue(file, type);
-        }
-        catch(JsonParseException | JsonMappingException e) {
-            _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
-        }
-        catch(IOException e) {
-            _Logger.warning("read json error with %s", type, e);
-        }
-        return null;
+  public static <T> T readValue(File file, TypeReference<T> type) {
+    if (file == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.readValue(file, type);
+    } catch (JsonParseException | JsonMappingException e) {
+      _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
+    } catch (IOException e) {
+      _Logger.warning("read json error with %s", type, e);
+    }
+    return null;
+  }
 
-    public static JsonNode readTree(byte[] input)
-    {
-        if(input == null) {return OBJECT_MAPPER.nullNode();}
-        try {
-            return OBJECT_MAPPER.readTree(input);
-        }
-        catch(IOException e) {
-            _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
-            return OBJECT_MAPPER.nullNode();
-        }
+  public static JsonNode readTree(byte[] input) {
+    if (input == null) {
+      return OBJECT_MAPPER.nullNode();
     }
+    try {
+      return OBJECT_MAPPER.readTree(input);
+    } catch (IOException e) {
+      _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
+      return OBJECT_MAPPER.nullNode();
+    }
+  }
 
-    public static JsonNode readTree(String input)
-    {
-        if(IoUtil.isBlank(input)) {return OBJECT_MAPPER.nullNode();}
-        try {
-            return OBJECT_MAPPER.readTree(input);
-        }
-        catch(IOException e) {
-            _Logger.warning("read tree input[%s] error", input, e);
-            return OBJECT_MAPPER.nullNode();
-        }
+  public static JsonNode readTree(String input) {
+    if (IoUtil.isBlank(input)) {
+      return OBJECT_MAPPER.nullNode();
     }
+    try {
+      return OBJECT_MAPPER.readTree(input);
+    } catch (IOException e) {
+      _Logger.warning("read tree input[%s] error", input, e);
+      return OBJECT_MAPPER.nullNode();
+    }
+  }
 
-    public static JsonNode readTree(InputStream input)
-    {
-        if(input == null) {return OBJECT_MAPPER.nullNode();}
-        try {
-            return OBJECT_MAPPER.readTree(input);
-        }
-        catch(IOException e) {
-            _Logger.warning("read tree input stream error", e);
-            return OBJECT_MAPPER.nullNode();
-        }
+  public static JsonNode readTree(InputStream input) {
+    if (input == null) {
+      return OBJECT_MAPPER.nullNode();
     }
+    try {
+      return OBJECT_MAPPER.readTree(input);
+    } catch (IOException e) {
+      _Logger.warning("read tree input stream error", e);
+      return OBJECT_MAPPER.nullNode();
+    }
+  }
 
-    public static <T> JsonNode valueToTree(T data)
-    {
-        return OBJECT_MAPPER.valueToTree(data);
-    }
+  public static <T> JsonNode valueToTree(T data) {
+    return OBJECT_MAPPER.valueToTree(data);
+  }
 
-    public static <T> byte[] writeValueAsBytes(T input)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.writeValueAsBytes(input);
-        }
-        catch(Throwable e) {
-            _Logger.warning("write json error", e);
-        }
-        return null;
+  public static <T> byte[] writeValueAsBytes(T input) {
+    if (input == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.writeValueAsBytes(input);
+    } catch (Throwable e) {
+      _Logger.warning("write json error", e);
+    }
+    return null;
+  }
 
-    public static <T> String writeValueAsString(T input)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.writeValueAsString(input);
-        }
-        catch(JsonProcessingException e) {
-            _Logger.warning("write json error", e);
-        }
-        return null;
+  public static <T> String writeValueAsString(T input) {
+    if (input == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.writeValueAsString(input);
+    } catch (JsonProcessingException e) {
+      _Logger.warning("write json error", e);
+    }
+    return null;
+  }
 
-    public static byte[] writeNodeAsBytes(JsonNode input)
-    {
-        if(input == null) {return null;}
-        try {
-            return OBJECT_MAPPER.writeValueAsBytes(input);
-        }
-        catch(JsonProcessingException e) {
-            _Logger.warning("write json error", e);
-        }
-        return null;
+  public static byte[] writeNodeAsBytes(JsonNode input) {
+    if (input == null) {
+      return null;
     }
+    try {
+      return OBJECT_MAPPER.writeValueAsBytes(input);
+    } catch (JsonProcessingException e) {
+      _Logger.warning("write json error", e);
+    }
+    return null;
+  }
 
-    public static void writeValueWithFile(Object input, File file)
-    {
-        if(input == null || file == null || file.isDirectory()) {return;}
-        try {
-            if((file.exists() || file.createNewFile()) && file.canWrite()) {
-                OBJECT_MAPPER.writeValue(file, input);
-            }
-        }
-        catch(IOException e) {
-            _Logger.warning("write json  %s,", e, file.getName());
-        }
+  public static void writeValueWithFile(Object input, File file) {
+    if (input == null || file == null || file.isDirectory()) {
+      return;
     }
+    try {
+      if ((file.exists() || file.createNewFile()) && file.canWrite()) {
+        OBJECT_MAPPER.writeValue(file, input);
+      }
+    } catch (IOException e) {
+      _Logger.warning("write json  %s,", e, file.getName());
+    }
+  }
 }

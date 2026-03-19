@@ -23,106 +23,94 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.command;
 
+import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static com.isahl.chess.queen.io.core.features.model.session.IQoS.Level.AT_LEAST_ONCE;
 
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x118)
-public class X118_QttSubscribe
-        extends QttCommand
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x118)
+public class X118_QttSubscribe extends QttCommand {
 
-    public X118_QttSubscribe()
-    {
-        generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE);
+  public X118_QttSubscribe() {
+    generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE);
+  }
+
+  private Map<String, Level> mSubscribes;
+
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_06_META_CREATE;
+  }
+
+  @Override
+  public int length() {
+    int length = 0;
+    if (mSubscribes != null) {
+      for (Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
+        String topic = entry.getKey();
+        // 2byte UTF-8 length 1byte Qos-lv
+        length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
+      }
     }
+    return length + super.length();
+  }
 
-    private Map<String, Level> mSubscribes;
+  public Map<String, Level> getSubscribes() {
+    return mSubscribes;
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_06_META_CREATE;
+  public void addSubscribe(String topic, Level level) {
+    if (mSubscribes == null) {
+      mSubscribes = new TreeMap<>();
     }
+    mSubscribes.put(topic, level);
+  }
 
-    @Override
-    public int length()
-    {
-        int length = 0;
-        if(mSubscribes != null) {
-            for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
-                String topic = entry.getKey();
-                // 2byte UTF-8 length 1byte Qos-lv
-                length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
-            }
-        }
-        return length + super.length();
+  @Override
+  public int prefix(ByteBuf input) {
+    msgId(input.getUnsignedShort());
+    while (input.isReadable()) {
+      int length = input.getUnsignedShort();
+      String topic = input.readUTF(length);
+      Level level = Level.valueOf(input.getUnsigned());
+      addSubscribe(topic, level);
     }
+    return 0;
+  }
 
-    public Map<String, Level> getSubscribes()
-    {
-        return mSubscribes;
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output.putShort(msgId());
+    if (mSubscribes != null) {
+      for (Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
+        byte[] topic = entry.getKey().getBytes(StandardCharsets.UTF_8);
+        Level level = entry.getValue();
+        output.putShort(topic.length);
+        output.put(topic);
+        output.put(level.getValue());
+      }
     }
+    return output;
+  }
 
-    public void addSubscribe(String topic, Level level)
-    {
-        if(mSubscribes == null) {
-            mSubscribes = new TreeMap<>();
-        }
-        mSubscribes.put(topic, level);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "subscribe msg-id:%d topics:%s",
+        msgId(), mSubscribes != null ? mSubscribes.toString() : null);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        msgId(input.getUnsignedShort());
-        while(input.isReadable()) {
-            int length = input.getUnsignedShort();
-            String topic = input.readUTF(length);
-            Level level = Level.valueOf(input.getUnsigned());
-            addSubscribe(topic, level);
-        }
-        return 0;
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output.putShort(msgId());
-        if(mSubscribes != null) {
-            for(Map.Entry<String, Level> entry : mSubscribes.entrySet()) {
-                byte[] topic = entry.getKey()
-                                    .getBytes(StandardCharsets.UTF_8);
-                Level level = entry.getValue();
-                output.putShort(topic.length);
-                output.put(topic);
-                output.put(level.getValue());
-            }
-        }
-        return output;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("subscribe msg-id:%d topics:%s", msgId(), mSubscribes != null ? mSubscribes.toString() : null);
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
+  @Override
+  public boolean isMapping() {
+    return true;
+  }
 }

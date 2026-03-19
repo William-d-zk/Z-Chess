@@ -23,89 +23,86 @@
 
 package com.isahl.chess.bishop.protocol.mqtt;
 
-import com.isahl.chess.bishop.protocol.mqtt.command.X11A_QttUnsubscribe;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * X11A_QttUnsubscribe 测试类
- */
+import com.isahl.chess.bishop.protocol.mqtt.command.X11A_QttUnsubscribe;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+/** X11A_QttUnsubscribe 测试类 */
 class X11A_QttUnsubscribeTest {
 
-    @Test
-    void testBasicUnsubscribe() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        unsubscribe.msgId(12345);
-        unsubscribe.setTopics("test/topic");
-        
-        assertThat(unsubscribe.msgId()).isEqualTo(12345);
-        List<String> topics = unsubscribe.getTopics();
-        assertThat(topics).contains("test/topic");
-        assertThat(topics).hasSize(1);
-    }
+  @Test
+  void testBasicUnsubscribe() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    unsubscribe.msgId(12345);
+    unsubscribe.setTopics("test/topic");
 
-    @Test
-    void testMultiTopicUnsubscribe() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        unsubscribe.msgId(42);
-        unsubscribe.setTopics("topic/a", "topic/b", "topic/c");
-        
-        List<String> topics = unsubscribe.getTopics();
-        assertThat(topics).hasSize(3);
-        assertThat(topics).contains("topic/a", "topic/b", "topic/c");
-    }
+    assertThat(unsubscribe.msgId()).isEqualTo(12345);
+    List<String> topics = unsubscribe.getTopics();
+    assertThat(topics).contains("test/topic");
+    assertThat(topics).hasSize(1);
+  }
 
-    @Test
-    void testWildcardTopics() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        unsubscribe.msgId(1);
-        
-        unsubscribe.setTopics("test/+", "test/#", "sensor/+/temperature");
-        
-        assertThat(unsubscribe.getTopics()).hasSize(3);
-        assertThat(unsubscribe.getTopics()).contains("test/+", "test/#", "sensor/+/temperature");
-    }
+  @Test
+  void testMultiTopicUnsubscribe() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    unsubscribe.msgId(42);
+    unsubscribe.setTopics("topic/a", "topic/b", "topic/c");
 
-    @Test
-    void testSharedSubscriptionUnsubscribe() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        unsubscribe.msgId(1);
-        
-        // 取消共享订阅
-        unsubscribe.setTopics("$share/group1/sensors/+");
-        
-        assertThat(unsubscribe.getTopics()).contains("$share/group1/sensors/+");
-    }
+    List<String> topics = unsubscribe.getTopics();
+    assertThat(topics).hasSize(3);
+    assertThat(topics).contains("topic/a", "topic/b", "topic/c");
+  }
 
-    @Test
-    void testPriority() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        assertThat(unsubscribe.priority()).isEqualTo(X11A_QttUnsubscribe.QOS_PRIORITY_06_META_CREATE);
-    }
+  @Test
+  void testWildcardTopics() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    unsubscribe.msgId(1);
 
-    @Test
-    void testSerial() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        assertThat(unsubscribe.serial()).isEqualTo(0x11A);
-    }
+    unsubscribe.setTopics("test/+", "test/#", "sensor/+/temperature");
 
-    @Test
-    void testToStringFormat() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        unsubscribe.msgId(42);
-        unsubscribe.setTopics("topic/a", "topic/b");
-        
-        String str = unsubscribe.toString();
-        assertThat(str).contains("unsubscribe");
-        assertThat(str).contains("42");
-    }
+    assertThat(unsubscribe.getTopics()).hasSize(3);
+    assertThat(unsubscribe.getTopics()).contains("test/+", "test/#", "sensor/+/temperature");
+  }
 
-    @Test
-    void testIsMapping() {
-        X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
-        assertThat(unsubscribe.isMapping()).isTrue();
-    }
+  @Test
+  void testSharedSubscriptionUnsubscribe() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    unsubscribe.msgId(1);
+
+    // 取消共享订阅
+    unsubscribe.setTopics("$share/group1/sensors/+");
+
+    assertThat(unsubscribe.getTopics()).contains("$share/group1/sensors/+");
+  }
+
+  @Test
+  void testPriority() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    assertThat(unsubscribe.priority()).isEqualTo(X11A_QttUnsubscribe.QOS_PRIORITY_06_META_CREATE);
+  }
+
+  @Test
+  void testSerial() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    assertThat(unsubscribe.serial()).isEqualTo(0x11A);
+  }
+
+  @Test
+  void testToStringFormat() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    unsubscribe.msgId(42);
+    unsubscribe.setTopics("topic/a", "topic/b");
+
+    String str = unsubscribe.toString();
+    assertThat(str).contains("unsubscribe");
+    assertThat(str).contains("42");
+  }
+
+  @Test
+  void testIsMapping() {
+    X11A_QttUnsubscribe unsubscribe = new X11A_QttUnsubscribe();
+    assertThat(unsubscribe.isMapping()).isTrue();
+  }
 }

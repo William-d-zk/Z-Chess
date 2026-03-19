@@ -34,36 +34,29 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 
-public class MqttZSort
-        extends BaseSort<QttContext>
-{
-    final QttFrameFilter _Head = new QttFrameFilter();
+public class MqttZSort extends BaseSort<QttContext> {
+  final QttFrameFilter _Head = new QttFrameFilter();
 
-    {
-        _Head.linkFront(new QttControlFilter())
-             .linkFront(new QttCommandFilter());
-    }
+  {
+    _Head.linkFront(new QttControlFilter()).linkFront(new QttCommandFilter());
+  }
 
-    public MqttZSort(Mode mode, Type type)
-    {
-        super(mode, type, "mqtt");
-    }
+  public MqttZSort(Mode mode, Type type) {
+    super(mode, type, "mqtt");
+  }
 
-    @Override
-    public IFilterChain getFilterChain()
-    {
-        return _Head;
-    }
+  @Override
+  public IFilterChain getFilterChain() {
+    return _Head;
+  }
 
-    @Override
-    public QttContext newContext(INetworkOption option)
-    {
-        return new QttContext(option, getMode(), getType());
-    }
+  @Override
+  public QttContext newContext(INetworkOption option) {
+    return new QttContext(option, getMode(), getType());
+  }
 
-    @Override
-    public IoFactory<IProtocol> _SelectFactory()
-    {
-        return QttFactory._Instance;
-    }
+  @Override
+  public IoFactory<IProtocol> _SelectFactory() {
+    return QttFactory._Instance;
+  }
 }

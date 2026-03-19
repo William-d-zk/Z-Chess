@@ -27,67 +27,54 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public enum Progress
-{
+public enum Progress {
 
-    /**
-     *
-     */
-    NA("NA/NA") {
-        @Override
-        public int getCount(String formatted)
-        {
-            return 0;
-        }
-
-        @Override
-        public int getSize(String formatted)
-        {
-            return 0;
-        }
-    },
-    /**
-     *
-     */
-    NORMAL("%d/%d") {
-        @Override
-        public int getCount(String formatted)
-        {
-            String[] split = formatted.split(getSplit());
-            return "NA".equals(split[0]) ? 0 : Integer.parseInt(split[0]);
-        }
-
-        @Override
-        public int getSize(String formatted)
-        {
-            String[] split = formatted.split(getSplit());
-            return "NA".equals(split[1]) ? 0 : Integer.parseInt(split[1]);
-        }
-    };
-
-    private final String _Formatter;
-
-    public abstract int getCount(String formatted);
-
-    public abstract int getSize(String formatted);
-
-    Progress(String str)
-    {
-        _Formatter = str;
+  /** */
+  NA("NA/NA") {
+    @Override
+    public int getCount(String formatted) {
+      return 0;
     }
 
-    public String getFormatter()
-    {
-        return _Formatter;
+    @Override
+    public int getSize(String formatted) {
+      return 0;
+    }
+  },
+  /** */
+  NORMAL("%d/%d") {
+    @Override
+    public int getCount(String formatted) {
+      String[] split = formatted.split(getSplit());
+      return "NA".equals(split[0]) ? 0 : Integer.parseInt(split[0]);
     }
 
-    public String format(int count, int size)
-    {
-        return String.format(_Formatter, count, size);
+    @Override
+    public int getSize(String formatted) {
+      String[] split = formatted.split(getSplit());
+      return "NA".equals(split[1]) ? 0 : Integer.parseInt(split[1]);
     }
+  };
 
-    public String getSplit()
-    {
-        return "/";
-    }
+  private final String _Formatter;
+
+  public abstract int getCount(String formatted);
+
+  public abstract int getSize(String formatted);
+
+  Progress(String str) {
+    _Formatter = str;
+  }
+
+  public String getFormatter() {
+    return _Formatter;
+  }
+
+  public String format(int count, int size) {
+    return String.format(_Formatter, count, size);
+  }
+
+  public String getSplit() {
+    return "/";
+  }
 }

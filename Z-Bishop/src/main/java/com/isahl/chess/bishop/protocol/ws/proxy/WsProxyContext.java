@@ -32,36 +32,28 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 /**
  * @author william.d.zk
  */
-public class WsProxyContext<A extends IPContext>
-        extends WsContext
-        implements IProxyContext<A>
-{
+public class WsProxyContext<A extends IPContext> extends WsContext implements IProxyContext<A> {
 
-    private final A _ActingContext;
+  private final A _ActingContext;
 
-    public WsProxyContext(INetworkOption option, ISort.Mode mode, ISort.Type type, A actingContext)
-    {
-        super(option, mode, type);
-        _ActingContext = actingContext;
-    }
+  public WsProxyContext(INetworkOption option, ISort.Mode mode, ISort.Type type, A actingContext) {
+    super(option, mode, type);
+    _ActingContext = actingContext;
+  }
 
-    @Override
-    public A getActingContext()
-    {
-        return _ActingContext;
-    }
+  @Override
+  public A getActingContext() {
+    return _ActingContext;
+  }
 
-    @Override
-    public boolean isProxy()
-    {
-        return true;
-    }
+  @Override
+  public boolean isProxy() {
+    return true;
+  }
 
-    @Override
-    public void ready()
-    {
-        super.ready();
-        _ActingContext.ready();
-    }
-
+  @Override
+  public void ready() {
+    super.ready();
+    _ActingContext.ready();
+  }
 }

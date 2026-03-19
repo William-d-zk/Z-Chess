@@ -30,129 +30,114 @@ import com.isahl.chess.queen.db.model.IStorage;
 /**
  * @author william.d.zk
  */
-public abstract class InnerProtocol
-        extends BinarySerial
-        implements IStorage
-{
-    final           CreatorType _Type;
-    protected final Operation   _Operation;
-    protected final Strategy    _Strategy;
-    protected       long        pKey, fKey;
+public abstract class InnerProtocol extends BinarySerial implements IStorage {
+  final CreatorType _Type;
+  protected final Operation _Operation;
+  protected final Strategy _Strategy;
+  protected long pKey, fKey;
 
-    enum CreatorType
-    {
-        ANONYMOUS,
-        CUSTOM
+  enum CreatorType {
+    ANONYMOUS,
+    CUSTOM
+  }
+
+  protected InnerProtocol(Operation operation, Strategy strategy) {
+    this(operation, strategy, CreatorType.CUSTOM);
+  }
+
+  public InnerProtocol() {
+    this(Operation.OP_NULL, Strategy.CLEAN, CreatorType.ANONYMOUS);
+  }
+
+  private InnerProtocol(Operation operation, Strategy strategy, CreatorType type) {
+    _Operation = operation;
+    _Strategy = strategy;
+    _Type = type;
+  }
+
+  public InnerProtocol(ByteBuf input) {
+    int off = skipHeader(input);
+    _Operation = Operation.valueOf(input.peek(off++));
+    _Strategy = Strategy.valueOf(input.peek(off));
+    _Type = CreatorType.CUSTOM;
+    decode(input);
+  }
+
+  public InnerProtocol(byte[] bytes) {
+    this(Operation.OP_INSERT, Strategy.RETAIN);
+    withSub(bytes);
+  }
+
+  @Override
+  public int length() {
+    return 1
+        + // operation (1)
+        1
+        + // strategy (1)
+        8
+        + // primaryKey (8)
+        (hasForeignKey() ? 9 : 1)
+        + // hasForeignKey ? (9) : (1)
+        super.length(); // payload.length
+  }
+
+  @Override
+  public long primaryKey() {
+    return pKey;
+  }
+
+  @Override
+  public long foreignKey() {
+    return fKey;
+  }
+
+  public void bind(long key) {
+    fKey = key;
+  }
+
+  public void generate(long primaryKey) {
+    pKey = primaryKey;
+  }
+
+  @Override
+  public boolean hasForeignKey() {
+    return fKey != 0;
+  }
+
+  @Override
+  public Strategy strategy() {
+    return _Strategy;
+  }
+
+  @Override
+  public Operation operation() {
+    return _Operation;
+  }
+
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    input.skip(2);
+    remain -= 2;
+    pKey = input.getLong();
+    remain -= 8;
+    if (input.get() > 0) {
+      fKey = input.getLong();
+      remain -= 8;
     }
+    return remain - 1;
+  }
 
-    protected InnerProtocol(Operation operation, Strategy strategy)
-    {
-        this(operation, strategy, CreatorType.CUSTOM);
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    output =
+        super.suffix(output)
+            .put(operation().getValue())
+            .put(strategy().getCode())
+            .putLong(pKey)
+            .put(hasForeignKey() ? 1 : 0);
+    if (hasForeignKey()) {
+      output.putLong(fKey);
     }
-
-    public InnerProtocol()
-    {
-        this(Operation.OP_NULL, Strategy.CLEAN, CreatorType.ANONYMOUS);
-    }
-
-    private InnerProtocol(Operation operation, Strategy strategy, CreatorType type)
-    {
-        _Operation = operation;
-        _Strategy = strategy;
-        _Type = type;
-    }
-
-    public InnerProtocol(ByteBuf input)
-    {
-        int off = skipHeader(input);
-        _Operation = Operation.valueOf(input.peek(off++));
-        _Strategy = Strategy.valueOf(input.peek(off));
-        _Type = CreatorType.CUSTOM;
-        decode(input);
-    }
-
-    public InnerProtocol(byte[] bytes)
-    {
-        this(Operation.OP_INSERT, Strategy.RETAIN);
-        withSub(bytes);
-    }
-
-    @Override
-    public int length()
-    {
-        return 1 + //operation (1)
-               1 + //strategy (1)
-               8 + //primaryKey (8)
-               (hasForeignKey() ? 9 : 1) + //hasForeignKey ? (9) : (1)
-               super.length(); //payload.length
-    }
-
-    @Override
-    public long primaryKey()
-    {
-        return pKey;
-    }
-
-    @Override
-    public long foreignKey()
-    {
-        return fKey;
-    }
-
-    public void bind(long key)
-    {
-        fKey = key;
-    }
-
-    public void generate(long primaryKey)
-    {
-        pKey = primaryKey;
-    }
-
-    @Override
-    public boolean hasForeignKey()
-    {
-        return fKey != 0;
-    }
-
-    @Override
-    public Strategy strategy()
-    {
-        return _Strategy;
-    }
-
-    @Override
-    public Operation operation()
-    {
-        return _Operation;
-    }
-
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        input.skip(2);
-        remain -= 2;
-        pKey = input.getLong();
-        remain -= 8;
-        if(input.get() > 0) {
-            fKey = input.getLong();
-            remain -= 8;
-        }
-        return remain - 1;
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        output = super.suffix(output)
-                      .put(operation().getValue())
-                      .put(strategy().getCode())
-                      .putLong(pKey)
-                      .put(hasForeignKey() ? 1 : 0);
-        if(hasForeignKey()) {
-            output.putLong(fKey);
-        }
-        return output;
-    }
-
+    return output;
+  }
 }

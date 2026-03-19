@@ -30,53 +30,42 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x0A)
-public class X0A_Close
-        extends ZControl
-{
-    private long mSession;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x0A)
+public class X0A_Close extends ZControl {
+  private long mSession;
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    public X0A_Close()
-    {
-        super();
-    }
+  public X0A_Close() {
+    super();
+  }
 
-    public X0A_Close(long session)
-    {
-        super();
-        mSession = session;
-    }
+  public X0A_Close(long session) {
+    super();
+    mSession = session;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mSession = input.getLong();
-        return remain - 8;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mSession = input.getLong();
+    return remain - 8;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mSession);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mSession);
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 8;
-    }
+  @Override
+  public int length() {
+    return super.length() + 8;
+  }
 
-    public long idx()
-    {
-        return mSession;
-    }
+  public long idx() {
+    return mSession;
+  }
 }

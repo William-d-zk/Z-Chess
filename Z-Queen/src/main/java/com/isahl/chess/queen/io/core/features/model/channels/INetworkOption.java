@@ -24,20 +24,16 @@
 package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.queen.io.core.features.model.session.IOption;
-
 import java.nio.channels.NetworkChannel;
 import java.time.Duration;
 
 /**
  * @author William.d.zk
  */
-public interface INetworkOption
-        extends IOption
-{
-    void configChannel(NetworkChannel channel);
+public interface INetworkOption extends IOption {
+  void configChannel(NetworkChannel channel);
 
-    boolean isTcpNoDelay();
+  boolean isTcpNoDelay();
 
-    Duration getSoLingerInSecond();
-
+  Duration getSoLingerInSecond();
 }

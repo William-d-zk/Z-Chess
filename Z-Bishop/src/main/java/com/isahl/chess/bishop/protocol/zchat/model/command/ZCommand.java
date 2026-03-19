@@ -34,60 +34,49 @@ import com.isahl.chess.queen.io.core.features.model.content.ICommand;
  * @author william.d.zk
  * @date 2019-07-14
  */
+public abstract class ZCommand extends ZControl implements ICommand<ZContext> {
+  private long mMsgId;
 
-public abstract class ZCommand
-        extends ZControl
-        implements ICommand<ZContext>
-{
-    private long mMsgId;
+  public ZCommand() {
+    super();
+    withId(true);
+    mFrameHeader ^= ZFrame.frame_op_code_ctrl;
+  }
 
-    public ZCommand()
-    {
-        super();
-        withId(true);
-        mFrameHeader ^= ZFrame.frame_op_code_ctrl;
+  public ZCommand(long msgId) {
+    super();
+    msgId(msgId);
+    mFrameHeader ^= ZFrame.frame_op_code_ctrl;
+  }
+
+  @Override
+  public void msgId(long msgId) {
+    withId(true);
+    mMsgId = msgId;
+  }
+
+  @Override
+  public long msgId() {
+    return mMsgId;
+  }
+
+  @Override
+  public int prefix(ByteBuf input) {
+    input.markReader();
+    mAttr = input.get();
+    int cmd = input.getUnsigned();
+    if (cmd != serial()) {
+      throw new ZException("input.cmd[%d]≠self.serial[%d]", cmd, serial());
     }
-
-    public ZCommand(long msgId)
-    {
-        super();
-        msgId(msgId);
-        mFrameHeader ^= ZFrame.frame_op_code_ctrl;
+    if (!isWithId()) {
+      throw new ZException("z-chat-command without msg-id?!");
     }
+    msgId(input.getLong());
+    return input.readableBytes();
+  }
 
-    @Override
-    public void msgId(long msgId)
-    {
-        withId(true);
-        mMsgId = msgId;
-    }
-
-    @Override
-    public long msgId()
-    {
-        return mMsgId;
-    }
-
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        input.markReader();
-        mAttr = input.get();
-        int cmd = input.getUnsigned();
-        if(cmd != serial()) {
-            throw new ZException("input.cmd[%d]≠self.serial[%d]", cmd, serial());
-        }
-        if(!isWithId()) {
-            throw new ZException("z-chat-command without msg-id?!");
-        }
-        msgId(input.getLong());
-        return input.readableBytes();
-    }
-
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(msgId());
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(msgId());
+  }
 }

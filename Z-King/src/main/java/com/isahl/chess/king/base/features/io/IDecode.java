@@ -28,27 +28,18 @@ import com.isahl.chess.king.base.content.ByteBuf;
 /**
  * @author william.d.zk
  * @date 2019-07-14
- * <p>
- * decode(input){
- * int remain = prefix(input);
- * if(remain > 0){
- * //对剩余数据进行处理
- * }
- * }
+ *     <p>decode(input){ int remain = prefix(input); if(remain > 0){ //对剩余数据进行处理 } }
  */
-public interface IDecode
-{
-    default void decode(ByteBuf input)
-    {
-        fold(input, prefix(input));
-    }
+public interface IDecode {
+  default void decode(ByteBuf input) {
+    fold(input, prefix(input));
+  }
 
-    /**
-     * @param input
-     * @return remain
-     */
-    int prefix(ByteBuf input);
+  /**
+   * @param input
+   * @return remain
+   */
+  int prefix(ByteBuf input);
 
-    void fold(ByteBuf input, int remain);
-
+  void fold(ByteBuf input, int remain);
 }

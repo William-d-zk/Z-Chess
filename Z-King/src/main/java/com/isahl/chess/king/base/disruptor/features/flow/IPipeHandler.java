@@ -30,63 +30,62 @@ import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.RingBuffer;
-
 import java.util.List;
 
 /**
  * @author William.d.zk
  */
-public interface IPipeHandler<E extends IEvent>
-        extends IBatchHandler<E>
-{
+public interface IPipeHandler<E extends IEvent> extends IBatchHandler<E> {
 
-    Logger _Logger();
+  Logger _Logger();
 
-    default <V, A, R> void publish(RingBuffer<E> publisher, OperateType type, IPair content, IBinaryOperator<V, A, R> operator)
-    {
-        if(publisher == null || type == null || content == null) {return;}
-        if(publisher.remainingCapacity() == 0) {
-            _Logger().warning("publish block with %s", type.name());
-        }
-        long sequence = publisher.next();
-        try {
-            E event = publisher.get(sequence);
-            event.produce(type, content, operator);
-        }
-        finally {
-            publisher.publish(sequence);
-        }
+  default <V, A, R> void publish(
+      RingBuffer<E> publisher, OperateType type, IPair content, IBinaryOperator<V, A, R> operator) {
+    if (publisher == null || type == null || content == null) {
+      return;
     }
-
-    default void publish(RingBuffer<E> publisher, List<ITriple> contents)
-    {
-        if(publisher == null || contents == null || contents.isEmpty()) {return;}
-        if(publisher.remainingCapacity() == 0) {
-            _Logger().warning("publish block with writer");
-        }
-        long sequence = publisher.next();
-        try {
-            E event = publisher.get(sequence);
-            event.produce(OperateType.DISPATCH, contents);
-        }
-        finally {
-            publisher.publish(sequence);
-        }
+    if (publisher.remainingCapacity() == 0) {
+      _Logger().warning("publish block with %s", type.name());
     }
-
-    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type type, IPair content, IBinaryOperator<V, A, R> operator)
-    {
-        if(publisher == null || type == null || content == null) {return;}
-        if(publisher.remainingCapacity() == 0) {
-            _Logger().warning("error block with %s", type.name());
-        }
-        long sequence = publisher.next();
-        try {
-            E event = publisher.get(sequence);
-            event.error(type, content, operator);
-        }
-        finally {
-            publisher.publish(sequence);
-        }
+    long sequence = publisher.next();
+    try {
+      E event = publisher.get(sequence);
+      event.produce(type, content, operator);
+    } finally {
+      publisher.publish(sequence);
     }
+  }
+
+  default void publish(RingBuffer<E> publisher, List<ITriple> contents) {
+    if (publisher == null || contents == null || contents.isEmpty()) {
+      return;
+    }
+    if (publisher.remainingCapacity() == 0) {
+      _Logger().warning("publish block with writer");
+    }
+    long sequence = publisher.next();
+    try {
+      E event = publisher.get(sequence);
+      event.produce(OperateType.DISPATCH, contents);
+    } finally {
+      publisher.publish(sequence);
+    }
+  }
+
+  default <V, A, R> void error(
+      RingBuffer<E> publisher, IError.Type type, IPair content, IBinaryOperator<V, A, R> operator) {
+    if (publisher == null || type == null || content == null) {
+      return;
+    }
+    if (publisher.remainingCapacity() == 0) {
+      _Logger().warning("error block with %s", type.name());
+    }
+    long sequence = publisher.next();
+    try {
+      E event = publisher.get(sequence);
+      event.error(type, content, operator);
+    } finally {
+      publisher.publish(sequence);
+    }
+  }
 }

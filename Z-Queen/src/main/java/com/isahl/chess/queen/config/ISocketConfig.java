@@ -23,79 +23,65 @@
 
 package com.isahl.chess.queen.config;
 
+import java.time.Duration;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
-import java.time.Duration;
 
 /**
  * @author william.d.zk
  * @date 2020/2/1
  */
-public interface ISocketConfig
-{
+public interface ISocketConfig {
 
-    default boolean isKeepAlive()
-    {
-        return true;
-    }
+  default boolean isKeepAlive() {
+    return true;
+  }
 
-    default Duration getWriteTimeoutInSecond()
-    {
-        return Duration.ofSeconds(30);
-    }
+  default Duration getWriteTimeoutInSecond() {
+    return Duration.ofSeconds(30);
+  }
 
-    default Duration getReadTimeoutInMinute()
-    {
-        return Duration.ofMinutes(15);
-    }
+  default Duration getReadTimeoutInMinute() {
+    return Duration.ofMinutes(15);
+  }
 
-    default int getSendQueueMax()
-    {
-        return 64;
-    }
+  default int getSendQueueMax() {
+    return 64;
+  }
 
-    default int getRcvInByte()
-    {
-        return 65536;
-    }
+  default int getRcvInByte() {
+    return 65536;
+  }
 
-    default int getSnfInByte()
-    {
-        return 131072;
-    }
+  default int getSnfInByte() {
+    return 131072;
+  }
 
-    default boolean isTcpNoDelay()
-    {
-        return true;
-    }
+  default boolean isTcpNoDelay() {
+    return true;
+  }
 
-    default Duration getSoLingerInSecond()
-    {
-        return Duration.ofSeconds(30);
-    }
+  default Duration getSoLingerInSecond() {
+    return Duration.ofSeconds(30);
+  }
 
-    default Duration getConnectTimeoutInSecond()
-    {
-        return Duration.ofSeconds(5);
-    }
+  default Duration getConnectTimeoutInSecond() {
+    return Duration.ofSeconds(5);
+  }
 
-    default KeyManager[] getKeyManagers()
-    {
-        return null;
-    }
+  default KeyManager[] getKeyManagers() {
+    return null;
+  }
 
-    default TrustManager[] getTrustManagers()
-    {
-        return null;
-    }
+  default TrustManager[] getTrustManagers() {
+    return null;
+  }
 
-    default void init()
-    {
-    }
+  default void init() {}
 
-    int getSslPacketBufferSize();
+  int getSslPacketBufferSize();
 
-    int getSslAppBufferSize();
+  int getSslAppBufferSize();
 
-    boolean isClientAuth();
+  boolean isClientAuth();
 }

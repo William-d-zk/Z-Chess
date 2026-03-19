@@ -23,6 +23,8 @@
 
 package com.isahl.chess.knight.cluster.features;
 
+import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.CONSISTENT_SERVICE;
+
 import com.isahl.chess.king.base.features.ICode;
 import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.util.Pair;
@@ -32,51 +34,38 @@ import com.isahl.chess.knight.cluster.config.CodeKnight;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
-
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.isahl.chess.king.base.disruptor.features.functions.OperateType.CONSISTENT_SERVICE;
-
-public interface IConsistencyService
-{
-    default <T extends IoSerial> ICode submit(T request, IClusterNode node)
-    {
-        if(request == null || node == null) {
-            return CodeKing.MISS;
-        }
-        if(!node.clusterPeer()
-                .isInCongress())
-        {
-            return CodeKnight.CLUSTER_NO_IN_CONGRESS;
-        }
-        final ReentrantLock _Lock = node.selectLock(CONSISTENT_SERVICE);
-        final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENT_SERVICE);
-        _Lock.lock();
-        try {
-            long sequence = _Publish.next();
-            try {
-                QEvent event = _Publish.get(sequence);
-                event.produce(CONSISTENT_SERVICE,
-                              new Pair<>(request,
-                                         node.clusterPeer()
-                                             .peerId()),
-                              null);
-            }
-            finally {
-                _Publish.publish(sequence);
-            }
-        }
-        finally {
-            _Lock.unlock();
-        }
-        return CodeKing.SUCCESS;
+public interface IConsistencyService {
+  default <T extends IoSerial> ICode submit(T request, IClusterNode node) {
+    if (request == null || node == null) {
+      return CodeKing.MISS;
     }
+    if (!node.clusterPeer().isInCongress()) {
+      return CodeKnight.CLUSTER_NO_IN_CONGRESS;
+    }
+    final ReentrantLock _Lock = node.selectLock(CONSISTENT_SERVICE);
+    final RingBuffer<QEvent> _Publish = node.selectPublisher(CONSISTENT_SERVICE);
+    _Lock.lock();
+    try {
+      long sequence = _Publish.next();
+      try {
+        QEvent event = _Publish.get(sequence);
+        event.produce(CONSISTENT_SERVICE, new Pair<>(request, node.clusterPeer().peerId()), null);
+      } finally {
+        _Publish.publish(sequence);
+      }
+    } finally {
+      _Lock.unlock();
+    }
+    return CodeKing.SUCCESS;
+  }
 
-    ICode submit(String content);
+  ICode submit(String content);
 
-    ICode modify(String host, int port);
+  ICode modify(String host, int port);
 
-    ICode modify(String host, String gate, int gatePort);
+  ICode modify(String host, String gate, int gatePort);
 
-    RaftState getRaftState();
+  RaftState getRaftState();
 }

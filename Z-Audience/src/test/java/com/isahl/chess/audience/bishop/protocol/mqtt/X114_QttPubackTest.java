@@ -23,53 +23,51 @@
 
 package com.isahl.chess.bishop.protocol.mqtt;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.isahl.chess.bishop.protocol.mqtt.command.X114_QttPuback;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * X114_QttPuback 测试类
- */
+/** X114_QttPuback 测试类 */
 class X114_QttPubackTest {
 
-    @Test
-    void testBasicPuback() {
-        X114_QttPuback puback = new X114_QttPuback();
-        puback.msgId(12345);
-        
-        assertThat(puback.msgId()).isEqualTo(12345);
-    }
+  @Test
+  void testBasicPuback() {
+    X114_QttPuback puback = new X114_QttPuback();
+    puback.msgId(12345);
 
-    @Test
-    void testWithPayload() {
-        X114_QttPuback puback = new X114_QttPuback();
-        puback.msgId(12345);
-        puback.withSub("extra data".getBytes());
-        
-        assertThat(puback.msgId()).isEqualTo(12345);
-        assertThat(puback.payload()).containsExactly("extra data".getBytes());
-    }
+    assertThat(puback.msgId()).isEqualTo(12345);
+  }
 
-    @Test
-    void testPriority() {
-        X114_QttPuback puback = new X114_QttPuback();
-        assertThat(puback.priority()).isEqualTo(X114_QttPuback.QOS_PRIORITY_09_CONFIRM_MESSAGE);
-    }
+  @Test
+  void testWithPayload() {
+    X114_QttPuback puback = new X114_QttPuback();
+    puback.msgId(12345);
+    puback.withSub("extra data".getBytes());
 
-    @Test
-    void testSerial() {
-        X114_QttPuback puback = new X114_QttPuback();
-        assertThat(puback.serial()).isEqualTo(0x114);
-    }
+    assertThat(puback.msgId()).isEqualTo(12345);
+    assertThat(puback.payload()).containsExactly("extra data".getBytes());
+  }
 
-    @Test
-    void testToStringFormat() {
-        X114_QttPuback puback = new X114_QttPuback();
-        puback.msgId(42);
-        
-        String str = puback.toString();
-        assertThat(str).contains("puback");
-        assertThat(str).contains("42");
-    }
+  @Test
+  void testPriority() {
+    X114_QttPuback puback = new X114_QttPuback();
+    assertThat(puback.priority()).isEqualTo(X114_QttPuback.QOS_PRIORITY_09_CONFIRM_MESSAGE);
+  }
+
+  @Test
+  void testSerial() {
+    X114_QttPuback puback = new X114_QttPuback();
+    assertThat(puback.serial()).isEqualTo(0x114);
+  }
+
+  @Test
+  void testToStringFormat() {
+    X114_QttPuback puback = new X114_QttPuback();
+    puback.msgId(42);
+
+    String str = puback.toString();
+    assertThat(str).contains("puback");
+    assertThat(str).contains("42");
+  }
 }

@@ -29,67 +29,55 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFailed;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.util.List;
 
-public class ClientHandler
-        implements ILogicHandler
-{
-    private final Logger     _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
-    private final IHealth    _Health;
-    private final IExchanger _Exchanger;
+public class ClientHandler implements ILogicHandler {
+  private final Logger _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
+  private final IHealth _Health;
+  private final IExchanger _Exchanger;
 
-    public ClientHandler(IHealth health, IExchanger exchanger)
-    {
-        _Health = health;
-        _Exchanger = exchanger;
-    }
+  public ClientHandler(IHealth health, IExchanger exchanger) {
+    _Health = health;
+    _Exchanger = exchanger;
+  }
 
-    @Override
-    public IHealth _Health()
-    {
-        return _Health;
-    }
+  @Override
+  public IHealth _Health() {
+    return _Health;
+  }
 
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
-    }
+  @Override
+  public Logger getLogger() {
+    return _Logger;
+  }
 
-    @Override
-    public IExchanger getExchanger()
-    {
-        return _Exchanger;
-    }
+  @Override
+  public IExchanger getExchanger() {
+    return _Exchanger;
+  }
 
-    @Override
-    public IPipeTransfer logicTransfer()
-    {
-        return this::logicHandle;
-    }
+  @Override
+  public IPipeTransfer logicTransfer() {
+    return this::logicHandle;
+  }
 
-    @Override
-    public IPipeService serviceTransfer()
-    {
-        return this::clientHandle;
-    }
+  @Override
+  public IPipeService serviceTransfer() {
+    return this::clientHandle;
+  }
 
-    private List<ITriple> logicHandle(IProtocol content, ISession session)
-    {
-        List<ITriple> results = null;
+  private List<ITriple> logicHandle(IProtocol content, ISession session) {
+    List<ITriple> results = null;
 
-        _Logger.info("logic recv: %s", content);
-        return results;
-    }
+    _Logger.info("logic recv: %s", content);
+    return results;
+  }
 
-    private List<ITriple> clientHandle(IoSerial request)
-    {
-        return null;
-    }
+  private List<ITriple> clientHandle(IoSerial request) {
+    return null;
+  }
 }

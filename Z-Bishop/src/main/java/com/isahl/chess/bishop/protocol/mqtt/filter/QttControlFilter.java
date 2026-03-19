@@ -39,92 +39,77 @@ import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
  * @author william.d.zk
  * @date 2019-05-13
  */
-public class QttControlFilter
-        extends AioFilterChain<QttContext, QttControl, QttFrame>
-{
-    public QttControlFilter()
-    {
-        super("mqtt_control");
-    }
+public class QttControlFilter extends AioFilterChain<QttContext, QttControl, QttFrame> {
+  public QttControlFilter() {
+    super("mqtt_control");
+  }
 
-    @Override
-    public QttFrame encode(QttContext context, QttControl output)
-    {
-        QttFrame frame = new QttFrame();
-        frame.header(output.header());
-        frame.withSub(output.encode(context)
-                            .array());
-        context.promotionOut();
-        return frame;
-    }
+  @Override
+  public QttFrame encode(QttContext context, QttControl output) {
+    QttFrame frame = new QttFrame();
+    frame.header(output.header());
+    frame.withSub(output.encode(context).array());
+    context.promotionOut();
+    return frame;
+  }
 
-    @Override
-    public QttControl decode(QttContext context, QttFrame input)
-    {
-        context.demotionIn();
-        return QttFactory._Instance.create(input, context);
-    }
+  @Override
+  public QttControl decode(QttContext context, QttFrame input) {
+    context.demotionIn();
+    return QttFactory._Instance.create(input, context);
+  }
 
-    @Override
-    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
-    {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL) && output instanceof QttProtocol) {
-            IPContext acting = context;
-            do {
-                //@formatter:off
-                if(acting.isOutConvert() &&
-                   acting instanceof QttContext &&
-                   output instanceof IControl c &&
-                   c.isCtrl())
-                {
-                //@formatter:on
-                    return Pair.of(ResultType.NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output) {
+    if (checkType(output, IProtocol.PROTOCOL_BISHOP_CONTROL_SERIAL)
+        && output instanceof QttProtocol) {
+      IPContext acting = context;
+      do {
+        // @formatter:off
+        if (acting.isOutConvert()
+            && acting instanceof QttContext
+            && output instanceof IControl c
+            && c.isCtrl()) {
+          // @formatter:on
+          return Pair.of(ResultType.NEXT_STEP, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
-    {
-        if(checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL) && input instanceof QttFrame f && f.isCtrl()) {
-            IPContext acting = context;
-            do {
-                if(acting.isInConvert() && acting instanceof QttContext) {
-                    return Pair.of(ResultType.HANDLED, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input) {
+    if (checkType(input, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)
+        && input instanceof QttFrame f
+        && f.isCtrl()) {
+      IPContext acting = context;
+      do {
+        if (acting.isInConvert() && acting instanceof QttContext) {
+          return Pair.of(ResultType.HANDLED, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
-    {
-        return (I) encode((QttContext) context, (QttControl) output);
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output) {
+    return (I) encode((QttContext) context, (QttControl) output);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
-    {
-        return (O) decode((QttContext) context, (QttFrame) input);
-    }
-
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input) {
+    return (O) decode((QttContext) context, (QttFrame) input);
+  }
 }

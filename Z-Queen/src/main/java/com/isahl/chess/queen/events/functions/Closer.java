@@ -26,34 +26,29 @@ package com.isahl.chess.queen.events.functions;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
-
 import java.io.IOException;
 
 /**
  * @author william.d.zk
  * @date 2019-05-12
  */
-public class Closer
-        implements ICloser
-{
-    @Override
-    public String getName()
-    {
-        return "operator.close";
-    }
+public class Closer implements ICloser {
+  @Override
+  public String getName() {
+    return "operator.close";
+  }
 
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+  private final Logger _Logger =
+      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
-    @Override
-    public Void handle(String msg, ISession session)
-    {
-        try {
-            _Logger.debug("msg %s → closed %s", msg, session);
-            session.close();
-        }
-        catch(IOException e) {
-            _Logger.warning("close exception: %s", e, session);
-        }
-        return null;
+  @Override
+  public Void handle(String msg, ISession session) {
+    try {
+      _Logger.debug("msg %s → closed %s", msg, session);
+      session.close();
+    } catch (IOException e) {
+      _Logger.warning("close exception: %s", e, session);
     }
+    return null;
+  }
 }

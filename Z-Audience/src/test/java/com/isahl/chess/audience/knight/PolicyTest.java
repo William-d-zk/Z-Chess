@@ -23,95 +23,85 @@
 
 package com.isahl.chess.audience.knight;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.isahl.chess.audience.testing.BaseTest;
 import com.isahl.chess.knight.policy.BaseRetryPolicy;
 import com.isahl.chess.knight.policy.Policy;
 import com.isahl.chess.knight.policy.RoundRobinLoadBalancePolicy;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+public class PolicyTest extends BaseTest {
 
-public class PolicyTest
-        extends BaseTest
-{
+  @Test
+  void testBaseRetryPolicy_validate() {
+    BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
+    assertTrue(policy.validate());
+    assertEquals("test-retry", policy.getPolicyId());
+    assertEquals("RETRY", policy.getPolicyType());
+    assertEquals(3, policy.getMaxRetries());
+    assertEquals(1000, policy.getRetryDelayMs());
+    assertEquals(2.0, policy.getBackoffMultiplier());
+  }
 
-    @Test
-    void testBaseRetryPolicy_validate()
-    {
-        BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
-        assertTrue(policy.validate());
-        assertEquals("test-retry", policy.getPolicyId());
-        assertEquals("RETRY", policy.getPolicyType());
-        assertEquals(3, policy.getMaxRetries());
-        assertEquals(1000, policy.getRetryDelayMs());
-        assertEquals(2.0, policy.getBackoffMultiplier());
-    }
+  @Test
+  void testBaseRetryPolicy_shouldRetry() {
+    BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
+    assertTrue(policy.shouldRetry(1, null));
+    assertTrue(policy.shouldRetry(2, null));
+    assertTrue(policy.shouldRetry(3, null));
+    assertFalse(policy.shouldRetry(4, null));
+  }
 
-    @Test
-    void testBaseRetryPolicy_shouldRetry()
-    {
-        BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
-        assertTrue(policy.shouldRetry(1, null));
-        assertTrue(policy.shouldRetry(2, null));
-        assertTrue(policy.shouldRetry(3, null));
-        assertFalse(policy.shouldRetry(4, null));
-    }
+  @Test
+  void testBaseRetryPolicy_calculateDelay() {
+    BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
+    assertEquals(1000, policy.calculateDelay(1));
+    assertEquals(2000, policy.calculateDelay(2));
+    assertEquals(4000, policy.calculateDelay(3));
+  }
 
-    @Test
-    void testBaseRetryPolicy_calculateDelay()
-    {
-        BaseRetryPolicy policy = new BaseRetryPolicy("test-retry", 3, 1000, 2.0);
-        assertEquals(1000, policy.calculateDelay(1));
-        assertEquals(2000, policy.calculateDelay(2));
-        assertEquals(4000, policy.calculateDelay(3));
-    }
+  @Test
+  void testBaseRetryPolicy_invalid() {
+    BaseRetryPolicy invalidPolicy = new BaseRetryPolicy("invalid", -1, -100, 0.5);
+    assertFalse(invalidPolicy.validate());
+  }
 
-    @Test
-    void testBaseRetryPolicy_invalid()
-    {
-        BaseRetryPolicy invalidPolicy = new BaseRetryPolicy("invalid", -1, -100, 0.5);
-        assertFalse(invalidPolicy.validate());
-    }
+  @Test
+  void testRoundRobinLoadBalancePolicy() {
+    RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
+    assertTrue(policy.validate());
+    assertEquals("round-robin", policy.getPolicyId());
+    assertEquals("LOAD_BALANCE", policy.getPolicyType());
+  }
 
-    @Test
-    void testRoundRobinLoadBalancePolicy()
-    {
-        RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
-        assertTrue(policy.validate());
-        assertEquals("round-robin", policy.getPolicyId());
-        assertEquals("LOAD_BALANCE", policy.getPolicyType());
-    }
+  @Test
+  void testRoundRobinLoadBalancePolicy_selectNode() {
+    RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
+    java.util.List<String> nodes = java.util.Arrays.asList("node1", "node2", "node3");
 
-    @Test
-    void testRoundRobinLoadBalancePolicy_selectNode()
-    {
-        RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
-        java.util.List<String> nodes = java.util.Arrays.asList("node1", "node2", "node3");
+    String first = policy.selectNode("task1", nodes);
+    assertNotBlank(first);
 
-        String first = policy.selectNode("task1", nodes);
-        assertNotBlank(first);
+    String second = policy.selectNode("task2", nodes);
+    assertNotBlank(second);
 
-        String second = policy.selectNode("task2", nodes);
-        assertNotBlank(second);
+    String third = policy.selectNode("task3", nodes);
+    assertNotBlank(third);
+  }
 
-        String third = policy.selectNode("task3", nodes);
-        assertNotBlank(third);
-    }
+  @Test
+  void testRoundRobinLoadBalancePolicy_emptyNodes() {
+    RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
+    assertNull(policy.selectNode("task1", java.util.List.of()));
+    assertNull(policy.selectNode("task1", null));
+  }
 
-    @Test
-    void testRoundRobinLoadBalancePolicy_emptyNodes()
-    {
-        RoundRobinLoadBalancePolicy policy = new RoundRobinLoadBalancePolicy("round-robin");
-        assertNull(policy.selectNode("task1", java.util.List.of()));
-        assertNull(policy.selectNode("task1", null));
-    }
-
-    @Test
-    void testPolicyInterfaces()
-    {
-        assertTrue(Policy.RetryPolicy.class.isInterface());
-        assertTrue(Policy.TimeoutPolicy.class.isInterface());
-        assertTrue(Policy.LoadBalancePolicy.class.isInterface());
-        assertTrue(Policy.FailoverPolicy.class.isInterface());
-    }
+  @Test
+  void testPolicyInterfaces() {
+    assertTrue(Policy.RetryPolicy.class.isInterface());
+    assertTrue(Policy.TimeoutPolicy.class.isInterface());
+    assertTrue(Policy.LoadBalancePolicy.class.isInterface());
+    assertTrue(Policy.FailoverPolicy.class.isInterface());
+  }
 }

@@ -24,62 +24,59 @@
 package com.isahl.chess.bishop.protocol.mqtt;
 
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
-
 import java.nio.channels.NetworkChannel;
 import java.time.Duration;
 
-/**
- * 测试用的 INetworkOption 简单实现
- */
+/** 测试用的 INetworkOption 简单实现 */
 public class MockNetworkOption implements INetworkOption {
 
-    @Override
-    public void configChannel(NetworkChannel channel) {
-        // 测试用，不做任何操作
-    }
+  @Override
+  public void configChannel(NetworkChannel channel) {
+    // 测试用，不做任何操作
+  }
 
-    @Override
-    public boolean isTcpNoDelay() {
-        return true;
-    }
+  @Override
+  public boolean isTcpNoDelay() {
+    return true;
+  }
 
-    @Override
-    public Duration getSoLingerInSecond() {
-        return Duration.ZERO;
-    }
+  @Override
+  public Duration getSoLingerInSecond() {
+    return Duration.ZERO;
+  }
 
-    @Override
-    public int getSnfByte() {
-        return 65536;
-    }
+  @Override
+  public int getSnfByte() {
+    return 65536;
+  }
 
-    @Override
-    public int getRcvByte() {
-        return 65536;
-    }
+  @Override
+  public int getRcvByte() {
+    return 65536;
+  }
 
-    @Override
-    public int getSendQueueMax() {
-        return 64;
-    }
+  @Override
+  public int getSendQueueMax() {
+    return 64;
+  }
 
-    @Override
-    public int getReadTimeOutInSecond() {
-        return 30;
-    }
+  @Override
+  public int getReadTimeOutInSecond() {
+    return 30;
+  }
 
-    @Override
-    public int getWriteTimeOutInSecond() {
-        return 30;
-    }
+  @Override
+  public int getWriteTimeOutInSecond() {
+    return 30;
+  }
 
-    @Override
-    public boolean isKeepAlive() {
-        return true;
-    }
+  @Override
+  public boolean isKeepAlive() {
+    return true;
+  }
 
-    @Override
-    public Duration getConnectTimeout() {
-        return Duration.ofSeconds(10);
-    }
+  @Override
+  public Duration getConnectTimeout() {
+    return Duration.ofSeconds(10);
+  }
 }

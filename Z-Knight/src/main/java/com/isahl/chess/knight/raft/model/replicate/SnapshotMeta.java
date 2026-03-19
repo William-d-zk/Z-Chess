@@ -30,94 +30,75 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
-
 import java.io.Serial;
 
-@ISerialGenerator(parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
-                  serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
+@ISerialGenerator(
+    parent = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL,
+    serial = IProtocol.CLUSTER_KNIGHT_RAFT_SERIAL + 2)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class SnapshotMeta
-        extends BaseMeta
-{
-    @Serial
-    private static final long serialVersionUID = -2598502090597254124L;
+public class SnapshotMeta extends BaseMeta {
+  @Serial private static final long serialVersionUID = -2598502090597254124L;
 
-    private long mCommit;
-    private long mTerm;
+  private long mCommit;
+  private long mTerm;
 
-    @JsonCreator
-    public SnapshotMeta(
-            @JsonProperty("term")
-                    long term,
-            @JsonProperty("commit")
-                    long commit)
-    {
-        super(Operation.OP_INSERT, Strategy.RETAIN);
-        mTerm = term;
-        mCommit = commit;
-    }
+  @JsonCreator
+  public SnapshotMeta(@JsonProperty("term") long term, @JsonProperty("commit") long commit) {
+    super(Operation.OP_INSERT, Strategy.RETAIN);
+    mTerm = term;
+    mCommit = commit;
+  }
 
-    public SnapshotMeta()
-    {
-        super();
-    }
+  public SnapshotMeta() {
+    super();
+  }
 
-    public SnapshotMeta(ByteBuf input)
-    {
-        super(input);
-    }
+  public SnapshotMeta(ByteBuf input) {
+    super(input);
+  }
 
-    @Override
-    public int length()
-    {
-        return 8 + // term
-               8 + // commit
-               super.length();
-    }
+  @Override
+  public int length() {
+    return 8
+        + // term
+        8
+        + // commit
+        super.length();
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(getTerm())
-                    .putLong(getCommit());
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(getTerm()).putLong(getCommit());
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        setTerm(input.getLong());
-        setCommit(input.getLong());
-        return remain - 16;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    setTerm(input.getLong());
+    setCommit(input.getLong());
+    return remain - 16;
+  }
 
-    @Override
-    public void reset()
-    {
-        mCommit = 0;
-        mTerm = 0;
-        flush();
-    }
+  @Override
+  public void reset() {
+    mCommit = 0;
+    mTerm = 0;
+    flush();
+  }
 
-    public void setCommit(long commit)
-    {
-        mCommit = commit;
-    }
+  public void setCommit(long commit) {
+    mCommit = commit;
+  }
 
-    public void setTerm(long term)
-    {
-        mTerm = term;
-    }
+  public void setTerm(long term) {
+    mTerm = term;
+  }
 
-    public long getCommit()
-    {
-        return mCommit;
-    }
+  public long getCommit() {
+    return mCommit;
+  }
 
-    public long getTerm()
-    {
-        return mTerm;
-    }
-
+  public long getTerm() {
+    return mTerm;
+  }
 }

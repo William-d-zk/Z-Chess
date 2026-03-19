@@ -36,38 +36,36 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
-public class WsProxyZSort<A extends IPContext>
-        extends BaseSort<WsProxyContext<A>>
-{
+public class WsProxyZSort<A extends IPContext> extends BaseSort<WsProxyContext<A>> {
 
-    private final IAioSort<A>                          _ActingSort;
-    private final WsHandShakeFilter<WsProxyContext<A>> _Head = new WsHandShakeFilter<>();
+  private final IAioSort<A> _ActingSort;
+  private final WsHandShakeFilter<WsProxyContext<A>> _Head = new WsHandShakeFilter<>();
 
-    public WsProxyZSort(Mode mode, Type type, IAioSort<A> actingSort)
-    {
-        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()), actingSort.getFactory());
-        _ActingSort = actingSort;
-        _Head.linkFront(new WsFrameFilter<>())
-             .linkFront(new WsControlFilter<>())
-             .linkFront(new WsProxyFilter<>())
-             .linkFront(actingSort.getFilterChain());
-    }
+  public WsProxyZSort(Mode mode, Type type, IAioSort<A> actingSort) {
+    super(
+        mode,
+        type,
+        String.format("ws-proxy-%s", actingSort.getProtocol()),
+        actingSort.getFactory());
+    _ActingSort = actingSort;
+    _Head.linkFront(new WsFrameFilter<>())
+        .linkFront(new WsControlFilter<>())
+        .linkFront(new WsProxyFilter<>())
+        .linkFront(actingSort.getFilterChain());
+  }
 
-    @Override
-    public IFilterChain getFilterChain()
-    {
-        return _Head;
-    }
+  @Override
+  public IFilterChain getFilterChain() {
+    return _Head;
+  }
 
-    @Override
-    public WsProxyContext<A> newContext(INetworkOption option)
-    {
-        return new WsProxyContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
-    }
+  @Override
+  public WsProxyContext<A> newContext(INetworkOption option) {
+    return new WsProxyContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
+  }
 
-    @Override
-    public IoFactory<IProtocol> _SelectFactory()
-    {
-        return _ActingSort._SelectFactory();
-    }
+  @Override
+  public IoFactory<IProtocol> _SelectFactory() {
+    return _ActingSort._SelectFactory();
+  }
 }

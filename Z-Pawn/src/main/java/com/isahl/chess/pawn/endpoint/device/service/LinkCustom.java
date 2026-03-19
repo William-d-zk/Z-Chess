@@ -35,103 +35,93 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class LinkCustom
-        implements ILinkCustom
-{
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+public class LinkCustom implements ILinkCustom {
+  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final List<IAccessService> _AccessServices;
+  private final List<IAccessService> _AccessServices;
 
-    @Autowired
-    public LinkCustom(List<IAccessService> accessAdapters)
-    {
-        _AccessServices = accessAdapters;
+  @Autowired
+  public LinkCustom(List<IAccessService> accessAdapters) {
+    _AccessServices = accessAdapters;
+  }
+
+  /**
+   * @param manager session 管理器
+   * @param session 当前处理的 session
+   * @param input 收到的消息
+   * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
+   */
+  @Override
+  public ITriple inject(IManager manager, ISession session, IProtocol input) {
+    for (IAccessService service : _AccessServices) {
+      if (service.isSupported(input)) {
+        return service.onLink(manager, session, input);
+      }
     }
+    return null;
+  }
 
-    /**
-     * @param manager session 管理器
-     * @param session 当前处理的 session
-     * @param input   收到的消息
-     * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
-     */
-    @Override
-    public ITriple inject(IManager manager, ISession session, IProtocol input)
-    {
-        for(IAccessService service : _AccessServices) {
-            if(service.isSupported(input)) {
-                return service.onLink(manager, session, input);
-            }
+  @Override
+  public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request) {
+    if (request != null) {
+      for (IAccessService service : _AccessServices) {
+        if (service.isSupported(request)) {
+          return service.onConsistency(manager, backload, request);
+        }
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public IProtocol onClose(ISession session) {
+    try {
+      session.innerClose();
+      _Logger.debug("session [ %#x ] closed", session.index());
+    } catch (Throwable e) {
+      _Logger.warning("session [ %#x ] close", e, session.index());
+    }
+    for (IAccessService service : _AccessServices) {
+      if (service.isSupported(session)) {
+        return service.onClose(session);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public IProtocol unbox(IConsistency input, IManager manager) {
+    _Logger.debug("link unbox %s", input);
+    switch (input.serial()) {
+      case 0x76 -> {
+        X76_RaftResp x76 = (X76_RaftResp) input;
+        _Logger.debug("unbox x76 code %d,client [%#x]", x76.code(), x76.client());
+      }
+      case 0x77 -> {
+        /*
+         * leader → follower → client: x77_notify
+         * leader → follower: x76_response
+         */
+        LogEntry entry;
+        if (input.subContent() instanceof LogEntry sub) {
+          entry = sub;
+        } else {
+          entry = input.deserializeSub(LogEntry::new);
+        }
+        if (entry.payload() != null) {
+          IoFactory<IProtocol> factory = manager.findIoFactoryBySerial(entry.factory());
+          return factory.create(entry.subEncoded());
         }
         return null;
+      }
+      default -> _Logger.warning("link custom %s no handle", input);
     }
-
-    @Override
-    public List<ITriple> onConsistency(IManager manager, IConsistency backload, IoSerial request)
-    {
-        if(request != null) {
-            for(IAccessService service : _AccessServices) {
-                if(service.isSupported(request)) {
-                    return service.onConsistency(manager, backload, request);
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public IProtocol onClose(ISession session)
-    {
-        try {
-            session.innerClose();
-            _Logger.debug("session [ %#x ] closed", session.index());
-        }
-        catch(Throwable e) {
-            _Logger.warning("session [ %#x ] close", e, session.index());
-        }
-        for(IAccessService service : _AccessServices) {
-            if(service.isSupported(session)) {
-                return service.onClose(session);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public IProtocol unbox(IConsistency input, IManager manager)
-    {
-        _Logger.debug("link unbox %s", input);
-        switch(input.serial()) {
-            case 0x76 -> {
-                X76_RaftResp x76 = (X76_RaftResp) input;
-                _Logger.debug("unbox x76 code %d,client [%#x]", x76.code(), x76.client());
-            }
-            case 0x77 -> {
-                /*
-                 * leader → follower → client: x77_notify
-                 * leader → follower: x76_response
-                 */
-                LogEntry entry;
-                if(input.subContent() instanceof LogEntry sub) {
-                    entry = sub;
-                }
-                else {
-                    entry = input.deserializeSub(LogEntry::new);
-                }
-                if(entry.payload() != null) {
-                    IoFactory<IProtocol> factory = manager.findIoFactoryBySerial(entry.factory());
-                    return factory.create(entry.subEncoded());
-                }
-                return null;
-            }
-            default -> _Logger.warning("link custom %s no handle", input);
-        }
-        return null;
-    }
+    return null;
+  }
 }

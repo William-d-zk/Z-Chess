@@ -28,19 +28,16 @@ import java.util.Objects;
  * @author William.d.zk
  */
 @FunctionalInterface
-public interface IBinaryOperator<T, U, R>
-{
-    R handle(T t, U u);
+public interface IBinaryOperator<T, U, R> {
+  R handle(T t, U u);
 
-    default <V> IBinaryOperator<T, U, V> andThen(IBinaryOperator<? super T, ? super R, ? extends V> after)
-    {
-        Objects.requireNonNull(after);
-        return (t, u)->after.handle(t, handle(t, u));
-    }
+  default <V> IBinaryOperator<T, U, V> andThen(
+      IBinaryOperator<? super T, ? super R, ? extends V> after) {
+    Objects.requireNonNull(after);
+    return (t, u) -> after.handle(t, handle(t, u));
+  }
 
-    default String getName()
-    {
-        return "binary-operator.";
-    }
-
+  default String getName() {
+    return "binary-operator.";
+  }
 }

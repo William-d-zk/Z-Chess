@@ -28,32 +28,28 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 
 /**
  * Z-Chess 指标注册表
- * 
+ *
  * @author william.d.zk
  */
-public class MetricsRegistry
-{
-    
-    private static volatile MeterRegistry _registry;
-    
-    public static void initialize(MeterRegistry registry)
-    {
-        _registry = registry;
+public class MetricsRegistry {
+
+  private static volatile MeterRegistry _registry;
+
+  public static void initialize(MeterRegistry registry) {
+    _registry = registry;
+  }
+
+  public static MeterRegistry getRegistry() {
+    if (_registry == null) {
+      throw new IllegalStateException("MetricsRegistry not initialized");
     }
-    
-    public static MeterRegistry getRegistry()
-    {
-        if (_registry == null) {
-            throw new IllegalStateException("MetricsRegistry not initialized");
-        }
-        return _registry;
+    return _registry;
+  }
+
+  public static PrometheusMeterRegistry getPrometheusRegistry() {
+    if (_registry instanceof PrometheusMeterRegistry) {
+      return (PrometheusMeterRegistry) _registry;
     }
-    
-    public static PrometheusMeterRegistry getPrometheusRegistry()
-    {
-        if (_registry instanceof PrometheusMeterRegistry) {
-            return (PrometheusMeterRegistry) _registry;
-        }
-        throw new IllegalStateException("Registry is not PrometheusMeterRegistry");
-    }
+    throw new IllegalStateException("Registry is not PrometheusMeterRegistry");
+  }
 }

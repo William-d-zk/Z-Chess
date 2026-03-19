@@ -25,114 +25,95 @@ package com.isahl.chess.player.domain;
 
 import com.isahl.chess.rook.storage.db.model.AuditModel;
 import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "im_group")
-public class Group
-        extends AuditModel
-{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Group extends AuditModel {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    private String description;
+  private String description;
 
-    @Column(nullable = false)
-    private Long ownerId;
+  @Column(nullable = false)
+  private Long ownerId;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+  @Column(nullable = false)
+  private Boolean active = true;
 
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<GroupMember> members = new HashSet<>();
+  @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<GroupMember> members = new HashSet<>();
 
-    public Group()
-    {
-        super();
-    }
+  public Group() {
+    super();
+  }
 
-    public Group(String name, Long ownerId)
-    {
-        super();
-        this.name = name;
-        this.ownerId = ownerId;
-    }
+  public Group(String name, Long ownerId) {
+    super();
+    this.name = name;
+    this.ownerId = ownerId;
+  }
 
-    public Long getId()
-    {
-        return id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public String getName()
-    {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getDescription()
-    {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public Long getOwnerId()
-    {
-        return ownerId;
-    }
+  public Long getOwnerId() {
+    return ownerId;
+  }
 
-    public void setOwnerId(Long ownerId)
-    {
-        this.ownerId = ownerId;
-    }
+  public void setOwnerId(Long ownerId) {
+    this.ownerId = ownerId;
+  }
 
-    public Boolean getActive()
-    {
-        return active;
-    }
+  public Boolean getActive() {
+    return active;
+  }
 
-    public void setActive(Boolean active)
-    {
-        this.active = active;
-    }
+  public void setActive(Boolean active) {
+    this.active = active;
+  }
 
-    public Set<GroupMember> getMembers()
-    {
-        return members;
-    }
+  public Set<GroupMember> getMembers() {
+    return members;
+  }
 
-    public void setMembers(Set<GroupMember> members)
-    {
-        this.members = members;
-    }
+  public void setMembers(Set<GroupMember> members) {
+    this.members = members;
+  }
 
-    public void addMember(GroupMember member)
-    {
-        members.add(member);
-        member.setGroup(this);
-    }
+  public void addMember(GroupMember member) {
+    members.add(member);
+    member.setGroup(this);
+  }
 
-    public void removeMember(GroupMember member)
-    {
-        members.remove(member);
-        member.setGroup(null);
-    }
+  public void removeMember(GroupMember member) {
+    members.remove(member);
+    member.setGroup(null);
+  }
 }

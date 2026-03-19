@@ -29,16 +29,14 @@ import com.isahl.chess.king.base.features.IValid;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface ILifeCycle
-        extends IValid
-{
-    boolean retry();
+public interface ILifeCycle extends IValid {
+  boolean retry();
 
-    void error();
+  void error();
 
-    boolean isShutdown();
+  boolean isShutdown();
 
-    void shutdown();
+  void shutdown();
 
-    boolean isRunning();
+  boolean isRunning();
 }

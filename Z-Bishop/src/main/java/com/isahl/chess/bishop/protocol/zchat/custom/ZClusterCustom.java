@@ -29,50 +29,40 @@ import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
-
 import java.util.List;
 
 /**
  * @author william.d.zk
  * @date 2020/4/20
  */
-public class ZClusterCustom<T extends IStorage>
-        extends ZBaseMappingCustom<IClusterCustom<T>>
-        implements IClusterCustom<T>
-{
-    public ZClusterCustom(IClusterCustom<T> then)
-    {
-        super(then);
-    }
+public class ZClusterCustom<T extends IStorage> extends ZBaseMappingCustom<IClusterCustom<T>>
+    implements IClusterCustom<T> {
+  public ZClusterCustom(IClusterCustom<T> then) {
+    super(then);
+  }
 
-    @Override
-    public List<ITriple> onTimer(IManager manager, T machine)
-    {
-        return _Then != null ? _Then.onTimer(manager, machine) : null;
-    }
+  @Override
+  public List<ITriple> onTimer(IManager manager, T machine) {
+    return _Then != null ? _Then.onTimer(manager, machine) : null;
+  }
 
-    @Override
-    public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory)
-    {
-        return _Then != null ? _Then.consistent(manager, request, origin, factory) : null;
-    }
+  @Override
+  public List<ITriple> consistent(IManager manager, IoSerial request, long origin, int factory) {
+    return _Then != null ? _Then.consistent(manager, request, origin, factory) : null;
+  }
 
-    @Override
-    public List<ITriple> change(IManager manager, IoSerial topology)
-    {
-        return _Then != null ? _Then.change(manager, topology) : null;
-    }
+  @Override
+  public List<ITriple> change(IManager manager, IoSerial topology) {
+    return _Then != null ? _Then.change(manager, topology) : null;
+  }
 
-    @Override
-    public boolean waitForCommit()
-    {
-        return _Then != null && _Then.waitForCommit();
-    }
+  @Override
+  public boolean waitForCommit() {
+    return _Then != null && _Then.waitForCommit();
+  }
 
-    @Override
-    public IConsistency skipConsistency(IoSerial request, long origin)
-    {
-        return _Then != null ? _Then.skipConsistency(request, origin) : null;
-    }
-
+  @Override
+  public IConsistency skipConsistency(IoSerial request, long origin) {
+    return _Then != null ? _Then.skipConsistency(request, origin) : null;
+  }
 }

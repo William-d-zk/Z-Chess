@@ -32,40 +32,36 @@ import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
+import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 @Service
-public class HookOpenService
-{
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+public class HookOpenService {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final DeviceNode _DeviceNode;
+  private final DeviceNode _DeviceNode;
 
-    public HookOpenService(DeviceNode deviceNode) {_DeviceNode = deviceNode;}
+  public HookOpenService(DeviceNode deviceNode) {
+    _DeviceNode = deviceNode;
+  }
 
-    public ICode hookLogic(EchoDo request)
-    {
-        final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(OperateType.SERVICE);
-        final ReentrantLock _Lock = _DeviceNode.selectLock(OperateType.SERVICE);
-        if(_Lock.tryLock()) {
-            try {
-                long sequence = _Publisher.next();
-                try {
-                    QEvent event = _Publisher.get(sequence);
-                    event.produce(OperateType.SERVICE, Pair.of(request, null), null);
-                    return CodeKing.SUCCESS;
-                }
-                finally {
-                    _Publisher.publish(sequence);
-                }
-            }
-            finally {
-                _Lock.unlock();
-            }
+  public ICode hookLogic(EchoDo request) {
+    final RingBuffer<QEvent> _Publisher = _DeviceNode.selectPublisher(OperateType.SERVICE);
+    final ReentrantLock _Lock = _DeviceNode.selectLock(OperateType.SERVICE);
+    if (_Lock.tryLock()) {
+      try {
+        long sequence = _Publisher.next();
+        try {
+          QEvent event = _Publisher.get(sequence);
+          event.produce(OperateType.SERVICE, Pair.of(request, null), null);
+          return CodeKing.SUCCESS;
+        } finally {
+          _Publisher.publish(sequence);
         }
-        return CodeKing.LOCKED;
+      } finally {
+        _Lock.unlock();
+      }
     }
-
+    return CodeKing.LOCKED;
+  }
 }

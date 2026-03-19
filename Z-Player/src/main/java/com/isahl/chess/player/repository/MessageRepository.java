@@ -25,29 +25,28 @@ package com.isahl.chess.player.repository;
 
 import com.isahl.chess.player.domain.Message;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @Repository
-public interface MessageRepository
-        extends BaseLongRepository<Message>
-{
-    Page<Message> findByGroupIdOrderByCreatedAtDesc(Long groupId, Pageable pageable);
+public interface MessageRepository extends BaseLongRepository<Message> {
+  Page<Message> findByGroupIdOrderByCreatedAtDesc(Long groupId, Pageable pageable);
 
-    Page<Message> findBySenderIdOrderByCreatedAtDesc(Long senderId, Pageable pageable);
+  Page<Message> findBySenderIdOrderByCreatedAtDesc(Long senderId, Pageable pageable);
 
-    Page<Message> findByReceiverIdAndDeliveredFalseOrderByCreatedAtAsc(Long receiverId, Pageable pageable);
+  Page<Message> findByReceiverIdAndDeliveredFalseOrderByCreatedAtAsc(
+      Long receiverId, Pageable pageable);
 
-    @Query("SELECT MAX(m.sequenceNum) FROM Message m WHERE m.groupId = :groupId")
-    Long findMaxSequenceNumByGroupId(Long groupId);
+  @Query("SELECT MAX(m.sequenceNum) FROM Message m WHERE m.groupId = :groupId")
+  Long findMaxSequenceNumByGroupId(Long groupId);
 
-    @Query("SELECT m FROM Message m WHERE m.groupId = :groupId AND m.createdAt > :since ORDER BY m.createdAt ASC")
-    List<Message> findByGroupIdSince(Long groupId, LocalDateTime since);
+  @Query(
+      "SELECT m FROM Message m WHERE m.groupId = :groupId AND m.createdAt > :since ORDER BY m.createdAt ASC")
+  List<Message> findByGroupIdSince(Long groupId, LocalDateTime since);
 
-    List<Message> findByReceiverIdAndDeliveredFalse(Long receiverId);
+  List<Message> findByReceiverIdAndDeliveredFalse(Long receiverId);
 }

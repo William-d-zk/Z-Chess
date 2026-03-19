@@ -28,34 +28,30 @@ import com.isahl.chess.queen.db.model.IStorage;
 /**
  * @author william.d.zk
  */
-public interface INoSql<E extends IStorage>
-{
-    /**
-     * 管理 DAO 通道
-     */
-    void close();
+public interface INoSql<E extends IStorage> {
+  /** 管理 DAO 通道 */
+  void close();
 
-    /**
-     * DAO 将数据存入 KV-Storage
-     *
-     * @param entry
-     */
-    void put(E entry);
+  /**
+   * DAO 将数据存入 KV-Storage
+   *
+   * @param entry
+   */
+  void put(E entry);
 
-    /**
-     * 将数据取回
-     *
-     * @param entry
-     * @return
-     */
-    E get(E entry);
+  /**
+   * 将数据取回
+   *
+   * @param entry
+   * @return
+   */
+  E get(E entry);
 
-    /**
-     * @param primaryKey
-     * @param secondaryKey
-     * @param secondaryKeyArray
-     * @return
-     */
-    boolean contains(long primaryKey, long secondaryKey, byte[] secondaryKeyArray);
-
+  /**
+   * @param primaryKey
+   * @param secondaryKey
+   * @param secondaryKeyArray
+   * @return
+   */
+  boolean contains(long primaryKey, long secondaryKey, byte[] secondaryKeyArray);
 }

@@ -26,155 +26,158 @@ package com.isahl.chess.knight.scheduler.core;
 import com.isahl.chess.knight.scheduler.domain.*;
 import com.isahl.chess.knight.scheduler.repository.SubTaskRepository;
 import com.isahl.chess.knight.scheduler.repository.TaskRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @Component
-public class GroupClaimScheduler
-        implements TaskScheduler
-{
-    private static final Logger _Logger = LoggerFactory.getLogger(GroupClaimScheduler.class);
+public class GroupClaimScheduler implements TaskScheduler {
+  private static final Logger _Logger = LoggerFactory.getLogger(GroupClaimScheduler.class);
 
-    private final TaskRepository _TaskRepository;
-    private final SubTaskRepository _SubTaskRepository;
-    private final TaskPool _TaskPool;
-    private final ResultAggregator _ResultAggregator;
+  private final TaskRepository _TaskRepository;
+  private final SubTaskRepository _SubTaskRepository;
+  private final TaskPool _TaskPool;
+  private final ResultAggregator _ResultAggregator;
 
-    public GroupClaimScheduler(TaskRepository taskRepository, SubTaskRepository subTaskRepository, TaskPool taskPool, ResultAggregator resultAggregator)
-    {
-        _TaskRepository = taskRepository;
-        _SubTaskRepository = subTaskRepository;
-        _TaskPool = taskPool;
-        _ResultAggregator = resultAggregator;
+  public GroupClaimScheduler(
+      TaskRepository taskRepository,
+      SubTaskRepository subTaskRepository,
+      TaskPool taskPool,
+      ResultAggregator resultAggregator) {
+    _TaskRepository = taskRepository;
+    _SubTaskRepository = subTaskRepository;
+    _TaskPool = taskPool;
+    _ResultAggregator = resultAggregator;
+  }
+
+  @Override
+  @Transactional
+  public Task dispatchTask(
+      String taskId, String payload, List<String> targetNodes, int timeoutSeconds) {
+    Task task = new Task(taskId, TaskType.DISPATCH, timeoutSeconds);
+    List<SubTask> subTasks = task.createSubTasksForNodes(targetNodes);
+
+    for (SubTask st : subTasks) {
+      st.setPayload(payload);
+      _SubTaskRepository.save(st);
     }
 
-    @Override
-    @Transactional
-    public Task dispatchTask(String taskId, String payload, List<String> targetNodes, int timeoutSeconds)
-    {
-        Task task = new Task(taskId, TaskType.DISPATCH, timeoutSeconds);
-        List<SubTask> subTasks = task.createSubTasksForNodes(targetNodes);
+    task.setStatus(TaskStatus.RUNNING);
+    _TaskRepository.save(task);
 
-        for(SubTask st : subTasks) {
-            st.setPayload(payload);
-            _SubTaskRepository.save(st);
-        }
+    _Logger.info("GroupClaimScheduler: dispatch not primary mode");
+    return task;
+  }
 
-        task.setStatus(TaskStatus.RUNNING);
-        _TaskRepository.save(task);
+  @Override
+  @Transactional
+  public Task claimTask(String taskId, String payload, int subTaskCount, int timeoutSeconds) {
+    Task task = new Task(taskId, TaskType.CLAIM, timeoutSeconds);
+    List<SubTask> subTasks = task.createSubTasks(subTaskCount);
 
-        _Logger.info("GroupClaimScheduler: dispatch not primary mode");
-        return task;
+    for (SubTask st : subTasks) {
+      st.setPayload(payload);
+      _SubTaskRepository.save(st);
+      _TaskPool.addTask(st);
     }
 
-    @Override
-    @Transactional
-    public Task claimTask(String taskId, String payload, int subTaskCount, int timeoutSeconds)
-    {
-        Task task = new Task(taskId, TaskType.CLAIM, timeoutSeconds);
-        List<SubTask> subTasks = task.createSubTasks(subTaskCount);
+    task.setStatus(TaskStatus.RUNNING);
+    _TaskRepository.save(task);
 
-        for(SubTask st : subTasks) {
-            st.setPayload(payload);
-            _SubTaskRepository.save(st);
-            _TaskPool.addTask(st);
-        }
+    _Logger.info(
+        "GroupClaimScheduler: Created claim task {} with {} subTasks in pool",
+        taskId,
+        subTaskCount);
+    return task;
+  }
 
-        task.setStatus(TaskStatus.RUNNING);
-        _TaskRepository.save(task);
+  @Override
+  @Transactional
+  public Optional<SubTask> claimSubTasks(String nodeId, int maxCount) {
+    return _TaskPool.claim(nodeId, maxCount);
+  }
 
-        _Logger.info("GroupClaimScheduler: Created claim task {} with {} subTasks in pool", taskId, subTaskCount);
-        return task;
+  public Optional<SubTask> claimSubTasksFromGroup(String groupId, String nodeId, int maxCount) {
+    Optional<SubTask> claimed = _TaskPool.claimFromGroup(groupId, nodeId, maxCount);
+    if (claimed.isPresent()) {
+      _SubTaskRepository.save(claimed.get());
+      _Logger.info(
+          "Node {} claimed subTask {} from group {}",
+          nodeId,
+          claimed.get().getSubTaskId(),
+          groupId);
+    }
+    return claimed;
+  }
+
+  @Override
+  @Transactional
+  public void reportResult(String subTaskId, String result, boolean success) {
+    SubTask subTask = _SubTaskRepository.findById(subTaskId).orElse(null);
+    if (subTask == null) {
+      _Logger.warn("SubTask {} not found for result report", subTaskId);
+      return;
     }
 
-    @Override
-    @Transactional
-    public Optional<SubTask> claimSubTasks(String nodeId, int maxCount)
-    {
-        return _TaskPool.claim(nodeId, maxCount);
+    if (success) {
+      subTask.markComplete(result);
+    } else {
+      subTask.markFailed();
+      _TaskPool.release(subTask);
     }
+    _SubTaskRepository.save(subTask);
 
-    public Optional<SubTask> claimSubTasksFromGroup(String groupId, String nodeId, int maxCount)
-    {
-        Optional<SubTask> claimed = _TaskPool.claimFromGroup(groupId, nodeId, maxCount);
-        if(claimed.isPresent()) {
-            _SubTaskRepository.save(claimed.get());
-            _Logger.info("Node {} claimed subTask {} from group {}", nodeId, claimed.get().getSubTaskId(), groupId);
-        }
-        return claimed;
+    Task task = _TaskRepository.findById(subTask.getTaskId()).orElse(null);
+    if (task != null) {
+      task.addResult(subTaskId, result, success);
+      if (_ResultAggregator.canComplete(task)) {
+        List<TaskResult.SubTaskResultEntry> entries =
+            task.getSubTasks().stream()
+                .map(
+                    st ->
+                        new TaskResult.SubTaskResultEntry(
+                            st.getSubTaskId(),
+                            st.getTargetNode(),
+                            st.getResult(),
+                            st.getStatus() == SubTaskStatus.COMPLETE))
+                .collect(Collectors.toList());
+        task.setAggregatedResult(_ResultAggregator.aggregate(entries));
+        task.setStatus(TaskStatus.COMPLETE);
+        _Logger.info("Task {} completed", task.getTaskId());
+      } else if (task.hasFailures()) {
+        task.setStatus(TaskStatus.PARTIAL_COMPLETE);
+      }
+      _TaskRepository.save(task);
     }
+  }
 
-    @Override
-    @Transactional
-    public void reportResult(String subTaskId, String result, boolean success)
-    {
-        SubTask subTask = _SubTaskRepository.findById(subTaskId).orElse(null);
-        if(subTask == null) {
-            _Logger.warn("SubTask {} not found for result report", subTaskId);
-            return;
-        }
+  @Override
+  public TaskStatus getTaskStatus(String taskId) {
+    return _TaskRepository.findById(taskId).map(Task::getStatus).orElse(null);
+  }
 
-        if(success) {
-            subTask.markComplete(result);
-        }
-        else {
-            subTask.markFailed();
-            _TaskPool.release(subTask);
-        }
-        _SubTaskRepository.save(subTask);
-
-        Task task = _TaskRepository.findById(subTask.getTaskId()).orElse(null);
-        if(task != null) {
-            task.addResult(subTaskId, result, success);
-            if(_ResultAggregator.canComplete(task)) {
-                List<TaskResult.SubTaskResultEntry> entries = task.getSubTasks()
-                                                               .stream()
-                                                               .map(st -> new TaskResult.SubTaskResultEntry(
-                                                                       st.getSubTaskId(),
-                                                                       st.getTargetNode(),
-                                                                       st.getResult(),
-                                                                       st.getStatus() == SubTaskStatus.COMPLETE))
-                                                               .collect(Collectors.toList());
-                task.setAggregatedResult(_ResultAggregator.aggregate(entries));
-                task.setStatus(TaskStatus.COMPLETE);
-                _Logger.info("Task {} completed", task.getTaskId());
-            }
-            else if(task.hasFailures()) {
-                task.setStatus(TaskStatus.PARTIAL_COMPLETE);
-            }
-            _TaskRepository.save(task);
-        }
-    }
-
-    @Override
-    public TaskStatus getTaskStatus(String taskId)
-    {
-        return _TaskRepository.findById(taskId).map(Task::getStatus).orElse(null);
-    }
-
-    @Override
-    public TaskResult getTaskResult(String taskId)
-    {
-        return _TaskRepository.findById(taskId)
-                             .map(task -> new TaskResult(
-                                     task.getTaskId(),
-                                     task.getStatus(),
-                                     task.getAggregatedResult(),
-                                     task.getSubTasks()
-                                         .stream()
-                                         .map(st -> new TaskResult.SubTaskResultEntry(
-                                                 st.getSubTaskId(),
-                                                 st.getTargetNode(),
-                                                 st.getResult(),
-                                                 st.getStatus() == SubTaskStatus.COMPLETE))
-                                         .collect(Collectors.toList())
-                             ))
-                             .orElse(null);
-    }
+  @Override
+  public TaskResult getTaskResult(String taskId) {
+    return _TaskRepository.findById(taskId)
+        .map(
+            task ->
+                new TaskResult(
+                    task.getTaskId(),
+                    task.getStatus(),
+                    task.getAggregatedResult(),
+                    task.getSubTasks().stream()
+                        .map(
+                            st ->
+                                new TaskResult.SubTaskResultEntry(
+                                    st.getSubTaskId(),
+                                    st.getTargetNode(),
+                                    st.getResult(),
+                                    st.getStatus() == SubTaskStatus.COMPLETE))
+                        .collect(Collectors.toList())))
+        .orElse(null);
+  }
 }

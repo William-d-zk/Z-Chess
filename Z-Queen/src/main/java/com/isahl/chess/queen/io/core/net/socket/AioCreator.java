@@ -26,130 +26,107 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.model.session.ICreator;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.NetworkChannel;
 import java.time.Duration;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioCreator
-        implements ICreator<AsynchronousSocketChannel>,
-                   ISslOption
-{
-    private final static Logger _Logger = Logger.getLogger(AioCreator.class.getSimpleName());
-    private final ISocketConfig _Config;
+public abstract class AioCreator implements ICreator<AsynchronousSocketChannel>, ISslOption {
+  private static final Logger _Logger = Logger.getLogger(AioCreator.class.getSimpleName());
+  private final ISocketConfig _Config;
 
-    protected AioCreator(ISocketConfig config)
-    {
-        _Config = config;
-        config.init();
-    }
+  protected AioCreator(ISocketConfig config) {
+    _Config = config;
+    config.init();
+  }
 
-    @Override
-    public int getSnfByte()
-    {
-        return _Config.getSnfInByte();
-    }
+  @Override
+  public int getSnfByte() {
+    return _Config.getSnfInByte();
+  }
 
-    @Override
-    public int getRcvByte()
-    {
-        return _Config.getRcvInByte();
-    }
+  @Override
+  public int getRcvByte() {
+    return _Config.getRcvInByte();
+  }
 
-    @Override
-    public int getSendQueueMax()
-    {
-        return _Config.getSendQueueMax();
-    }
+  @Override
+  public int getSendQueueMax() {
+    return _Config.getSendQueueMax();
+  }
 
-    @Override
-    public int getReadTimeOutInSecond()
-    {
-        return (int) _Config.getReadTimeoutInMinute()
-                            .getSeconds();
-    }
+  @Override
+  public int getReadTimeOutInSecond() {
+    return (int) _Config.getReadTimeoutInMinute().getSeconds();
+  }
 
-    @Override
-    public int getWriteTimeOutInSecond()
-    {
-        return (int) _Config.getWriteTimeoutInSecond()
-                            .getSeconds();
-    }
+  @Override
+  public int getWriteTimeOutInSecond() {
+    return (int) _Config.getWriteTimeoutInSecond().getSeconds();
+  }
 
-    @Override
-    public boolean isKeepAlive()
-    {
-        return _Config.isKeepAlive();
-    }
+  @Override
+  public boolean isKeepAlive() {
+    return _Config.isKeepAlive();
+  }
 
-    @Override
-    public boolean isTcpNoDelay()
-    {
-        return _Config.isTcpNoDelay();
-    }
+  @Override
+  public boolean isTcpNoDelay() {
+    return _Config.isTcpNoDelay();
+  }
 
-    @Override
-    public Duration getSoLingerInSecond()
-    {
-        return _Config.getSoLingerInSecond();
-    }
+  @Override
+  public Duration getSoLingerInSecond() {
+    return _Config.getSoLingerInSecond();
+  }
 
-    @Override
-    public Duration getConnectTimeout()
-    {
-        return _Config.getConnectTimeoutInSecond();
-    }
+  @Override
+  public Duration getConnectTimeout() {
+    return _Config.getConnectTimeoutInSecond();
+  }
 
-    @Override
-    public KeyManager[] getKeyManagers()
-    {
-        return _Config.getKeyManagers();
-    }
+  @Override
+  public KeyManager[] getKeyManagers() {
+    return _Config.getKeyManagers();
+  }
 
-    @Override
-    public TrustManager[] getTrustManagers()
-    {
-        return _Config.getTrustManagers();
-    }
+  @Override
+  public TrustManager[] getTrustManagers() {
+    return _Config.getTrustManagers();
+  }
 
-    @Override
-    public boolean isSslClientAuth()
-    {
-        return _Config.isClientAuth();
-    }
+  @Override
+  public boolean isSslClientAuth() {
+    return _Config.isClientAuth();
+  }
 
-    @Override
-    public int getSslPacketSize()
-    {
-        return _Config.getSslPacketBufferSize();
-    }
+  @Override
+  public int getSslPacketSize() {
+    return _Config.getSslPacketBufferSize();
+  }
 
-    @Override
-    public int getSslAppSize()
-    {
-        return _Config.getSslAppBufferSize();
-    }
+  @Override
+  public int getSslAppSize() {
+    return _Config.getSslAppBufferSize();
+  }
 
-    @Override
-    public void configChannel(NetworkChannel channel)
-    {
-        if(channel != null) {
-            try {
-                channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
-                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
-                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
-                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
-            }
-            catch(IOException e) {
-                _Logger.warning("Channel config error: %s", e.getMessage());
-            }
-        }
+  @Override
+  public void configChannel(NetworkChannel channel) {
+    if (channel != null) {
+      try {
+        channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
+        channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
+        channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
+        channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
+      } catch (IOException e) {
+        _Logger.warning("Channel config error: %s", e.getMessage());
+      }
     }
+  }
 }

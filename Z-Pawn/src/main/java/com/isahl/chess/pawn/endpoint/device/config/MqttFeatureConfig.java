@@ -33,95 +33,70 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.mqtt.feature")
-public class MqttFeatureConfig
-{
-    /**
-     * 是否启用 MQTT v5 支持
-     */
-    private boolean enabled = true;
+public class MqttFeatureConfig {
+  /** 是否启用 MQTT v5 支持 */
+  private boolean enabled = true;
 
-    /**
-     * 是否启用主题别名
-     */
-    private boolean topicAliasEnabled = true;
+  /** 是否启用主题别名 */
+  private boolean topicAliasEnabled = true;
 
-    /**
-     * 是否启用消息过期
-     */
-    private boolean messageExpiryEnabled = true;
+  /** 是否启用消息过期 */
+  private boolean messageExpiryEnabled = true;
 
-    /**
-     * 是否启用流量控制
-     */
-    private boolean flowControlEnabled = true;
+  /** 是否启用流量控制 */
+  private boolean flowControlEnabled = true;
 
-    /**
-     * 是否启用共享订阅
-     */
-    private boolean sharedSubscriptionEnabled = true;
+  /** 是否启用共享订阅 */
+  private boolean sharedSubscriptionEnabled = true;
 
-    /**
-     * 是否启用增强认证
-     */
-    private boolean enhancedAuthEnabled = false;
+  /** 是否启用增强认证 */
+  private boolean enhancedAuthEnabled = false;
 
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public boolean isTopicAliasEnabled()
-    {
-        return enabled && topicAliasEnabled;
-    }
+  public boolean isTopicAliasEnabled() {
+    return enabled && topicAliasEnabled;
+  }
 
-    public void setTopicAliasEnabled(boolean topicAliasEnabled)
-    {
-        this.topicAliasEnabled = topicAliasEnabled;
-    }
+  public void setTopicAliasEnabled(boolean topicAliasEnabled) {
+    this.topicAliasEnabled = topicAliasEnabled;
+  }
 
-    public boolean isMessageExpiryEnabled()
-    {
-        return enabled && messageExpiryEnabled;
-    }
+  public boolean isMessageExpiryEnabled() {
+    return enabled && messageExpiryEnabled;
+  }
 
-    public void setMessageExpiryEnabled(boolean messageExpiryEnabled)
-    {
-        this.messageExpiryEnabled = messageExpiryEnabled;
-    }
+  public void setMessageExpiryEnabled(boolean messageExpiryEnabled) {
+    this.messageExpiryEnabled = messageExpiryEnabled;
+  }
 
-    public boolean isFlowControlEnabled()
-    {
-        return enabled && flowControlEnabled;
-    }
+  public boolean isFlowControlEnabled() {
+    return enabled && flowControlEnabled;
+  }
 
-    public void setFlowControlEnabled(boolean flowControlEnabled)
-    {
-        this.flowControlEnabled = flowControlEnabled;
-    }
+  public void setFlowControlEnabled(boolean flowControlEnabled) {
+    this.flowControlEnabled = flowControlEnabled;
+  }
 
-    public boolean isSharedSubscriptionEnabled()
-    {
-        return enabled && sharedSubscriptionEnabled;
-    }
+  public boolean isSharedSubscriptionEnabled() {
+    return enabled && sharedSubscriptionEnabled;
+  }
 
-    public void setSharedSubscriptionEnabled(boolean sharedSubscriptionEnabled)
-    {
-        this.sharedSubscriptionEnabled = sharedSubscriptionEnabled;
-    }
+  public void setSharedSubscriptionEnabled(boolean sharedSubscriptionEnabled) {
+    this.sharedSubscriptionEnabled = sharedSubscriptionEnabled;
+  }
 
-    public boolean isEnhancedAuthEnabled()
-    {
-        return enabled && enhancedAuthEnabled;
-    }
+  public boolean isEnhancedAuthEnabled() {
+    return enabled && enhancedAuthEnabled;
+  }
 
-    public void setEnhancedAuthEnabled(boolean enhancedAuthEnabled)
-    {
-        this.enhancedAuthEnabled = enhancedAuthEnabled;
-    }
+  public void setEnhancedAuthEnabled(boolean enhancedAuthEnabled) {
+    this.enhancedAuthEnabled = enhancedAuthEnabled;
+  }
 }

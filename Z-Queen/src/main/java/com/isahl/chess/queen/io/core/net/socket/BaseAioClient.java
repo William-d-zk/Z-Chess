@@ -30,7 +30,6 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
 import com.isahl.chess.queen.io.core.net.socket.features.client.IAioClient;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -40,95 +39,86 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class BaseAioClient
-        implements IAioClient
-{
-    private final Logger _Logger;
+public class BaseAioClient implements IAioClient {
+  private final Logger _Logger;
 
-    private final TimeWheel                                            _TimeWheel;
-    private final AsynchronousChannelGroup                             _ChannelGroup;
-    private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap = new ConcurrentHashMap<>();
+  private final TimeWheel _TimeWheel;
+  private final AsynchronousChannelGroup _ChannelGroup;
+  private final Map<InetSocketAddress, Pair<Integer, IAioConnector>> _TargetManageMap =
+      new ConcurrentHashMap<>();
 
-    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup, String type)
-    {
-        Objects.requireNonNull(timeWheel);
-        Objects.requireNonNull(channelGroup);
-        _TimeWheel = timeWheel;
-        _ChannelGroup = channelGroup;
-        _Logger = Logger.getLogger("io.queen.client." + type);
+  public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup, String type) {
+    Objects.requireNonNull(timeWheel);
+    Objects.requireNonNull(channelGroup);
+    _TimeWheel = timeWheel;
+    _ChannelGroup = channelGroup;
+    _Logger = Logger.getLogger("io.queen.client." + type);
+  }
+
+  private final ReentrantLock _Lock = new ReentrantLock();
+
+  @Override
+  public void connect(IAioConnector connector) throws IOException {
+    _Lock.lock();
+    try {
+      AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
+      InetSocketAddress remoteAddress = connector.getRemoteAddress();
+      Pair<Integer, IAioConnector> pair =
+          _TargetManageMap.putIfAbsent(remoteAddress, Pair.of(0, connector));
+      socketChannel.connect(remoteAddress, socketChannel, connector);
+      int retryCount = 0;
+      if (pair != null) {
+        retryCount = pair.getFirst();
+        pair.setFirst(++retryCount);
+      }
+      _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
+    } finally {
+      _Lock.unlock();
     }
+  }
 
-    private final ReentrantLock _Lock = new ReentrantLock();
+  @Override
+  public void onFailed(IAioConnector connector) {
+    delayConnect(connector);
+  }
 
-    @Override
-    public void connect(IAioConnector connector) throws IOException
-    {
-        _Lock.lock();
-        try {
-            AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
-            InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            Pair<Integer, IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, Pair.of(0, connector));
-            socketChannel.connect(remoteAddress, socketChannel, connector);
-            int retryCount = 0;
-            if(pair != null) {
-                retryCount = pair.getFirst();
-                pair.setFirst(++retryCount);
-            }
-            _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
-        }
-        finally {
-            _Lock.unlock();
-        }
+  @Override
+  public void onCreated(ISession session) {
+    _Logger.info("connected :%s", session);
+  }
+
+  @Override
+  public void onDismiss(ISession session) {
+    InetSocketAddress remoteAddress = session.getRemoteAddress();
+    IAioConnector connector = _TargetManageMap.get(remoteAddress).getSecond();
+    _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
+    delayConnect(connector);
+  }
+
+  private void delayConnect(IAioConnector connector) {
+    if (connector.isShutdown()) {
+      return;
     }
+    _TimeWheel.acquire(
+        connector,
+        new ScheduleHandler<>(
+            connector.getConnectTimeout().multipliedBy(3),
+            c -> {
+              try {
+                _Logger.debug("%s connect", Thread.currentThread().getName());
+                connect(c);
+              } catch (IOException e) {
+                _Logger.warning("Connect error: %s", e.getMessage());
+              }
+            }));
+  }
 
-    @Override
-    public void onFailed(IAioConnector connector)
-    {
-        delayConnect(connector);
+  @Override
+  public void shutdown(ISession session) {
+    InetSocketAddress remoteAddress = session.getRemoteAddress();
+    if (_TargetManageMap.containsKey(remoteAddress)) {
+      IAioConnector connector = _TargetManageMap.get(remoteAddress).getSecond();
+      connector.shutdown();
     }
-
-    @Override
-    public void onCreated(ISession session)
-    {
-        _Logger.info("connected :%s", session);
-    }
-
-    @Override
-    public void onDismiss(ISession session)
-    {
-        InetSocketAddress remoteAddress = session.getRemoteAddress();
-        IAioConnector connector = _TargetManageMap.get(remoteAddress)
-                                                  .getSecond();
-        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
-        delayConnect(connector);
-    }
-
-    private void delayConnect(IAioConnector connector)
-    {
-        if(connector.isShutdown()) {return;}
-        _TimeWheel.acquire(connector,
-                           new ScheduleHandler<>(connector.getConnectTimeout()
-                                                          .multipliedBy(3), c->{
-                               try {
-                                   _Logger.debug("%s connect",
-                                                 Thread.currentThread()
-                                                       .getName());
-                                   connect(c);
-                               }
-                               catch(IOException e) {
-                                   _Logger.warning("Connect error: %s", e.getMessage());
-                               }
-                           }));
-    }
-
-    @Override
-    public void shutdown(ISession session)
-    {
-        InetSocketAddress remoteAddress = session.getRemoteAddress();
-        if(_TargetManageMap.containsKey(remoteAddress)) {
-            IAioConnector connector = _TargetManageMap.get(remoteAddress)
-                                                      .getSecond();
-            connector.shutdown();
-        }
-    }
+  }
 }

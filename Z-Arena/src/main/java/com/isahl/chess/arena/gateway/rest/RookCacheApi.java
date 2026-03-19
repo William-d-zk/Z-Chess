@@ -34,36 +34,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/rest/calculate")
-public class RookCacheApi
-{
+public class RookCacheApi {
 
-    private final RookCacheService _RookCacheService;
+  private final RookCacheService _RookCacheService;
 
-    @Autowired
-    public RookCacheApi(RookCacheService _RookCacheService)
-    {
-        this._RookCacheService = _RookCacheService;
-    }
+  @Autowired
+  public RookCacheApi(RookCacheService _RookCacheService) {
+    this._RookCacheService = _RookCacheService;
+  }
 
-    @GetMapping(path = "/areaOfCircle",
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Double> areaOfCircle(
-            @RequestParam
-                    int radius)
-    {
-        double result = _RookCacheService.areaOfCircle(radius);
+  @GetMapping(path = "/areaOfCircle", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Double> areaOfCircle(@RequestParam int radius) {
+    double result = _RookCacheService.areaOfCircle(radius);
 
-        return ResponseEntity.ok(result);
-    }
+    return ResponseEntity.ok(result);
+  }
 
-    @GetMapping(path = "/cache0",
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Double> cache0(
-            @RequestParam
-                    int radius)
-    {
-        double result = _RookCacheService.cache0(radius);
+  @GetMapping(path = "/cache0", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Double> cache0(@RequestParam int radius) {
+    double result = _RookCacheService.cache0(radius);
 
-        return ResponseEntity.ok(result);
-    }
+    return ResponseEntity.ok(result);
+  }
 }

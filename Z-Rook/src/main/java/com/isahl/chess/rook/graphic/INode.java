@@ -23,12 +23,8 @@
 
 package com.isahl.chess.rook.graphic;
 
-public interface INode
-{
-    long id();
+public interface INode {
+  long id();
 
-    enum Type
-    {
-
-    }
+  enum Type {}
 }

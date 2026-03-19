@@ -23,62 +23,50 @@
 
 package com.isahl.chess.rook.storage.db.config;
 
+import java.util.List;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.autoconfigure.sql.init.SqlInitializationProperties;
 
-import java.util.List;
+public class RookSource {
+  private List<ds> dss;
 
-public class RookSource
-{
-    private List<ds> dss;
+  public List<ds> getDss() {
+    return dss;
+  }
 
-    public List<ds> getDss()
-    {
-        return dss;
+  public void setDss(List<ds> dss) {
+    this.dss = dss;
+  }
+
+  public static class ds {
+
+    JpaProperties jpa;
+    DataSourceProperties datasource;
+    SqlInitializationProperties sqlInit;
+
+    public JpaProperties getJpa() {
+      return jpa;
     }
 
-    public void setDss(List<ds> dss)
-    {
-        this.dss = dss;
+    public void setJpa(JpaProperties jpa) {
+      this.jpa = jpa;
     }
 
-    public static class ds
-    {
-
-        JpaProperties               jpa;
-        DataSourceProperties        datasource;
-        SqlInitializationProperties sqlInit;
-
-        public JpaProperties getJpa()
-        {
-            return jpa;
-        }
-
-        public void setJpa(JpaProperties jpa)
-        {
-            this.jpa = jpa;
-        }
-
-        public DataSourceProperties getDatasource()
-        {
-            return datasource;
-        }
-
-        public void setDatasource(DataSourceProperties datasource)
-        {
-            this.datasource = datasource;
-        }
-
-        public SqlInitializationProperties getSqlInit()
-        {
-            return sqlInit;
-        }
-
-        public void setSqlInit(SqlInitializationProperties sqlInit)
-        {
-            this.sqlInit = sqlInit;
-        }
+    public DataSourceProperties getDatasource() {
+      return datasource;
     }
 
+    public void setDatasource(DataSourceProperties datasource) {
+      this.datasource = datasource;
+    }
+
+    public SqlInitializationProperties getSqlInit() {
+      return sqlInit;
+    }
+
+    public void setSqlInit(SqlInitializationProperties sqlInit) {
+      this.sqlInit = sqlInit;
+    }
+  }
 }

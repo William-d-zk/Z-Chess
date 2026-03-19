@@ -27,38 +27,36 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-public interface NodeRegistry
-{
-    void register(NodeInfo node);
+public interface NodeRegistry {
+  void register(NodeInfo node);
 
-    void deregister(String nodeId);
+  void deregister(String nodeId);
 
-    void heartbeat(String nodeId);
+  void heartbeat(String nodeId);
 
-    Optional<NodeInfo> getNode(String nodeId);
+  Optional<NodeInfo> getNode(String nodeId);
 
-    List<NodeInfo> getOnlineNodes();
+  List<NodeInfo> getOnlineNodes();
 
-    List<NodeInfo> getNodesByGroup(String groupId);
+  List<NodeInfo> getNodesByGroup(String groupId);
 
-    int getOnlineNodeCount();
+  int getOnlineNodeCount();
 
-    long getNodeLastSeen(String nodeId);
+  long getNodeLastSeen(String nodeId);
 
-    interface NodeInfo
-    {
-        String getNodeId();
+  interface NodeInfo {
+    String getNodeId();
 
-        String getGroupId();
+    String getGroupId();
 
-        int getCpuCores();
+    int getCpuCores();
 
-        long getTotalMemory();
+    long getTotalMemory();
 
-        long getFreeMemory();
+    long getFreeMemory();
 
-        String getStatus();
+    String getStatus();
 
-        Instant getLastHeartbeat();
-    }
+    Instant getLastHeartbeat();
+  }
 }

@@ -27,15 +27,14 @@ import com.isahl.chess.king.base.features.model.IoSerial;
 import com.isahl.chess.rook.graphic.INode;
 import com.isahl.chess.rook.graphic.model.Direction;
 
-public interface ISearcher<V extends IoSerial>
-{
-    /**
-     * 从图上的指定的节点进行遍历
-     *
-     * @param start      搜索开始的节点
-     * @param propagator 搜索过程中, 通过边时触发的扩散事件处理器
-     * @param visitor    搜索过程中, 访问节点的触发事件处理器
-     * @param direction  图的遍历方向
-     */
-    void traverse(INode start, IPropagator propagator, IVisitor<V> visitor, Direction direction);
+public interface ISearcher<V extends IoSerial> {
+  /**
+   * 从图上的指定的节点进行遍历
+   *
+   * @param start 搜索开始的节点
+   * @param propagator 搜索过程中, 通过边时触发的扩散事件处理器
+   * @param visitor 搜索过程中, 访问节点的触发事件处理器
+   * @param direction 图的遍历方向
+   */
+  void traverse(INode start, IPropagator propagator, IVisitor<V> visitor, Direction direction);
 }

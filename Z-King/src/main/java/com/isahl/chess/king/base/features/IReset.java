@@ -27,7 +27,6 @@ package com.isahl.chess.king.base.features;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface IReset
-{
-    void reset();
+public interface IReset {
+  void reset();
 }

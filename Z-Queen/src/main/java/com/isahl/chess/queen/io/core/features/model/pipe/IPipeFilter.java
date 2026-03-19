@@ -30,13 +30,12 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 /**
  * @author william.d.zk
  */
-public interface IPipeFilter
-{
-    <O extends IProtocol> Pair<IFilter.ResultType, IPContext> pipeSeek(IPContext context, O output);
+public interface IPipeFilter {
+  <O extends IProtocol> Pair<IFilter.ResultType, IPContext> pipeSeek(IPContext context, O output);
 
-    <I extends IProtocol> Pair<IFilter.ResultType, IPContext> pipePeek(IPContext context, I input);
+  <I extends IProtocol> Pair<IFilter.ResultType, IPContext> pipePeek(IPContext context, I input);
 
-    <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output);
+  <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output);
 
-    <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input);
+  <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input);
 }

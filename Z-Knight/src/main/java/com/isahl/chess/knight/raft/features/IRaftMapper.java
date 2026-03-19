@@ -34,60 +34,51 @@ import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 /**
  * @author william.d.zk
  */
-public interface IRaftMapper
-        extends IValid,
-                IReset
-{
-    void flush();
+public interface IRaftMapper extends IValid, IReset {
+  void flush();
 
-    void flushAll();
+  void flushAll();
 
-    long getEndIndex();
+  long getEndIndex();
 
-    long getStartIndex();
+  long getStartIndex();
 
-    LogEntry getEntry(long index);
+  LogEntry getEntry(long index);
 
-    long getEntryTerm(long index);
+  long getEntryTerm(long index);
 
-    void updateLogStart(long firstLogIndex);
+  void updateLogStart(long firstLogIndex);
 
-    void updateIndexAtTerm(long index, long indexTerm);
+  void updateIndexAtTerm(long index, long indexTerm);
 
-    void updateCommit(long commit);
+  void updateCommit(long commit);
 
-    void updateTerm(long term);
+  void updateTerm(long term);
 
-    void updateAccept(long applied);
+  void updateAccept(long applied);
 
-    void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
+  void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    boolean append(LogEntry entry);
+  boolean append(LogEntry entry);
 
-    void truncatePrefix(long newFirstIndex);
+  void truncatePrefix(long newFirstIndex);
 
-    LogEntry truncateSuffix(long newEndIndex);
+  LogEntry truncateSuffix(long newEndIndex);
 
-    LogMeta getLogMeta();
+  LogMeta getLogMeta();
 
-    SnapshotMeta getSnapshotMeta();
+  SnapshotMeta getSnapshotMeta();
 
-    SnapshotEntry getSnapshot();
+  SnapshotEntry getSnapshot();
 
-    long getTotalSize();
+  long getTotalSize();
 
-    /**
-     * 获取成员变更配置
-     */
-    MembershipConfig getMembershipConfig();
+  /** 获取成员变更配置 */
+  MembershipConfig getMembershipConfig();
 
-    /**
-     * 保存成员变更配置
-     */
-    void saveMembershipConfig(MembershipConfig config);
+  /** 保存成员变更配置 */
+  void saveMembershipConfig(MembershipConfig config);
 
-    /**
-     * 重置成员变更配置
-     */
-    void resetMembershipConfig();
+  /** 重置成员变更配置 */
+  void resetMembershipConfig();
 }

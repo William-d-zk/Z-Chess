@@ -23,6 +23,9 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.filter;
 
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEED_DATA;
+import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEXT_STEP;
+
 import com.isahl.chess.bishop.protocol.mqtt.model.QttContext;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
@@ -33,101 +36,85 @@ import com.isahl.chess.queen.io.core.features.model.session.proxy.IProxyContext;
 import com.isahl.chess.queen.io.core.net.socket.AioFilterChain;
 import com.isahl.chess.queen.io.core.net.socket.AioPacket;
 
-import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEED_DATA;
-import static com.isahl.chess.queen.io.core.features.model.pipe.IFilter.ResultType.NEXT_STEP;
-
 /**
  * @author william.d.zk
  * @date 2019-05-07
  */
-public class QttFrameFilter
-        extends AioFilterChain<QttContext, QttFrame, IPacket>
-{
-    public final static String NAME = "mqtt_frame";
+public class QttFrameFilter extends AioFilterChain<QttContext, QttFrame, IPacket> {
+  public static final String NAME = "mqtt_frame";
 
-    public QttFrameFilter()
-    {
-        super(NAME);
-    }
+  public QttFrameFilter() {
+    super(NAME);
+  }
 
-    @Override
-    public IPacket encode(QttContext context, QttFrame output)
-    {
-        context.demotionOut();
-        return new AioPacket(output.encode());
-    }
+  @Override
+  public IPacket encode(QttContext context, QttFrame output) {
+    context.demotionOut();
+    return new AioPacket(output.encode());
+  }
 
-    @Override
-    public QttFrame decode(QttContext context, IPacket input)
-    {
-        QttFrame frame = context.getCarrier();
-        frame.decode(context.getRvBuffer());
-        context.reset();
-        context.promotionIn();
-        return frame;
-    }
+  @Override
+  public QttFrame decode(QttContext context, IPacket input) {
+    QttFrame frame = context.getCarrier();
+    frame.decode(context.getRvBuffer());
+    context.reset();
+    context.promotionIn();
+    return frame;
+  }
 
-    @Override
-    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
-    {
-        if(checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
-            IPContext acting = context;
-            do {
-                if(acting.isOutFrame() && acting instanceof QttContext) {
-                    return Pair.of(NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
+  @Override
+  public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output) {
+    if (checkType(output, IProtocol.PROTOCOL_BISHOP_FRAME_SERIAL)) {
+      IPContext acting = context;
+      do {
+        if (acting.isOutFrame() && acting instanceof QttContext) {
+          return Pair.of(NEXT_STEP, acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return Pair.of(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return Pair.of(ResultType.IGNORE, context);
+  }
 
-    @Override
-    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
-    {
-        if(checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
-            IPContext acting = context;
-            do {
-                if(acting.isInFrame() && acting instanceof QttContext qtt_ctx && input instanceof IPacket in_packet) {
-                    QttFrame carrier = qtt_ctx.getCarrier();
-                    if(carrier == null) {
-                        qtt_ctx.setCarrier(carrier = new QttFrame());
-                    }
-                    return Pair.of(carrier.lack(acting.getRvBuffer()
-                                                      .put(in_packet.getBuffer())
-                                                      .discardOnHalf()) > 0 ? NEED_DATA : NEXT_STEP, acting);
-                }
-                else if(acting.isProxy()) {
-                    acting = ((IProxyContext<?>) acting).getActingContext();
-                }
-                else {
-                    acting = null;
-                }
-            }
-            while(acting != null);
-
+  @Override
+  public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input) {
+    if (checkType(input, IProtocol.IO_QUEEN_PACKET_SERIAL)) {
+      IPContext acting = context;
+      do {
+        if (acting.isInFrame()
+            && acting instanceof QttContext qtt_ctx
+            && input instanceof IPacket in_packet) {
+          QttFrame carrier = qtt_ctx.getCarrier();
+          if (carrier == null) {
+            qtt_ctx.setCarrier(carrier = new QttFrame());
+          }
+          return Pair.of(
+              carrier.lack(acting.getRvBuffer().put(in_packet.getBuffer()).discardOnHalf()) > 0
+                  ? NEED_DATA
+                  : NEXT_STEP,
+              acting);
+        } else if (acting.isProxy()) {
+          acting = ((IProxyContext<?>) acting).getActingContext();
+        } else {
+          acting = null;
         }
-        return new Pair<>(ResultType.IGNORE, context);
+      } while (acting != null);
     }
+    return new Pair<>(ResultType.IGNORE, context);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
-    {
-        return (I) encode((QttContext) context, (QttFrame) output);
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output) {
+    return (I) encode((QttContext) context, (QttFrame) output);
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
-    {
-        return (O) decode((QttContext) context, (IPacket) input);
-    }
-
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input) {
+    return (O) decode((QttContext) context, (IPacket) input);
+  }
 }

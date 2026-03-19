@@ -31,17 +31,14 @@ import com.isahl.chess.board.annotation.ISerialFactory;
  * @date 2019-05-08
  */
 @ISerialFactory(serial = ('S' << 24) | ('E' << 16) | ('R' << 8) | 'V')
-public class ZServerFactory
-        extends ZChatFactory
-{
-    public static final ZServerFactory _Instance = new ZServerFactory();
+public class ZServerFactory extends ZChatFactory {
+  public static final ZServerFactory _Instance = new ZServerFactory();
 
-    @Override
-    protected ZControl build(int serial)
-    {
-        return switch(serial) {
-            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x6F -> null;
-            default -> super.build(serial);
-        };
-    }
+  @Override
+  protected ZControl build(int serial) {
+    return switch (serial) {
+      case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x6F -> null;
+      default -> super.build(serial);
+    };
+  }
 }

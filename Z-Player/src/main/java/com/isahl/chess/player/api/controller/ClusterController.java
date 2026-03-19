@@ -34,48 +34,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author william.d.zk
- * {@code @date} 2021/6/11
+ * @author william.d.zk {@code @date} 2021/6/11
  */
 @RestController
 @RequestMapping("cluster")
-public class ClusterController
-{
-    private final Logger       _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final IRaftService _RaftService;
-    private final IRaftMapper  _RaftMapper;
+public class ClusterController {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final IRaftService _RaftService;
+  private final IRaftMapper _RaftMapper;
 
-    @Autowired
-    public ClusterController(IRaftService raftService, IRaftMapper raftMapper)
-    {
-        _RaftService = raftService;
-        _RaftMapper = raftMapper;
+  @Autowired
+  public ClusterController(IRaftService raftService, IRaftMapper raftMapper) {
+    _RaftService = raftService;
+    _RaftMapper = raftMapper;
+  }
+
+  @PostMapping("change")
+  public @ResponseBody ZResponse<?> changeTopology(@RequestBody ClusterDo peer) {
+    Triple<Long, String, Integer> triple =
+        new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
+
+    try {
+      return ZResponse.success(_RaftService.topology());
+    } catch (ZException e) {
+      return ZResponse.error(e.getMessage());
     }
+  }
 
-    @PostMapping("change")
-    public @ResponseBody ZResponse<?> changeTopology(
-            @RequestBody
-            ClusterDo peer)
-    {
-        Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
-
-        try {
-            return ZResponse.success(_RaftService.topology());
-        }
-        catch(ZException e) {
-            return ZResponse.error(e.getMessage());
-        }
-    }
-
-    @GetMapping("close")
-    public ZResponse<?> close()
-    {
-        _RaftMapper.flushAll();
-        return ZResponse.success(_RaftMapper.getLogMeta());
-    }
-
+  @GetMapping("close")
+  public ZResponse<?> close() {
+    _RaftMapper.flushAll();
+    return ZResponse.success(_RaftMapper.getLogMeta());
+  }
 }
-
-
-
-

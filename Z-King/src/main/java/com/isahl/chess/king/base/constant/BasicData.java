@@ -27,10 +27,8 @@ package com.isahl.chess.king.base.constant;
  * @author william.d.zk
  * @date 2022-3-25
  */
-public interface BasicData
-{
+public interface BasicData {
 
-    float USD_CNY_EXCHANGE_RATE = 6.34f;
-    float EUR_CNY_EXCHANGE_RATE = 7.14f;
-
+  float USD_CNY_EXCHANGE_RATE = 6.34f;
+  float EUR_CNY_EXCHANGE_RATE = 7.14f;
 }

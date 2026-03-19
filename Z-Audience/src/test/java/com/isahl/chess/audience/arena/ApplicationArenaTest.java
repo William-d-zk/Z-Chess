@@ -23,20 +23,15 @@
 
 package com.isahl.chess.audience.arena;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * ApplicationArena 基础测试
- * 简化版本，不依赖完整 Spring 上下文
- */
-class ApplicationArenaTest
-{
-    @Test
-    void test()
-    {
-        // 基础测试
-        assertNotNull(String.class);
-    }
+import org.junit.jupiter.api.Test;
+
+/** ApplicationArena 基础测试 简化版本，不依赖完整 Spring 上下文 */
+class ApplicationArenaTest {
+  @Test
+  void test() {
+    // 基础测试
+    assertNotNull(String.class);
+  }
 }

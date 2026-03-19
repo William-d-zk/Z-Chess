@@ -30,105 +30,94 @@ import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.message.InnerProtocol;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public abstract class BaseMeta
-        extends InnerProtocol
-        implements IReset
-{
-    protected final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+public abstract class BaseMeta extends InnerProtocol implements IReset {
+  protected final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    public BaseMeta(Operation operation, Strategy strategy)
-    {
-        super(operation, strategy);
+  public BaseMeta(Operation operation, Strategy strategy) {
+    super(operation, strategy);
+  }
+
+  public BaseMeta() {
+    super();
+  }
+
+  public BaseMeta(ByteBuf input) {
+    super(input);
+  }
+
+  @JsonIgnore protected RandomAccessFile mFile;
+
+  public void flush() {
+    flush(true); // 默认强制 fsync
+  }
+
+  /**
+   * 刷盘操作
+   *
+   * @param fsync 是否强制 fsync 到磁盘
+   */
+  public void flush(boolean fsync) {
+    if (mFile == null) {
+      return;
     }
+    try {
+      byte[] toWrite = encoded();
+      FileChannel channel = mFile.getChannel();
 
-    public BaseMeta()
-    {
-        super();
+      // 使用内存映射写入
+      MappedByteBuffer mapped =
+          channel.map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
+      _Logger.info(
+          "write meta %s,size:%d,fsync=%s,{%s}",
+          getClass().getSimpleName(), toWrite.length, fsync, JsonUtil.writeValueAsString(this));
+      mapped.put(toWrite);
+
+      // 强制刷盘确保数据落盘
+      if (fsync) {
+        mapped.force();
+        channel.force(true); // 强制刷盘，包含文件元数据
+      }
+    } catch (IOException e) {
+      _Logger.fetal("flush meta failed: %s", e);
     }
+  }
 
-    public BaseMeta(ByteBuf input)
-    {
-        super(input);
+  public void close() {
+    if (mFile == null) {
+      return;
     }
-
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    public void flush()
-    {
-        flush(true); // 默认强制 fsync
+    try {
+      if (mFile.getChannel().isOpen()) {
+        flush();
+      }
+    } catch (Exception e) {
+      // ignore channel check errors
     }
-
-    /**
-     * 刷盘操作
-     * @param fsync 是否强制 fsync 到磁盘
-     */
-    public void flush(boolean fsync)
-    {
-        if(mFile == null) {return;}
-        try {
-            byte[] toWrite = encoded();
-            FileChannel channel = mFile.getChannel();
-            
-            // 使用内存映射写入
-            MappedByteBuffer mapped = channel.map(FileChannel.MapMode.READ_WRITE, SERIAL_POS, toWrite.length);
-            _Logger.info("write meta %s,size:%d,fsync=%s,{%s}",
-                         getClass().getSimpleName(),
-                         toWrite.length,
-                         fsync,
-                         JsonUtil.writeValueAsString(this));
-            mapped.put(toWrite);
-            
-            // 强制刷盘确保数据落盘
-            if(fsync) {
-                mapped.force();
-                channel.force(true); // 强制刷盘，包含文件元数据
-            }
-        }
-        catch(IOException e) {
-            _Logger.fetal("flush meta failed: %s", e);
-        }
+    try {
+      mFile.close();
+    } catch (IOException e) {
+      _Logger.warning("close meta file failed: %s", e);
     }
+  }
 
-    public void close()
-    {
-        if(mFile == null) {return;}
-        try {
-            if(mFile.getChannel().isOpen()) {
-                flush();
-            }
-        }
-        catch(Exception e) {
-            // ignore channel check errors
-        }
-        try {
-            mFile.close();
-        }
-        catch(IOException e) {
-            _Logger.warning("close meta file failed: %s", e);
-        }
+  public void ofFile(RandomAccessFile file) {
+    mFile = file;
+  }
+
+  public static <T extends BaseMeta> T from(RandomAccessFile file, IoFactory<T> factory)
+      throws IOException {
+    if (factory == null || file.length() == 0) {
+      return null;
     }
-
-    public void ofFile(RandomAccessFile file)
-    {
-        mFile = file;
-    }
-
-    public static <T extends BaseMeta> T from(RandomAccessFile file, IoFactory<T> factory) throws IOException
-    {
-        if(factory == null || file.length() == 0) {return null;}
-        ByteBuffer mapped = file.getChannel()
-                                .map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-        T t = factory.create(ByteBuf.wrap(mapped));
-        t.mFile = file;
-        return t;
-    }
-
+    ByteBuffer mapped = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+    T t = factory.create(ByteBuf.wrap(mapped));
+    t.mFile = file;
+    return t;
+  }
 }

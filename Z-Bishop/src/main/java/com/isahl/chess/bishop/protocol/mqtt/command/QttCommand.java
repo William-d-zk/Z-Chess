@@ -30,28 +30,21 @@ import com.isahl.chess.queen.io.core.features.model.content.ICommand;
  * @author william.d.zk
  * @date 2019-05-25
  */
-public abstract class QttCommand
-        extends QttControl
-        implements ICommand<QttContext>
-{
-    protected short mMsgId;
+public abstract class QttCommand extends QttControl implements ICommand<QttContext> {
+  protected short mMsgId;
 
-    @Override
-    public void msgId(long msgId)
-    {
-        mMsgId = (short) msgId;
-    }
+  @Override
+  public void msgId(long msgId) {
+    mMsgId = (short) msgId;
+  }
 
-    @Override
-    public long msgId()
-    {
-        return mMsgId;
-    }
+  @Override
+  public long msgId() {
+    return mMsgId;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 2;
-    }
-
+  @Override
+  public int length() {
+    return super.length() + 2;
+  }
 }

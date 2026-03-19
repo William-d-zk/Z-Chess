@@ -25,32 +25,25 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
-
 import java.io.IOException;
 
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x0D)
-public class X0D_Error
-        extends ZControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x0D)
+public class X0D_Error extends ZControl {
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    public X0D_Error()
-    {
-        super();
-    }
+  public X0D_Error() {
+    super();
+  }
 
-    @Override
-    public void transfer() throws IOException
-    {
-        throw new IOException("initiative throw io-exception ");
-    }
+  @Override
+  public void transfer() throws IOException {
+    throw new IOException("initiative throw io-exception ");
+  }
 }

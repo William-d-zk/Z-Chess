@@ -23,22 +23,19 @@
 package com.isahl.chess.queen.io.core.features.model.session;
 
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
-
 import java.io.IOException;
 import java.nio.channels.Channel;
 
 /**
  * @author William.d.zk
  */
-public interface ICreator<C extends Channel>
-{
-    /**
-     * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
-     *
-     * @param channel  已完成连接的 channel
-     * @param activity 连接执行器实际执行单元
-     * @return session
-     */
-    ISession create(C channel, IConnectActivity activity) throws IOException;
-
+public interface ICreator<C extends Channel> {
+  /**
+   * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
+   *
+   * @param channel 已完成连接的 channel
+   * @param activity 连接执行器实际执行单元
+   * @return session
+   */
+  ISession create(C channel, IConnectActivity activity) throws IOException;
 }

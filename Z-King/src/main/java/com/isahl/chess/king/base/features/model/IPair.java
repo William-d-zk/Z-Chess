@@ -29,14 +29,11 @@ import com.isahl.chess.king.base.features.IDuplicate;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface IPair
-        extends IDuplicate
-{
+public interface IPair extends IDuplicate {
 
-    <FIRST> FIRST getFirst();
+  <FIRST> FIRST getFirst();
 
-    <SECOND> SECOND getSecond();
+  <SECOND> SECOND getSecond();
 
-    boolean isEmpty();
-
+  boolean isEmpty();
 }

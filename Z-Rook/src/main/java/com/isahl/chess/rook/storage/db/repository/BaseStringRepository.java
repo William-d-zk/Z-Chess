@@ -27,6 +27,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BaseStringRepository<T>
-        extends JpaRepository<T, String>,
-                JpaSpecificationExecutor<T>
-{}
+    extends JpaRepository<T, String>, JpaSpecificationExecutor<T> {}

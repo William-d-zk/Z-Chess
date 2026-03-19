@@ -26,7 +26,6 @@ package com.isahl.chess.queen.io.core.features.model.routes;
 /**
  * @author william.d.zk
  */
-public interface ITraceable
-{
-    long origin();
+public interface ITraceable {
+  long origin();
 }

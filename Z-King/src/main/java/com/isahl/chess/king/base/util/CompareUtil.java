@@ -29,19 +29,20 @@ import java.util.SortedSet;
 /**
  * @author William.d.zk
  */
-public interface CompareUtil
-{
-    static <E> boolean isDeepEquals(SortedSet<E> o, SortedSet<E> d)
-    {
-        if(o.size() != d.size()) {return false;}
-        Iterator<E> iteratorO = o.iterator();
-        Iterator<E> iteratorD = d.iterator();
-        while(iteratorO.hasNext() && iteratorD.hasNext()) {
-            E nextO = iteratorO.next();
-            E nextD = iteratorD.next();
-            if(!nextO.equals(nextD)) {return false;}
-        }
-        return true;
+public interface CompareUtil {
+  static <E> boolean isDeepEquals(SortedSet<E> o, SortedSet<E> d) {
+    if (o.size() != d.size()) {
+      return false;
     }
-
+    Iterator<E> iteratorO = o.iterator();
+    Iterator<E> iteratorD = d.iterator();
+    while (iteratorO.hasNext() && iteratorD.hasNext()) {
+      E nextO = iteratorO.next();
+      E nextD = iteratorD.next();
+      if (!nextO.equals(nextD)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

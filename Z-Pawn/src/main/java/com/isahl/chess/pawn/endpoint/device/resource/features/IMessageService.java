@@ -26,33 +26,31 @@ package com.isahl.chess.pawn.endpoint.device.resource.features;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.pawn.endpoint.device.resource.model.MessageBody;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * @author william.d.zk
  * @date 2020/2/21
  */
-public interface IMessageService
-{
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
+public interface IMessageService {
+  List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    List<ZChatEntity> findAfterId(long id);
+  List<ZChatEntity> findAfterId(long id);
 
-    Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification);
+  Optional<ZChatEntity> findOneMsg(Specification<ZChatEntity> specification);
 
-    List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable);
+  List<ZChatEntity> findAllMsg(Specification<ZChatEntity> specification, Pageable pageable);
 
-    void submit(ZChatEntity content);
+  void submit(ZChatEntity content);
 
-    long generateId(long session);
+  long generateId(long session);
 
-    long generateId();
+  long generateId();
 
-    void submitAll(List<ZChatEntity> contents);
+  void submitAll(List<ZChatEntity> contents);
 
-    void stateInit(ZChatEntity content);
+  void stateInit(ZChatEntity content);
 }

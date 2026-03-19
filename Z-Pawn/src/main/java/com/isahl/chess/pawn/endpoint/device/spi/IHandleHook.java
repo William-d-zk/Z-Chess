@@ -25,18 +25,16 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.util.List;
 
 /**
  * @author william.d.zk
  * @date 2021-08-07
  */
-public interface IHandleHook
-{
-    void afterLogic(IoSerial content, List<ITriple> results);
+public interface IHandleHook {
+  void afterLogic(IoSerial content, List<ITriple> results);
 
-    void afterConsume(IoSerial content);
+  void afterConsume(IoSerial content);
 
-    boolean isExpect(IoSerial content);
+  boolean isExpect(IoSerial content);
 }

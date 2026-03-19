@@ -32,99 +32,80 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x76)
-public class X76_RaftResp
-        extends ZCommand
-        implements IConsistency
-{
-    public X76_RaftResp()
-    {
-        super();
-    }
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x76)
+public class X76_RaftResp extends ZCommand implements IConsistency {
+  public X76_RaftResp() {
+    super();
+  }
 
-    public X76_RaftResp(long msgId)
-    {
-        super(msgId);
-    }
+  public X76_RaftResp(long msgId) {
+    super(msgId);
+  }
 
-    private long mClient;//8 byte
-    private int  mCode;//4 byte
-    private int  mState;//1 byte
-    private long mOrigin;//8 byte
+  private long mClient; // 8 byte
+  private int mCode; // 4 byte
+  private int mState; // 1 byte
+  private long mOrigin; // 8 byte
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X76_RaftResp { to %#x → %#x [state:%d,code:%d]}", mClient, mOrigin, mState, mCode);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X76_RaftResp { to %#x → %#x [state:%d,code:%d]}", mClient, mOrigin, mState, mCode);
+  }
 
-    public void code(int code)
-    {
-        mCode = code;
-    }
+  public void code(int code) {
+    mCode = code;
+  }
 
-    @Override
-    public int code()
-    {
-        return mCode;
-    }
+  @Override
+  public int code() {
+    return mCode;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mClient)
-                    .putLong(mOrigin)
-                    .put(mState)
-                    .putInt(mCode);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mClient).putLong(mOrigin).put(mState).putInt(mCode);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mClient = input.getLong();
-        mOrigin = input.getLong();
-        mState = input.get();
-        mCode = input.getInt();
-        return remain - 21;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mClient = input.getLong();
+    mOrigin = input.getLong();
+    mState = input.get();
+    mCode = input.getInt();
+    return remain - 21;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 21;
-    }
+  @Override
+  public int length() {
+    return super.length() + 21;
+  }
 
-    @Override
-    public long client()
-    {
-        return mClient;
-    }
+  @Override
+  public long client() {
+    return mClient;
+  }
 
-    public void client(long client)
-    {
-        mClient = client;
-    }
+  public void client(long client) {
+    mClient = client;
+  }
 
-    public void origin(long origin) {mOrigin = origin;}
+  public void origin(long origin) {
+    mOrigin = origin;
+  }
 
-    public long origin()
-    {
-        return mOrigin;
-    }
-
+  public long origin() {
+    return mOrigin;
+  }
 }

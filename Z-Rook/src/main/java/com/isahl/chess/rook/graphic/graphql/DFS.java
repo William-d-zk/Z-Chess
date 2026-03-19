@@ -23,5 +23,4 @@
 
 package com.isahl.chess.rook.graphic.graphql;
 
-public class DFS
-{}
+public class DFS {}

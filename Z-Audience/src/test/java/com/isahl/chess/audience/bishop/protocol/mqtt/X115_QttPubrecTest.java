@@ -23,67 +23,65 @@
 
 package com.isahl.chess.bishop.protocol.mqtt;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.isahl.chess.bishop.protocol.mqtt.command.X115_QttPubrec;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * X115_QttPubrec 测试类
- */
+/** X115_QttPubrec 测试类 */
 class X115_QttPubrecTest {
 
-    @Test
-    void testBasicPubrec() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        pubrec.msgId(12345);
-        
-        assertThat(pubrec.msgId()).isEqualTo(12345);
-    }
+  @Test
+  void testBasicPubrec() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    pubrec.msgId(12345);
 
-    @Test
-    void testTarget() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        pubrec.target(123456789L);
-        
-        assertThat(pubrec.target()).isEqualTo(123456789L);
-    }
+    assertThat(pubrec.msgId()).isEqualTo(12345);
+  }
 
-    @Test
-    void testTopic() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        assertThat(pubrec.topic()).isNull(); // PUBREC 没有主题
-    }
+  @Test
+  void testTarget() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    pubrec.target(123456789L);
 
-    @Test
-    void testWithPayload() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        pubrec.msgId(12345);
-        pubrec.withSub("extra data".getBytes());
-        
-        assertThat(pubrec.msgId()).isEqualTo(12345);
-        assertThat(pubrec.payload()).containsExactly("extra data".getBytes());
-    }
+    assertThat(pubrec.target()).isEqualTo(123456789L);
+  }
 
-    @Test
-    void testPriority() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        assertThat(pubrec.priority()).isEqualTo(X115_QttPubrec.QOS_PRIORITY_09_CONFIRM_MESSAGE);
-    }
+  @Test
+  void testTopic() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    assertThat(pubrec.topic()).isNull(); // PUBREC 没有主题
+  }
 
-    @Test
-    void testSerial() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        assertThat(pubrec.serial()).isEqualTo(0x115);
-    }
+  @Test
+  void testWithPayload() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    pubrec.msgId(12345);
+    pubrec.withSub("extra data".getBytes());
 
-    @Test
-    void testToStringFormat() {
-        X115_QttPubrec pubrec = new X115_QttPubrec();
-        pubrec.msgId(42);
-        
-        String str = pubrec.toString();
-        assertThat(str).contains("pubrec");
-        assertThat(str).contains("42");
-    }
+    assertThat(pubrec.msgId()).isEqualTo(12345);
+    assertThat(pubrec.payload()).containsExactly("extra data".getBytes());
+  }
+
+  @Test
+  void testPriority() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    assertThat(pubrec.priority()).isEqualTo(X115_QttPubrec.QOS_PRIORITY_09_CONFIRM_MESSAGE);
+  }
+
+  @Test
+  void testSerial() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    assertThat(pubrec.serial()).isEqualTo(0x115);
+  }
+
+  @Test
+  void testToStringFormat() {
+    X115_QttPubrec pubrec = new X115_QttPubrec();
+    pubrec.msgId(42);
+
+    String str = pubrec.toString();
+    assertThat(str).contains("pubrec");
+    assertThat(str).contains("42");
+  }
 }

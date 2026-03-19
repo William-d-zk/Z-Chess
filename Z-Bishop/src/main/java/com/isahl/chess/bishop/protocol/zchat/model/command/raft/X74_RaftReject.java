@@ -33,217 +33,176 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
  * @author william.d.zk
  * @date 2019/12/10
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x74)
-public class X74_RaftReject
-        extends ZCommand
-        implements IRaftRecord,
-                   IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x74)
+public class X74_RaftReject extends ZCommand implements IRaftRecord, IConsistent {
 
-    public X74_RaftReject(long msgId)
-    {
-        super(msgId);
-    }
+  public X74_RaftReject(long msgId) {
+    super(msgId);
+  }
 
-    public X74_RaftReject()
-    {
-        super();
-    }
+  public X74_RaftReject() {
+    super();
+  }
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 74;
-    }
+  @Override
+  public int length() {
+    return super.length() + 74;
+  }
 
-    private long mPeer;
-    private long mTerm;
-    private long mIndex;
-    private long mIndexTerm;
-    private long mAccept;
-    private long mCommit;
-    private long mReject;
-    private long mCandidate;
-    private long mLeader;
-    private int  mCode;
-    private int  mState;
+  private long mPeer;
+  private long mTerm;
+  private long mIndex;
+  private long mIndexTerm;
+  private long mAccept;
+  private long mCommit;
+  private long mReject;
+  private long mCandidate;
+  private long mLeader;
+  private int mCode;
+  private int mState;
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        mTerm = input.getLong();
-        mIndex = input.getLong();
-        mIndexTerm = input.getLong();
-        mAccept = input.getLong();
-        mCommit = input.getLong();
-        mReject = input.getLong();
-        mCandidate = input.getLong();
-        mLeader = input.getLong();
-        mCode = input.get();
-        mState = input.get();
-        return remain - 74;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    mTerm = input.getLong();
+    mIndex = input.getLong();
+    mIndexTerm = input.getLong();
+    mAccept = input.getLong();
+    mCommit = input.getLong();
+    mReject = input.getLong();
+    mCandidate = input.getLong();
+    mLeader = input.getLong();
+    mCode = input.get();
+    mState = input.get();
+    return remain - 74;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mPeer)
-                    .putLong(mTerm)
-                    .putLong(mIndex)
-                    .putLong(mIndexTerm)
-                    .putLong(mAccept)
-                    .putLong(mCommit)
-                    .putLong(mReject)
-                    .putLong(mCandidate)
-                    .putLong(mLeader)
-                    .put(mCode)
-                    .put(mState);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output)
+        .putLong(mPeer)
+        .putLong(mTerm)
+        .putLong(mIndex)
+        .putLong(mIndexTerm)
+        .putLong(mAccept)
+        .putLong(mCommit)
+        .putLong(mReject)
+        .putLong(mCandidate)
+        .putLong(mLeader)
+        .put(mCode)
+        .put(mState);
+  }
 
-    @Override
-    public long peer()
-    {
-        return mPeer;
-    }
+  @Override
+  public long peer() {
+    return mPeer;
+  }
 
-    public void peer(long peerId)
-    {
-        mPeer = peerId;
-    }
+  public void peer(long peerId) {
+    mPeer = peerId;
+  }
 
-    public long term()
-    {
-        return mTerm;
-    }
+  public long term() {
+    return mTerm;
+  }
 
-    public void term(long term)
-    {
-        mTerm = term;
-    }
+  public void term(long term) {
+    mTerm = term;
+  }
 
-    @Override
-    public long index()
-    {
-        return mIndex;
-    }
+  @Override
+  public long index() {
+    return mIndex;
+  }
 
-    public void index(long index)
-    {
-        mIndex = index;
-    }
+  public void index(long index) {
+    mIndex = index;
+  }
 
-    @Override
-    public long indexTerm()
-    {
-        return mIndexTerm;
-    }
+  @Override
+  public long indexTerm() {
+    return mIndexTerm;
+  }
 
-    public void indexTerm(long indexTerm)
-    {
-        mIndexTerm = indexTerm;
-    }
+  public void indexTerm(long indexTerm) {
+    mIndexTerm = indexTerm;
+  }
 
-    public long reject()
-    {
-        return mReject;
-    }
+  public long reject() {
+    return mReject;
+  }
 
-    public void reject(long peerId)
-    {
-        mReject = peerId;
-    }
+  public void reject(long peerId) {
+    mReject = peerId;
+  }
 
-    @Override
-    public long leader()
-    {
-        return mLeader;
-    }
+  @Override
+  public long leader() {
+    return mLeader;
+  }
 
-    public void leader(long leader)
-    {
-        mLeader = leader;
-    }
+  public void leader(long leader) {
+    mLeader = leader;
+  }
 
-    public long candidate()
-    {
-        return mCandidate;
-    }
+  public long candidate() {
+    return mCandidate;
+  }
 
-    public void candidate(long candidate)
-    {
-        mCandidate = candidate;
-    }
+  public void candidate(long candidate) {
+    mCandidate = candidate;
+  }
 
-    @Override
-    public int code()
-    {
-        return mCode;
-    }
+  @Override
+  public int code() {
+    return mCode;
+  }
 
-    public void setCode(int code)
-    {
-        mCode = code;
-    }
+  public void setCode(int code) {
+    mCode = code;
+  }
 
-    public int state()
-    {
-        return mState;
-    }
+  public int state() {
+    return mState;
+  }
 
-    public void state(int state)
-    {
-        mState = state;
-    }
+  public void state(int state) {
+    mState = state;
+  }
 
-    @Override
-    public long accept()
-    {
-        return mAccept;
-    }
+  @Override
+  public long accept() {
+    return mAccept;
+  }
 
-    public void accept(long accept)
-    {
-        mAccept = accept;
-    }
+  public void accept(long accept) {
+    mAccept = accept;
+  }
 
-    public void commit(long commit)
-    {
-        mCommit = commit;
-    }
+  public void commit(long commit) {
+    mCommit = commit;
+  }
 
-    @Override
-    public long commit()
-    {
-        return mCommit;
-    }
+  @Override
+  public long commit() {
+    return mCommit;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X74_RaftReject{ peer:%#x, current:[%d@%d;%d], reject to:%#x, code:%d, state:%d }",
-                             mPeer,
-                             mIndex,
-                             mIndexTerm,
-                             mTerm,
-                             mReject,
-                             mCode,
-                             mState);
-    }
-
+  @Override
+  public String toString() {
+    return String.format(
+        "X74_RaftReject{ peer:%#x, current:[%d@%d;%d], reject to:%#x, code:%d, state:%d }",
+        mPeer, mIndex, mIndexTerm, mTerm, mReject, mCode, mState);
+  }
 }

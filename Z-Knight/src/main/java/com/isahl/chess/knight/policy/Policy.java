@@ -23,53 +23,43 @@
 
 package com.isahl.chess.knight.policy;
 
-public interface Policy
-{
-    String getPolicyId();
+public interface Policy {
+  String getPolicyId();
 
-    String getPolicyType();
+  String getPolicyType();
 
-    boolean validate();
+  boolean validate();
 
-    interface RetryPolicy
-            extends Policy
-    {
-        int getMaxRetries();
+  interface RetryPolicy extends Policy {
+    int getMaxRetries();
 
-        long getRetryDelayMs();
+    long getRetryDelayMs();
 
-        double getBackoffMultiplier();
+    double getBackoffMultiplier();
 
-        boolean shouldRetry(int attemptCount, Throwable cause);
-    }
+    boolean shouldRetry(int attemptCount, Throwable cause);
+  }
 
-    interface TimeoutPolicy
-            extends Policy
-    {
-        long getTimeoutMs();
+  interface TimeoutPolicy extends Policy {
+    long getTimeoutMs();
 
-        TimeoutAction getTimeoutAction();
-    }
+    TimeoutAction getTimeoutAction();
+  }
 
-    enum TimeoutAction
-    {
-        CANCEL,
-        RETRY,
-        NOTIFY,
-        IGNORE
-    }
+  enum TimeoutAction {
+    CANCEL,
+    RETRY,
+    NOTIFY,
+    IGNORE
+  }
 
-    interface LoadBalancePolicy
-            extends Policy
-    {
-        String selectNode(String taskId, Iterable<String> availableNodes);
-    }
+  interface LoadBalancePolicy extends Policy {
+    String selectNode(String taskId, Iterable<String> availableNodes);
+  }
 
-    interface FailoverPolicy
-            extends Policy
-    {
-        String selectBackupNode(String originalNode, Iterable<String> availableNodes);
+  interface FailoverPolicy extends Policy {
+    String selectBackupNode(String originalNode, Iterable<String> availableNodes);
 
-        int getMaxFailoverCount();
-    }
+    int getMaxFailoverCount();
+  }
 }

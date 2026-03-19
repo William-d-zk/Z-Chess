@@ -27,21 +27,19 @@ import com.isahl.chess.knight.scheduler.domain.SubTask;
 import com.isahl.chess.knight.scheduler.domain.Task;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
-
 import java.util.List;
 import java.util.Optional;
 
-public interface TaskScheduler
-{
-    Task dispatchTask(String taskId, String payload, List<String> targetNodes, int timeoutSeconds);
+public interface TaskScheduler {
+  Task dispatchTask(String taskId, String payload, List<String> targetNodes, int timeoutSeconds);
 
-    Task claimTask(String taskId, String payload, int subTaskCount, int timeoutSeconds);
+  Task claimTask(String taskId, String payload, int subTaskCount, int timeoutSeconds);
 
-    Optional<SubTask> claimSubTasks(String nodeId, int maxCount);
+  Optional<SubTask> claimSubTasks(String nodeId, int maxCount);
 
-    void reportResult(String subTaskId, String result, boolean success);
+  void reportResult(String subTaskId, String result, boolean success);
 
-    TaskStatus getTaskStatus(String taskId);
+  TaskStatus getTaskStatus(String taskId);
 
-    TaskResult getTaskResult(String taskId);
+  TaskResult getTaskResult(String taskId);
 }

@@ -36,9 +36,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
-import org.hibernate.annotations.Type;
-
 import java.io.Serial;
+import org.hibernate.annotations.Type;
 
 /**
  * @author william.d.zk
@@ -46,49 +45,37 @@ import java.io.Serial;
 @Entity(name = "session_var")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ISerialGenerator(parent = ISerial.STORAGE_ROOK_DB_SERIAL)
-public class SessionEntity
-        extends AuditModel
-        implements IValid
-{
-    @Serial
-    private static final long serialVersionUID = -249635102504829625L;
+public class SessionEntity extends AuditModel implements IValid {
+  @Serial private static final long serialVersionUID = -249635102504829625L;
 
-    @Transient
-    private DeviceClient mClient;
+  @Transient private DeviceClient mClient;
 
-    public void setId(long id)
-    {
-        pKey = id;
-    }
+  public void setId(long id) {
+    pKey = id;
+  }
 
-    @Id
-    public long getId()
-    {
-        return pKey;
-    }
+  @Id
+  public long getId() {
+    return pKey;
+  }
 
-    @Column(name = "device_client")
-    @Type(LegacyBinaryType.class)
-    public void setDeviceClient(byte[] data)
-    {
-        mClient = data == null ? null : new DeviceClient(ByteBuf.wrap(data));
-    }
+  @Column(name = "device_client")
+  @Type(LegacyBinaryType.class)
+  public void setDeviceClient(byte[] data) {
+    mClient = data == null ? null : new DeviceClient(ByteBuf.wrap(data));
+  }
 
-    @Column(name = "device_client")
-    @Type(LegacyBinaryType.class)
-    public byte[] getDeviceClient()
-    {
-        return mClient == null ? null : mClient.encoded();
-    }
+  @Column(name = "device_client")
+  @Type(LegacyBinaryType.class)
+  public byte[] getDeviceClient() {
+    return mClient == null ? null : mClient.encoded();
+  }
 
-    public DeviceClient client()
-    {
-        return mClient;
-    }
+  public DeviceClient client() {
+    return mClient;
+  }
 
-    public void update(DeviceClient client)
-    {
-        mClient = client;
-    }
-
+  public void update(DeviceClient client) {
+    mClient = client;
+  }
 }

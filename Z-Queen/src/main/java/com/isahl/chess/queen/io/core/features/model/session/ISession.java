@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.io.core.features.model.session;
 
-import com.isahl.chess.king.base.features.IStatus;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.queen.io.core.features.model.channels.IAddress;
@@ -36,152 +35,140 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
-
 import java.io.Closeable;
 import java.nio.channels.Channel;
 import java.util.Queue;
 
 /**
- * session index 以 H16Bit 为限 提供port-channel聚合能力,
- * 所以Prefix 0x1<<48~0xFFFF<<48 需注意java 没有unsigned-long
- * 负值是有效值，只有 0 是无效值 L32Bit 记录通过聚合方式 send 的次数
- * 用于实现channel的load balance，需注意balance仅考虑了在当前port下
- * 并不关注session的全局负载，当多个channel共用session 时 balance
- * 需考虑Queue.size的作为指标进行balance的实现
+ * session index 以 H16Bit 为限 提供port-channel聚合能力, 所以Prefix 0x1<<48~0xFFFF<<48 需注意java 没有unsigned-long
+ * 负值是有效值，只有 0 是无效值 L32Bit 记录通过聚合方式 send 的次数 用于实现channel的load balance，需注意balance仅考虑了在当前port下
+ * 并不关注session的全局负载，当多个channel共用session 时 balance 需考虑Queue.size的作为指标进行balance的实现
  *
  * @author William.d.zk
  */
 public interface ISession
-        extends Queue<IPacket>,
-                Closeable,
-                IAddress,
-                IValid,
-                IConnectMode,
-                IReadable<ISession>,
-                IWritable<ISession>,
-                Comparable<ISession>
-{
-    boolean isMultiBind();
+    extends Queue<IPacket>,
+        Closeable,
+        IAddress,
+        IValid,
+        IConnectMode,
+        IReadable<ISession>,
+        IWritable<ISession>,
+        Comparable<ISession> {
+  boolean isMultiBind();
 
-    long[] bindIndex();
+  long[] bindIndex();
 
-    void bindIndex(long index);
+  void bindIndex(long index);
 
-    void unbindIndex(long index);
+  void unbindIndex(long index);
 
-    long prefix(long index);
+  long prefix(long index);
 
-    long index();
+  long index();
 
-    void index(long index);
+  void index(long index);
 
-    Channel getChannel();
+  Channel getChannel();
 
-    <T extends IPContext> T getContext();
+  <T extends IPContext> T getContext();
 
-    <T extends IPContext> T getContext(Class<T> clazz);
+  <T extends IPContext> T getContext(Class<T> clazz);
 
-    IDismiss getDismissCallback();
+  IDismiss getDismissCallback();
 
-    long[] getPrefixArray();
+  long[] getPrefixArray();
 
-    void bindPrefix(long prefix);
+  void bindPrefix(long prefix);
 
-    default String summary()
-    {
-        return String.format("%s->%s,closed:%s", getLocalAddress(), getRemoteAddress(), isClosed());
-    }
+  default String summary() {
+    return String.format("%s->%s,closed:%s", getLocalAddress(), getRemoteAddress(), isClosed());
+  }
 
-    boolean isClosed();
+  boolean isClosed();
 
-    int getReadTimeOutSeconds();
+  int getReadTimeOutSeconds();
 
-    /**
-     * 获取 prefix 对应的 write load
-     *
-     * @param prefix
-     * @return
-     */
-    long prefixLoad(long prefix);
+  /**
+   * 获取 prefix 对应的 write load
+   *
+   * @param prefix
+   * @return
+   */
+  long prefixLoad(long prefix);
 
-    /**
-     * 增加被选中prefix hit的记录
-     *
-     * @param prefix
-     */
-    void prefixHit(long prefix);
+  /**
+   * 增加被选中prefix hit的记录
+   *
+   * @param prefix
+   */
+  void prefixHit(long prefix);
 
-    @Override
-    default int compareTo(ISession o)
-    {
-        return Long.compare(index(), o.index());
-    }
+  @Override
+  default int compareTo(ISession o) {
+    return Long.compare(index(), o.index());
+  }
 
-    long PREFIX_MAX  = 0xFFFFL << 48;
-    long SUFFIX_MASK = (1L << 48) - 1;
+  long PREFIX_MAX = 0xFFFFL << 48;
+  long SUFFIX_MASK = (1L << 48) - 1;
 
-    default void innerClose()
-    {
-        ICloser closeOperator = getCloser();
-        closeOperator.handle("inner-close", this);
-        getDismissCallback().onDismiss(this);
-    }
+  default void innerClose() {
+    ICloser closeOperator = getCloser();
+    closeOperator.handle("inner-close", this);
+    getDismissCallback().onDismiss(this);
+  }
 
-    // 最多支持8种状态 -3~4
-    int COUNT_BITS         = Integer.SIZE - 3;
-    int CAPACITY           = (1 << COUNT_BITS) - 1;
-    int SESSION_CREATED    = -3 << COUNT_BITS;
-    int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
-    int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
-    int SESSION_PENDING    = 0;     /* 有待发数据，尚未完成编码 */
-    int SESSION_SENDING    = 1 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
-    int SESSION_FLUSHED    = 2 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
-    int SESSION_CLOSE      = 3 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
-    int SESSION_TERMINATED = 4 << COUNT_BITS;     /* 终态，清理结束 */
+  // 最多支持8种状态 -3~4
+  int COUNT_BITS = Integer.SIZE - 3;
+  int CAPACITY = (1 << COUNT_BITS) - 1;
+  int SESSION_CREATED = -3 << COUNT_BITS;
+  int SESSION_CONNECTED = -2 << COUNT_BITS; /* 只有链接成功时才会创建 ISession 和 IContext */
+  int SESSION_IDLE = -1 << COUNT_BITS; /* 处于空闲状态 */
+  int SESSION_PENDING = 0; /* 有待发数据，尚未完成编码 */
+  int SESSION_SENDING = 1 << COUNT_BITS; /* 有编码完成的数据在发送，已装入待发sending-buffer */
+  int SESSION_FLUSHED = 2 << COUNT_BITS; /* 有编码完成的数据在发送，write->wrote 事件等待 */
+  int SESSION_CLOSE = 3 << COUNT_BITS; /* 链路关闭，尚未完成清理 [any]->[close] */
+  int SESSION_TERMINATED = 4 << COUNT_BITS; /* 终态，清理结束 */
 
-    default String getSessionStateStr(int c)
-    {
-        return switch(c) {
-            case SESSION_CREATED -> "SESSION_CREATED";
-            case SESSION_CONNECTED -> "SESSION_CONNECTED";
-            case SESSION_IDLE -> "SESSION_IDLE";
-            case SESSION_PENDING -> "SESSION_PENDING";
-            case SESSION_SENDING -> "SESSION_SENDING";
-            case SESSION_FLUSHED -> "SESSION_FLUSHED";
-            case SESSION_CLOSE -> "SESSION_CLOSE";
-            case SESSION_TERMINATED -> "SESSION_TERMINATED";
-            default -> "UNKNOWN";
-        };
-    }
+  default String getSessionStateStr(int c) {
+    return switch (c) {
+      case SESSION_CREATED -> "SESSION_CREATED";
+      case SESSION_CONNECTED -> "SESSION_CONNECTED";
+      case SESSION_IDLE -> "SESSION_IDLE";
+      case SESSION_PENDING -> "SESSION_PENDING";
+      case SESSION_SENDING -> "SESSION_SENDING";
+      case SESSION_FLUSHED -> "SESSION_FLUSHED";
+      case SESSION_CLOSE -> "SESSION_CLOSE";
+      case SESSION_TERMINATED -> "SESSION_TERMINATED";
+      default -> "UNKNOWN";
+    };
+  }
 
-    static boolean isConnected(int c)
-    {
-        return c < SESSION_CLOSE;
-    }
+  static boolean isConnected(int c) {
+    return c < SESSION_CLOSE;
+  }
 
-    static boolean isClosed(int c)
-    {
-        return c >= SESSION_CLOSE;
-    }
+  static boolean isClosed(int c) {
+    return c >= SESSION_CLOSE;
+  }
 
-    ISessionFailed getError();
+  ISessionFailed getError();
 
-    ICloser getCloser();
+  ICloser getCloser();
 
-    IPipeEncoder encoder();
+  IPipeEncoder encoder();
 
-    IPipeDecoder getDecoder();
+  IPipeDecoder getDecoder();
 
-    IPipeTransfer getTransfer();
+  IPipeTransfer getTransfer();
 
-    IFilterChain getFilterChain();
+  IFilterChain getFilterChain();
 
-    IoFactory<IProtocol> getFactory();
+  IoFactory<IProtocol> getFactory();
 
-    void ready();
+  void ready();
 
-    default ISession with(IPipeTransfer transfer)
-    {
-        return this;
-    }
+  default ISession with(IPipeTransfer transfer) {
+    return this;
+  }
 }

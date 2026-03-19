@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.features.model.session;
 /**
  * @author William.d.zk
  */
-public interface IDismiss
-{
-    void onDismiss(ISession session);
+public interface IDismiss {
+  void onDismiss(ISession session);
 }

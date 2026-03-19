@@ -29,52 +29,43 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.X1D_PlainText;
 import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X70_RaftVote;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.content.ZResponse;
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-
 /**
  * @author william.d.zk
  */
 @RestController("audience/client")
-public class ConsumerController
-{
-    private final ClientPool _ClientPool;
-    private final Client     _Client;
+public class ConsumerController {
+  private final ClientPool _ClientPool;
+  private final Client _Client;
 
-    @Autowired
-    ConsumerController(ClientPool pool, Client client)
-    {
-        _ClientPool = pool;
-        _Client = client;
-    }
+  @Autowired
+  ConsumerController(ClientPool pool, Client client) {
+    _ClientPool = pool;
+    _Client = client;
+  }
 
-    @GetMapping("/zchat")
-    public ZResponse<?> zchat_connect() throws IOException
-    {
-        _ClientPool.connect(ZSortHolder.Z_CLUSTER_SYMMETRY, _Client);
-        return ZResponse.success("connect");
-    }
+  @GetMapping("/zchat")
+  public ZResponse<?> zchat_connect() throws IOException {
+    _ClientPool.connect(ZSortHolder.Z_CLUSTER_SYMMETRY, _Client);
+    return ZResponse.success("connect");
+  }
 
-    @GetMapping("/zchat/send")
-    public ZResponse<?> zchat_send(
-            @RequestParam(name = "output")
-                    String output)
-    {
-        _ClientPool.sendLocal(_Client.getSession(), new X1D_PlainText().setText(output));
-        return ZResponse.success("send");
-    }
+  @GetMapping("/zchat/send")
+  public ZResponse<?> zchat_send(@RequestParam(name = "output") String output) {
+    _ClientPool.sendLocal(_Client.getSession(), new X1D_PlainText().setText(output));
+    return ZResponse.success("send");
+  }
 
-    @GetMapping("/zchat/raft/x70")
-    public ZResponse<?> zchat_x70()
-    {
-        X70_RaftVote x70 = new X70_RaftVote(System.currentTimeMillis());
-        x70.candidate(0x9231234234ADL);
-        _ClientPool.sendLocal(_Client.getSession(), x70);
-        return ZResponse.success("x70");
-    }
-
+  @GetMapping("/zchat/raft/x70")
+  public ZResponse<?> zchat_x70() {
+    X70_RaftVote x70 = new X70_RaftVote(System.currentTimeMillis());
+    x70.candidate(0x9231234234ADL);
+    _ClientPool.sendLocal(_Client.getSession(), x70);
+    return ZResponse.success("x70");
+  }
 }

@@ -30,9 +30,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface ISerialGenerator
-{
-    int parent();
+public @interface ISerialGenerator {
+  int parent();
 
-    int serial() default -1;
+  int serial() default -1;
 }

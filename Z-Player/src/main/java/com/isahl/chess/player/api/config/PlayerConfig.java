@@ -27,35 +27,33 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-/**
- * Player 模块配置类
- */
+/** Player 模块配置类 */
 @PropertySource("classpath:player.properties")
 @Configuration("player_config")
 public class PlayerConfig {
 
-    @Value("${bidding.rpa.api.url}")
-    private String biddingRpaApiUrl;
+  @Value("${bidding.rpa.api.url}")
+  private String biddingRpaApiUrl;
 
-    @Value("${bidding.cancel.api.url}")
-    private String cancelRpaApiUrl;
+  @Value("${bidding.cancel.api.url}")
+  private String cancelRpaApiUrl;
 
-    @Value("${bidding.task.booking.disable:true}")
-    private Boolean disableBooking;
+  @Value("${bidding.task.booking.disable:true}")
+  private Boolean disableBooking;
 
-    public String getBiddingRpaApiUrl() {
-        return biddingRpaApiUrl;
-    }
+  public String getBiddingRpaApiUrl() {
+    return biddingRpaApiUrl;
+  }
 
-    public String getCancelRpaApiUrl() {
-        return cancelRpaApiUrl;
-    }
+  public String getCancelRpaApiUrl() {
+    return cancelRpaApiUrl;
+  }
 
-    public Boolean getDisableBooking() {
-        return disableBooking;
-    }
+  public Boolean getDisableBooking() {
+    return disableBooking;
+  }
 
-    public static final int TIMEOUT = 5 * 1000;
+  public static final int TIMEOUT = 5 * 1000;
 
-    public static final int SLEEP_INTERVAL = 30 * 1000;
+  public static final int SLEEP_INTERVAL = 30 * 1000;
 }

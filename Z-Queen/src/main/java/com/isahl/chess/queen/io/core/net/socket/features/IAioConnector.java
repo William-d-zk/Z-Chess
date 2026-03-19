@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.cron.features.ITask;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
-
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
@@ -35,23 +34,16 @@ import java.nio.channels.CompletionHandler;
  * @author william.d.zk
  */
 public interface IAioConnector
-        extends CompletionHandler<Void, AsynchronousSocketChannel>,
-                IAioConnection,
-                ITask,
-                ISslOption
-{
-    @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, OperateType.CONNECTED, channel);
-    }
+    extends CompletionHandler<Void, AsynchronousSocketChannel>, IAioConnection, ITask, ISslOption {
+  @Override
+  default void completed(Void result, AsynchronousSocketChannel channel) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    worker.publishConnected(getConnectedOperator(), this, OperateType.CONNECTED, channel);
+  }
 
-    @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnectingError(getErrorOperator(), exc, this);
-    }
-
+  @Override
+  default void failed(Throwable exc, AsynchronousSocketChannel channel) {
+    AioWorker worker = (AioWorker) Thread.currentThread();
+    worker.publishConnectingError(getErrorOperator(), exc, this);
+  }
 }

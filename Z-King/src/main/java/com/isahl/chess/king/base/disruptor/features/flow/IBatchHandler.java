@@ -30,28 +30,24 @@ import com.isahl.chess.king.base.disruptor.features.event.IEvent;
  * @author william.d.zk
  * @date 2021/07/27
  */
-public interface IBatchHandler<T extends IEvent>
-{
-    IHealth _Health();
+public interface IBatchHandler<T extends IEvent> {
+  IHealth _Health();
 
-    default void onBatchStart(long start)
-    {
-        IHealth health = _Health();
-        if(health.isEnabled()) {
-            health.collectOn(start);
-        }
+  default void onBatchStart(long start) {
+    IHealth health = _Health();
+    if (health.isEnabled()) {
+      health.collectOn(start);
     }
+  }
 
-    void onEvent(T event, long sequence) throws Exception;
+  void onEvent(T event, long sequence) throws Exception;
 
-    default void onBatchComplete(long end)
-    {
-        IHealth health = _Health();
-        if(health.isEnabled()) {
-            health.collectOff(end);
-        }
+  default void onBatchComplete(long end) {
+    IHealth health = _Health();
+    if (health.isEnabled()) {
+      health.collectOff(end);
     }
+  }
 
-    default void onTimeout(long sequence)
-    {}
+  default void onTimeout(long sequence) {}
 }

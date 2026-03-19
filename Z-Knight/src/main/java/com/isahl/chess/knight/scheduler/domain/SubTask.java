@@ -24,126 +24,103 @@
 package com.isahl.chess.knight.scheduler.domain;
 
 import jakarta.persistence.*;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "scheduler_sub_task")
-public class SubTask
-{
-    @Id
-    private String subTaskId;
+public class SubTask {
+  @Id private String subTaskId;
 
-    @Column(nullable = false)
-    private String taskId;
+  @Column(nullable = false)
+  private String taskId;
 
-    @Column
-    private String targetNode;
+  @Column private String targetNode;
 
-    @Column(length = 4096)
-    private String payload;
+  @Column(length = 4096)
+  private String payload;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SubTaskStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private SubTaskStatus status;
 
-    @Column(length = 4096)
-    private String result;
+  @Column(length = 4096)
+  private String result;
 
-    @Column(nullable = false)
-    private int retryCount;
+  @Column(nullable = false)
+  private int retryCount;
 
-    @Column
-    private Instant startedAt;
+  @Column private Instant startedAt;
 
-    @Column
-    private Instant completedAt;
+  @Column private Instant completedAt;
 
-    public SubTask()
-    {
-    }
+  public SubTask() {}
 
-    public SubTask(String taskId, String targetNode, String payload)
-    {
-        this.subTaskId = java.util.UUID.randomUUID().toString();
-        this.taskId = taskId;
-        this.targetNode = targetNode;
-        this.payload = payload;
-        this.status = SubTaskStatus.PENDING;
-        this.retryCount = 0;
-    }
+  public SubTask(String taskId, String targetNode, String payload) {
+    this.subTaskId = java.util.UUID.randomUUID().toString();
+    this.taskId = taskId;
+    this.targetNode = targetNode;
+    this.payload = payload;
+    this.status = SubTaskStatus.PENDING;
+    this.retryCount = 0;
+  }
 
-    public void markRunning()
-    {
-        this.status = SubTaskStatus.RUNNING;
-        this.startedAt = Instant.now();
-    }
+  public void markRunning() {
+    this.status = SubTaskStatus.RUNNING;
+    this.startedAt = Instant.now();
+  }
 
-    public void markComplete(String result)
-    {
-        this.status = SubTaskStatus.COMPLETE;
-        this.result = result;
-        this.completedAt = Instant.now();
-    }
+  public void markComplete(String result) {
+    this.status = SubTaskStatus.COMPLETE;
+    this.result = result;
+    this.completedAt = Instant.now();
+  }
 
-    public void markFailed()
-    {
-        this.status = SubTaskStatus.FAILED;
-        this.completedAt = Instant.now();
-    }
+  public void markFailed() {
+    this.status = SubTaskStatus.FAILED;
+    this.completedAt = Instant.now();
+  }
 
-    public String getSubTaskId()
-    {
-        return subTaskId;
-    }
+  public String getSubTaskId() {
+    return subTaskId;
+  }
 
-    public String getTaskId()
-    {
-        return taskId;
-    }
+  public String getTaskId() {
+    return taskId;
+  }
 
-    public String getTargetNode()
-    {
-        return targetNode;
-    }
+  public String getTargetNode() {
+    return targetNode;
+  }
 
-    public void setTargetNode(String targetNode)
-    {
-        this.targetNode = targetNode;
-    }
+  public void setTargetNode(String targetNode) {
+    this.targetNode = targetNode;
+  }
 
-    public String getPayload()
-    {
-        return payload;
-    }
+  public String getPayload() {
+    return payload;
+  }
 
-    public void setPayload(String payload)
-    {
-        this.payload = payload;
-    }
+  public void setPayload(String payload) {
+    this.payload = payload;
+  }
 
-    public SubTaskStatus getStatus()
-    {
-        return status;
-    }
+  public SubTaskStatus getStatus() {
+    return status;
+  }
 
-    public String getResult()
-    {
-        return result;
-    }
+  public String getResult() {
+    return result;
+  }
 
-    public int getRetryCount()
-    {
-        return retryCount;
-    }
+  public int getRetryCount() {
+    return retryCount;
+  }
 
-    public Instant getStartedAt()
-    {
-        return startedAt;
-    }
+  public Instant getStartedAt() {
+    return startedAt;
+  }
 
-    public Instant getCompletedAt()
-    {
-        return completedAt;
-    }
+  public Instant getCompletedAt() {
+    return completedAt;
+  }
 }

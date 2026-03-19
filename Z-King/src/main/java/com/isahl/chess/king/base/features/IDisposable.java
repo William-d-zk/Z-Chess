@@ -27,15 +27,10 @@ package com.isahl.chess.king.base.features;
  * @author william.d.zk
  * @date 2016-06-01
  */
-public interface IDisposable
-{
-    default void dispose()
-    {
-    }
+public interface IDisposable {
+  default void dispose() {}
 
-    default boolean isDisposable()
-    {
-        return true;
-    }
-
+  default boolean isDisposable() {
+    return true;
+  }
 }

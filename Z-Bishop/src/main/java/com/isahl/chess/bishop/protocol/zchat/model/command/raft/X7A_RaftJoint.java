@@ -32,116 +32,88 @@ import com.isahl.chess.queen.io.core.features.cluster.IConsistent;
 /**
  * @author william.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL,
-                  serial = 0x7A)
-public class X7A_RaftJoint
-        extends ZCommand
-        implements IConsistent
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_COMMAND_SERIAL, serial = 0x7A)
+public class X7A_RaftJoint extends ZCommand implements IConsistent {
 
-    public X7A_RaftJoint()
-    {
-        super();
-    }
+  public X7A_RaftJoint() {
+    super();
+  }
 
-    public X7A_RaftJoint(long msgId)
-    {
-        super(msgId);
-    }
+  public X7A_RaftJoint(long msgId) {
+    super(msgId);
+  }
 
-    private long mPeer;
-    private long mIndex;
-    private long mOrigin;
-    private int  mCode;
+  private long mPeer;
+  private long mIndex;
+  private long mOrigin;
+  private int mCode;
 
-    @Override
-    public int priority()
-    {
-        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
-    }
+  @Override
+  public int priority() {
+    return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.AT_LEAST_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.AT_LEAST_ONCE;
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("X7A_RaftJoint { answer:%d, peer:%#x, origin:%#x, code:%d}",
-                             mIndex,
-                             mPeer,
-                             mOrigin,
-                             mCode);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X7A_RaftJoint { answer:%d, peer:%#x, origin:%#x, code:%d}", mIndex, mPeer, mOrigin, mCode);
+  }
 
-    public void origin(long origin)
-    {
-        mOrigin = origin;
-    }
+  public void origin(long origin) {
+    mOrigin = origin;
+  }
 
-    public long origin()
-    {
-        return mOrigin;
-    }
+  public long origin() {
+    return mOrigin;
+  }
 
-    @Override
-    public int code()
-    {
-        return mCode;
-    }
+  @Override
+  public int code() {
+    return mCode;
+  }
 
-    public void code(int code)
-    {
-        mCode = code;
-    }
+  public void code(int code) {
+    mCode = code;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putLong(mPeer)
-                    .putLong(mIndex)
-                    .putLong(mOrigin)
-                    .putInt(mCode);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putLong(mPeer).putLong(mIndex).putLong(mOrigin).putInt(mCode);
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mPeer = input.getLong();
-        mIndex = input.getLong();
-        mOrigin = input.getLong();
-        mCode = input.getInt();
-        return remain - 28;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mPeer = input.getLong();
+    mIndex = input.getLong();
+    mOrigin = input.getLong();
+    mCode = input.getInt();
+    return remain - 28;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 28;
-    }
+  @Override
+  public int length() {
+    return super.length() + 28;
+  }
 
-    public long peer()
-    {
-        return mPeer;
-    }
+  public long peer() {
+    return mPeer;
+  }
 
-    public void peer(long peer)
-    {
-        mPeer = peer;
-    }
+  public void peer(long peer) {
+    mPeer = peer;
+  }
 
-    public long index()
-    {
-        return mIndex;
-    }
+  public long index() {
+    return mIndex;
+  }
 
-    public void index(long index)
-    {
-        this.mIndex = index;
-    }
-
+  public void index(long index) {
+    this.mIndex = index;
+  }
 }

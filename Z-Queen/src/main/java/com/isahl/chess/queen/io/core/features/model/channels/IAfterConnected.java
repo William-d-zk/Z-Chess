@@ -31,10 +31,8 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  *
  * @author william.d.zk
  */
-public interface IAfterConnected
-{
-    default ITriple afterConnected(ISession session)
-    {
-        return null;
-    }
+public interface IAfterConnected {
+  default ITriple afterConnected(ISession session) {
+    return null;
+  }
 }

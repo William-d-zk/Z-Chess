@@ -28,97 +28,78 @@ import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.util.IoUtil;
-
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x04)
-public class X04_EncryptConfirm
-        extends ZControl
-{
-    private int mCode;
-    private int mSymmetricKeyId;
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x04)
+public class X04_EncryptConfirm extends ZControl {
+  private int mCode;
+  private int mSymmetricKeyId;
 
-    public byte[] getSign()
-    {
-        return mPayload;
-    }
+  public byte[] getSign() {
+    return mPayload;
+  }
 
-    public void setSign(byte[] sign)
-    {
-        mPayload = sign;
-    }
+  public void setSign(byte[] sign) {
+    mPayload = sign;
+  }
 
-    @Override
-    public int length()
-    {
-        return super.length() + 6;
-    }
+  @Override
+  public int length() {
+    return super.length() + 6;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output, ZContext ctx)
-    {
-        Objects.requireNonNull(ctx)
-               .promotionOut();
-        return output;
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output, ZContext ctx) {
+    Objects.requireNonNull(ctx).promotionOut();
+    return output;
+  }
 
-    @Override
-    public void fold(ZContext ctx)
-    {
-        Objects.requireNonNull(ctx)
-               .promotionIn();
-    }
+  @Override
+  public void fold(ZContext ctx) {
+    Objects.requireNonNull(ctx).promotionIn();
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mCode = input.getInt();
-        mSymmetricKeyId = input.getUnsignedShort();
-        return remain - 6;
-    }
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mCode = input.getInt();
+    mSymmetricKeyId = input.getUnsignedShort();
+    return remain - 6;
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .putInt(mCode)
-                    .putShort(mSymmetricKeyId);
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).putInt(mCode).putShort(mSymmetricKeyId);
+  }
 
-    @Override
-    public String toString()
-    {
-        return String.format("%s\ncode:%s,rc4-key: %d ,sign: %s", super.toString(), mCode, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "%s\ncode:%s,rc4-key: %d ,sign: %s",
+        super.toString(), mCode, mSymmetricKeyId, IoUtil.bin2Hex(mPayload));
+  }
 
-    public int getCode()
-    {
-        return mCode;
-    }
+  public int getCode() {
+    return mCode;
+  }
 
-    public void setCode(int code)
-    {
-        mCode = code;
-    }
+  public void setCode(int code) {
+    mCode = code;
+  }
 
-    public int getSymmetricKeyId()
-    {
-        return mSymmetricKeyId;
-    }
+  public int getSymmetricKeyId() {
+    return mSymmetricKeyId;
+  }
 
-    public void setSymmetricKeyId(int symmetricKeyId)
-    {
-        mSymmetricKeyId = symmetricKeyId;
-    }
+  public void setSymmetricKeyId(int symmetricKeyId) {
+    mSymmetricKeyId = symmetricKeyId;
+  }
 
-    @Override
-    public Level level()
-    {
-        return Level.EXACTLY_ONCE;
-    }
+  @Override
+  public Level level() {
+    return Level.EXACTLY_ONCE;
+  }
 }

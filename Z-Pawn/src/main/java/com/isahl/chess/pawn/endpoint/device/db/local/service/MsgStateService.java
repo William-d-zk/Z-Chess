@@ -23,20 +23,19 @@
 
 package com.isahl.chess.pawn.endpoint.device.db.local.service;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+
 import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
 import com.isahl.chess.pawn.endpoint.device.db.local.repository.IMsgStateRepository;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import javax.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import javax.cache.CacheManager;
-import java.time.Duration;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
@@ -44,53 +43,42 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * @since 2025-09-18
  */
 @Service
-public class MsgStateService
-{
-    private final IMsgStateRepository _MsgStateRepository;
-    private final CacheManager        _CacheManager;
+public class MsgStateService {
+  private final IMsgStateRepository _MsgStateRepository;
+  private final CacheManager _CacheManager;
 
-    @Autowired
-    public MsgStateService(IMsgStateRepository msgStateRepository, CacheManager cacheManager)
-    {
-        _MsgStateRepository = msgStateRepository;
-        _CacheManager = cacheManager;
-    }
+  @Autowired
+  public MsgStateService(IMsgStateRepository msgStateRepository, CacheManager cacheManager) {
+    _MsgStateRepository = msgStateRepository;
+    _CacheManager = cacheManager;
+  }
 
-    @PostConstruct
-    void initCache() throws ClassNotFoundException, InstantiationException, IllegalAccessException
-    {
-        EhcacheConfig.createCache(_CacheManager,
-                                  "msg_local_cache",
-                                  String.class,
-                                  MsgStateEntity.class,
-                                  Duration.of(2, MINUTES));
-    }
+  @PostConstruct
+  void initCache() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    EhcacheConfig.createCache(
+        _CacheManager,
+        "msg_local_cache",
+        String.class,
+        MsgStateEntity.class,
+        Duration.of(2, MINUTES));
+  }
 
-    @Cacheable(condition = "#p0 != null",
-               key = "#p0",
-               unless = "#result == null",
-               value = "msg_local_cache")
-    public MsgStateEntity getMsgStateEntity(String id)
-    {
-        return _MsgStateRepository.findById(id)
-                                  .orElse(null);
-    }
+  @Cacheable(
+      condition = "#p0 != null",
+      key = "#p0",
+      unless = "#result == null",
+      value = "msg_local_cache")
+  public MsgStateEntity getMsgStateEntity(String id) {
+    return _MsgStateRepository.findById(id).orElse(null);
+  }
 
-    @CachePut(condition = "#p0 != null",
-              value = "msg_local_cache",
-              key = "#p0.getId()")
-    public void setMsgStateEntity(MsgStateEntity msgStateEntity)
-    {
-        _MsgStateRepository.save(msgStateEntity);
-    }
+  @CachePut(condition = "#p0 != null", value = "msg_local_cache", key = "#p0.getId()")
+  public void setMsgStateEntity(MsgStateEntity msgStateEntity) {
+    _MsgStateRepository.save(msgStateEntity);
+  }
 
-    @CacheEvict(condition = "#p0 != null",
-                value = "msg_local_cache",
-                key = "#p0")
-    public void deleteMsgStateEntity(String id)
-    {
-        _MsgStateRepository.deleteById(id);
-    }
-
-
+  @CacheEvict(condition = "#p0 != null", value = "msg_local_cache", key = "#p0")
+  public void deleteMsgStateEntity(String id) {
+    _MsgStateRepository.deleteById(id);
+  }
 }

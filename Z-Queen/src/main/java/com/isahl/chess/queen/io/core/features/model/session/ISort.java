@@ -32,57 +32,53 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeDecoder;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 
 /**
- * @author william.d.zk
- * 基于通讯协议的Pipeline 固有模式分类
+ * @author william.d.zk 基于通讯协议的Pipeline 固有模式分类
  */
-public interface ISort
-{
+public interface ISort {
 
-    enum Mode
-    {
-        CLUSTER,
-        LINK
+  enum Mode {
+    CLUSTER,
+    LINK
+  }
+
+  enum Type {
+    CLIENT(ZUID.TYPE_CONSUMER),
+    SERVER(ZUID.TYPE_PROVIDER),
+    SYMMETRY(ZUID.TYPE_CLUSTER),
+    INNER(ZUID.TYPE_INTERNAL);
+
+    private final long _Prefix;
+
+    Type(long prefix) {
+      _Prefix = prefix;
     }
 
-    enum Type
-    {
-        CLIENT(ZUID.TYPE_CONSUMER),
-        SERVER(ZUID.TYPE_PROVIDER),
-        SYMMETRY(ZUID.TYPE_CLUSTER),
-        INNER(ZUID.TYPE_INTERNAL);
-
-        private final long _Prefix;
-
-        Type(long prefix) {_Prefix = prefix;}
-
-        public long prefix() {return _Prefix;}
+    public long prefix() {
+      return _Prefix;
     }
+  }
 
-    /**
-     * 用于区分当前处理过程属于哪个Pipeline
-     */
-    Mode getMode();
+  /** 用于区分当前处理过程属于哪个Pipeline */
+  Mode getMode();
 
-    /**
-     * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
-     */
-    Type getType();
+  /** 用于区分 IO 的角色，是服务端还是客户端，或者是对称式 */
+  Type getType();
 
-    IPipeEncoder getEncoder();
+  IPipeEncoder getEncoder();
 
-    IPipeDecoder getDecoder();
+  IPipeDecoder getDecoder();
 
-    ICloser getCloser();
+  ICloser getCloser();
 
-    ISessionFailed getError();
+  ISessionFailed getError();
 
-    IFilterChain getFilterChain();
+  IFilterChain getFilterChain();
 
-    SessionIgnore getIgnore();
+  SessionIgnore getIgnore();
 
-    String getProtocol();
+  String getProtocol();
 
-    IoFactory<IProtocol> getFactory();
+  IoFactory<IProtocol> getFactory();
 
-    IoFactory<IProtocol> _SelectFactory();
+  IoFactory<IProtocol> _SelectFactory();
 }

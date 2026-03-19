@@ -26,14 +26,11 @@ package com.isahl.chess.queen.io.core.features.model.routes;
 /**
  * @author William.d.zk
  */
-public interface IPortChannel
-{
-    /**
-     * @return 0 ignore channel dispatch operation , otherwise dispatch to
-     * target channel.
-     */
-    default int channel()
-    {
-        return 0;
-    }
+public interface IPortChannel {
+  /**
+   * @return 0 ignore channel dispatch operation , otherwise dispatch to target channel.
+   */
+  default int channel() {
+    return 0;
+  }
 }

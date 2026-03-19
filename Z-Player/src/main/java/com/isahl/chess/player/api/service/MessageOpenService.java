@@ -29,34 +29,30 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
+import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
  */
 @Service
-public class MessageOpenService
-{
-    private final Logger          _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final ILocalPublisher _Publisher;
+public class MessageOpenService {
+  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final ILocalPublisher _Publisher;
 
-    @Autowired
-    public MessageOpenService(ILocalPublisher publisher)
-    {
-        _Publisher = publisher;
-    }
+  @Autowired
+  public MessageOpenService(ILocalPublisher publisher) {
+    _Publisher = publisher;
+  }
 
-    public void submit(long deviceId, MessageDo body)
-    {
-        body.afterEncode();
-        ZChatEntity entity = new ZChatEntity();
-        entity.setMessage(body.getPayload());
-        entity.setTopic(body.getTopic());
-        entity.setOrigin(deviceId);
-        entity.setNetAt(LocalDateTime.now());
-        _Publisher.publish(OperateType.SERVICE, null, Pair.of(entity, null));
-    }
+  public void submit(long deviceId, MessageDo body) {
+    body.afterEncode();
+    ZChatEntity entity = new ZChatEntity();
+    entity.setMessage(body.getPayload());
+    entity.setTopic(body.getTopic());
+    entity.setOrigin(deviceId);
+    entity.setNetAt(LocalDateTime.now());
+    _Publisher.publish(OperateType.SERVICE, null, Pair.of(entity, null));
+  }
 }

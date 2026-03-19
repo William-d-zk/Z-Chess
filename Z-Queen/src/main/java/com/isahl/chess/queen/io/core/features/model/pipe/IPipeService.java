@@ -25,18 +25,11 @@ package com.isahl.chess.queen.io.core.features.model.pipe;
 import com.isahl.chess.king.base.disruptor.features.functions.IOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-
 import java.util.List;
 
 /**
  * @author william.d.zk
- * @since 2024-03-26
- * IoSerial → decoded input 「IoSerial」 content
- * ISession
- * List of ITriple fst:protocol snd:session thr:encoder
+ * @since 2024-03-26 IoSerial → decoded input 「IoSerial」 content ISession List of ITriple
+ *     fst:protocol snd:session thr:encoder
  */
-public interface IPipeService
-        extends IOperator<IoSerial, List<ITriple>>
-{
-
-}
+public interface IPipeService extends IOperator<IoSerial, List<ITriple>> {}

@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface ISerialFactory
-{
-    int serial() default -1;
+public @interface ISerialFactory {
+  int serial() default -1;
 }

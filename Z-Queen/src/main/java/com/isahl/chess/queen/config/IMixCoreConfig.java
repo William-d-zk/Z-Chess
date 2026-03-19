@@ -24,49 +24,44 @@
 package com.isahl.chess.queen.config;
 
 /**
- * 由于主Pipeline 使用了disruptor 的 RingBuffer
- * 所以有些参数直接使用 __Power 直接设定RingBuffer的 _SIZE
+ * 由于主Pipeline 使用了disruptor 的 RingBuffer 所以有些参数直接使用 __Power 直接设定RingBuffer的 _SIZE
  *
  * @author william.d.zk
  * @date 2017/02/10
  */
-public interface IMixCoreConfig
-        extends IClusterConfig
-{
+public interface IMixCoreConfig extends IClusterConfig {
 
-    /**
-     * 用户处理订阅服务的处理单元数
-     *
-     * @return
-     */
-    int getBizIoCountPower();
+  /**
+   * 用户处理订阅服务的处理单元数
+   *
+   * @return
+   */
+  int getBizIoCountPower();
 
-    /**
-     * Local 相关处理队列的阶乘数
-     *
-     * @return
-     */
-    int getLocalQueueSizePower();
+  /**
+   * Local 相关处理队列的阶乘数
+   *
+   * @return
+   */
+  int getLocalQueueSizePower();
 
-    /**
-     * Link 相关处理队列的阶乘数
-     *
-     * @return
-     */
-    int getLinkQueueSizePower();
+  /**
+   * Link 相关处理队列的阶乘数
+   *
+   * @return
+   */
+  int getLinkQueueSizePower();
 
-    default int getPoolSize()
-    {
-        return 1 // io-dispatch
-               + (1 << getDecoderCountPower()) // read-decode
-               + (1 << getLogicCountPower())// logic-processor
-               + 1 // decoded-dispatch
-               + 1 // cluster-single
-               + 1 // link-single
-               + 1 // write-dispatch
-               + (1 << getEncoderCountPower())// write-encode
-               + 1 // encoded-processor [write-end]
-                ;
-    }
-
+  default int getPoolSize() {
+    return 1 // io-dispatch
+        + (1 << getDecoderCountPower()) // read-decode
+        + (1 << getLogicCountPower()) // logic-processor
+        + 1 // decoded-dispatch
+        + 1 // cluster-single
+        + 1 // link-single
+        + 1 // write-dispatch
+        + (1 << getEncoderCountPower()) // write-encode
+        + 1 // encoded-processor [write-end]
+    ;
+  }
 }

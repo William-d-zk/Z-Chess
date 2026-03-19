@@ -24,33 +24,31 @@
 package com.isahl.chess.queen.io.core.features.model.channels;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-
 import java.nio.channels.CompletionHandler;
 
 /**
  * @author William.d.zk
  */
-public interface IReadable<A>
-{
-    /**
-     * register new read completion event handler
-     *
-     * @param completionHandler
-     */
-    void readNext(CompletionHandler<Integer, A> completionHandler) throws IllegalStateException;
+public interface IReadable<A> {
+  /**
+   * register new read completion event handler
+   *
+   * @param completionHandler
+   */
+  void readNext(CompletionHandler<Integer, A> completionHandler) throws IllegalStateException;
 
-    /**
-     * read next
-     *
-     * @throws IllegalStateException
-     */
-    void readNext() throws IllegalStateException;
+  /**
+   * read next
+   *
+   * @throws IllegalStateException
+   */
+  void readNext() throws IllegalStateException;
 
-    /**
-     * read bytes from received buffer
-     *
-     * @param length
-     * @return receiver
-     */
-    ByteBuf read(int length);
+  /**
+   * read bytes from received buffer
+   *
+   * @param length
+   * @return receiver
+   */
+  ByteBuf read(int length);
 }

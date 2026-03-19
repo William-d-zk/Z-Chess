@@ -29,13 +29,12 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
  * @author william.d.zk
  * @date 2020/3/25
  */
-public interface IClusterPeer
-{
-    long peerId();
+public interface IClusterPeer {
+  long peerId();
 
-    long generateId();
+  long generateId();
 
-    long generateIdWithType(ISort.Type type);
+  long generateIdWithType(ISort.Type type);
 
-    boolean isInCongress();
+  boolean isInCongress();
 }

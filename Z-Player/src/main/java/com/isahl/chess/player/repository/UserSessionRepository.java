@@ -25,22 +25,19 @@ package com.isahl.chess.player.repository;
 
 import com.isahl.chess.player.domain.UserSession;
 import com.isahl.chess.rook.storage.db.repository.BaseLongRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserSessionRepository
-        extends BaseLongRepository<UserSession>
-{
-    Optional<UserSession> findBySessionToken(String sessionToken);
+public interface UserSessionRepository extends BaseLongRepository<UserSession> {
+  Optional<UserSession> findBySessionToken(String sessionToken);
 
-    List<UserSession> findByUserIdAndActiveTrue(Long userId);
+  List<UserSession> findByUserIdAndActiveTrue(Long userId);
 
-    List<UserSession> findByUserId(Long userId);
+  List<UserSession> findByUserId(Long userId);
 
-    void deleteByUserId(Long userId);
+  void deleteByUserId(Long userId);
 
-    void deleteBySessionToken(String sessionToken);
+  void deleteBySessionToken(String sessionToken);
 }

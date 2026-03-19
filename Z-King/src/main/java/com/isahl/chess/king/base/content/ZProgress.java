@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.cron.Status;
-
 import java.io.Serializable;
 
 /**
@@ -36,66 +35,52 @@ import java.io.Serializable;
  * @date 2020/7/7
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ZProgress
-        implements Serializable
-{
-    private final long _Size;
+public class ZProgress implements Serializable {
+  private final long _Size;
 
-    private Progress progress = Progress.NA;
-    private Status   status   = Status.CREATED;
-    private long     count;
-    private boolean  exist;
+  private Progress progress = Progress.NA;
+  private Status status = Status.CREATED;
+  private long count;
+  private boolean exist;
 
-    @JsonCreator
-    public ZProgress(
-            @JsonProperty("size")
-                    long size)
-    {
-        _Size = size;
-    }
+  @JsonCreator
+  public ZProgress(@JsonProperty("size") long size) {
+    _Size = size;
+  }
 
-    public Status getStatus()
-    {
-        return status;
-    }
+  public Status getStatus() {
+    return status;
+  }
 
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
+  public void setStatus(Status status) {
+    this.status = status;
+  }
 
-    public long getCount()
-    {
-        return count;
-    }
+  public long getCount() {
+    return count;
+  }
 
-    public void setCount(long count)
-    {
-        this.count = count;
-    }
+  public void setCount(long count) {
+    this.count = count;
+  }
 
-    public long getSize()
-    {
-        return _Size;
-    }
+  public long getSize() {
+    return _Size;
+  }
 
-    public boolean isExist()
-    {
-        return exist;
-    }
+  public boolean isExist() {
+    return exist;
+  }
 
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
+  public void setExist(boolean exist) {
+    this.exist = exist;
+  }
 
-    public Progress getProgress()
-    {
-        return progress;
-    }
+  public Progress getProgress() {
+    return progress;
+  }
 
-    public void setProgress(Progress progress)
-    {
-        this.progress = progress;
-    }
+  public void setProgress(Progress progress) {
+    this.progress = progress;
+  }
 }

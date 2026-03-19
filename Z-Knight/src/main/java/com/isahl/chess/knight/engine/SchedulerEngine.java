@@ -26,47 +26,43 @@ package com.isahl.chess.knight.engine;
 import com.isahl.chess.knight.policy.Policy;
 import com.isahl.chess.knight.scheduler.domain.TaskResult;
 import com.isahl.chess.knight.scheduler.domain.TaskStatus;
-
 import java.util.Map;
 import java.util.Optional;
 
-public interface SchedulerEngine
-{
-    String submitTask(TaskContext context);
+public interface SchedulerEngine {
+  String submitTask(TaskContext context);
 
-    boolean cancelTask(String taskId);
+  boolean cancelTask(String taskId);
 
-    TaskStatus getTaskStatus(String taskId);
+  TaskStatus getTaskStatus(String taskId);
 
-    TaskResult getTaskResult(String taskId);
+  TaskResult getTaskResult(String taskId);
 
-    Optional<SubTaskContext> claimSubTask(String nodeId, int maxCount);
+  Optional<SubTaskContext> claimSubTask(String nodeId, int maxCount);
 
-    void reportResult(String subTaskId, String result, boolean success);
+  void reportResult(String subTaskId, String result, boolean success);
 
-    void registerPolicy(String taskType, Policy policy);
+  void registerPolicy(String taskType, Policy policy);
 
-    Policy getPolicy(String taskType);
+  Policy getPolicy(String taskType);
 
-    Map<String, Long> getPendingTaskCount();
+  Map<String, Long> getPendingTaskCount();
 
-    interface TaskContext
-    {
-        String getTaskId();
+  interface TaskContext {
+    String getTaskId();
 
-        String getTaskType();
+    String getTaskType();
 
-        String getPayload();
+    String getPayload();
 
-        int getTimeoutSeconds();
-    }
+    int getTimeoutSeconds();
+  }
 
-    interface SubTaskContext
-    {
-        String getSubTaskId();
+  interface SubTaskContext {
+    String getSubTaskId();
 
-        String getTaskId();
+    String getTaskId();
 
-        String getPayload();
-    }
+    String getPayload();
+  }
 }

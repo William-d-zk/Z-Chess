@@ -29,31 +29,27 @@ import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 /**
  * @author william.d.zk
  */
-public interface IFrame
-        extends IProtocol,
-                IQoS
-{
-    /**
-     * 虽然入参是 int ，但是仅写入单个字节，需要特别注意
-     *
-     * @param header frame-header
-     */
-    void header(int header);
+public interface IFrame extends IProtocol, IQoS {
+  /**
+   * 虽然入参是 int ，但是仅写入单个字节，需要特别注意
+   *
+   * @param header frame-header
+   */
+  void header(int header);
 
-    byte header();
+  byte header();
 
-    int lack(ByteBuf input);
+  int lack(ByteBuf input);
 
-    /**
-     * 当前指令是否为控制层指令
-     *
-     * @return yes/no
-     */
-    boolean isCtrl();
+  /**
+   * 当前指令是否为控制层指令
+   *
+   * @return yes/no
+   */
+  boolean isCtrl();
 
-    @Override
-    default int priority()
-    {
-        return QOS_PRIORITY_00_NETWORK_CONTROL;
-    }
+  @Override
+  default int priority() {
+    return QOS_PRIORITY_00_NETWORK_CONTROL;
+  }
 }

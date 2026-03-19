@@ -24,17 +24,14 @@
 package com.isahl.chess.knight.scheduler.repository;
 
 import com.isahl.chess.knight.scheduler.domain.NodeGroup;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 @Repository
-public interface NodeGroupRepository
-        extends JpaRepository<NodeGroup, String>
-{
-    Optional<NodeGroup> findByGroupName(String groupName);
+public interface NodeGroupRepository extends JpaRepository<NodeGroup, String> {
+  Optional<NodeGroup> findByGroupName(String groupName);
 
-    List<NodeGroup> findByNodeId(String nodeId);
+  List<NodeGroup> findByNodeId(String nodeId);
 }

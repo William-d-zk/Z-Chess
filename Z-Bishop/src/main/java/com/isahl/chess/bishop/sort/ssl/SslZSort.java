@@ -37,45 +37,36 @@ import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
 
-import java.security.NoSuchAlgorithmException;
+public class SslZSort<T extends IPContext> extends BaseSort<SSLZContext<T>> {
+  private static final Logger _Logger = Logger.getLogger(SslZSort.class.getSimpleName());
+  private final IAioSort<T> _ActingSort;
 
-public class SslZSort<T extends IPContext>
-        extends BaseSort<SSLZContext<T>>
-{
-    private final static Logger _Logger = Logger.getLogger(SslZSort.class.getSimpleName());
-    private final IAioSort<T> _ActingSort;
+  private final SslHandShakeFilter<SSLZContext<T>> _Head = new SslHandShakeFilter<>();
 
-    private final SslHandShakeFilter<SSLZContext<T>> _Head = new SslHandShakeFilter<>();
+  public SslZSort(ISort.Mode mode, ISort.Type type, IAioSort<T> actingSort) {
+    super(mode, type, String.format("ssl-%s", actingSort.getProtocol()), actingSort.getFactory());
+    _ActingSort = actingSort;
+    _Head.linkFront(new SSLFilter<>()).linkFront(actingSort.getFilterChain());
+  }
 
-    public SslZSort(ISort.Mode mode, ISort.Type type, IAioSort<T> actingSort)
-    {
-        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()), actingSort.getFactory());
-        _ActingSort = actingSort;
-        _Head.linkFront(new SSLFilter<>())
-             .linkFront(actingSort.getFilterChain());
+  @Override
+  public IFilterChain getFilterChain() {
+    return _Head;
+  }
+
+  @Override
+  public SSLZContext<T> newContext(INetworkOption option) {
+    try {
+      return new SSLZContext<>(
+          (ISslOption) option, getMode(), getType(), _ActingSort.newContext(option));
+    } catch (Exception e) {
+      _Logger.warning("SSL context creation failed: %s", e.getMessage());
     }
+    return null;
+  }
 
-    @Override
-    public IFilterChain getFilterChain()
-    {
-        return _Head;
-    }
-
-    @Override
-    public SSLZContext<T> newContext(INetworkOption option)
-    {
-        try {
-            return new SSLZContext<>((ISslOption) option, getMode(), getType(), _ActingSort.newContext(option));
-        }
-        catch(Exception e) {
-            _Logger.warning("SSL context creation failed: %s", e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
-    public IoFactory<IProtocol> _SelectFactory()
-    {
-        return _ActingSort._SelectFactory();
-    }
+  @Override
+  public IoFactory<IProtocol> _SelectFactory() {
+    return _ActingSort._SelectFactory();
+  }
 }

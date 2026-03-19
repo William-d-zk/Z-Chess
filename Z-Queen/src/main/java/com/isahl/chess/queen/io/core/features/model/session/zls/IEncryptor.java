@@ -28,15 +28,14 @@ import com.isahl.chess.king.base.util.Pair;
 /**
  * @author William.d.zk
  */
-public interface IEncryptor
-{
-    Pair<Integer, byte[]> getAsymmetricPubKey(int _InPubKeyId);
+public interface IEncryptor {
+  Pair<Integer, byte[]> getAsymmetricPubKey(int _InPubKeyId);
 
-    byte[] getSymmetricKey(int _InPubKeyId, byte[] encryption);
+  byte[] getSymmetricKey(int _InPubKeyId, byte[] encryption);
 
-    Pair<Integer, byte[]> getCipher(byte[] pubKey, byte[] symmetricKey);
+  Pair<Integer, byte[]> getCipher(byte[] pubKey, byte[] symmetricKey);
 
-    byte[] getSymmetricKeySign(byte[] symmetricKey);
+  byte[] getSymmetricKeySign(byte[] symmetricKey);
 
-    int nextRandomInt();
+  int nextRandomInt();
 }

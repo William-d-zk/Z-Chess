@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
  * @author William.d.zk
  */
 @FunctionalInterface
-public interface IConnectError
-{
-    IBinaryOperator<Throwable, ? extends IConnectActivity, Void> getErrorOperator();
+public interface IConnectError {
+  IBinaryOperator<Throwable, ? extends IConnectActivity, Void> getErrorOperator();
 }

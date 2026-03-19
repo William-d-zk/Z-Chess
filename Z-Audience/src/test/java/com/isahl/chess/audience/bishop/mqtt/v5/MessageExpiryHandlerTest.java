@@ -23,86 +23,85 @@
 
 package com.isahl.chess.bishop.mqtt.v5;
 
-import com.isahl.chess.bishop.protocol.mqtt.model.QttProperty;
-import com.isahl.chess.bishop.protocol.mqtt.model.QttPropertySet;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.isahl.chess.bishop.protocol.mqtt.model.QttProperty;
+import com.isahl.chess.bishop.protocol.mqtt.model.QttPropertySet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 class MessageExpiryHandlerTest {
-    
-    private MessageExpiryHandler handler;
-    
-    @BeforeEach
-    void setUp() {
-        handler = new MessageExpiryHandler();
-    }
-    
-    @Test
-    void testRegisterMessageWithExpiry() {
-        QttPropertySet propertySet = mock(QttPropertySet.class);
-        when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(60L);
-        
-        AtomicBoolean expired = new AtomicBoolean(false);
-        handler.registerMessage(propertySet, () -> expired.set(true));
-        
-        assertEquals(1, handler.getPendingCount());
-        assertFalse(expired.get());
-    }
-    
-    @Test
-    void testRegisterMessageWithoutExpiry() {
-        QttPropertySet propertySet = mock(QttPropertySet.class);
-        when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(0L);
-        
-        handler.registerMessage(propertySet, () -> {});
-        
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testRegisterMessageWithNullPropertySet() {
-        handler.registerMessage(null, () -> {});
-        
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testRegisterNullMessage() {
-        handler.registerMessage(null, () -> {});
-        
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testProcessExpiredMessages() throws InterruptedException {
-        QttPropertySet propertySet = mock(QttPropertySet.class);
-        when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(1L);
-        
-        AtomicBoolean expired = new AtomicBoolean(false);
-        handler.registerMessage(propertySet, () -> expired.set(true));
-        
-        Thread.sleep(1100);
-        
-        handler.processExpiredMessages();
-        
-        assertTrue(expired.get());
-        assertEquals(0, handler.getPendingCount());
-    }
-    
-    @Test
-    void testCleanup() {
-        QttPropertySet propertySet = mock(QttPropertySet.class);
-        when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(60L);
-        
-        handler.registerMessage(propertySet, () -> {});
-        assertEquals(1, handler.getPendingCount());
-        
-        handler.cleanup();
-        assertEquals(0, handler.getPendingCount());
-    }
+
+  private MessageExpiryHandler handler;
+
+  @BeforeEach
+  void setUp() {
+    handler = new MessageExpiryHandler();
+  }
+
+  @Test
+  void testRegisterMessageWithExpiry() {
+    QttPropertySet propertySet = mock(QttPropertySet.class);
+    when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(60L);
+
+    AtomicBoolean expired = new AtomicBoolean(false);
+    handler.registerMessage(propertySet, () -> expired.set(true));
+
+    assertEquals(1, handler.getPendingCount());
+    assertFalse(expired.get());
+  }
+
+  @Test
+  void testRegisterMessageWithoutExpiry() {
+    QttPropertySet propertySet = mock(QttPropertySet.class);
+    when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(0L);
+
+    handler.registerMessage(propertySet, () -> {});
+
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testRegisterMessageWithNullPropertySet() {
+    handler.registerMessage(null, () -> {});
+
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testRegisterNullMessage() {
+    handler.registerMessage(null, () -> {});
+
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testProcessExpiredMessages() throws InterruptedException {
+    QttPropertySet propertySet = mock(QttPropertySet.class);
+    when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(1L);
+
+    AtomicBoolean expired = new AtomicBoolean(false);
+    handler.registerMessage(propertySet, () -> expired.set(true));
+
+    Thread.sleep(1100);
+
+    handler.processExpiredMessages();
+
+    assertTrue(expired.get());
+    assertEquals(0, handler.getPendingCount());
+  }
+
+  @Test
+  void testCleanup() {
+    QttPropertySet propertySet = mock(QttPropertySet.class);
+    when(propertySet.getProperty(QttProperty.MESSAGE_EXPIRY_INTERVAL)).thenReturn(60L);
+
+    handler.registerMessage(propertySet, () -> {});
+    assertEquals(1, handler.getPendingCount());
+
+    handler.cleanup();
+    assertEquals(0, handler.getPendingCount());
+  }
 }

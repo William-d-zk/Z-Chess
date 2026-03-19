@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -23,7 +22,6 @@
  */
 
 import com.isahl.chess.king.base.util.CryptoUtil;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,39 +29,33 @@ import java.util.regex.Pattern;
  * @author william.d.zk
  * @date 2019-07-21
  */
-public class TestAccountAuth
-{
-    public static void main(String[] args)
-    {
-        CryptoUtil _CryptoUtil = new CryptoUtil();
-        System.out.println(_CryptoUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
-        String src = "\\+/#/#/\\+";
-        src = src.replaceAll("\\++", "+");
-        src = src.replaceAll("#+", "#");
-        src = src.replaceAll("(/#)+", "/#");
+public class TestAccountAuth {
+  public static void main(String[] args) {
+    CryptoUtil _CryptoUtil = new CryptoUtil();
+    System.out.println(
+        _CryptoUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
+    String src = "\\+/#/#/\\+";
+    src = src.replaceAll("\\++", "+");
+    src = src.replaceAll("#+", "#");
+    src = src.replaceAll("(/#)+", "/#");
 
-        if(Pattern.compile("#\\+|\\+#")
-                  .asPredicate()
-                  .test(src))
-        {throw new IllegalArgumentException(src);}
-        if(!Pattern.compile("(/\\+)$")
-                   .asPredicate()
-                   .test(src) && !Pattern.compile("^\\+")
-                                         .asPredicate()
-                                         .test(src))
-        {
-            src = src.replaceAll("(\\+)$", "");
-        }
-        src = src.replaceAll("^\\+", "([^\\$/]+)");
-        src = src.replaceAll("(/\\+)$", "(/?[^/]*)");
-        src = src.replaceAll("/\\+", "/([^/]+)");
-        src = src.replaceAll("^#", "([^\\$]*)");
-        src = src.replaceAll("^/#", "(/.*)");
-        src = src.replaceAll("/#", "(/?.*)");
-        System.out.println(src);
-        Pattern pattern = Pattern.compile(src);
-        System.out.printf("pattern:%s%n", pattern);
-        Matcher matcher = pattern.matcher("a/b/c");
-        System.out.printf("match:%s%n", matcher.matches() ? matcher.group() : "no matcher");
+    if (Pattern.compile("#\\+|\\+#").asPredicate().test(src)) {
+      throw new IllegalArgumentException(src);
     }
+    if (!Pattern.compile("(/\\+)$").asPredicate().test(src)
+        && !Pattern.compile("^\\+").asPredicate().test(src)) {
+      src = src.replaceAll("(\\+)$", "");
+    }
+    src = src.replaceAll("^\\+", "([^\\$/]+)");
+    src = src.replaceAll("(/\\+)$", "(/?[^/]*)");
+    src = src.replaceAll("/\\+", "/([^/]+)");
+    src = src.replaceAll("^#", "([^\\$]*)");
+    src = src.replaceAll("^/#", "(/.*)");
+    src = src.replaceAll("/#", "(/?.*)");
+    System.out.println(src);
+    Pattern pattern = Pattern.compile(src);
+    System.out.printf("pattern:%s%n", pattern);
+    Matcher matcher = pattern.matcher("a/b/c");
+    System.out.printf("match:%s%n", matcher.matches() ? matcher.group() : "no matcher");
+  }
 }

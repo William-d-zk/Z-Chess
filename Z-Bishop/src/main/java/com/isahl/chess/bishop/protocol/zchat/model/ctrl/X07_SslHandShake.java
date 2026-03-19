@@ -26,79 +26,66 @@ package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-
-import javax.net.ssl.SSLEngineResult;
 import java.nio.charset.StandardCharsets;
+import javax.net.ssl.SSLEngineResult;
 
-@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL,
-                  serial = 0x07)
-public class X07_SslHandShake
-        extends ZControl
-{
+@ISerialGenerator(parent = ISerial.PROTOCOL_BISHOP_CONTROL_SERIAL, serial = 0x07)
+public class X07_SslHandShake extends ZControl {
 
-    public X07_SslHandShake()
-    {
-        super();
+  public X07_SslHandShake() {
+    super();
+  }
+
+  private byte mHandshakeStatus;
+
+  public SSLEngineResult.HandshakeStatus getHandshakeStatus() {
+    return switch (mHandshakeStatus) {
+      case 1 -> SSLEngineResult.HandshakeStatus.FINISHED;
+      case 2 -> SSLEngineResult.HandshakeStatus.NEED_TASK;
+      case 3 -> SSLEngineResult.HandshakeStatus.NEED_WRAP;
+      case 4 -> SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
+      case 5 -> SSLEngineResult.HandshakeStatus.NEED_UNWRAP_AGAIN;
+      default -> SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
+    };
+  }
+
+  public void setHandshakeStatus(SSLEngineResult.HandshakeStatus handshakeStatus) {
+    switch (handshakeStatus) {
+      case FINISHED -> mHandshakeStatus = 1;
+      case NEED_TASK -> mHandshakeStatus = 2;
+      case NEED_WRAP -> mHandshakeStatus = 3;
+      case NEED_UNWRAP -> mHandshakeStatus = 4;
+      case NEED_UNWRAP_AGAIN -> mHandshakeStatus = 5;
+      default -> mHandshakeStatus = 0;
     }
+  }
 
-    private byte mHandshakeStatus;
+  @Override
+  public int prefix(ByteBuf input) {
+    int remain = super.prefix(input);
+    mHandshakeStatus = input.get();
+    return remain - 1;
+  }
 
-    public SSLEngineResult.HandshakeStatus getHandshakeStatus()
-    {
-        return switch(mHandshakeStatus) {
-            case 1 -> SSLEngineResult.HandshakeStatus.FINISHED;
-            case 2 -> SSLEngineResult.HandshakeStatus.NEED_TASK;
-            case 3 -> SSLEngineResult.HandshakeStatus.NEED_WRAP;
-            case 4 -> SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
-            case 5 -> SSLEngineResult.HandshakeStatus.NEED_UNWRAP_AGAIN;
-            default -> SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
-        };
-    }
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    return super.suffix(output).put(mHandshakeStatus);
+  }
 
-    public void setHandshakeStatus(SSLEngineResult.HandshakeStatus handshakeStatus)
-    {
-        switch(handshakeStatus) {
-            case FINISHED -> mHandshakeStatus = 1;
-            case NEED_TASK -> mHandshakeStatus = 2;
-            case NEED_WRAP -> mHandshakeStatus = 3;
-            case NEED_UNWRAP -> mHandshakeStatus = 4;
-            case NEED_UNWRAP_AGAIN -> mHandshakeStatus = 5;
-            default -> mHandshakeStatus = 0;
-        }
-    }
+  @Override
+  public int length() {
+    return super.length() + 1;
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        int remain = super.prefix(input);
-        mHandshakeStatus = input.get();
-        return remain - 1;
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "X105_SslHandShake{HandshakeStatus=%s;[HELLO]:%s}",
+        getHandshakeStatus(),
+        mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "NULL");
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        return super.suffix(output)
-                    .put(mHandshakeStatus);
-    }
-
-    @Override
-    public int length()
-    {
-        return super.length() + 1;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("X105_SslHandShake{HandshakeStatus=%s;[HELLO]:%s}",
-                             getHandshakeStatus(),
-                             mPayload != null ? new String(mPayload, StandardCharsets.UTF_8) : "NULL");
-    }
-
-    public Level level()
-    {
-        return Level.ALMOST_ONCE;
-    }
-
+  public Level level() {
+    return Level.ALMOST_ONCE;
+  }
 }

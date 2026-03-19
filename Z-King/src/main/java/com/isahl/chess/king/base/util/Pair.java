@@ -23,95 +23,85 @@
 package com.isahl.chess.king.base.util;
 
 import com.isahl.chess.king.base.features.model.IPair;
-
 import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public class Pair<FIRST, SECOND>
-        implements IPair,
-        Comparable<Pair<FIRST, SECOND>> {
-    private FIRST first;
-    private SECOND second;
+public class Pair<FIRST, SECOND> implements IPair, Comparable<Pair<FIRST, SECOND>> {
+  private FIRST first;
+  private SECOND second;
 
-    public Pair(FIRST first, SECOND second) {
-        this.first = first;
-        this.second = second;
-    }
+  public Pair(FIRST first, SECOND second) {
+    this.first = first;
+    this.second = second;
+  }
 
-    public Pair() {
-    }
+  public Pair() {}
 
-    public static <F, S> Pair<F, S> of(F first, S second) {
-        return new Pair<>(first, second);
-    }
+  public static <F, S> Pair<F, S> of(F first, S second) {
+    return new Pair<>(first, second);
+  }
 
-    public void setFirst(FIRST f) {
-        first = f;
-    }
+  public void setFirst(FIRST f) {
+    first = f;
+  }
 
-    public void setSecond(SECOND s) {
-        second = s;
-    }
+  public void setSecond(SECOND s) {
+    second = s;
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public FIRST getFirst() {
-        return first;
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public FIRST getFirst() {
+    return first;
+  }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public SECOND getSecond() {
-        return second;
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public SECOND getSecond() {
+    return second;
+  }
 
-    @Override
-    public Pair<FIRST, SECOND> duplicate() {
-        return new Pair<>(first, second);
-    }
+  @Override
+  public Pair<FIRST, SECOND> duplicate() {
+    return new Pair<>(first, second);
+  }
 
-    @Override
-    public boolean isEmpty() {
-        return first == null && second == null;
-    }
+  @Override
+  public boolean isEmpty() {
+    return first == null && second == null;
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Pair)) {
-            return false;
-        }
-        if (this != obj) {
-            @SuppressWarnings("unchecked")
-            Pair<FIRST, SECOND> other = (Pair<FIRST, SECOND>) obj;
-            return first.equals(other.first) && second.equals(other.second);
-        }
-        return true;
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Pair)) {
+      return false;
     }
+    if (this != obj) {
+      @SuppressWarnings("unchecked")
+      Pair<FIRST, SECOND> other = (Pair<FIRST, SECOND>) obj;
+      return first.equals(other.first) && second.equals(other.second);
+    }
+    return true;
+  }
 
-    @Override
-    public String toString() {
-        return String.format("< %s:%s, %s:%s >",
-                first.getClass()
-                        .getSimpleName(),
-                first,
-                second.getClass()
-                        .getSimpleName(),
-                second);
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "< %s:%s, %s:%s >",
+        first.getClass().getSimpleName(), first, second.getClass().getSimpleName(), second);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(first, second);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(first, second);
+  }
 
-    @Override
-    public int compareTo(Pair<FIRST, SECOND> o) {
-        int a = first.toString()
-                .compareTo(o.first.toString());
-        int b = second.toString()
-                .compareTo(o.second.toString());
-        return a == 0 ? b : a;
-    }
+  @Override
+  public int compareTo(Pair<FIRST, SECOND> o) {
+    int a = first.toString().compareTo(o.first.toString());
+    int b = second.toString().compareTo(o.second.toString());
+    return a == 0 ? b : a;
+  }
 }

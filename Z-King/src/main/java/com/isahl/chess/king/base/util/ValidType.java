@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -28,33 +27,35 @@ package com.isahl.chess.king.base.util;
  * @author william.d.zk
  * @date 2022-3-25
  */
-public enum ValidType
-{
-    string("string"),
-    number("number"),
-    integer("integer"),
-    bool("boolean"),
-    object("object"),
-    array("array"),
-    nil("null");
+public enum ValidType {
+  string("string"),
+  number("number"),
+  integer("integer"),
+  bool("boolean"),
+  object("object"),
+  array("array"),
+  nil("null");
 
-    private final String _JsonType;
+  private final String _JsonType;
 
-    ValidType(String jsonType) {_JsonType = jsonType;}
+  ValidType(String jsonType) {
+    _JsonType = jsonType;
+  }
 
-    public String getJsonType() {return _JsonType;}
+  public String getJsonType() {
+    return _JsonType;
+  }
 
-    public static ValidType of(String type)
-    {
-        return switch(type.toLowerCase()) {
-            case "string" -> string;
-            case "number" -> number;
-            case "integer" -> integer;
-            case "bool", "boolean" -> bool;
-            case "object" -> object;
-            case "array" -> array;
-            case "nil", "null" -> nil;
-            default -> throw new IllegalArgumentException(type);
-        };
-    }
+  public static ValidType of(String type) {
+    return switch (type.toLowerCase()) {
+      case "string" -> string;
+      case "number" -> number;
+      case "integer" -> integer;
+      case "bool", "boolean" -> bool;
+      case "object" -> object;
+      case "array" -> array;
+      case "nil", "null" -> nil;
+      default -> throw new IllegalArgumentException(type);
+    };
+  }
 }

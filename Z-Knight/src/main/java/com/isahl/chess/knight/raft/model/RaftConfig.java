@@ -29,179 +29,154 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.util.LongToDataSizeConverter;
-import org.springframework.util.unit.DataSize;
-
 import java.time.Duration;
 import java.util.Map;
+import org.springframework.util.unit.DataSize;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class RaftConfig
-{
-    private Map<Integer, String> peers;
-    private Map<Integer, String> nodes;
-    private Map<Long, String>    gates;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Duration             electInSecond;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Duration             snapshotInSecond;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Duration             heartbeatInSecond;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Duration             clientSubmitInSecond;
-    @JsonDeserialize(converter = LongToDataSizeConverter.class)
-    private DataSize             snapshotMinSize;
-    @JsonDeserialize(converter = LongToDataSizeConverter.class)
-    private DataSize             snapshotFragmentMaxSize;
-    @JsonDeserialize(converter = LongToDataSizeConverter.class)
-    private DataSize             maxSegmentSize;
-    private IRaftConfig.Uid      uid;
+public class RaftConfig {
+  private Map<Integer, String> peers;
+  private Map<Integer, String> nodes;
+  private Map<Long, String> gates;
 
-    private int syncBatchMaxSize;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Duration electInSecond;
 
-    // Pipeline replication configuration
-    private int pipelineMaxInflight = 100;
-    private long pipelineInflightTimeoutMs = 5000;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Duration snapshotInSecond;
 
-    public Map<Integer, String> getPeers()
-    {
-        return peers;
-    }
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Duration heartbeatInSecond;
 
-    public void setPeers(Map<Integer, String> peers)
-    {
-        this.peers = peers;
-    }
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Duration clientSubmitInSecond;
 
-    public Map<Integer, String> getNodes()
-    {
-        return nodes;
-    }
+  @JsonDeserialize(converter = LongToDataSizeConverter.class)
+  private DataSize snapshotMinSize;
 
-    public void setNodes(Map<Integer, String> nodes)
-    {
-        this.nodes = nodes;
-    }
+  @JsonDeserialize(converter = LongToDataSizeConverter.class)
+  private DataSize snapshotFragmentMaxSize;
 
-    public Map<Long, String> getGates()
-    {
-        return gates;
-    }
+  @JsonDeserialize(converter = LongToDataSizeConverter.class)
+  private DataSize maxSegmentSize;
 
-    public void setGates(Map<Long, String> gates)
-    {
-        this.gates = gates;
-    }
+  private IRaftConfig.Uid uid;
 
-    public Duration getElectInSecond()
-    {
-        return electInSecond;
-    }
+  private int syncBatchMaxSize;
 
-    public void setElectInSecond(Duration electInSecond)
-    {
-        this.electInSecond = electInSecond;
-    }
+  // Pipeline replication configuration
+  private int pipelineMaxInflight = 100;
+  private long pipelineInflightTimeoutMs = 5000;
 
-    public Duration getSnapshotInSecond()
-    {
-        return snapshotInSecond;
-    }
+  public Map<Integer, String> getPeers() {
+    return peers;
+  }
 
-    public void setSnapshotInSecond(Duration snapshotInSecond)
-    {
-        this.snapshotInSecond = snapshotInSecond;
-    }
+  public void setPeers(Map<Integer, String> peers) {
+    this.peers = peers;
+  }
 
-    public Duration getHeartbeatInSecond()
-    {
-        return heartbeatInSecond;
-    }
+  public Map<Integer, String> getNodes() {
+    return nodes;
+  }
 
-    public void setHeartbeatInSecond(Duration heartbeatInSecond)
-    {
-        this.heartbeatInSecond = heartbeatInSecond;
-    }
+  public void setNodes(Map<Integer, String> nodes) {
+    this.nodes = nodes;
+  }
 
-    public Duration getClientSubmitInSecond()
-    {
-        return clientSubmitInSecond;
-    }
+  public Map<Long, String> getGates() {
+    return gates;
+  }
 
-    public void setClientSubmitInSecond(Duration clientSubmitInSecond)
-    {
-        this.clientSubmitInSecond = clientSubmitInSecond;
-    }
+  public void setGates(Map<Long, String> gates) {
+    this.gates = gates;
+  }
 
-    public long getSnapshotMinSize()
-    {
-        return snapshotMinSize.toBytes();
-    }
+  public Duration getElectInSecond() {
+    return electInSecond;
+  }
 
-    public void setSnapshotMinSize(DataSize snapshotMinSize)
-    {
-        this.snapshotMinSize = snapshotMinSize;
-    }
+  public void setElectInSecond(Duration electInSecond) {
+    this.electInSecond = electInSecond;
+  }
 
-    public long getSnapshotFragmentMaxSize()
-    {
-        return snapshotFragmentMaxSize.toBytes();
-    }
+  public Duration getSnapshotInSecond() {
+    return snapshotInSecond;
+  }
 
-    public void setSnapshotFragmentMaxSize(DataSize snapshotFragmentMaxSize)
-    {
-        this.snapshotFragmentMaxSize = snapshotFragmentMaxSize;
-    }
+  public void setSnapshotInSecond(Duration snapshotInSecond) {
+    this.snapshotInSecond = snapshotInSecond;
+  }
 
-    public long getMaxSegmentSize()
-    {
-        return maxSegmentSize.toBytes();
-    }
+  public Duration getHeartbeatInSecond() {
+    return heartbeatInSecond;
+  }
 
-    public void setMaxSegmentSize(DataSize maxSegmentSize)
-    {
-        this.maxSegmentSize = maxSegmentSize;
-    }
+  public void setHeartbeatInSecond(Duration heartbeatInSecond) {
+    this.heartbeatInSecond = heartbeatInSecond;
+  }
 
-    public IRaftConfig.Uid getUid()
-    {
-        return uid;
-    }
+  public Duration getClientSubmitInSecond() {
+    return clientSubmitInSecond;
+  }
 
-    public void setUid(IRaftConfig.Uid uid)
-    {
-        this.uid = uid;
-    }
+  public void setClientSubmitInSecond(Duration clientSubmitInSecond) {
+    this.clientSubmitInSecond = clientSubmitInSecond;
+  }
 
-    public int getSyncBatchMaxSize()
-    {
-        return syncBatchMaxSize;
-    }
+  public long getSnapshotMinSize() {
+    return snapshotMinSize.toBytes();
+  }
 
-    public void setSyncBatchMaxSize(int syncBatchMaxSize)
-    {
-        this.syncBatchMaxSize = syncBatchMaxSize;
-    }
+  public void setSnapshotMinSize(DataSize snapshotMinSize) {
+    this.snapshotMinSize = snapshotMinSize;
+  }
 
-    public int getPipelineMaxInflight()
-    {
-        return pipelineMaxInflight;
-    }
+  public long getSnapshotFragmentMaxSize() {
+    return snapshotFragmentMaxSize.toBytes();
+  }
 
-    public void setPipelineMaxInflight(int pipelineMaxInflight)
-    {
-        this.pipelineMaxInflight = pipelineMaxInflight;
-    }
+  public void setSnapshotFragmentMaxSize(DataSize snapshotFragmentMaxSize) {
+    this.snapshotFragmentMaxSize = snapshotFragmentMaxSize;
+  }
 
-    public long getPipelineInflightTimeoutMs()
-    {
-        return pipelineInflightTimeoutMs;
-    }
+  public long getMaxSegmentSize() {
+    return maxSegmentSize.toBytes();
+  }
 
-    public void setPipelineInflightTimeoutMs(long pipelineInflightTimeoutMs)
-    {
-        this.pipelineInflightTimeoutMs = pipelineInflightTimeoutMs;
-    }
+  public void setMaxSegmentSize(DataSize maxSegmentSize) {
+    this.maxSegmentSize = maxSegmentSize;
+  }
+
+  public IRaftConfig.Uid getUid() {
+    return uid;
+  }
+
+  public void setUid(IRaftConfig.Uid uid) {
+    this.uid = uid;
+  }
+
+  public int getSyncBatchMaxSize() {
+    return syncBatchMaxSize;
+  }
+
+  public void setSyncBatchMaxSize(int syncBatchMaxSize) {
+    this.syncBatchMaxSize = syncBatchMaxSize;
+  }
+
+  public int getPipelineMaxInflight() {
+    return pipelineMaxInflight;
+  }
+
+  public void setPipelineMaxInflight(int pipelineMaxInflight) {
+    this.pipelineMaxInflight = pipelineMaxInflight;
+  }
+
+  public long getPipelineInflightTimeoutMs() {
+    return pipelineInflightTimeoutMs;
+  }
+
+  public void setPipelineInflightTimeoutMs(long pipelineInflightTimeoutMs) {
+    this.pipelineInflightTimeoutMs = pipelineInflightTimeoutMs;
+  }
 }
-
-
-

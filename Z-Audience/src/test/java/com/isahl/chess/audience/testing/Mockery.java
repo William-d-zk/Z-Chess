@@ -23,98 +23,78 @@
 
 package com.isahl.chess.audience.testing;
 
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
+import static org.mockito.Mockito.*;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 
-import static org.mockito.Mockito.*;
+public class Mockery {
 
-public class Mockery
-{
+  private Mockery() {}
 
-    private Mockery()
-    {
-    }
+  public static <T> T mock(Class<T> classToMock) {
+    return Mockito.mock(classToMock);
+  }
 
-    public static <T> T mock(Class<T> classToMock)
-    {
-        return Mockito.mock(classToMock);
-    }
+  public static <T> T mock(Class<T> classToMock, Consumer<T> setup) {
+    T mockInstance = Mockito.mock(classToMock);
+    setup.accept(mockInstance);
+    return mockInstance;
+  }
 
-    public static <T> T mock(Class<T> classToMock, Consumer<T> setup)
-    {
-        T mockInstance = Mockito.mock(classToMock);
-        setup.accept(mockInstance);
-        return mockInstance;
-    }
+  public static <T> T spy(T object) {
+    return Mockito.spy(object);
+  }
 
-    public static <T> T spy(T object)
-    {
-        return Mockito.spy(object);
-    }
+  public static <T> T spy(Class<T> classToSpy, Supplier<T> factory) {
+    return Mockito.spy(factory.get());
+  }
 
-    public static <T> T spy(Class<T> classToSpy, Supplier<T> factory)
-    {
-        return Mockito.spy(factory.get());
-    }
+  public static <T> T anyMock() {
+    return Mockito.any();
+  }
 
-    public static <T> T anyMock()
-    {
-        return Mockito.any();
-    }
+  public static <T> T refEq(T obj) {
+    return Mockito.refEq(obj);
+  }
 
-    public static <T> T refEq(T obj)
-    {
-        return Mockito.refEq(obj);
-    }
+  public static <T> T same(T obj) {
+    return Mockito.same(obj);
+  }
 
-    public static <T> T same(T obj)
-    {
-        return Mockito.same(obj);
-    }
+  public static <T> T isNull() {
+    return Mockito.isNull();
+  }
 
-    public static <T> T isNull()
-    {
-        return Mockito.isNull();
-    }
+  public static <T> T notNull() {
+    return Mockito.notNull();
+  }
 
-    public static <T> T notNull()
-    {
-        return Mockito.notNull();
-    }
+  public static <T> T isA(Class<T> clazz) {
+    return Mockito.isA(clazz);
+  }
 
-    public static <T> T isA(Class<T> clazz)
-    {
-        return Mockito.isA(clazz);
-    }
+  public static void verifyNoMoreInteractions(Object... mocks) {
+    Mockito.verifyNoMoreInteractions(mocks);
+  }
 
-    public static void verifyNoMoreInteractions(Object... mocks)
-    {
-        Mockito.verifyNoMoreInteractions(mocks);
-    }
+  public static void reset(Object... mocks) {
+    Mockito.reset(mocks);
+  }
 
-    public static void reset(Object... mocks)
-    {
-        Mockito.reset(mocks);
-    }
+  public static void clearInvocations(Object... mocks) {
+    Mockito.clearInvocations(mocks);
+  }
 
-    public static void clearInvocations(Object... mocks)
-    {
-        Mockito.clearInvocations(mocks);
-    }
+  public static <T> Answer<T> returns(T value) {
+    return invocation -> value;
+  }
 
-    public static <T> Answer<T> returns(T value)
-    {
-        return invocation -> value;
-    }
-
-    public static <T> Answer<T> throwsException(Throwable throwable)
-    {
-        return invocation ->
-        {
-            throw throwable;
-        };
-    }
+  public static <T> Answer<T> throwsException(Throwable throwable) {
+    return invocation -> {
+      throw throwable;
+    };
+  }
 }

@@ -23,20 +23,15 @@
 
 package com.isahl.chess.audience.client.stress;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * 压力测试验证器单元测试
- * 简化版本，不依赖完整 Spring 上下文
- */
-public class PressureTestValidatorTest
-{
-    @Test
-    public void test()
-    {
-        // 基础测试 - 验证类可以实例化
-        assertNotNull(PressureTestConfig.class);
-    }
+import org.junit.jupiter.api.Test;
+
+/** 压力测试验证器单元测试 简化版本，不依赖完整 Spring 上下文 */
+public class PressureTestValidatorTest {
+  @Test
+  public void test() {
+    // 基础测试 - 验证类可以实例化
+    assertNotNull(PressureTestConfig.class);
+  }
 }

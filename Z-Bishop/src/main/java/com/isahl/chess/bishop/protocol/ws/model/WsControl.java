@@ -33,146 +33,126 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 /**
  * @author William.d.zk
  */
-public abstract class WsControl<C extends WsContext>
-        implements IControl<C>
-{
+public abstract class WsControl<C extends WsContext> implements IControl<C> {
 
-    protected byte     mFrameHeader;
-    protected byte[]   mPayload;
-    private   ISession mSession;
-    private   C        mContext;
+  protected byte mFrameHeader;
+  protected byte[] mPayload;
+  private ISession mSession;
+  private C mContext;
 
-    public WsControl(byte opCode)
-    {
-        header(opCode);
+  public WsControl(byte opCode) {
+    header(opCode);
+  }
+
+  @Override
+  public byte[] payload() {
+    return mPayload;
+  }
+
+  @Override
+  public void header(int header) {
+    mFrameHeader = (byte) header;
+  }
+
+  @Override
+  public byte header() {
+    return mFrameHeader;
+  }
+
+  @Override
+  public WsControl<C> withSub(IoSerial sub) {
+    if (sub != null) {
+      ByteBuf buf = sub.encode();
+      if (buf.capacity() > 0) {
+        mPayload = buf.array();
+      }
     }
+    return this;
+  }
 
-    @Override
-    public byte[] payload()
-    {
-        return mPayload;
+  @Override
+  public WsControl<C> withSub(byte[] sub) {
+    mPayload = sub == null || sub.length > 0 ? sub : null;
+    return this;
+  }
+
+  @Override
+  public ByteBuf suffix(ByteBuf output) {
+    if (mPayload != null) {
+      output.put(mPayload);
     }
+    return output;
+  }
 
-    @Override
-    public void header(int header)
-    {
-        mFrameHeader = (byte) header;
+  @Override
+  public int prefix(ByteBuf input) {
+    return input != null ? input.readableBytes() : 0;
+  }
+
+  @Override
+  public void fold(ByteBuf input, int remain) {
+    if (remain > 0) {
+      mPayload = new byte[remain];
+      input.get(mPayload);
     }
+  }
 
-    @Override
-    public byte header()
-    {
-        return mFrameHeader;
+  @Override
+  public boolean isCtrl() {
+    return (mFrameHeader & 0x08) != 0;
+  }
+
+  @Override
+  public ISession session() {
+    return mSession;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public WsControl<C> with(ISession session) {
+    if (session == null) {
+      return this;
     }
+    mSession = session;
+    wrap((C) session.getContext(WsContext.class));
+    return this;
+  }
 
-    @Override
-    public WsControl<C> withSub(IoSerial sub)
-    {
-        if(sub != null) {
-            ByteBuf buf = sub.encode();
-            if(buf.capacity() > 0) {
-                mPayload = buf.array();
-            }
-        }
-        return this;
-    }
+  @Override
+  public int length() {
+    return mPayload == null ? 0 : mPayload.length;
+  }
 
-    @Override
-    public WsControl<C> withSub(byte[] sub)
-    {
-        mPayload = sub == null || sub.length > 0 ? sub : null;
-        return this;
-    }
+  @Override
+  public int sizeOf() {
+    return length();
+  }
 
-    @Override
-    public ByteBuf suffix(ByteBuf output)
-    {
-        if(mPayload != null) {
-            output.put(mPayload);
-        }
-        return output;
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "cmd: %#x, %s",
+        serial(), mPayload == null ? "[NULL] payload" : IoUtil.bin2Hex(mPayload, ","));
+  }
 
-    @Override
-    public int prefix(ByteBuf input)
-    {
-        return input != null ? input.readableBytes() : 0;
-    }
+  @Override
+  public WsControl<C> wrap(C context) {
+    mContext = context;
+    return this;
+  }
 
-    @Override
-    public void fold(ByteBuf input, int remain)
-    {
-        if(remain > 0) {
-            mPayload = new byte[remain];
-            input.get(mPayload);
-        }
-    }
+  @Override
+  public C context() {
+    return mContext;
+  }
 
-    @Override
-    public boolean isCtrl()
-    {
-        return (mFrameHeader & 0x08) != 0;
-    }
+  @Override
+  public IoSerial subContent() {
+    throw new UnsupportedOperationException();
+  }
 
-    @Override
-    public ISession session()
-    {
-        return mSession;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public WsControl<C> with(ISession session)
-    {
-        if(session == null) {return this;}
-        mSession = session;
-        wrap((C) session.getContext(WsContext.class));
-        return this;
-    }
-
-    @Override
-    public int length()
-    {
-        return mPayload == null ? 0 : mPayload.length;
-    }
-
-    @Override
-    public int sizeOf()
-    {
-        return length();
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("cmd: %#x, %s",
-                             serial(),
-                             mPayload == null ? "[NULL] payload" : IoUtil.bin2Hex(mPayload, ","));
-    }
-
-    @Override
-    public WsControl<C> wrap(C context)
-    {
-        mContext = context;
-        return this;
-    }
-
-    @Override
-    public C context()
-    {
-        return mContext;
-    }
-
-    @Override
-    public IoSerial subContent()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T extends IoSerial> T deserializeSub(IoFactory<T> factory)
-    {
-        throw new UnsupportedOperationException();
-    }
-
+  @Override
+  public <T extends IoSerial> T deserializeSub(IoFactory<T> factory) {
+    throw new UnsupportedOperationException();
+  }
 }
