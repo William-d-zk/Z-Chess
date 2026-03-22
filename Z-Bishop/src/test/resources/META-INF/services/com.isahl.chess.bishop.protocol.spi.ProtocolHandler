@@ -1,0 +1,5 @@
+# ProtocolHandler SPI Configuration
+# Example handlers for testing
+
+com.isahl.chess.bishop.protocol.spi.example.LoggingProtocolHandler
+com.isahl.chess.bishop.protocol.spi.example.MetricsProtocolHandler

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2024. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,49 +21,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.mqtt.model;
+package com.isahl.chess.bishop.mqtt.v5;
 
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 
 /**
+ * MQTT v5.0 请求/响应回调接口
+ *
+ * <p>用于异步接收响应通知。
+ *
  * @author william.d.zk
- * @date 2019-05-25
+ * @since 1.2.0
  */
-public abstract class QttProtocol implements IProtocol {
-  protected final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+public interface ResponseCallback {
 
-  public static final byte VERSION_V3_1_1 = 4;
-  public static final byte VERSION_V5_0 = 5;
+  /**
+   * 收到响应时调用
+   *
+   * @param response 响应消息
+   */
+  void onResponse(X113_QttPublish response);
 
-  protected static final byte DUPLICATE_FLAG = 1 << 3;
-  protected static final byte RETAIN_FLAG = 1;
-  protected static final byte QOS_MASK = 3 << 1;
-
-  protected byte mFrameHeader;
-  protected byte[] mPayload;
-
-  public QttType getType() {
-    return QttType.valueOf(mFrameHeader);
+  /** 请求超时时调用 */
+  default void onTimeout() {
+    // 默认实现：子类可以覆盖
   }
 
-  public void setType(QttType type) {
-    mFrameHeader |= (byte) type.getValue();
-  }
-
-  @Override
-  public int length() {
-    return mPayload == null ? 0 : mPayload.length;
-  }
-
-  @Override
-  public int sizeOf() {
-    return length();
-  }
-
-  /** 设置 payload 数据 */
-  public void setPayload(byte[] payload) {
-    mPayload = payload;
+  /**
+   * 发生错误时调用
+   *
+   * @param error 错误信息
+   */
+  default void onError(Throwable error) {
+    // 默认实现：子类可以覆盖
   }
 }

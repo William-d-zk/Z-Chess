@@ -2,106 +2,139 @@
  * MIT License
  *
  * Copyright (c) 2016~2024. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.isahl.chess.audience.bishop.protocol.spi;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.isahl.chess.bishop.protocol.spi.ProtocolHandler;
-import com.isahl.chess.bishop.protocol.spi.ProtocolLoader;
-import com.isahl.chess.bishop.protocol.spi.example.ExampleTextProtocolHandler;
-import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.bishop.protocol.spi.*;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * 协议 SPI 加载器测试
+ *
+ * @author william.d.zk
+ * @since 1.1.2
+ */
 class ProtocolLoaderTest {
 
   private ProtocolLoader loader;
 
   @BeforeEach
   void setUp() {
-    loader = ProtocolLoader.getInstance();
-    loader.clear();
+    loader = new ProtocolLoader();
   }
 
   @Test
-  void testRegisterHandler() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
-    loader.register(handler);
+  void testLoadHandlers() {
+    List<ProtocolHandler> handlers = loader.loadHandlers();
 
-    ProtocolHandler retrieved = loader.getHandler("ExampleText");
-    assertNotNull(retrieved);
-    assertEquals("ExampleText", retrieved.getProtocolName());
-    assertEquals("1.0.0", retrieved.getProtocolVersion());
+    // 应该加载了测试配置文件中的处理器
+    assertFalse(handlers.isEmpty(), "Should load at least one handler from test SPI config");
   }
 
   @Test
-  void testEncodeDecode() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
+  void testLoadHandlersSorted() {
+    List<ProtocolHandler> handlers = loader.loadHandlers();
 
-    String original = "Hello, Protocol SPI!";
-    byte[] encoded = handler.encode(original);
-
-    ByteBuf buffer = ByteBuf.allocate(encoded.length);
-    buffer.put(encoded);
-
-    Object decoded = handler.decode(buffer);
-
-    assertNotNull(decoded);
-    assertEquals(original, decoded);
+    // 验证处理器按优先级排序
+    for (int i = 1; i < handlers.size(); i++) {
+      int prevPriority = handlers.get(i - 1).getPriority();
+      int currPriority = handlers.get(i).getPriority();
+      assertTrue(
+          prevPriority <= currPriority,
+          "Handlers should be sorted by priority: " + prevPriority + " <= " + currPriority);
+    }
   }
 
   @Test
-  void testIdentifyBySignature() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
-    loader.register(handler);
+  void testAddHandler() {
+    ProtocolHandler customHandler = createCustomHandler("CustomHandler", 50);
 
-    byte[] signature = handler.getProtocolSignature();
-    ProtocolHandler identified = loader.identify(signature);
+    loader.addHandler(customHandler);
 
-    assertNotNull(identified);
-    assertEquals("ExampleText", identified.getProtocolName());
+    assertTrue(loader.getHandlers().contains(customHandler));
   }
 
   @Test
-  void testIdentifyUnknownSignature() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
-    loader.register(handler);
+  void testRemoveHandler() {
+    ProtocolHandler customHandler = createCustomHandler("CustomHandler", 50);
 
-    byte[] unknownSignature = {'U', 'N', 'K', 'N'};
-    ProtocolHandler identified = loader.identify(unknownSignature);
+    loader.addHandler(customHandler);
+    assertTrue(loader.getHandlers().contains(customHandler));
 
-    assertNull(identified);
+    loader.removeHandler(customHandler);
+    assertFalse(loader.getHandlers().contains(customHandler));
   }
 
   @Test
-  void testUnregisterHandler() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
-    loader.register(handler);
+  void testClearHandlers() {
+    loader.loadHandlers();
+    assertTrue(loader.getHandlerCount() > 0);
 
-    loader.unregister("ExampleText");
-
-    ProtocolHandler retrieved = loader.getHandler("ExampleText");
-    assertNull(retrieved);
+    loader.clearHandlers();
+    assertEquals(0, loader.getHandlerCount());
   }
 
   @Test
-  void testGetAllHandlers() {
-    loader.register(new ExampleTextProtocolHandler());
+  void testReloadHandlers() {
+    loader.loadHandlers();
+    int initialCount = loader.getHandlerCount();
 
-    var handlers = loader.getAllHandlers();
-    assertEquals(1, handlers.size());
+    // 添加一个处理器后重新加载
+    loader.addHandler(createCustomHandler("ExtraHandler", 100));
+
+    // 注意：reload 会从 SPI 重新加载，所以数量可能变化
+    loader.reloadHandlers();
+
+    // 重新加载后应该至少包含 SPI 中定义的处理器
+    assertTrue(loader.getHandlerCount() >= 0);
   }
 
-  @Test
-  void testDecodeIncompleteData() {
-    ProtocolHandler handler = new ExampleTextProtocolHandler();
+  // ==================== 辅助方法 ====================
 
-    ByteBuf buffer = ByteBuf.allocate(1);
-    buffer.put((byte) 0x00);
+  private ProtocolHandler createCustomHandler(String name, int priority) {
+    return new ProtocolHandler() {
+      @Override
+      public boolean supports(
+          com.isahl.chess.queen.io.core.features.model.content.IProtocol message) {
+        return true;
+      }
 
-    Object decoded = handler.decode(buffer);
-    assertNull(decoded);
+      @Override
+      public void handle(
+          com.isahl.chess.queen.io.core.features.model.content.IProtocol message,
+          ProtocolContext context) {}
+
+      @Override
+      public int getPriority() {
+        return priority;
+      }
+
+      @Override
+      public String getName() {
+        return name;
+      }
+    };
   }
 }

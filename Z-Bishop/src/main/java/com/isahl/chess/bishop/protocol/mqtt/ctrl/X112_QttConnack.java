@@ -106,9 +106,24 @@ public class X112_QttConnack extends QttControl {
     return CodeMqtt.valueOf(mResponseCode, version);
   }
 
+  /** 获取原始原因码值（用于测试和调试） */
+  public int getReasonCode() {
+    return mResponseCode;
+  }
+
   private void setCode(ICode code) {
     int version = (mContext != null) ? mContext.getVersion() : 4;
     mResponseCode = code.getCode(version);
+  }
+
+  /**
+   * 直接设置原因码（用于 MQTT v5.0 扩展）
+   *
+   * @param reasonCode 原因码值
+   */
+  public void setCode(int reasonCode) {
+    mPresent = 0;
+    mResponseCode = reasonCode;
   }
 
   public void responseOk() {
