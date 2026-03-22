@@ -25,134 +25,160 @@ package com.isahl.chess.bishop.protocol.spi;
 
 import com.isahl.chess.king.base.log.Logger;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 协议加载器
+ * 协议处理器 SPI 加载器
  *
- * <p>使用 Java SPI 机制加载协议处理器实现。
+ * <p>通过 Java SPI 机制加载所有 {@link ProtocolHandler} 实现，并按优先级排序。
  *
- * <p>使用方式: 1. 创建 ProtocolHandler 实现类 2. 在
- * META-INF/services/com.isahl.chess.bishop.protocol.spi.ProtocolHandler 中注册 3. 使用
- * ProtocolLoader.loadAll() 加载所有处理器
+ * <p>使用方式：
+ *
+ * <ol>
+ *   <li>创建 ProtocolHandler 实现类
+ *   <li>在 META-INF/services/com.isahl.chess.bishop.protocol.spi.ProtocolHandler 文件中添加实现类全名
+ *   <li>使用 ProtocolLoader 加载处理器
+ * </ol>
  *
  * @author william.d.zk
+ * @since 1.1.2
+ * @see ProtocolHandler
  */
 public class ProtocolLoader {
 
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + ProtocolLoader.class.getSimpleName());
+      Logger.getLogger("protocol.bishop.spi." + ProtocolLoader.class.getSimpleName());
 
-  private static final ProtocolLoader _Instance = new ProtocolLoader();
+  /** SPI 服务文件路径 */
+  public static final String SPI_PATH =
+      "META-INF/services/com.isahl.chess.bishop.protocol.spi.ProtocolHandler";
 
-  private final ConcurrentMap<String, ProtocolHandler> _handlers = new ConcurrentHashMap<>();
+  /** 已加载的处理器列表 */
+  private final List<ProtocolHandler> _handlers = new CopyOnWriteArrayList<>();
 
-  private ProtocolLoader() {}
+  /** 是否已加载 */
+  private volatile boolean _loaded = false;
 
-  /** 获取单例实例 */
-  public static ProtocolLoader getInstance() {
-    return _Instance;
+  // ==================== 加载方法 ====================
+
+  /**
+   * 加载所有协议处理器
+   *
+   * @return 按优先级排序的处理器列表
+   */
+  public List<ProtocolHandler> loadHandlers() {
+    if (_loaded) {
+      return List.copyOf(_handlers);
+    }
+
+    synchronized (this) {
+      if (_loaded) {
+        return List.copyOf(_handlers);
+      }
+
+      doLoadHandlers();
+      _loaded = true;
+      return List.copyOf(_handlers);
+    }
   }
 
-  /** 加载所有协议处理器（通过 SPI） */
-  public void loadAll() {
-    ServiceLoader<ProtocolHandler> loader = ServiceLoader.load(ProtocolHandler.class);
+  /** 重新加载处理器 */
+  public synchronized void reloadHandlers() {
+    _handlers.clear();
+    _loaded = false;
+    loadHandlers();
+    _Logger.info("Reloaded {} protocol handlers", _handlers.size());
+  }
 
-    for (ProtocolHandler handler : loader) {
+  /** 执行加载 */
+  private void doLoadHandlers() {
+    ServiceLoader<ProtocolHandler> serviceLoader = ServiceLoader.load(ProtocolHandler.class);
+
+    for (ProtocolHandler handler : serviceLoader) {
       try {
-        handler.init();
-        register(handler);
-        _Logger.info(
-            "Protocol handler loaded: %s (version %s)",
-            handler.getProtocolName(), handler.getProtocolVersion());
+        _handlers.add(handler);
+        _Logger.debug(
+            "Loaded protocol handler: {} (priority={})", handler.getName(), handler.getPriority());
       } catch (Exception e) {
-        _Logger.error("Failed to initialize protocol handler: %s", e.getMessage());
+        _Logger.warning("Failed to load protocol handler: {}", e.getMessage());
       }
     }
 
     // 按优先级排序
-    List<ProtocolHandler> sorted = new ArrayList<>(_handlers.values());
-    sorted.sort(Comparator.comparingInt(ProtocolHandler::getPriority));
+    _handlers.sort(Comparator.comparingInt(ProtocolHandler::getPriority));
 
-    _Logger.info("Loaded %d protocol handlers", sorted.size());
+    _Logger.info("Loaded {} protocol handlers", _handlers.size());
   }
 
-  /** 注册协议处理器 */
-  public void register(ProtocolHandler handler) {
-    String name = handler.getProtocolName();
-    _handlers.put(name, handler);
-    _Logger.debug("Protocol handler registered: %s", name);
-  }
-
-  /** 根据名称获取协议处理器 */
-  public ProtocolHandler getHandler(String protocolName) {
-    return _handlers.get(protocolName);
-  }
-
-  /** 获取所有已加载的协议处理器 */
-  public Collection<ProtocolHandler> getAllHandlers() {
-    return Collections.unmodifiableCollection(_handlers.values());
-  }
+  // ==================== 处理器管理 ====================
 
   /**
-   * 根据协议签名识别协议
+   * 手动添加处理器
    *
-   * @param signature 协议签名字节
-   * @return 匹配的协议处理器，未找到返回 null
+   * @param handler 处理器
    */
-  public ProtocolHandler identify(byte[] signature) {
-    for (ProtocolHandler handler : _handlers.values()) {
-      byte[] expected = handler.getProtocolSignature();
-      if (matches(signature, expected)) {
-        return handler;
-      }
-    }
-    return null;
+  public void addHandler(ProtocolHandler handler) {
+    Objects.requireNonNull(handler, "Handler cannot be null");
+
+    _handlers.add(handler);
+    _handlers.sort(Comparator.comparingInt(ProtocolHandler::getPriority));
+
+    _Logger.debug(
+        "Added protocol handler: {} (priority={})", handler.getName(), handler.getPriority());
   }
 
-  /** 检查签名是否匹配 */
-  private boolean matches(byte[] signature, byte[] expected) {
-    if (expected == null || signature == null) {
-      return false;
-    }
-
-    if (expected.length > signature.length) {
-      return false;
-    }
-
-    for (int i = 0; i < expected.length; i++) {
-      if (signature[i] != expected[i]) {
-        return false;
-      }
-    }
-
-    return true;
+  /** 移除处理器 */
+  public void removeHandler(ProtocolHandler handler) {
+    _handlers.remove(handler);
+    _Logger.debug("Removed protocol handler: {}", handler.getName());
   }
 
-  /** 卸载协议处理器 */
-  public void unregister(String protocolName) {
-    ProtocolHandler handler = _handlers.remove(protocolName);
-    if (handler != null) {
-      try {
-        handler.destroy();
-      } catch (Exception e) {
-        _Logger.error("Error destroying protocol handler %s: %s", protocolName, e.getMessage());
-      }
-      _Logger.info("Protocol handler unregistered: %s", protocolName);
-    }
+  /** 获取所有处理器 */
+  public List<ProtocolHandler> getHandlers() {
+    return List.copyOf(_handlers);
   }
 
-  /** 清除所有处理器 */
-  public void clear() {
-    for (ProtocolHandler handler : _handlers.values()) {
-      try {
-        handler.destroy();
-      } catch (Exception e) {
-        _Logger.error("Error destroying protocol handler: %s", e.getMessage());
-      }
-    }
+  /** 获取处理器数量 */
+  public int getHandlerCount() {
+    return _handlers.size();
+  }
+
+  /** 清空所有处理器 */
+  public void clearHandlers() {
     _handlers.clear();
-    _Logger.info("All protocol handlers cleared");
+    _loaded = false;
+    _Logger.info("Cleared all protocol handlers");
+  }
+
+  // ==================== 查找方法 ====================
+
+  /**
+   * 查找支持指定消息类型的处理器
+   *
+   * @param message 消息
+   * @return 支持的处理器列表
+   */
+  public List<ProtocolHandler> findHandlersFor(Object message) {
+    List<ProtocolHandler> result = new ArrayList<>();
+
+    for (ProtocolHandler handler : _handlers) {
+      try {
+        if (handler.supports(
+            (com.isahl.chess.queen.io.core.features.model.content.IProtocol) message)) {
+          result.add(handler);
+        }
+      } catch (ClassCastException e) {
+        // 类型不匹配，跳过
+      } catch (Exception e) {
+        _Logger.warning("Error checking handler support: {}", e.getMessage());
+      }
+    }
+
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("ProtocolLoader{handlers=%d, loaded=%s}", _handlers.size(), _loaded);
   }
 }

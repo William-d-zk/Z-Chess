@@ -20,7 +20,7 @@ class ModbusRtuProtocolHandlerTest {
 
   @Test
   void testGetProtocolName() {
-    assertEquals("ModbusRTU", handler.getProtocolName());
+    assertEquals("ModbusRTU", handler.getName());
   }
 
   @Test

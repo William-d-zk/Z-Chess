@@ -27,12 +27,12 @@ class ModbusTcpProtocolHandlerTest {
 
   @Test
   void testGetProtocolName() {
-    assertEquals("ModbusTCP", handler.getProtocolName());
+    assertEquals("ModbusTCP", handler.getName());
   }
 
   @Test
   void testGetProtocolVersion() {
-    assertEquals("1.0.0", handler.getProtocolVersion());
+    assertEquals("Modbus TCP protocol handler", handler.getDescription());
   }
 
   @Test

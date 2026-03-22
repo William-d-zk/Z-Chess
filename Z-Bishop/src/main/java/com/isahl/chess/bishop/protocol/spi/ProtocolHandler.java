@@ -23,66 +23,108 @@
 
 package com.isahl.chess.bishop.protocol.spi;
 
-import com.isahl.chess.king.base.content.ByteBuf;
+import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 
 /**
- * 协议处理器 SPI 接口
+ * 协议处理器接口
  *
- * <p>第三方可以通过实现此接口来扩展自定义协议处理。
+ * <p>实现此接口可以自定义协议处理逻辑。协议处理器通过 SPI 机制加载，并按优先级排序执行。
+ *
+ * <p>使用示例：
+ *
+ * <pre>{@code
+ * public class MyProtocolHandler implements ProtocolHandler {
+ *     @Override
+ *     public boolean supports(IProtocol message) {
+ *         return message instanceof MyCustomMessage;
+ *     }
+ *
+ *     @Override
+ *     public void handle(IProtocol message, ProtocolContext context) {
+ *         // 处理消息
+ *     }
+ *
+ *     @Override
+ *     public int getPriority() {
+ *         return 100; // 优先级（越小越优先）
+ *     }
+ * }
+ * }</pre>
  *
  * @author william.d.zk
+ * @since 1.1.2
+ * @see ProtocolLoader
+ * @see ProtocolChain
  */
+@FunctionalInterface
 public interface ProtocolHandler {
 
   /**
-   * 获取协议名称
+   * 检查是否支持处理此消息
    *
-   * @return 协议名称
+   * @param message 待处理的消息
+   * @return true 如果此处理器可以处理该消息
    */
-  String getProtocolName();
+  boolean supports(IProtocol message);
 
   /**
-   * 获取协议版本
+   * 处理消息
    *
-   * @return 协议版本
+   * @param message 待处理的消息
+   * @param context 处理上下文
    */
-  String getProtocolVersion();
+  default void handle(IProtocol message, ProtocolContext context) {
+    // 默认实现：子类可以覆盖
+  }
 
   /**
-   * 获取协议标识符（用于协议识别）
+   * 处理消息前钩子
    *
-   * @return 协议标识符
+   * @param message 待处理的消息
+   * @param context 处理上下文
+   * @return true 如果继续处理，false 如果跳过此处理器
    */
-  byte[] getProtocolSignature();
+  default boolean beforeHandle(IProtocol message, ProtocolContext context) {
+    return true;
+  }
 
   /**
-   * 解码协议数据
+   * 处理消息后钩子
    *
-   * @param buffer 输入缓冲区
-   * @return 解码后的消息对象，如果数据不完整返回 null
+   * @param message 已处理的消息
+   * @param context 处理上下文
+   * @param result 处理结果
    */
-  Object decode(ByteBuf buffer);
+  default void afterHandle(IProtocol message, ProtocolContext context, ProtocolResult result) {
+    // 默认实现：子类可以覆盖
+  }
 
   /**
-   * 编码协议数据
+   * 处理器优先级
    *
-   * @param message 消息对象
-   * @return 编码后的字节数组
-   */
-  byte[] encode(Object message);
-
-  /**
-   * 获取协议优先级（数值越小优先级越高）
+   * <p>值越小优先级越高，优先执行。
    *
-   * @return 优先级
+   * @return 优先级值，默认 100
    */
   default int getPriority() {
     return 100;
   }
 
-  /** 协议处理器初始化 */
-  default void init() {}
+  /**
+   * 处理器名称
+   *
+   * @return 处理器名称，默认类名
+   */
+  default String getName() {
+    return getClass().getSimpleName();
+  }
 
-  /** 协议处理器销毁 */
-  default void destroy() {}
+  /**
+   * 处理器描述
+   *
+   * @return 处理器描述
+   */
+  default String getDescription() {
+    return "";
+  }
 }

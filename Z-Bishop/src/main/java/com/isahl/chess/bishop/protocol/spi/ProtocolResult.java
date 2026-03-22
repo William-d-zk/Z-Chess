@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2024. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,49 +21,48 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.protocol.mqtt.model;
-
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+package com.isahl.chess.bishop.protocol.spi;
 
 /**
+ * 协议处理结果
+ *
  * @author william.d.zk
- * @date 2019-05-25
+ * @since 1.1.2
  */
-public abstract class QttProtocol implements IProtocol {
-  protected final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+public enum ProtocolResult {
+  /** 继续后续处理 */
+  CONTINUE,
 
-  public static final byte VERSION_V3_1_1 = 4;
-  public static final byte VERSION_V5_0 = 5;
+  /** 处理完成，跳过后续处理器 */
+  COMPLETED,
 
-  protected static final byte DUPLICATE_FLAG = 1 << 3;
-  protected static final byte RETAIN_FLAG = 1;
-  protected static final byte QOS_MASK = 3 << 1;
+  /** 跳过当前处理器 */
+  SKIP,
 
-  protected byte mFrameHeader;
-  protected byte[] mPayload;
+  /** 处理失败 */
+  FAILED;
 
-  public QttType getType() {
-    return QttType.valueOf(mFrameHeader);
+  private String reason;
+
+  /** 是否继续后续处理 */
+  public boolean shouldContinue() {
+    return this == CONTINUE || this == SKIP;
   }
 
-  public void setType(QttType type) {
-    mFrameHeader |= (byte) type.getValue();
+  /** 获取失败原因 */
+  public String getReason() {
+    return reason;
   }
 
-  @Override
-  public int length() {
-    return mPayload == null ? 0 : mPayload.length;
+  /** 是否失败 */
+  public boolean isFailed() {
+    return this == FAILED;
   }
 
-  @Override
-  public int sizeOf() {
-    return length();
-  }
-
-  /** 设置 payload 数据 */
-  public void setPayload(byte[] payload) {
-    mPayload = payload;
+  /** 创建带原因的失败结果 */
+  public static ProtocolResult failed(String reason) {
+    ProtocolResult result = FAILED;
+    result.reason = reason;
+    return result;
   }
 }
