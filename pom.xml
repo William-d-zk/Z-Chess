@@ -102,7 +102,7 @@
         <hibernate-enhance-maven-plugin.version>6.6.40.Final</hibernate-enhance-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <assertj.version>3.26.3</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <awaitility.version>4.2.2</awaitility.version>
         <jacoco.version>0.8.11</jacoco.version>
         <maven.compiler.debug>true</maven.compiler.debug>
