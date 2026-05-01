@@ -24,12 +24,13 @@
 package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
 import com.isahl.chess.player.api.model.MessageDo;
 import com.isahl.chess.queen.io.core.tasks.features.ILocalPublisher;
 import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MessageOpenService {
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
   private final ILocalPublisher _Publisher;
 
   @Autowired

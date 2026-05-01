@@ -27,7 +27,6 @@ import static com.isahl.chess.knight.raft.model.RaftState.CLIENT;
 import static com.isahl.chess.knight.raft.model.RaftState.FOLLOWER;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.model.RaftConfig;
@@ -43,6 +42,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -51,7 +52,8 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
 public class ZRaftConfig implements IRaftConfig {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   private final Map<Long, RaftNode> _PeerMap = new TreeMap<>();
   private final Map<Long, RaftNode> _GateMap = new TreeMap<>();
@@ -75,7 +77,7 @@ public class ZRaftConfig implements IRaftConfig {
       }
       return exists;
     } catch (IOException | ZException e) {
-      _Logger.warning("config file create & write ", e);
+      _Logger.warn("config file create & write ", e);
     }
     return false;
   }
@@ -107,7 +109,7 @@ public class ZRaftConfig implements IRaftConfig {
           if (nodeId < 0) {
             getUid().setNodeId(nodeId = entry.getKey());
           } else {
-            _Logger.warning("duplicate node: %s", node.getHost());
+            _Logger.warn("duplicate node: %s", node.getHost());
             nIt.remove();
           }
         } else {
@@ -115,7 +117,7 @@ public class ZRaftConfig implements IRaftConfig {
         }
       }
       if (nodeId < 0) {
-        _Logger.warning("hostname [ %s ] isn't one of nodes", hostname);
+        _Logger.warn("hostname [ %s ] isn't one of nodes", hostname);
         getUid().setNodeId(127);
       } else {
         getUid().setNodeId(nodeId);
@@ -137,7 +139,7 @@ public class ZRaftConfig implements IRaftConfig {
                 mPeerBind = peer;
                 _Logger.info("peer: %s ", mPeerBind);
               } else {
-                _Logger.warning("duplicate peer: %s", peer);
+                _Logger.warn("duplicate peer: %s", peer);
               }
             } else {
               peer.setId(getZUID().getPeerIdByNode(i));
@@ -157,7 +159,7 @@ public class ZRaftConfig implements IRaftConfig {
                 mPeerBind.setGateHost(gate.getGateHost());
                 mPeerBind.setGatePort(gate.getGatePort());
               } else {
-                _Logger.warning("duplicate gate:%s", gate);
+                _Logger.warn("duplicate gate:%s", gate);
               }
             }
             _GateMap.put(gate.getId(), gate);

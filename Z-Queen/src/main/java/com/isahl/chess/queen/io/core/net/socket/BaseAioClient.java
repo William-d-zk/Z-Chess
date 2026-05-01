@@ -25,7 +25,6 @@ package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
@@ -38,6 +37,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BaseAioClient implements IAioClient {
   private final Logger _Logger;
@@ -52,7 +53,7 @@ public class BaseAioClient implements IAioClient {
     Objects.requireNonNull(channelGroup);
     _TimeWheel = timeWheel;
     _ChannelGroup = channelGroup;
-    _Logger = Logger.getLogger("io.queen.client." + type);
+    _Logger = LoggerFactory.getLogger("io.queen.client." + type);
   }
 
   private final ReentrantLock _Lock = new ReentrantLock();
@@ -108,7 +109,7 @@ public class BaseAioClient implements IAioClient {
                 _Logger.debug("%s connect", Thread.currentThread().getName());
                 connect(c);
               } catch (IOException e) {
-                _Logger.warning("Connect error: %s", e.getMessage());
+                _Logger.warn("Connect error: %s", e.getMessage());
               }
             }));
   }

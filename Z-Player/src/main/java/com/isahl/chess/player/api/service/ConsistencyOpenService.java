@@ -24,7 +24,6 @@
 package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.king.config.KingCode;
@@ -34,13 +33,16 @@ import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ConsistencyOpenService implements IConsistencyService {
 
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private final DeviceNode _DeviceNode;
   private final RaftPeer _RaftPeer;

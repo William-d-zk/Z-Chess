@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.config.QueenCode;
 import com.isahl.chess.queen.events.model.QEvent;
@@ -41,12 +40,15 @@ import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class ClientIoDispatcher implements IPipeHandler<QEvent> {
-  private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getName());
   private final RingBuffer<QEvent> _Reader;
   private final RingBuffer<QEvent> _Wrote;
   private final RingBuffer<QEvent> _Error;
@@ -111,7 +113,7 @@ public class ClientIoDispatcher implements IPipeHandler<QEvent> {
               error(_Reader, INITIATIVE_CLOSE, closeContent, closeOperator);
             }
           }
-          default -> _Logger.warning(
+          default -> _Logger.warn(
               String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
         }
       }
@@ -133,10 +135,10 @@ public class ClientIoDispatcher implements IPipeHandler<QEvent> {
         IPair errorContent = event.getComponent();
         String msg = errorContent.getFirst();
         ISession session = errorContent.getSecond();
-        _Logger.warning("closed: [%s] -> %s", session.isClosed(), session);
+        _Logger.warn("closed: [%s] -> %s", session.isClosed(), session);
       }
       default -> {
-        _Logger.warning(" default no handle %s", event);
+        _Logger.warn(" default no handle %s", event);
       }
     }
   }

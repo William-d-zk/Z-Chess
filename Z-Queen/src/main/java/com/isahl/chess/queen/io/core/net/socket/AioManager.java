@@ -23,7 +23,6 @@
 package com.isahl.chess.queen.io.core.net.socket;
 
 import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
@@ -31,7 +30,8 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.*;
-import org.slf4j.event.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 所有io 管理器的父类，存在一定的存储空间的浪费。 在简单场景中 client端存在大量的存储空间浪费。 单一的多对多client 是不存在local cluster server 这三个子域的
@@ -40,7 +40,8 @@ import org.slf4j.event.Level;
  * @author William.d.zk
  */
 public abstract class AioManager implements IExchanger {
-  protected final Logger _Logger = Logger.getLogger("io.queen." + getClass().getSimpleName());
+  protected final Logger _Logger =
+      LoggerFactory.getLogger("io.queen." + getClass().getSimpleName());
 
   private final Map<Long, ISession>[] _Index2SessionMaps;
   private final Map<Long, Set<ISession>>[] _Prefix2SessionMaps;
@@ -103,7 +104,7 @@ public abstract class AioManager implements IExchanger {
   public void addSession(ISession session) {
     int slot = getSlot(session.index());
     _SessionsSets[slot].add(session);
-    if (!_Logger.isEnable(Level.DEBUG)) {
+    if (!_Logger.isDebugEnabled()) {
       return;
     }
     _Logger.debug(
@@ -172,14 +173,14 @@ public abstract class AioManager implements IExchanger {
         // old-session 是允许多绑定场景时，发生的是multi-bind自身的迁移情况
         old.unbindIndex(_NewIdx);
       } else {
-        _Logger.fetal("被覆盖的session 持有不同的index，%#x <=> old: %#x", _NewIdx, old.index());
+        _Logger.error("被覆盖的session 持有不同的index，%#x <=> old: %#x", _NewIdx, old.index());
         ISession old1 = _Index2SessionMaps[getSlot(old.index())].get(old.index());
         /*
          * oldIndex bind old 已在 Map 完成其他的新的绑定关系。
          * 由于MapSession是线程安全的，并不应该出现此种情况
          */
         if (old1 == old) {
-          _Logger.fetal("old1 == old → Ignore, 检查MapSession 是否存在线程安全问题"); // Ignore
+          _Logger.error("old1 == old → Ignore, 检查MapSession 是否存在线程安全问题"); // Ignore
         } else if (old1 == null) {
           _Logger.debug("old1 == null → old.index invalid"); // old.index 已失效
         }

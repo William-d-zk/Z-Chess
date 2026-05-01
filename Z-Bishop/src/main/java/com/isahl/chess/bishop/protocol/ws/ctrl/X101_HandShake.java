@@ -32,10 +32,11 @@ import com.isahl.chess.bishop.protocol.ws.model.WsFrame;
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.board.base.ISerial;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
@@ -45,7 +46,7 @@ import java.nio.charset.StandardCharsets;
 public class X101_HandShake<T extends WsContext> extends WsControl<T> {
 
   private static final Logger _Logger =
-      Logger.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
+      LoggerFactory.getLogger("bishop.protocol." + X101_HandShake.class.getSimpleName());
 
   public X101_HandShake() {
     super(WsFrame.frame_op_code_ctrl_handshake);
@@ -253,7 +254,7 @@ public class X101_HandShake<T extends WsContext> extends WsControl<T> {
     }
     int remain = input.readableBytes();
     if (remain > 0) {
-      _Logger.warning("handshake! remain [%d]");
+      _Logger.warn("handshake! remain [%d]");
     }
     return 0;
   }

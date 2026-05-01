@@ -2,10 +2,11 @@ package com.isahl.chess.player.api.subscribe;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.player.api.component.BusinessPlugin.IBusinessSubscribe;
 import com.isahl.chess.player.api.service.BiddingRpaMessageService;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class MeihangBiddingRpaSubscribe implements IBusinessSubscribe {
-  private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger log = LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private static final String TOPIC_BIDDING_RPA = "bidding_rpa";
 
@@ -35,7 +36,7 @@ public class MeihangBiddingRpaSubscribe implements IBusinessSubscribe {
           biddingRpaMessageService.processRpaMessage(
               new String(msg.payload(), StandardCharsets.UTF_8));
         } catch (Throwable t) {
-          log.fetal("receive mqtt message encounter exception. topic=" + TOPIC_BIDDING_RPA, t);
+          log.error("receive mqtt message encounter exception. topic=" + TOPIC_BIDDING_RPA, t);
         }
       }
     }

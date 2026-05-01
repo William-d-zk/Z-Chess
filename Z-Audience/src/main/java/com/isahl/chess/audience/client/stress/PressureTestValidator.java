@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
@@ -55,6 +54,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -69,7 +70,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PressureTestValidator implements IValid {
-  private static final Logger _Logger = Logger.getLogger("stress.validator");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.validator");
 
   // 依赖注入
   private final PressureTestConfig config;
@@ -212,7 +213,7 @@ public class PressureTestValidator implements IValid {
 
   /** 强制停止测试（立即关闭所有连接） */
   public synchronized void forceStopTest() {
-    _Logger.warning("Force stopping pressure test!");
+    _Logger.warn("Force stopping pressure test!");
     state = TestState.ERROR;
 
     stopTasks();
@@ -245,7 +246,7 @@ public class PressureTestValidator implements IValid {
                     if (failed.get() == 0) {
                       _Logger.info("All %d connections established successfully", connected.get());
                     } else {
-                      _Logger.warning(
+                      _Logger.warn(
                           "Connections: %d success, %d failed", connected.get(), failed.get());
                     }
                     onComplete.run();

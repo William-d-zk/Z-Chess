@@ -27,17 +27,18 @@ import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.features.model.IPair;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.lmax.disruptor.RingBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class EncodedHandler implements IPipeHandler<QEvent> {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
   private final RingBuffer<QEvent> _Error;
   private final IHealth _Health = new Health(-1);

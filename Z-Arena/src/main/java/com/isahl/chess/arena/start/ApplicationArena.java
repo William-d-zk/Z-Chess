@@ -52,9 +52,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ApplicationArena {
 
   public static void main(String[] args) {
-    // 添加启动前检查
     checkRequiredEnvironment();
-
     SpringApplication.run(ApplicationArena.class, args);
   }
 
@@ -62,28 +60,13 @@ public class ApplicationArena {
   private static void checkRequiredEnvironment() {
     String postgresPassword = System.getenv("POSTGRES_PASSWORD");
     if (postgresPassword == null || postgresPassword.isEmpty()) {
-      System.err.println("╔════════════════════════════════════════════════════════════════╗");
-      System.err.println("║  ERROR: 缺少必需的环境变量                                      ║");
-      System.err.println("╠════════════════════════════════════════════════════════════════╣");
-      System.err.println("║  未设置 POSTGRES_PASSWORD 环境变量                              ║");
-      System.err.println("║                                                                ║");
-      System.err.println("║  H2 数据库已移除，必须使用 PostgreSQL                          ║");
-      System.err.println("║  请按以下步骤配置:                                             ║");
-      System.err.println("║                                                                ║");
-      System.err.println("║  1. 设置环境变量:                                              ║");
-      System.err.println("║     export POSTGRES_PASSWORD=your_secure_password              ║");
-      System.err.println("║                                                                ║");
-      System.err.println("║  2. 启动 PostgreSQL (Docker):                                  ║");
-      System.err.println("║     docker run -d --name postgres \\                           ║");
-      System.err.println("║       -e POSTGRES_PASSWORD=your_password \\                    ║");
-      System.err.println("║       -e POSTGRES_USER=chess \\                                ║");
-      System.err.println("║       -e POSTGRES_DB=zchess_test \\                            ║");
-      System.err.println("║       -p 5432:5432 postgres:17                                 ║");
-      System.err.println("║                                                                ║");
-      System.err.println("║  3. 或使用现有的 PostgreSQL 实例                               ║");
-      System.err.println("╚════════════════════════════════════════════════════════════════╝");
-
-      System.exit(1);
+      throw new IllegalStateException(
+          "Missing required environment variable POSTGRES_PASSWORD. "
+              + "H2 has been removed; PostgreSQL is mandatory. "
+              + "Steps: 1) export POSTGRES_PASSWORD=your_secure_password "
+              + "2) docker run -d -e POSTGRES_PASSWORD=your_password -e POSTGRES_USER=chess "
+              + "-e POSTGRES_DB=zchess_test -p 5432:5432 postgres:17 "
+              + "3) or use an existing PostgreSQL instance.");
     }
   }
 }

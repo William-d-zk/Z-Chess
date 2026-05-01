@@ -39,7 +39,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.isahl.chess.king.base.log.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,9 +46,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonUtil {
-  private static final Logger _Logger = Logger.getLogger(JsonUtil.class.getSimpleName());
+  private static final Logger _Logger = LoggerFactory.getLogger(JsonUtil.class.getSimpleName());
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   static {
@@ -92,7 +93,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
+      _Logger.warn("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
     }
     return null;
   }
@@ -106,7 +107,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json[%s] error with %s", input, clazz, e);
+      _Logger.warn("read json[%s] error with %s", input, clazz, e);
     }
     return null;
   }
@@ -120,7 +121,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json[%s] error with %s", file, clazz, e);
+      _Logger.warn("read json[%s] error with %s", file, clazz, e);
     }
     return null;
   }
@@ -134,7 +135,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
+      _Logger.warn("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
     }
     return null;
   }
@@ -148,7 +149,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json[%s] error with %s", input, type, e);
+      _Logger.warn("read json[%s] error with %s", input, type, e);
     }
     return null;
   }
@@ -162,7 +163,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON from input stream: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json error with %s", type, e);
+      _Logger.warn("read json error with %s", type, e);
     }
     return null;
   }
@@ -176,7 +177,7 @@ public class JsonUtil {
     } catch (JsonParseException | JsonMappingException e) {
       _Logger.debug("Failed to parse JSON from file: %s", e.getMessage());
     } catch (IOException e) {
-      _Logger.warning("read json error with %s", type, e);
+      _Logger.warn("read json error with %s", type, e);
     }
     return null;
   }
@@ -188,7 +189,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readTree(input);
     } catch (IOException e) {
-      _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
+      _Logger.warn("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
       return OBJECT_MAPPER.nullNode();
     }
   }
@@ -200,7 +201,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readTree(input);
     } catch (IOException e) {
-      _Logger.warning("read tree input[%s] error", input, e);
+      _Logger.warn("read tree input[%s] error", input, e);
       return OBJECT_MAPPER.nullNode();
     }
   }
@@ -212,7 +213,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readTree(input);
     } catch (IOException e) {
-      _Logger.warning("read tree input stream error", e);
+      _Logger.warn("read tree input stream error", e);
       return OBJECT_MAPPER.nullNode();
     }
   }
@@ -228,7 +229,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.writeValueAsBytes(input);
     } catch (Throwable e) {
-      _Logger.warning("write json error", e);
+      _Logger.warn("write json error", e);
     }
     return null;
   }
@@ -240,7 +241,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.writeValueAsString(input);
     } catch (JsonProcessingException e) {
-      _Logger.warning("write json error", e);
+      _Logger.warn("write json error", e);
     }
     return null;
   }
@@ -252,7 +253,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.writeValueAsBytes(input);
     } catch (JsonProcessingException e) {
-      _Logger.warning("write json error", e);
+      _Logger.warn("write json error", e);
     }
     return null;
   }
@@ -266,7 +267,7 @@ public class JsonUtil {
         OBJECT_MAPPER.writeValue(file, input);
       }
     } catch (IOException e) {
-      _Logger.warning("write json  %s,", e, file.getName());
+      _Logger.warn("write json  %s,", e, file.getName());
     }
   }
 }

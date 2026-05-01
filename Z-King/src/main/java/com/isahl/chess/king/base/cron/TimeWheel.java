@@ -27,19 +27,20 @@ import static java.lang.Thread.sleep;
 
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public class TimeWheel extends ForkJoinPool {
-  private final Logger _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
+  private final Logger _Logger = LoggerFactory.getLogger("base.king." + getClass().getSimpleName());
   private final int _SlotBitLeft; // must <= 10
   private final int _HashMod;
   private final long _Tick;

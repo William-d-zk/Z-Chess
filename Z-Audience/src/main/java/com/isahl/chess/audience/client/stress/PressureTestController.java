@@ -24,12 +24,14 @@
 package com.isahl.chess.audience.client.stress;
 
 import com.isahl.chess.king.base.content.ZResponse;
-import com.isahl.chess.king.base.log.Logger;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -42,8 +44,9 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/stress")
+@Profile({"test", "stress", "docker"})
 public class PressureTestController {
-  private static final Logger _Logger = Logger.getLogger("stress.controller");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.controller");
 
   private final PressureTestValidator validator;
   private final PressureTestConfig config;
@@ -81,7 +84,7 @@ public class PressureTestController {
       return ZResponse.success(result);
 
     } catch (Exception e) {
-      _Logger.warning("Failed to start test: %s", e.getMessage());
+      _Logger.warn("Failed to start test: %s", e.getMessage());
       return ZResponse.error(e.getMessage());
     }
   }

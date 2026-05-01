@@ -23,7 +23,8 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.king.base.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SSL 配置类 支持通过系统属性配置 SSL Provider 行为
@@ -35,7 +36,8 @@ import com.isahl.chess.king.base.log.Logger;
  */
 public class SslConfiguration {
 
-  private static final Logger _Logger = Logger.getLogger(SslConfiguration.class.getSimpleName());
+  private static final Logger _Logger =
+      LoggerFactory.getLogger(SslConfiguration.class.getSimpleName());
 
   // 系统属性名称
   public static final String PROP_FORCE_PROVIDER = "ssl.provider.force";
@@ -62,7 +64,7 @@ public class SslConfiguration {
       case "default":
         return SslProviderFactory.SslProviderType.JDK;
       default:
-        _Logger.warning(
+        _Logger.warn(
             "Unknown SSL provider '%s' specified in %s, using auto-detect",
             forceProvider, PROP_FORCE_PROVIDER);
         return null;

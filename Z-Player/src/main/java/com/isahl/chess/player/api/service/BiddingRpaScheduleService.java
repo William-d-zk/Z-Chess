@@ -1,7 +1,6 @@
 package com.isahl.chess.player.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.player.api.config.PlayerConfig;
 import com.isahl.chess.player.api.model.BiddingRpaApiResponse;
 import com.isahl.chess.player.api.model.BiddingRpaDO;
@@ -14,6 +13,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +32,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class BiddingRpaScheduleService {
 
-  private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger log = LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private RestTemplate restTemplate;
 
@@ -80,7 +82,7 @@ public class BiddingRpaScheduleService {
    */
   private void cancelTask(Long taskId) {
     if (taskId == null) {
-      log.warning("taskId is empty, skipping cancel task!");
+      log.warn("taskId is empty, skipping cancel task!");
       return;
     }
     MultiValueMap<String, String> headers = new HttpHeaders();
@@ -98,7 +100,7 @@ public class BiddingRpaScheduleService {
         log.info("调用取消竞拍api结果: " + biddingRpaApiResponse);
       }
     } catch (Exception e) {
-      log.fetal("执行取消订舱任务遇到异常, task = " + taskId, e);
+      log.error("执行取消订舱任务遇到异常, task = " + taskId, e);
     }
   }
 
@@ -133,13 +135,19 @@ public class BiddingRpaScheduleService {
       }
     }
     if (CollectionUtils.isEmpty(rpaQueryAuthDos)) {
-      log.warning("rpa auth info for query is empty, please check!");
+      log.warn("rpa auth info for query is empty, please check!");
       return;
     }
 
     for (RpaTaskDO taskDO : rpaTaskDOList) {
       try {
-        Thread.sleep(30000);
+        TimeUnit.SECONDS.sleep(30);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        log.warn("Task processing interrupted");
+        break;
+      }
+      try {
         MultiValueMap<String, String> headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         // fixme 这里后续可以根据多账户进行任务分配，目前采取随机选择方式
@@ -194,8 +202,8 @@ public class BiddingRpaScheduleService {
               objectMapper.convertValue(result, BiddingRpaApiResponse.class);
           log.info("调用查询及竞拍api结果: " + biddingRpaApiResponse);
         }
-      } catch (Exception e) {
-        log.fetal("执行查询并订舱任务遇到异常, task = " + taskDO.toString(), e);
+      } catch (RuntimeException e) {
+        log.error("执行查询并订舱任务遇到异常, task = " + taskDO, e);
       }
     }
   }

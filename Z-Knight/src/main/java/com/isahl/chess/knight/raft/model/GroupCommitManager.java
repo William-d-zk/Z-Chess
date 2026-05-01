@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +31,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Group Commit 批量提交管理器
@@ -43,7 +44,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author william.d.zk
  */
 public class GroupCommitManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   /** 待提交的日志批次 */
   public static class CommitBatch {
@@ -259,7 +261,7 @@ public class GroupCommitManager {
     try {
       return append(entry).get(timeoutMs, TimeUnit.MILLISECONDS);
     } catch (Exception e) {
-      _Logger.warning("appendSync failed: %s", e.getMessage());
+      _Logger.warn("appendSync failed: %s", e.getMessage());
       return false;
     }
   }
@@ -324,12 +326,12 @@ public class GroupCommitManager {
             "Batch %d committed successfully in %dms",
             batchId, System.currentTimeMillis() - startTime);
       } else {
-        _Logger.warning("Batch %d commit failed", batchId);
+        _Logger.warn("Batch %d commit failed", batchId);
       }
 
       return success;
     } catch (IOException e) {
-      _Logger.warning("Batch %d commit failed: %s", e, batchId, e.getMessage());
+      _Logger.warn("Batch %d commit failed: %s", e, batchId, e.getMessage());
       return false;
     }
   }

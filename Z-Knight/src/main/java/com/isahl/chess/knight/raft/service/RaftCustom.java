@@ -33,7 +33,6 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X80_RaftReadInde
 import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X08_Identity;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
@@ -43,9 +42,12 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RaftCustom implements IClusterCustom<IRaftMachine> {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   private final RaftPeer _RaftPeer;
 

@@ -24,7 +24,6 @@
 package com.isahl.chess.audience.client.stress;
 
 import com.isahl.chess.king.base.content.ZResponse;
-import com.isahl.chess.king.base.log.Logger;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -37,9 +36,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -52,20 +55,33 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/test")
+@Profile({"test", "stress", "docker"})
 public class ApiTestController {
-  private static final Logger _Logger = Logger.getLogger("stress.api");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.api");
 
   private final HttpClient httpClient;
   private final ExecutorService executorService;
 
   @Autowired
   public ApiTestController() {
+    ThreadFactory httpThreadFactory =
+        r -> {
+          Thread t = new Thread(r, "stress-http");
+          t.setDaemon(true);
+          return t;
+        };
     this.httpClient =
         HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
-            .executor(Executors.newCachedThreadPool())
+            .executor(Executors.newFixedThreadPool(50, httpThreadFactory))
             .build();
-    this.executorService = Executors.newFixedThreadPool(50);
+    ThreadFactory taskThreadFactory =
+        r -> {
+          Thread t = new Thread(r, "stress-task");
+          t.setDaemon(true);
+          return t;
+        };
+    this.executorService = Executors.newFixedThreadPool(50, taskThreadFactory);
   }
 
   /**
@@ -165,7 +181,7 @@ public class ApiTestController {
         }
       } catch (Exception e) {
         failCount.incrementAndGet();
-        _Logger.warning("Request failed: %s", e.getMessage());
+        _Logger.warn("Request failed: %s", e.getMessage());
       }
     }
 

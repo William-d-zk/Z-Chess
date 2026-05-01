@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
 import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
@@ -36,9 +35,11 @@ import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
 import com.isahl.chess.queen.io.core.model.BaseSort;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioSort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SslZSort<T extends IPContext> extends BaseSort<SSLZContext<T>> {
-  private static final Logger _Logger = Logger.getLogger(SslZSort.class.getSimpleName());
+  private static final Logger _Logger = LoggerFactory.getLogger(SslZSort.class.getSimpleName());
   private final IAioSort<T> _ActingSort;
 
   private final SslHandShakeFilter<SSLZContext<T>> _Head = new SslHandShakeFilter<>();
@@ -60,7 +61,7 @@ public class SslZSort<T extends IPContext> extends BaseSort<SSLZContext<T>> {
       return new SSLZContext<>(
           (ISslOption) option, getMode(), getType(), _ActingSort.newContext(option));
     } catch (Exception e) {
-      _Logger.warning("SSL context creation failed: %s", e.getMessage());
+      _Logger.warn("SSL context creation failed: %s", e.getMessage());
     }
     return null;
   }

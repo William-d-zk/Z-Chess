@@ -23,10 +23,11 @@
 
 package com.isahl.chess.knight.cluster.management;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 集群管理服务实现
@@ -36,7 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClusterManagementServiceImpl implements ClusterManagementService {
 
   private static final Logger _Logger =
-      Logger.getLogger("cluster.knight." + ClusterManagementServiceImpl.class.getSimpleName());
+      LoggerFactory.getLogger(
+          "cluster.knight." + ClusterManagementServiceImpl.class.getSimpleName());
 
   private final Map<String, ClusterNode> _nodes = new ConcurrentHashMap<>();
   private final String _localNodeId;
@@ -54,7 +56,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     return CompletableFuture.supplyAsync(
         () -> {
           if (_nodes.containsKey(node.getNodeId())) {
-            _Logger.warning("Node already exists: " + node.getNodeId());
+            _Logger.warn("Node already exists: " + node.getNodeId());
             return false;
           }
 
@@ -80,7 +82,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             _Logger.info("Node removed: " + nodeId);
             return true;
           }
-          _Logger.warning("Node not found: " + nodeId);
+          _Logger.warn("Node not found: " + nodeId);
           return false;
         });
   }

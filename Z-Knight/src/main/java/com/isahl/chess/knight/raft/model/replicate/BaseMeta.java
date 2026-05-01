@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.IReset;
 import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.message.InnerProtocol;
 import java.io.IOException;
@@ -35,9 +34,12 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseMeta extends InnerProtocol implements IReset {
-  protected final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  protected final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   public BaseMeta(Operation operation, Strategy strategy) {
     super(operation, strategy);
@@ -84,7 +86,7 @@ public abstract class BaseMeta extends InnerProtocol implements IReset {
         channel.force(true); // 强制刷盘，包含文件元数据
       }
     } catch (IOException e) {
-      _Logger.fetal("flush meta failed: %s", e);
+      _Logger.error("flush meta failed: %s", e);
     }
   }
 
@@ -102,7 +104,7 @@ public abstract class BaseMeta extends InnerProtocol implements IReset {
     try {
       mFile.close();
     } catch (IOException e) {
-      _Logger.warning("close meta file failed: %s", e);
+      _Logger.warn("close meta file failed: %s", e);
     }
   }
 

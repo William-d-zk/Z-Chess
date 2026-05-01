@@ -32,7 +32,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.events.pipe.DecodeHandler;
@@ -41,6 +40,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 import java.nio.channels.AsynchronousSocketChannel;
+import org.slf4j.Logger;
 
 /**
  * @author william.d.zk
@@ -58,7 +58,7 @@ public class ClientReaderHandler extends DecodeHandler implements IPipeHandler<Q
         /* 多路连接不执行 retry */
         event.ignore();
       } else {
-        _Logger.warning("client io error , do close session");
+        _Logger.warn("client io error , do close session");
         IPair errorContent = event.getComponent();
         ISession session = errorContent.getSecond();
         IDismiss dismiss = session.getDismissCallback();
@@ -96,10 +96,10 @@ public class ClientReaderHandler extends DecodeHandler implements IPipeHandler<Q
               session.innerClose();
             }
             connection.error();
-            _Logger.warning("session create failed %s", throwable, connection);
+            _Logger.warn("session create failed %s", throwable, connection);
           }
         } catch (Exception e) {
-          _Logger.fetal("client session create failed", e);
+          _Logger.error("client session create failed", e);
         }
         event.ignore();
       } else {

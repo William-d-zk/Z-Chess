@@ -22,7 +22,6 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.features.model.session.ICreator;
 import com.isahl.chess.queen.io.core.features.model.session.ssl.ISslOption;
@@ -33,12 +32,14 @@ import java.nio.channels.NetworkChannel;
 import java.time.Duration;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public abstract class AioCreator implements ICreator<AsynchronousSocketChannel>, ISslOption {
-  private static final Logger _Logger = Logger.getLogger(AioCreator.class.getSimpleName());
+  private static final Logger _Logger = LoggerFactory.getLogger(AioCreator.class.getSimpleName());
   private final ISocketConfig _Config;
 
   protected AioCreator(ISocketConfig config) {
@@ -125,7 +126,7 @@ public abstract class AioCreator implements ICreator<AsynchronousSocketChannel>,
         channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
         channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
       } catch (IOException e) {
-        _Logger.warning("Channel config error: %s", e.getMessage());
+        _Logger.warn("Channel config error: %s", e.getMessage());
       }
     }
   }

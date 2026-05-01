@@ -23,13 +23,14 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.io.File;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.net.ssl.SSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SSL Provider 工厂类 优先级: WolfSSL -> JDK Default
@@ -43,7 +44,8 @@ import javax.net.ssl.SSLContext;
  */
 public class SslProviderFactory {
 
-  private static final Logger _Logger = Logger.getLogger(SslProviderFactory.class.getSimpleName());
+  private static final Logger _Logger =
+      LoggerFactory.getLogger(SslProviderFactory.class.getSimpleName());
 
   /** SSL Provider 类型枚举 */
   public enum SslProviderType {
@@ -103,7 +105,7 @@ public class SslProviderFactory {
           _Logger.info("SSL Provider initialized (forced): %s", forcedProvider.getDisplayName());
           return;
         } else {
-          _Logger.warning(
+          _Logger.warn(
               "Failed to load forced provider %s, falling back to auto-detect",
               forcedProvider.getDisplayName());
         }
@@ -264,7 +266,7 @@ public class SslProviderFactory {
 
   private static SSLContext createSSLContext(String protocol) throws Exception {
     if (!isProtocolSupported(protocol)) {
-      _Logger.warning(
+      _Logger.warn(
           "Protocol %s may not be fully supported by current provider, attempting anyway",
           protocol);
     }
@@ -277,7 +279,7 @@ public class SslProviderFactory {
           _Logger.debug("Created WolfSSL context with protocol: %s", protocol);
           yield ctx;
         } catch (Exception e) {
-          _Logger.warning(
+          _Logger.warn(
               "Failed to create WolfSSL context with protocol %s, falling back to JDK: %s",
               protocol, e.getMessage());
           yield SSLContext.getInstance(protocol);

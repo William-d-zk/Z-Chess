@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
 import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.local.model.MsgStateEntity;
@@ -50,6 +49,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class StateService implements IValid, IStateService {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final IDeviceService _DeviceService;
   private final ISessionRepository _SessionRepository;
@@ -103,7 +105,7 @@ public class StateService implements IValid, IStateService {
     try {
       cleanup(this);
     } catch (Exception e) {
-      _Logger.warning("Error during cleanup", e);
+      _Logger.warn("Error during cleanup", e);
     }
   }
 
@@ -135,7 +137,7 @@ public class StateService implements IValid, IStateService {
                     .toList());
       }
     } catch (Exception e) {
-      self._Logger.warning("cycle cleaner x failed", e);
+      self._Logger.warn("cycle cleaner x failed", e);
     }
   }
 
@@ -177,7 +179,7 @@ public class StateService implements IValid, IStateService {
       try {
         _SessionRepository.save(sessionEntity);
       } catch (Exception e) {
-        _Logger.warning("session[%#x] storage → db error", e, session);
+        _Logger.warn("session[%#x] storage → db error", e, session);
       }
     }
     return present;
@@ -261,7 +263,7 @@ public class StateService implements IValid, IStateService {
         try {
           _MsgStateService.setMsgStateEntity(message);
         } catch (Exception e) {
-          _Logger.warning("local storage received msg %s failed", message.getId(), e);
+          _Logger.warn("local storage received msg %s failed", message.getId(), e);
         }
       }
     }
@@ -277,7 +279,7 @@ public class StateService implements IValid, IStateService {
         return exist;
       }
     } catch (Exception e) {
-      _Logger.warning("local delete msg %s failed", primaryKey, e);
+      _Logger.warn("local delete msg %s failed", primaryKey, e);
     }
     return null;
   }
@@ -300,7 +302,7 @@ public class StateService implements IValid, IStateService {
         try {
           _MsgStateService.setMsgStateEntity(message);
         } catch (Exception e) {
-          _Logger.warning("local add broker msg %s failed", message.getId(), e);
+          _Logger.warn("local add broker msg %s failed", message.getId(), e);
         }
       }
       return true;

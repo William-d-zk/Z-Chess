@@ -35,7 +35,6 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
@@ -43,13 +42,15 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class IoDispatcher implements IPipeHandler<QEvent> {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
   private final RingBuffer<QEvent> _IoWrote;
   private final RingBuffer<QEvent> _Cluster;
   private final RingBuffer<QEvent>[] _Workers;
@@ -78,7 +79,7 @@ public class IoDispatcher implements IPipeHandler<QEvent> {
     IError.Type errorType = event.getErrorType();
     switch (errorType) {
       case ACCEPT_FAILED, CONNECT_FAILED -> {
-        _Logger.warning("connection build failed");
+        _Logger.warn("connection build failed");
         IPair content = event.getComponent();
         Throwable throwable = content.getFirst();
         IConnectActivity connector = content.getSecond();
@@ -145,7 +146,7 @@ public class IoDispatcher implements IPipeHandler<QEvent> {
                   event.getEventBinaryOp());
             }
           }
-          default -> _Logger.warning(
+          default -> _Logger.warn(
               String.format(" wrong type %s in IoDispatcher", event.getEventType()));
         }
       }
@@ -155,7 +156,7 @@ public class IoDispatcher implements IPipeHandler<QEvent> {
         IPair content = event.getComponent();
         Throwable throwable = content.getFirst();
         ISession session = content.getSecond();
-        _Logger.warning(
+        _Logger.warn(
             "error %s @ %s, → mapping handler [close] \n",
             throwable, errorType.getMsg(), session.summary());
         if (!session.isClosed()) {

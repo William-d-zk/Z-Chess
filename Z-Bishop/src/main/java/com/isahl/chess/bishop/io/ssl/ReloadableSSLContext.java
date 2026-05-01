@@ -24,7 +24,6 @@
 package com.isahl.chess.bishop.io.ssl;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -34,6 +33,8 @@ import java.security.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicStampedReference;
 import javax.net.ssl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 可热更新的 SSLContext 包装器
@@ -47,7 +48,8 @@ import javax.net.ssl.*;
  */
 public class ReloadableSSLContext {
 
-  private static final Logger _Logger = Logger.getLogger("io.bishop.ssl.ReloadableSSLContext");
+  private static final Logger _Logger =
+      LoggerFactory.getLogger("io.bishop.ssl.ReloadableSSLContext");
 
   // 使用 AtomicStampedReference 避免 ABA 问题
   // stamp 仅用于 CAS 操作序列，不存储业务版本号
@@ -275,7 +277,7 @@ public class ReloadableSSLContext {
 
         return true;
       } else {
-        _Logger.warning("SSLContext reload failed: concurrent modification detected");
+        _Logger.warn("SSLContext reload failed: concurrent modification detected");
         return false;
       }
     } catch (Exception e) {

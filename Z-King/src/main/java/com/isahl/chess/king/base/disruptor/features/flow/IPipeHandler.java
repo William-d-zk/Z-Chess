@@ -28,9 +28,9 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.RingBuffer;
 import java.util.List;
+import org.slf4j.Logger;
 
 /**
  * @author William.d.zk
@@ -45,7 +45,7 @@ public interface IPipeHandler<E extends IEvent> extends IBatchHandler<E> {
       return;
     }
     if (publisher.remainingCapacity() == 0) {
-      _Logger().warning("publish block with %s", type.name());
+      _Logger().warn("publish block with %s", type.name());
     }
     long sequence = publisher.next();
     try {
@@ -61,7 +61,7 @@ public interface IPipeHandler<E extends IEvent> extends IBatchHandler<E> {
       return;
     }
     if (publisher.remainingCapacity() == 0) {
-      _Logger().warning("publish block with writer");
+      _Logger().warn("publish block with writer");
     }
     long sequence = publisher.next();
     try {
@@ -78,7 +78,7 @@ public interface IPipeHandler<E extends IEvent> extends IBatchHandler<E> {
       return;
     }
     if (publisher.remainingCapacity() == 0) {
-      _Logger().warning("error block with %s", type.name());
+      _Logger().warn("error block with %s", type.name());
     }
     long sequence = publisher.next();
     try {

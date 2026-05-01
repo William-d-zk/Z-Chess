@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.io.ssl;
 import com.isahl.chess.bishop.protocol.ProtocolContext;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
@@ -37,6 +36,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.net.ssl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SSL/TLS Context 实现类 使用 SslProviderFactory 获取 SSLContext，支持 WolfSSL/OpenSSL/JDK 自动降级
@@ -47,7 +48,7 @@ import javax.net.ssl.*;
  */
 public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
     implements IProxyContext<A> {
-  private static final Logger _Logger = Logger.getLogger("io.bishop.ssl.SSLZContext");
+  private static final Logger _Logger = LoggerFactory.getLogger("io.bishop.ssl.SSLZContext");
 
   // TLS 1.3 推荐加密套件（按优先级排序）
   private static final List<String> TLS13_CIPHER_SUITES =
@@ -165,7 +166,7 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
         engine.setEnabledCipherSuites(suites);
         _Logger.debug("TLS 1.3 cipher suites configured: %s", Arrays.toString(suites));
       } else {
-        _Logger.warning("No TLS 1.3 cipher suites available, using defaults");
+        _Logger.warn("No TLS 1.3 cipher suites available, using defaults");
       }
     } else {
       // TLS 1.2 启用所有支持的加密套件（但过滤掉弱加密套件）
@@ -230,7 +231,7 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
    */
   public boolean reloadCertificates() {
     if (!_HotReloadEnabled || _ReloadableContext == null) {
-      _Logger.warning("Hot reload is not enabled, cannot reload certificates");
+      _Logger.warn("Hot reload is not enabled, cannot reload certificates");
       return false;
     }
     return _ReloadableContext.reload();
@@ -288,7 +289,7 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
       _SslEngine.beginHandshake();
       _Logger.trace("SSL handshake started, status=%s", _SslEngine.getHandshakeStatus());
     } catch (SSLException e) {
-      _Logger.fetal("SSL handshake initialization failed: %s", e.getMessage());
+      _Logger.error("SSL handshake initialization failed: %s", e.getMessage());
     }
   }
 
@@ -325,12 +326,12 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
         }
         case CLOSED -> throw new ZException("SSL connection closed during wrap");
         case BUFFER_OVERFLOW -> {
-          _Logger.warning("SSL wrap BUFFER_OVERFLOW, packet buffer may be too small");
+          _Logger.warn("SSL wrap BUFFER_OVERFLOW, packet buffer may be too small");
           throw new ZException("SSL wrap buffer overflow");
         }
       };
     } catch (SSLException e) {
-      _Logger.fetal("SSL wrap error: %s", e.getMessage());
+      _Logger.error("SSL wrap error: %s", e.getMessage());
       throw new ZException(e, "ssl wrap error");
     }
   }
@@ -364,7 +365,7 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
         }
         case CLOSED -> throw new ZException("SSL connection closed during unwrap");
         case BUFFER_OVERFLOW -> {
-          _Logger.warning("SSL unwrap BUFFER_OVERFLOW, app buffer may be too small");
+          _Logger.warn("SSL unwrap BUFFER_OVERFLOW, app buffer may be too small");
           throw new ZException("SSL unwrap buffer overflow");
         }
       }
@@ -372,7 +373,7 @@ public class SSLZContext<A extends IPContext> extends ProtocolContext<IPacket>
       netInBuffer.skip(consumed);
       return produced > 0 ? appInBuffer.seek(produced) : null;
     } catch (SSLException e) {
-      _Logger.fetal("SSL unwrap error: %s", e.getMessage());
+      _Logger.error("SSL unwrap error: %s", e.getMessage());
       throw new ZException(e, "ssl unwrap error");
     }
   }

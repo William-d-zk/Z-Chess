@@ -28,7 +28,6 @@ import com.isahl.chess.bishop.protocol.zchat.custom.ZLinkCustom;
 import com.isahl.chess.bishop.sort.ZSortHolder;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
@@ -46,6 +45,8 @@ import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +58,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class NodeService {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final DeviceNode _DeviceNode;
   private final ILinkCustom _LinkCustom;

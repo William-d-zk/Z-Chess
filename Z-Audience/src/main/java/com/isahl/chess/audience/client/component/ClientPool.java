@@ -41,7 +41,6 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
@@ -65,6 +64,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -75,7 +76,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ClientPool extends AioManager implements IAioClient, IDismiss, IActivity {
-  private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+  private final Logger _Logger = LoggerFactory.getLogger(getClass().getSimpleName());
 
   private final ClientConfig _ClientConfig;
   private final AsynchronousChannelGroup _ChannelGroup;
@@ -199,7 +200,7 @@ public class ClientPool extends AioManager implements IAioClient, IDismiss, IAct
       mHeartbeatTask.cancel();
     }
     rmSession(session);
-    _Logger.warning("device consumer dismiss session %s", session);
+    _Logger.warn("device consumer dismiss session %s", session);
   }
 
   public final void sendLocal(long sessionIndex, IProtocol... toSends) {

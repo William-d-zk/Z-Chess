@@ -74,7 +74,7 @@ public class DeviceNode extends MixManager implements IDismiss, IClusterNode {
 
   @Override
   public void onDismiss(ISession session) {
-    _Logger.warning("dismiss %s", session);
+    _Logger.warn("dismiss {}", session);
     rmSession(session);
   }
 
@@ -176,7 +176,7 @@ public class DeviceNode extends MixManager implements IDismiss, IClusterNode {
       try {
         server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());
       } catch (IOException e) {
-        _Logger.warning("server bind error %s", e, server.getLocalAddress());
+        _Logger.warn("server bind error {}", e, server.getLocalAddress());
       }
       server.pendingAccept();
       _Logger.info(
@@ -244,12 +244,12 @@ public class DeviceNode extends MixManager implements IDismiss, IClusterNode {
   @Override
   public void exchange(IProtocol body, long target, int factory, List<ITriple> load) {
     if (load == null || body == null || target == INVALID_INDEX) {
-      _Logger.warning("exchange failed{ load:%s body:%s origin:%#x }", load, body, target);
+      _Logger.warn("exchange failed{{ load:{} body:{} origin:{:#x} }}", load, body, target);
       return;
     }
     ISession session = findSessionOverIndex(target);
     if (session == null) {
-      _Logger.warning("exchange failed, no session routing");
+      _Logger.warn("exchange failed, no session routing");
       return;
     }
     X1F_Exchange x1F = new X1F_Exchange(clusterPeer().generateId());

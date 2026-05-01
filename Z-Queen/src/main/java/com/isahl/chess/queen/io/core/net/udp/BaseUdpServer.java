@@ -24,7 +24,6 @@
 package com.isahl.chess.queen.io.core.net.udp;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -34,6 +33,8 @@ import java.nio.channels.DatagramChannel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * UDP 服务器基础实现 基于 DatagramChannel 的非阻塞 UDP 服务器
@@ -41,7 +42,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author william.d.zk
  */
 public class BaseUdpServer implements UdpChannel {
-  protected final Logger _Logger = Logger.getLogger("io.queen.udp." + getClass().getSimpleName());
+  protected final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.udp." + getClass().getSimpleName());
 
   private final DatagramChannel _Channel;
   private final InetSocketAddress _LocalAddress;
@@ -75,7 +77,7 @@ public class BaseUdpServer implements UdpChannel {
   @Override
   public int send(byte[] data, InetSocketAddress remote) {
     if (!_IsOpen.get()) {
-      _Logger.warning("Cannot send: channel is closed");
+      _Logger.warn("Cannot send: channel is closed");
       return 0;
     }
 
@@ -153,7 +155,7 @@ public class BaseUdpServer implements UdpChannel {
 
   @Override
   public void leaveGroup(InetSocketAddress group) {
-    _Logger.warning("Multicast leaveGroup not implemented for UDP server");
+    _Logger.warn("Multicast leaveGroup not implemented for UDP server");
   }
 
   @Override

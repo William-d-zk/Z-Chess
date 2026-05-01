@@ -24,12 +24,13 @@
 package com.isahl.chess.bishop.protocol.mqtt.service;
 
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.king.base.log.Logger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 密码挑战认证提供者
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PasswordAuthProvider implements IQttAuthProvider {
   private static final Logger _Logger =
-      Logger.getLogger("mqtt.auth." + PasswordAuthProvider.class.getSimpleName());
+      LoggerFactory.getLogger("mqtt.auth." + PasswordAuthProvider.class.getSimpleName());
 
   public static final String AUTH_METHOD = "PASSWORD";
 
@@ -73,13 +74,13 @@ public class PasswordAuthProvider implements IQttAuthProvider {
     String password = connect.getPassword();
 
     if (username == null || password == null) {
-      _Logger.warning("Authentication failed: missing credentials");
+      _Logger.warn("Authentication failed: missing credentials");
       return AuthResult.failure("Missing username or password");
     }
 
     String storedPassword = _UserCredentials.get(username);
     if (storedPassword == null) {
-      _Logger.warning("Authentication failed: user not found: %s", username);
+      _Logger.warn("Authentication failed: user not found: %s", username);
       return AuthResult.failure("Invalid username or password");
     }
 
@@ -87,14 +88,14 @@ public class PasswordAuthProvider implements IQttAuthProvider {
       _Logger.info("Authentication success for user: %s", username);
       return AuthResult.success(null);
     } else {
-      _Logger.warning("Authentication failed: invalid password for user: %s", username);
+      _Logger.warn("Authentication failed: invalid password for user: %s", username);
       return AuthResult.failure("Invalid username or password");
     }
   }
 
   @Override
   public AuthResult continueAuth(String authMethod, byte[] authData, AuthContext context) {
-    _Logger.warning("Continue auth not supported for method: %s", authMethod);
+    _Logger.warn("Continue auth not supported for method: %s", authMethod);
     return AuthResult.failure("Authentication method does not support multi-step authentication");
   }
 
@@ -113,7 +114,7 @@ public class PasswordAuthProvider implements IQttAuthProvider {
         String providedHash = Base64.getEncoder().encodeToString(hash);
         return storedHash.equals(providedHash);
       } catch (Exception e) {
-        _Logger.warning("Password verification error for user: %s", username, e);
+        _Logger.warn("Password verification error for user: %s", username, e);
         return false;
       }
     }

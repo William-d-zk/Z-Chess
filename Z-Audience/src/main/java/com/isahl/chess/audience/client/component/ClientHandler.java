@@ -26,7 +26,6 @@ package com.isahl.chess.audience.client.component;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
@@ -34,9 +33,12 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClientHandler implements ILogicHandler {
-  private final Logger _Logger = Logger.getLogger("test.audience." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("test.audience." + getClass().getSimpleName());
   private final IHealth _Health;
   private final IExchanger _Exchanger;
 

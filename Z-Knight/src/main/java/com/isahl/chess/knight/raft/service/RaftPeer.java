@@ -41,7 +41,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.model.ListSerial;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
@@ -72,13 +71,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  * @date 2020/1/4
  */
 public class RaftPeer implements IValid, IRaftService, IClusterTimer {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
   private final ZUID _ZUid;
   private final IRaftConfig _RaftConfig;
   private final IRaftMapper _RaftMapper;
@@ -261,7 +263,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
               mClusterNode.setupPeer(remote.getHost(), remote.getPort());
               _Logger.debug("setup, connect [peer : %s:%d]", remote.getHost(), remote.getPort());
             } catch (Exception e) {
-              _Logger.warning("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
+              _Logger.warn("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
             }
           }
         });
@@ -285,7 +287,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     long lastIncludeTerm = meta.getTerm();
 
     if (lastIncludeIndex <= 0) {
-      _Logger.warning("no valid snapshot available for peer[%#x]", peer);
+      _Logger.warn("no valid snapshot available for peer[%#x]", peer);
       return null;
     }
 
@@ -382,7 +384,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       _Logger.debug("random wait for %d mills, then vote", wait);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt(); // 恢复中断状态
-      _Logger.warning("Thread interrupted during random wait");
+      _Logger.warn("Thread interrupted during random wait");
     }
     timeTrigger(beCandidate());
   }
@@ -416,7 +418,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
                 peer -> {
                   ISession session = manager.fairLoadSessionByPrefix(peer);
                   if (session == null) {
-                    _Logger.warning("elector :%#x session has not found", peer);
+                    _Logger.warn("elector :%#x session has not found", peer);
                     return null;
                   }
                   _Logger.debug("vote4me to %s", session);
@@ -453,7 +455,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         && update.candidate() == _SelfMachine.peer()) {
       return createVotes(vote4me(update.term()), manager);
     }
-    _Logger.warning("check vote failed; now: %s\n%s", _SelfMachine, update);
+    _Logger.warn("check vote failed; now: %s\n%s", _SelfMachine, update);
     return null;
   }
 
@@ -475,7 +477,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
    */
   private ITriple checkTerm(IRaftRecord record, long msgId, ISession session) {
     if (lowTerm(record.term())) {
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "{low term: reject %#x, mine:[%d@%d(%d)] from:[%d@%d(%d)]}",
             record.peer(),
@@ -490,7 +492,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     }
     if (highTerm(record.term())) {
       // term > my term
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "{step down [%#x → follower] high term [ %d > %d ]}",
             _SelfMachine.peer(), record.term(), _SelfMachine.term());
@@ -515,7 +517,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           || _SelfMachine.accept() > x70.accept()
           || _SelfMachine.indexTerm() > x70.indexTerm()
           || _SelfMachine.index() > x70.index()) {
-        if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+        if (_Logger.isDebugEnabled()) {
           _Logger.debug(
               "less than me; reject[%s]  mine:[ %d@%d,a:%d | c:%d ] > candidate:[ %d@%d, a:%d | c:%d ] then vote4me[ follower → candidate ] ",
               OBSOLETE,
@@ -532,7 +534,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
             rejectThenVote(x70.candidate(), x70.msgId(), manager, session), null, BATCH);
       } else {
         // 投票给候选人
-        if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+        if (_Logger.isDebugEnabled()) {
           _Logger.debug(
               "new term [ %d ] follower [ %#x ] → elector | candidate:[ %#x ]",
               x70.term(), _SelfMachine.peer(), x70.candidate());
@@ -543,7 +545,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     }
     // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
     else if (_SelfMachine.candidate() != x70.candidate()) {
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "already vote [elector ×] | vote for:[ %#x not ♂ %#x ]",
             _SelfMachine.candidate(), x70.candidate());
@@ -552,7 +554,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           reject(ALREADY_VOTE, x70.candidate(), x70.msgId()).with(session), null, SINGLE);
     } else {
       // 重复投票给相同的候选人
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "same vote [elector x] | vote for:[%#x ♂ %#x]",
             _SelfMachine.candidate(), x70.candidate());
@@ -604,7 +606,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     RaftState state = RaftState.valueOf(_SelfMachine.state());
     switch (state) {
       case LEADER -> {
-        _Logger.warning(
+        _Logger.warn(
             "state:[%s], leader[%#x] → the other [%#x] ",
             state, _SelfMachine.leader(), x72.leader());
         return Triple.of(
@@ -627,7 +629,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
             x72.msgId(),
             session);
       }
-      default -> _Logger.warning("illegal state :%s", RaftState.roleOf(_SelfMachine.state()));
+      default -> _Logger.warn("illegal state :%s", RaftState.roleOf(_SelfMachine.state()));
     }
     return null;
   }
@@ -642,7 +644,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     // Pipeline 模式：处理拒绝，回退 inflight 窗口
     if (mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
       long newNextIndex = _PipelineManager.onReject(x74.peer(), x74.index(), x74.indexTerm());
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "Pipeline: received reject from %#x, newNextIndex=%d", x74.peer(), newNextIndex);
       }
@@ -650,7 +652,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     if (highTerm(x74.term())) {
       // peer's term > my term
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             " → reject {step down [%s → follower]}", RaftState.roleOf(_SelfMachine.state()));
       }
@@ -664,7 +666,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           case CONFLICT -> {
             // follower 持有的 log 纪录 index@term 与leader 投送的不一致，后续进行覆盖同步
             if (_SelfMachine.isInState(LEADER)) {
-              if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+              if (_Logger.isDebugEnabled()) {
                 _Logger.debug(
                     "follower %#x,match failed,rollback %d@%d",
                     x74.peer(), x74.index(), x74.indexTerm());
@@ -705,7 +707,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
                 return Triple.of(append, null, SINGLE);
               }
             } else {
-              _Logger.warning(
+              _Logger.warn(
                   "self %#x is old leader & send logs → %#x,next-index wasn't catchup",
                   _SelfMachine.peer(), x74.peer());
               // Ignore
@@ -713,7 +715,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           }
           case SPLIT_CLUSTER -> {
             if (_SelfMachine.isInState(LEADER)) {
-              if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+              if (_Logger.isDebugEnabled()) {
                 _Logger.debug("other leader:[%#x]", x74.leader());
               }
             }
@@ -754,7 +756,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     if (mPipelineEnabled && _SelfMachine.isInState(LEADER)) {
       _PipelineManager.onAck(x73.peer(), x73.accept());
 
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "Pipeline: received accept from %#x, index=%d, inflight=%d",
             x73.peer(), x73.accept(), _PipelineManager.getInflightCount(x73.peer()));
@@ -796,14 +798,14 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         return Triple.of(null, createNotify(entry), NULL);
       }
     } else if (x73.accept() < next) { // machine.accept < next → 已经执行过 self commit 过, 无须重复 commit
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "already commit %d, follow[ %#x ] accept: %d commit: %d",
             _SelfMachine.commit(), x73.peer(), x73.accept(), x73.commit());
       }
     } else {
       // !_SelfGraph.isMajorAccept(next) → 未满足 commit 条件, 不执行 commit
-      if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+      if (_Logger.isDebugEnabled()) {
         _Logger.debug(
             "member %#x, catchup:%d → %d", x73.peer(), x73.accept(), _SelfMachine.accept());
       }
@@ -814,7 +816,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
   private IRaftMachine getMachine(RaftGraph graph, long peer) {
     IRaftMachine machine = graph.get(peer);
     if (machine == null) {
-      _Logger.warning("%s:peer %#x is not found", graph.name(), peer);
+      _Logger.warn("%s:peer %#x is not found", graph.name(), peer);
       return null;
     }
     return machine;
@@ -887,7 +889,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       mTickTask = _TimeWheel.acquire(this, _TickSchedule);
 
     } else {
-      _Logger.warning("step down [ignore],state now[%s]", RaftState.roleOf(_SelfMachine.state()));
+      _Logger.warn("step down [ignore],state now[%s]", RaftState.roleOf(_SelfMachine.state()));
     }
   }
 
@@ -940,7 +942,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           if (entry != null && entry.client() != _SelfMachine.peer()) {
             notifies.add(createNotify(entry));
           } else if (entry == null) {
-            _Logger.warning(
+            _Logger.warn(
                 "entry %d is null,self accept:%d; check segment", i, _SelfMachine.accept());
           }
         }
@@ -1082,7 +1084,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       }
       // rollback == null
       else if (preIndex >= _RaftMapper.getStartIndex()) {
-        _Logger.fetal("lost data → reset machine & mapper ");
+        _Logger.error("lost data → reset machine & mapper ");
         _SelfMachine.reset();
         _RaftMapper.reset();
       }
@@ -1100,7 +1102,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         stepDown(update.term());
         break CHECK;
       }
-      _Logger.warning("state %s event [ignore]", RaftState.roleOf(_SelfMachine.state()));
+      _Logger.warn("state %s event [ignore]", RaftState.roleOf(_SelfMachine.state()));
     }
     return null;
   }
@@ -1118,7 +1120,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager, usePipeline);
     }
     // state change => ignore
-    _Logger.warning("check leader heartbeat failed; now:%s", _SelfMachine);
+    _Logger.warn("check leader heartbeat failed; now:%s", _SelfMachine);
     return null;
   }
 
@@ -1151,11 +1153,11 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           x75.with(session);
           return Collections.singletonList(Triple.of(x75, session, session.encoder()));
         } else {
-          _Logger.fetal("Leader connection miss,wait for reconnecting");
+          _Logger.error("Leader connection miss,wait for reconnecting");
         }
       }
       default -> {
-        _Logger.fetal(
+        _Logger.error(
             "cluster is electing self[%#x]→ %s",
             _SelfMachine.peer(), RaftState.roleOf(_SelfMachine.state()));
         return null;
@@ -1232,7 +1234,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         return List.of(Triple.of(x78, session, session.encoder()));
       }
         // ignore ELECTOR, CANDIDATE, GATE
-      default -> _Logger.warning("illegal state: [%s]", state);
+      default -> _Logger.warn("illegal state: [%s]", state);
     }
     return null;
   }
@@ -1310,12 +1312,12 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           return Triple.of(x7c, null, SINGLE);
         }
         // else 选举态 不改变状态
-        _Logger.warning(
+        _Logger.warn(
             "expect:{ FOLLOW → %#x }, from:%#x ; illegal state", _SelfMachine.leader(), leader);
       }
       default -> {
         // ignore ELECTOR, CANDIDATE, GATE
-        _Logger.warning("illegal state: [%s]", state);
+        _Logger.warn("illegal state: [%s]", state);
         x7a.code(ILLEGAL_STATE.getCode());
         return Triple.of(null, x7a, NULL);
       }
@@ -1360,7 +1362,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
               null,
               BATCH);
         }
-        _Logger.warning("graph union NULL");
+        _Logger.warn("graph union NULL");
       }
     }
     // leader 已经完成 confirm 忽略
@@ -1383,7 +1385,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
   public List<ITriple> startMembershipChange(RaftNode delta, IManager manager) {
     // 检查是否已有进行中的变更
     if (_MembershipChangeManager.hasActiveChange()) {
-      _Logger.warning(
+      _Logger.warn(
           "Membership change already in progress: %s",
           _MembershipChangeManager.getCurrentTransaction());
       return null;
@@ -1399,7 +1401,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     // 开始变更事务
     long changeId = generateId();
     if (!_MembershipChangeManager.startChange(changeId, _SelfMachine.peer(), oldPeers, newPeers)) {
-      _Logger.warning("Failed to start membership change %d", changeId);
+      _Logger.warn("Failed to start membership change %d", changeId);
       return null;
     }
 
@@ -1423,7 +1425,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     }
 
     if (tx.isTimeout()) {
-      _Logger.warning("Membership change %d timeout, rolling back", tx.getId());
+      _Logger.warn("Membership change %d timeout, rolling back", tx.getId());
       rollbackMembershipChange("Timeout after " + tx.getElapsedTime());
     } else {
       // 继续监控
@@ -1456,7 +1458,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 完成事务
     tx = _MembershipChangeManager.complete();
-    _Logger.warning("Membership change %d rolled back: %s", tx.getId(), reason);
+    _Logger.warn("Membership change %d rolled back: %s", tx.getId(), reason);
   }
 
   /** 确认成员变更完成 阶段2: JOINT → CNEW */
@@ -1519,7 +1521,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     if (phase == MembershipChangeManager.Phase.PREPARING
         || phase == MembershipChangeManager.Phase.JOINT
         || phase == MembershipChangeManager.Phase.COMMITTING) {
-      _Logger.warning("Incomplete membership change detected, rolling back");
+      _Logger.warn("Incomplete membership change detected, rolling back");
       _SelfMachine.confirm();
       _JointGraph.resetTo(_SelfGraph);
       _RaftMapper.resetMembershipConfig();
@@ -1560,19 +1562,19 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
    */
   public boolean transferLeadership(long targetPeer, IManager manager) {
     if (!_SelfMachine.isInState(LEADER)) {
-      _Logger.warning("Cannot transfer leadership: not a leader");
+      _Logger.warn("Cannot transfer leadership: not a leader");
       return false;
     }
 
     // 检查是否已有进行中的转让
     if (_LeadershipTransferManager.hasActiveTransfer()) {
-      _Logger.warning("Cannot transfer leadership: another transfer in progress");
+      _Logger.warn("Cannot transfer leadership: another transfer in progress");
       return false;
     }
 
     // 检查是否正在成员变更
     if (_MembershipChangeManager.hasActiveChange()) {
-      _Logger.warning("Cannot transfer leadership: membership change in progress");
+      _Logger.warn("Cannot transfer leadership: membership change in progress");
       return false;
     }
 
@@ -1582,20 +1584,20 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           LeadershipTransferManager.selectBestTarget(
               _SelfGraph.getPeers().values(), _SelfMachine.peer());
       if (targetPeer == 0) {
-        _Logger.warning("Cannot find suitable target for leadership transfer");
+        _Logger.warn("Cannot find suitable target for leadership transfer");
         return false;
       }
     }
 
     // 检查目标是否是自己
     if (targetPeer == _SelfMachine.peer()) {
-      _Logger.warning("Cannot transfer leadership to self");
+      _Logger.warn("Cannot transfer leadership to self");
       return false;
     }
 
     // 检查目标是否在集群中
     if (!_SelfGraph.getPeers().containsKey(targetPeer)) {
-      _Logger.warning("Target peer %#x not in cluster", targetPeer);
+      _Logger.warn("Target peer %#x not in cluster", targetPeer);
       return false;
     }
 
@@ -1603,7 +1605,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     long transferId = generateId();
     if (!_LeadershipTransferManager.startTransfer(
         transferId, targetPeer, _SelfMachine.peer(), _SelfMachine.term())) {
-      _Logger.warning("Failed to start leadership transfer");
+      _Logger.warn("Failed to start leadership transfer");
       return false;
     }
 
@@ -1629,7 +1631,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     ISession session = manager.fairLoadSessionByPrefix(targetPeer);
     if (session == null) {
-      _Logger.warning("Cannot find session to target peer %#x", targetPeer);
+      _Logger.warn("Cannot find session to target peer %#x", targetPeer);
       _LeadershipTransferManager.markFailed("Target peer session not found");
       _LeadershipTransferManager.complete();
       return false;
@@ -1657,7 +1659,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 检查是否是自己
     if (targetPeer != _SelfMachine.peer()) {
-      _Logger.warning(
+      _Logger.warn(
           "Transfer request target mismatch: expected %#x, got %#x",
           targetPeer, _SelfMachine.peer());
       return Triple.of(
@@ -1666,7 +1668,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 检查当前状态
     if (!_SelfMachine.isInState(FOLLOWER)) {
-      _Logger.warning(
+      _Logger.warn(
           "Cannot accept leadership: not a follower (state=%s)",
           RaftState.roleOf(_SelfMachine.state()));
       return Triple.of(
@@ -1675,7 +1677,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 检查 term
     if (x81.getTerm() < _SelfMachine.term()) {
-      _Logger.warning(
+      _Logger.warn(
           "Cannot accept leadership: stale term (request=%d, current=%d)",
           x81.getTerm(), _SelfMachine.term());
       return Triple.of(
@@ -1685,7 +1687,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     // 检查日志是否追上
     long lag = x81.getLeaderIndex() - _SelfMachine.index();
     if (lag > 100) { // 日志落后太多，拒绝
-      _Logger.warning("Cannot accept leadership: log lag too large (%d entries)", lag);
+      _Logger.warn("Cannot accept leadership: log lag too large (%d entries)", lag);
       return Triple.of(
           createTransferResponse(
               x81.msgId(), false, "Log lag too large: " + lag + " entries", session),
@@ -1741,7 +1743,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 检查是否来自目标节点
     if (x82.getPeer() != tx.getTargetPeer()) {
-      _Logger.warning("Transfer response from unexpected peer: %#x", x82.getPeer());
+      _Logger.warn("Transfer response from unexpected peer: %#x", x82.getPeer());
       return;
     }
 
@@ -1756,7 +1758,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       updateTerm(_SelfMachine.term() + 1);
       stepDown(_SelfMachine.term());
     } else {
-      _Logger.warning(
+      _Logger.warn(
           "Target peer %#x rejected leadership transfer: %s", x82.getPeer(), x82.getMessage());
 
       // 尝试重试
@@ -1795,7 +1797,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
 
     // 检查是否超时
     if (tx.isTimeout()) {
-      _Logger.warning("Leadership transfer %d timeout", tx.getId());
+      _Logger.warn("Leadership transfer %d timeout", tx.getId());
       _LeadershipTransferManager.markTimeout();
       _LeadershipTransferManager.complete();
       mTransferTimeoutTask = null;
@@ -1832,7 +1834,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       _Logger.debug("leader appended log %d@%d", newEntry.index(), newEntry.term());
       return followersAppend(RaftGraph.join(_SelfMachine.peer(), _SelfGraph, _JointGraph), manager);
     }
-    _Logger.fetal("RAFT WAL failed!");
+    _Logger.error("RAFT WAL failed!");
     return null;
   }
 
@@ -2056,7 +2058,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         // 存有数据的状态
         LogEntry matched;
         if ((matched = _RaftMapper.getEntry(preIndex)) == null) {
-          _Logger.warning("match point %d@%d lost", preIndex, preIndexTerm);
+          _Logger.warn("match point %d@%d lost", preIndex, preIndexTerm);
           break CHECK;
         } else {
           if (matched.index() == preIndex && matched.term() == preIndexTerm) {
@@ -2070,7 +2072,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
                 _SelfMachine.index(),
                 _SelfMachine.indexTerm());
           } else {
-            _Logger.warning(
+            _Logger.warn(
                 "matched %#x vs %#x no consistency;%d@%d",
                 peerId(), acceptor.peer(), preIndex, preIndexTerm);
             break CHECK;
@@ -2310,7 +2312,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
                 peer -> {
                   ISession session = manager.fairLoadSessionByPrefix(peer);
                   if (session == null) {
-                    _Logger.warning("pre-vote: peer %#x session not found", peer);
+                    _Logger.warn("pre-vote: peer %#x session not found", peer);
                     return null;
                   }
                   X6F_RaftPreVote x6f = new X6F_RaftPreVote();
@@ -2408,7 +2410,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
       _Logger.debug("snapshot chunk installed: offset=%d, size=%d", chunk.offset(), data.length);
       return true;
     } catch (Exception e) {
-      _Logger.warning("failed to install snapshot chunk: %s", e);
+      _Logger.warn("failed to install snapshot chunk: %s", e);
       return false;
     }
   }
@@ -2447,7 +2449,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         machine.index(x7e.lastIncludeIndex());
       }
     } else {
-      _Logger.warning("snapshot failed on %#x: %s", x7e.peer(), x7e.errorMsg());
+      _Logger.warn("snapshot failed on %#x: %s", x7e.peer(), x7e.errorMsg());
     }
     return null;
   }
@@ -2482,7 +2484,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         // 转发给 Leader
         ISession session = manager.fairLoadSessionByPrefix(_SelfMachine.leader());
         if (session == null) {
-          _Logger.warning("readIndex: leader session not found");
+          _Logger.warn("readIndex: leader session not found");
           return null;
         }
         X7F_RaftReadIndex x7f = new X7F_RaftReadIndex(generateId());
@@ -2493,7 +2495,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         return Collections.singletonList(Triple.of(x7f, session, session.encoder()));
       }
       default -> {
-        _Logger.warning(
+        _Logger.warn(
             "readIndex: cannot process in state %s", RaftState.roleOf(_SelfMachine.state()));
         return null;
       }
@@ -2596,7 +2598,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
           waiters.removeIf(
               req -> {
                 if (now - req.createTime > timeout) {
-                  _Logger.warning("readIndex %d timeout", req.readId);
+                  _Logger.warn("readIndex %d timeout", req.readId);
                   // 发送超时响应
                   return true;
                 }
@@ -2614,7 +2616,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     long readId = ++_LastReadId;
 
     if (!mLeaseReadEnabled) {
-      _Logger.warning("leaseRead: lease read is disabled, falling back to readIndex");
+      _Logger.warn("leaseRead: lease read is disabled, falling back to readIndex");
       return readIndex(manager, origin, client);
     }
 
@@ -2634,7 +2636,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         // 转发给 Leader
         ISession session = manager.fairLoadSessionByPrefix(_SelfMachine.leader());
         if (session == null) {
-          _Logger.warning("leaseRead: leader session not found");
+          _Logger.warn("leaseRead: leader session not found");
           return null;
         }
         X83_RaftLeaseRead x83 = new X83_RaftLeaseRead(generateId());
@@ -2644,7 +2646,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
         return Collections.singletonList(Triple.of(x83, session, session.encoder()));
       }
       default -> {
-        _Logger.warning(
+        _Logger.warn(
             "leaseRead: cannot process in state %s", RaftState.roleOf(_SelfMachine.state()));
         return null;
       }
@@ -2820,7 +2822,7 @@ public class RaftPeer implements IValid, IRaftService, IClusterTimer {
     boolean hasQuorum = _SelfGraph.isMajorAccept(_SelfMachine.peer(), _SelfMachine.term());
 
     if (!hasQuorum) {
-      _Logger.warning("checkQuorum: lost quorum, active=%d/%d, step down", activeCount, totalPeers);
+      _Logger.warn("checkQuorum: lost quorum, active=%d/%d, step down", activeCount, totalPeers);
       stepDown(_SelfMachine.term());
     } else {
       _Logger.debug("checkQuorum: quorum maintained, active=%d/%d", activeCount, totalPeers);

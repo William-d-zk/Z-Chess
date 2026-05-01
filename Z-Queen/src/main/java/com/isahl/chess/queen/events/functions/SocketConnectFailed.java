@@ -24,8 +24,9 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -33,11 +34,11 @@ import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
 public class SocketConnectFailed implements IBinaryOperator<Throwable, IAioConnection, Void> {
 
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getSimpleName());
 
   @Override
   public Void handle(Throwable throwable, IAioConnection connector) {
-    _Logger.warning("handler connect failed!@[ %s ]", throwable, connector.getRemoteAddress());
+    _Logger.warn("handler connect failed!@[ %s ]", throwable, connector.getRemoteAddress());
     connector.error();
     return null;
   }

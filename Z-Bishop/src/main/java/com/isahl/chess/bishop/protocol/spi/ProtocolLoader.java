@@ -23,9 +23,10 @@
 
 package com.isahl.chess.bishop.protocol.spi;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 协议处理器 SPI 加载器
@@ -47,7 +48,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ProtocolLoader {
 
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop.spi." + ProtocolLoader.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop.spi." + ProtocolLoader.class.getSimpleName());
 
   /** SPI 服务文件路径 */
   public static final String SPI_PATH =
@@ -100,7 +101,7 @@ public class ProtocolLoader {
         _Logger.debug(
             "Loaded protocol handler: {} (priority={})", handler.getName(), handler.getPriority());
       } catch (Exception e) {
-        _Logger.warning("Failed to load protocol handler: {}", e.getMessage());
+        _Logger.warn("Failed to load protocol handler: {}", e.getMessage());
       }
     }
 
@@ -170,7 +171,7 @@ public class ProtocolLoader {
       } catch (ClassCastException e) {
         // 类型不匹配，跳过
       } catch (Exception e) {
-        _Logger.warning("Error checking handler support: {}", e.getMessage());
+        _Logger.warn("Error checking handler support: {}", e.getMessage());
       }
     }
 

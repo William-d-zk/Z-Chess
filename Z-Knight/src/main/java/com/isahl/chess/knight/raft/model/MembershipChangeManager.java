@@ -23,13 +23,14 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 成员变更管理器 - 实现 Joint Consensus 两阶段提交
@@ -39,7 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author william.d.zk
  */
 public class MembershipChangeManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   /** 成员变更阶段 */
   public enum Phase {
@@ -200,7 +202,7 @@ public class MembershipChangeManager {
       _Logger.info("Started membership change: %s", newTx);
       return true;
     }
-    _Logger.warning(
+    _Logger.warn(
         "Failed to start change %d, another change in progress: %s", id, mCurrentTransaction.get());
     return false;
   }
@@ -209,11 +211,11 @@ public class MembershipChangeManager {
   public boolean enterJointPhase() {
     ChangeTransaction tx = mCurrentTransaction.get();
     if (tx == null) {
-      _Logger.warning("Cannot enter JOINT phase: no active transaction");
+      _Logger.warn("Cannot enter JOINT phase: no active transaction");
       return false;
     }
     if (tx.getPhase() != Phase.PREPARING) {
-      _Logger.warning("Cannot enter JOINT phase from %s", tx.getPhase());
+      _Logger.warn("Cannot enter JOINT phase from %s", tx.getPhase());
       return false;
     }
     tx.setPhase(Phase.JOINT);
@@ -251,7 +253,7 @@ public class MembershipChangeManager {
     }
     tx.setPhase(Phase.ROLLBACK);
     tx.setErrorMessage(reason);
-    _Logger.warning("Rolling back membership change %d: %s", tx.getId(), reason);
+    _Logger.warn("Rolling back membership change %d: %s", tx.getId(), reason);
     return true;
   }
 
@@ -263,7 +265,7 @@ public class MembershipChangeManager {
     }
     tx.setPhase(Phase.FAILED);
     tx.setErrorMessage(reason);
-    _Logger.warning("Membership change %d failed: %s", tx.getId(), reason);
+    _Logger.warn("Membership change %d failed: %s", tx.getId(), reason);
     return true;
   }
 
@@ -298,7 +300,7 @@ public class MembershipChangeManager {
     }
     // 检查是否超时
     if (tx.isTimeout() && (tx.getPhase() == Phase.PREPARING || tx.getPhase() == Phase.JOINT)) {
-      _Logger.warning("Membership change %d timeout after %s", tx.getId(), tx.getElapsedTime());
+      _Logger.warn("Membership change %d timeout after %s", tx.getId(), tx.getElapsedTime());
       rollback("Timeout after " + tx.getElapsedTime());
       return false;
     }

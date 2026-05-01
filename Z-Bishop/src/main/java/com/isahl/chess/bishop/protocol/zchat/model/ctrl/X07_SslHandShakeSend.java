@@ -24,9 +24,10 @@
 package com.isahl.chess.bishop.protocol.zchat.model.ctrl;
 
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extended X07_SslHandShake that sends TLS handshake data when session is set. This is used
@@ -34,7 +35,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  */
 public class X07_SslHandShakeSend extends X07_SslHandShake {
   private static final Logger _Logger =
-      Logger.getLogger(X07_SslHandShakeSend.class.getSimpleName());
+      LoggerFactory.getLogger(X07_SslHandShakeSend.class.getSimpleName());
 
   private transient IPacket mHandShakePacket;
   private transient SSLZContext mSslContext;

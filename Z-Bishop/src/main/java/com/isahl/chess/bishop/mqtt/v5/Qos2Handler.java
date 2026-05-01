@@ -23,9 +23,10 @@
 
 package com.isahl.chess.bishop.mqtt.v5;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT 5.0 QoS 2 消息处理器 实现 Exactly-Once 投递保证
@@ -37,7 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 public class Qos2Handler {
 
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + Qos2Handler.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + Qos2Handler.class.getSimpleName());
 
   /** 等待 PUBREC 的消息 (已发送 PUBLISH) */
   private final ConcurrentMap<Integer, Qos2Message> _pendingPubrec = new ConcurrentHashMap<>();
@@ -85,7 +86,7 @@ public class Qos2Handler {
       return true;
     }
 
-    _Logger.warning("QoS 2 PUBREC received for unknown message: messageId=%d", messageId);
+    _Logger.warn("QoS 2 PUBREC received for unknown message: messageId=%d", messageId);
     return false;
   }
 
@@ -104,7 +105,7 @@ public class Qos2Handler {
       return true;
     }
 
-    _Logger.warning("QoS 2 PUBREL received for unknown message: messageId=%d", messageId);
+    _Logger.warn("QoS 2 PUBREL received for unknown message: messageId=%d", messageId);
     return false;
   }
 
@@ -121,7 +122,7 @@ public class Qos2Handler {
       return msg;
     }
 
-    _Logger.warning("QoS 2 PUBCOMP received for unknown message: messageId=%d", messageId);
+    _Logger.warn("QoS 2 PUBCOMP received for unknown message: messageId=%d", messageId);
     return null;
   }
 

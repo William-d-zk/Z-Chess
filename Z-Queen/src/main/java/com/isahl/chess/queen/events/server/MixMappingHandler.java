@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.db.model.IStorage;
 import com.isahl.chess.queen.events.cluster.IClusterCustom;
@@ -51,6 +50,8 @@ import com.lmax.disruptor.RingBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Collection;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -74,7 +75,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
       RingBuffer<QEvent> transfer,
       ILinkCustom linkCustom,
       IClusterCustom<T> clusterCustom) {
-    _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
+    _Logger = LoggerFactory.getLogger("io.queen.dispatcher." + mapper);
     _SessionManager = manager;
     _Writer = writer;
     _Error = error;
@@ -98,7 +99,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
           fop.handle(error.getFirst(), error.getSecond());
         }
         case PASSIVE_CLOSE, INITIATIVE_CLOSE -> {
-          _Logger.warning("mapping handle io error,%s", event.getErrorType().getMsg());
+          _Logger.warn("mapping handle io error,%s", event.getErrorType().getMsg());
           IPair error = event.getComponent();
           ISession session = error.getSecond();
           IProtocol closed = _LinkCustom.onClose(session);
@@ -145,7 +146,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
               session.innerClose();
             }
             connection.error();
-            _Logger.warning("session create failed %s", throwable, connection);
+            _Logger.warn("session create failed %s", throwable, connection);
           }
         }
         case LINK -> {
@@ -164,7 +165,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
                       Pair.of(consistent, Pair.of(session.index(), session.getFactory().serial())),
                       null);
                 } else {
-                  _Logger.warning("no consistency to do");
+                  _Logger.warn("no consistency to do");
                 }
               } else if (result != null) {
                 IProtocol request = result.getSecond();
@@ -176,13 +177,13 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
                           _ClusterCustom.skipConsistency(request, session.index()),
                           request));
                 } else {
-                  _Logger.warning("no consistency to do");
+                  _Logger.warn("no consistency to do");
                 }
               } else {
                 _Logger.debug("link received ignore:%s", received);
               }
             } catch (Exception e) {
-              _Logger.warning("link mapping handler error", e);
+              _Logger.warn("link mapping handler error", e);
               session.innerClose();
             }
           }
@@ -221,7 +222,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
                 _Logger.debug("cluster received ignore :%s", received);
               }
             } catch (Exception e) {
-              _Logger.warning("cluster mapping handler error", e);
+              _Logger.warn("cluster mapping handler error", e);
               session.innerClose();
             }
           }
@@ -255,7 +256,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
             _Logger.debug("consistency request: %s", request);
             publish(_Writer, _ClusterCustom.consistent(_SessionManager, request, origin, factory));
           } catch (Exception e) {
-            _Logger.warning("mapping consensus error, link session close", e);
+            _Logger.warn("mapping consensus error, link session close", e);
           }
         }
         case CLUSTER_TOPOLOGY -> {
@@ -267,7 +268,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
           try {
             publish(_Writer, _ClusterCustom.change(_SessionManager, topology));
           } catch (Exception e) {
-            _Logger.warning("cluster inner service api ");
+            _Logger.warn("cluster inner service api ");
           }
         }
           /*
@@ -286,7 +287,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
                   _LinkCustom.onConsistency(
                       _SessionManager, consistency, unbox.handle(consistency, manager)));
             } catch (Exception e) {
-              _Logger.warning("mapping notify error, cluster's session keep alive", e);
+              _Logger.warn("mapping notify error, cluster's session keep alive", e);
             }
           }
         }
@@ -298,7 +299,7 @@ public class MixMappingHandler<T extends IStorage> implements IPipeHandler<QEven
           T machine = content.getSecond();
           publish(_Writer, _ClusterCustom.onTimer(_SessionManager, machine));
         }
-        default -> _Logger.warning("mapping handler error %s", event.getEventType().name());
+        default -> _Logger.warn("mapping handler error %s", event.getEventType().name());
       }
     }
   }

@@ -26,7 +26,6 @@ package com.isahl.chess.pawn.endpoint.device.resource.service;
 import static java.time.temporal.ChronoUnit.HOURS;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.MsgDeliveryStatus;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
@@ -41,6 +40,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.cache.CacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -53,7 +54,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MessageService implements IMessageService {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final CacheManager _CacheManager;
   private final IMessageRepository _MessageRepository;

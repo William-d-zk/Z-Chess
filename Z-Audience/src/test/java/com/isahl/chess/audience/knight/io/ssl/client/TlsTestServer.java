@@ -36,7 +36,6 @@ public class TlsTestServer {
       server.start();
     } catch (Exception e) {
       System.err.println("服务端错误: " + e.getMessage());
-      e.printStackTrace();
       System.exit(1);
     }
   }

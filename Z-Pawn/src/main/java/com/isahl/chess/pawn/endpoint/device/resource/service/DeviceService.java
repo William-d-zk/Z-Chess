@@ -28,7 +28,6 @@ import static com.isahl.chess.queen.db.model.IStorage.Operation.OP_INSERT;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.env.ZUID;
@@ -46,6 +45,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import javax.cache.CacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -59,7 +60,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DeviceService implements IDeviceService {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final IDeviceRepository _DeviceRepository;
   private final CacheManager _CacheManager;

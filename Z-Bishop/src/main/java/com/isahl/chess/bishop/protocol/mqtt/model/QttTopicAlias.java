@@ -23,10 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 主题别名管理器
@@ -54,7 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class QttTopicAlias {
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + QttTopicAlias.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + QttTopicAlias.class.getSimpleName());
 
   /**
    * 客户端→服务器方向映射 (Alias -> Topic)

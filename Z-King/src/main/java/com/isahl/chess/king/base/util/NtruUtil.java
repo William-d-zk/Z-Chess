@@ -22,11 +22,12 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.securityinnovation.jNeo.*;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 import com.securityinnovation.jNeo.ntruencrypt.NtruEncryptKey;
 import java.security.SecureRandom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
@@ -71,7 +72,7 @@ public class NtruUtil {
     return new byte[][] {key.getPubKey(), key.getPrivKey()};
   }
 
-  private static final Logger _Logger = Logger.getLogger(NtruUtil.class.getSimpleName());
+  private static final Logger _Logger = LoggerFactory.getLogger(NtruUtil.class.getSimpleName());
 
   public byte[] encrypt(byte[] message, byte[] pubKey) { // 客户端用的
     byte[] seed = new byte[32];

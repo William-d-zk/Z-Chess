@@ -28,7 +28,6 @@ import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.pawn.endpoint.device.spi.IHandleHook;
@@ -42,13 +41,16 @@ import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
     implements ILogicHandler {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final T _ClusterNode;
   private final IHealth _Health;
@@ -89,7 +91,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         try {
           service.onLogic(getExchanger(), session, content, results);
         } catch (Exception e) {
-          _Logger.warning("logic handle:%s", e, service.getClass().getSimpleName());
+          _Logger.warn("logic handle:%s", e, service.getClass().getSimpleName());
         }
       } else if (content.serial() == 0x1F) {
         try {
@@ -102,7 +104,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
             service.onExchange(body, results);
           }
         } catch (Exception e) {
-          _Logger.warning("on exchange,%s <- %s", e, content, service.getClass().getSimpleName());
+          _Logger.warn("on exchange,%s <- %s", e, content, service.getClass().getSimpleName());
         }
       }
     }
@@ -111,7 +113,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         try {
           hook.afterLogic(content, results);
         } catch (Exception e) {
-          _Logger.warning("hook:%s", e, hook.getClass().getSimpleName());
+          _Logger.warn("hook:%s", e, hook.getClass().getSimpleName());
         }
       }
     }
@@ -125,7 +127,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         try {
           service.consume(getExchanger(), request, results);
         } catch (Exception e) {
-          _Logger.warning("service handle:%s", e, service.getClass().getSimpleName());
+          _Logger.warn("service handle:%s", e, service.getClass().getSimpleName());
         }
       }
     }
@@ -134,7 +136,7 @@ public class LogicHandler<T extends IActivity & IExchanger & IClusterNode>
         try {
           hook.afterConsume(request);
         } catch (Exception e) {
-          _Logger.warning("hook:%s", e, hook.getClass().getSimpleName());
+          _Logger.warn("hook:%s", e, hook.getClass().getSimpleName());
         }
       }
     }

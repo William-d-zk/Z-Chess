@@ -23,10 +23,11 @@
 
 package com.isahl.chess.bishop.protocol.spi;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 协议处理链
@@ -46,7 +47,7 @@ import java.util.List;
 public class ProtocolChain {
 
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop.spi." + ProtocolChain.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop.spi." + ProtocolChain.class.getSimpleName());
 
   /** 处理器列表 */
   private final List<ProtocolHandler> _handlers;
@@ -109,7 +110,7 @@ public class ProtocolChain {
 
         if (result == ProtocolResult.FAILED) {
           context.markFailed("Handler " + handler.getName() + " failed");
-          _Logger.warning("Handler {} failed, stopping chain", handler.getName());
+          _Logger.warn("Handler {} failed, stopping chain", handler.getName());
           break;
         }
 
@@ -123,7 +124,7 @@ public class ProtocolChain {
       return context.getResult();
 
     } catch (Exception e) {
-      _Logger.warning("Error processing message: {}", e.getMessage());
+      _Logger.warn("Error processing message: {}", e.getMessage());
       _statistics.incrementFailureCount();
       context.markFailed(e.getMessage());
       return ProtocolResult.failed(e.getMessage());
@@ -142,7 +143,7 @@ public class ProtocolChain {
       handler.handle(message, context);
       return ProtocolResult.CONTINUE;
     } catch (Exception e) {
-      _Logger.warning("Handler {} threw exception: {}", handler.getName(), e.getMessage());
+      _Logger.warn("Handler {} threw exception: {}", handler.getName(), e.getMessage());
       return ProtocolResult.failed(e.getMessage());
     }
   }

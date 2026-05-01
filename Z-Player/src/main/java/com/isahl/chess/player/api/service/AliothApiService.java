@@ -23,7 +23,6 @@
 
 package com.isahl.chess.player.api.service;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.player.api.config.PlayerConfig;
 import com.isahl.chess.player.api.model.LcApiTokenDO;
 import com.isahl.chess.player.api.model.LcOrderDO;
@@ -33,13 +32,15 @@ import com.isahl.chess.player.api.model.RpaTaskMessageDO;
 import com.isahl.chess.player.api.model.TaskStatusDo;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /** 外部 API 服务（已移除 nocobase 依赖） */
 @Service
 public class AliothApiService {
-  private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger log = LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private final PlayerConfig playerConfig;
 

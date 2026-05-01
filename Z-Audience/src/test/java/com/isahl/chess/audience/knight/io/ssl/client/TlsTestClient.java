@@ -52,9 +52,6 @@ public class TlsTestClient {
       client.connect();
     } catch (Exception e) {
       System.err.println("连接失败: " + e.getMessage());
-      if (client.verbose) {
-        e.printStackTrace();
-      }
       System.exit(1);
     }
   }

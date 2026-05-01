@@ -23,10 +23,11 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT 服务器负载均衡器
@@ -46,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LoadBalancer {
 
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + LoadBalancer.class.getSimpleName());
+      LoggerFactory.getLogger("endpoint.pawn." + LoadBalancer.class.getSimpleName());
 
   /** 负载均衡策略枚举 */
   public enum Strategy {

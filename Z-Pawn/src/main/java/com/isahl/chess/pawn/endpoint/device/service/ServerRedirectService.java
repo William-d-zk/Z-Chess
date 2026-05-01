@@ -24,12 +24,13 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.mqtt.v5.RedirectReason;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,7 +51,7 @@ import org.springframework.stereotype.Service;
 public class ServerRedirectService {
 
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + ServerRedirectService.class.getSimpleName());
+      LoggerFactory.getLogger("endpoint.pawn." + ServerRedirectService.class.getSimpleName());
 
   /** 最大重定向次数，防止循环重定向 */
   public static final int MAX_REDIRECT_HOPS = 3;
@@ -169,14 +170,14 @@ public class ServerRedirectService {
 
     // 检查重定向次数限制
     if (redirectCount >= MAX_REDIRECT_HOPS) {
-      _Logger.warning("Max redirect hops exceeded for client: {}", clientId);
+      _Logger.warn("Max redirect hops exceeded for client: {}", clientId);
       return null;
     }
 
     // 获取健康的服务器列表
     List<String> healthyServers = getHealthyServers();
     if (healthyServers.isEmpty()) {
-      _Logger.warning("No healthy servers available for redirect");
+      _Logger.warn("No healthy servers available for redirect");
       return null;
     }
 
@@ -207,7 +208,7 @@ public class ServerRedirectService {
 
     List<String> healthyServers = getHealthyServers();
     if (healthyServers.isEmpty()) {
-      _Logger.warning("No healthy servers available for maintenance redirect");
+      _Logger.warn("No healthy servers available for maintenance redirect");
       return null;
     }
 

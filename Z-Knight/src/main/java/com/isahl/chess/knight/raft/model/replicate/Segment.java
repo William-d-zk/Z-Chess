@@ -25,7 +25,6 @@ package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.model.ListSerial;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +33,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Segment {
   static final String SEGMENT_PREFIX = "z_chess_raft_seg";
@@ -42,7 +43,7 @@ public class Segment {
   static final String SEGMENT_DATE_FORMATTER = "%020d-%020d";
 
   private static final Logger _Logger =
-      Logger.getLogger("cluster.knight." + Segment.class.getSimpleName());
+      LoggerFactory.getLogger("cluster.knight." + Segment.class.getSimpleName());
 
   private final long _StartIndex;
   private final String _FileDirectory;
@@ -64,14 +65,14 @@ public class Segment {
         || index > mEndIndex
         || listIndex < 0
         || listIndex >= _Records.size()) {
-      _Logger.warning(
+      _Logger.warn(
           "get entry failed@%d;start:%d,end:%d,size:%d",
           index, _StartIndex, mEndIndex, _Records.size());
       return null;
     }
     LogEntry logEntry = _Records.get(listIndex);
     if (logEntry.index() != index) {
-      _Logger.warning("segment get(%d) log entry [%s]", index, logEntry);
+      _Logger.warn("segment get(%d) log entry [%s]", index, logEntry);
     }
     return logEntry;
   }
@@ -158,7 +159,7 @@ public class Segment {
       flush();
       return true;
     } catch (IOException e) {
-      _Logger.warning("segment flush failed [%s]: %s", e, mFileName, e.getMessage());
+      _Logger.warn("segment flush failed [%s]: %s", e, mFileName, e.getMessage());
       return false;
     }
   }
@@ -168,7 +169,7 @@ public class Segment {
     try {
       mRandomAccessFile.setLength(mFileSize);
     } catch (IOException e) {
-      _Logger.warning("set file size failed (%d)", e, mFileSize);
+      _Logger.warn("set file size failed (%d)", e, mFileSize);
     }
   }
 
@@ -210,7 +211,7 @@ public class Segment {
       mFileChannel = mRandomAccessFile.getChannel();
       mCanWrite = false;
     } catch (IOException e) {
-      _Logger.warning("close error || mv old[%s]->new[%s] ", e, mFileName, newFileName);
+      _Logger.warn("close error || mv old[%s]->new[%s] ", e, mFileName, newFileName);
     }
   }
 
@@ -257,7 +258,7 @@ public class Segment {
       mEndIndex = entry.index();
       return true;
     } catch (IOException e) {
-      _Logger.warning("add record failed ", e);
+      _Logger.warn("add record failed ", e);
     }
     return false;
   }
@@ -268,7 +269,7 @@ public class Segment {
       try {
         mFileChannel.force(true);
       } catch (IOException e) {
-        _Logger.warning("force before drop failed: %s", e.getMessage());
+        _Logger.warn("force before drop failed: %s", e.getMessage());
       }
     }
     mRandomAccessFile.close();

@@ -25,7 +25,6 @@ package com.isahl.chess.player.api.component;
 
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.io.core.features.cluster.IConsistency;
@@ -34,11 +33,14 @@ import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EchoPlugin implements IAccessService {
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   @Override
   public boolean isSupported(IoSerial input) {

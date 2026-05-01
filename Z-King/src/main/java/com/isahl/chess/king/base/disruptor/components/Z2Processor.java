@@ -25,11 +25,12 @@ package com.isahl.chess.king.base.disruptor.components;
 
 import com.isahl.chess.king.base.disruptor.features.event.IEvent;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
-import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
@@ -55,7 +56,7 @@ public class Z2Processor<T extends IEvent> implements EventProcessor {
       throw new IllegalArgumentException();
     }
     _Logger =
-        Logger.getLogger(
+        LoggerFactory.getLogger(
             String.format(
                 "base.king.%s.%s", getClass().getSimpleName(), handler.getClass().getSimpleName()));
     _Providers = providers;
@@ -153,7 +154,7 @@ public class Z2Processor<T extends IEvent> implements EventProcessor {
        * TimeoutException 在多路归并的场景中不适用，waitFor(-1）一定会取得当前最后一个可用
        */
     } catch (Throwable ex) {
-      _Logger.warning(ex);
+      _Logger.warn("Processing exception", ex);
       sequence.set(nextSequence);
       nextSequence++;
     } finally {

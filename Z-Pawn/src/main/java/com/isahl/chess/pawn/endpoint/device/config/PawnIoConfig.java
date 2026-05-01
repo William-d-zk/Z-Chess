@@ -23,7 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.knight.cluster.config.SocketConfig;
 import com.isahl.chess.knight.cluster.config.SslSocketConfig;
@@ -31,6 +30,8 @@ import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -44,7 +45,8 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "z.chess.pawn.io")
 @PropertySource("classpath:pawn.io.properties")
 public class PawnIoConfig implements IAioConfig {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private Map<String, Integer> sizePowers;
 
@@ -83,7 +85,7 @@ public class PawnIoConfig implements IAioConfig {
         return sslConfig;
       }
     } else {
-      _Logger.warning("sslSocketConfig is null, falling back to legacy SocketConfig");
+      _Logger.warn("sslSocketConfig is null, falling back to legacy SocketConfig");
     }
 
     // 回退到传统 SocketConfig
@@ -215,7 +217,7 @@ public class PawnIoConfig implements IAioConfig {
     if (sslSocketConfig != null) {
       _Logger.info("SslSocketConfig injected: %s", sslSocketConfig);
     } else {
-      _Logger.warning("SslSocketConfig is null!");
+      _Logger.warn("SslSocketConfig is null!");
     }
   }
 

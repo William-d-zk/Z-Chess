@@ -25,7 +25,6 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -33,11 +32,14 @@ import com.isahl.chess.player.api.model.EchoDo;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HookOpenService {
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private final DeviceNode _DeviceNode;
 

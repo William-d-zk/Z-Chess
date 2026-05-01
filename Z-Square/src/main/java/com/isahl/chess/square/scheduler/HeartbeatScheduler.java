@@ -25,9 +25,11 @@ package com.isahl.chess.square.scheduler;
 
 import com.isahl.chess.square.config.EdgeConfig;
 import com.isahl.chess.square.model.NodeInfo;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -42,9 +44,13 @@ public class HeartbeatScheduler {
   private volatile boolean _Running;
 
   @Autowired
-  public HeartbeatScheduler(EdgeConfig config) {
+  public HeartbeatScheduler(EdgeConfig config, RestTemplateBuilder restTemplateBuilder) {
     _Config = config;
-    _RestTemplate = new RestTemplate();
+    _RestTemplate =
+        restTemplateBuilder
+            .connectTimeout(Duration.ofSeconds(5))
+            .readTimeout(Duration.ofSeconds(10))
+            .build();
     _Running = false;
   }
 

@@ -26,7 +26,6 @@ package com.isahl.chess.player.api.controller;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 
 import com.isahl.chess.king.base.content.ZResponse;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.CryptoUtil.ASymmetricKeyPair;
 import com.isahl.chess.king.base.util.JsonUtil;
@@ -45,6 +44,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.ObjectUtils;
@@ -64,7 +65,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("device")
 public class DeviceController {
 
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private final MixOpenService _MixOpenService;
 
@@ -226,7 +228,7 @@ public class DeviceController {
             try {
               expirationAt = LocalDate.parse(expireAt, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             } catch (Exception e) {
-              _Logger.fetal("convert expiration encounter exception.", e);
+              _Logger.error("convert expiration encounter exception.", e);
               return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
             }
           }
@@ -260,7 +262,7 @@ public class DeviceController {
                   + "|"
                   + existedDeviceProfile.getKeyPairProfile().getPublicKey();
           // 安全修复: 不再日志输出敏感 token
-          if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+          if (_Logger.isDebugEnabled()) {
             _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
           }
           // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
@@ -313,7 +315,7 @@ public class DeviceController {
           try {
             expirationAt = LocalDate.parse(expireAt, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
           } catch (Exception e) {
-            _Logger.fetal("convert expiration encounter exception.", e);
+            _Logger.error("convert expiration encounter exception.", e);
             return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
           }
         }
@@ -345,7 +347,7 @@ public class DeviceController {
                 + "|"
                 + existedDeviceProfile.getKeyPairProfile().getPublicKey();
         // 安全修复: 不再日志输出敏感 token
-        if (_Logger.isEnable(org.slf4j.event.Level.DEBUG)) {
+        if (_Logger.isDebugEnabled()) {
           _Logger.debug("token generated for device, expireInfo = %s", expireInfo);
         }
         // 返回经过 SHA-256 的有效期信息(serial|date|publicKey) [安全修复: 从 MD5 升级]
@@ -381,7 +383,7 @@ public class DeviceController {
           try {
             expirationAt = LocalDate.parse(expireAt, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
           } catch (Exception e) {
-            _Logger.fetal("convert expiration encounter exception.", e);
+            _Logger.error("convert expiration encounter exception.", e);
             return ZResponse.error(CodeKing.ERROR.getCode(), "失效日期转换异常yyyy-MM-dd");
           }
         } else {

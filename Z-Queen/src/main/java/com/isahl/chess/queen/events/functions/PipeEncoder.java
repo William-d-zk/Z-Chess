@@ -24,11 +24,12 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeEncoder;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -36,7 +37,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
  */
 public class PipeEncoder implements IPipeEncoder {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getSimpleName());
   private final AioWriter _AioWriter;
 
   public PipeEncoder(AioWriter aioWriter) {

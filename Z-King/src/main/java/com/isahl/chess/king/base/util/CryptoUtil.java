@@ -22,7 +22,6 @@
  */
 package com.isahl.chess.king.base.util;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,12 +41,14 @@ import java.util.Objects;
 import javax.crypto.Cipher;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public class CryptoUtil {
-  private static final Logger _Logger = Logger.getLogger(CryptoUtil.class.getSimpleName());
+  private static final Logger _Logger = LoggerFactory.getLogger(CryptoUtil.class.getSimpleName());
 
   private static final String _CHARS =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -306,7 +307,7 @@ public class CryptoUtil {
       return result;
     } catch (IOException e) {
       // #debug error
-      _Logger.warning(e);
+      _Logger.warn("IO error", e);
     }
     return src;
   }
@@ -342,13 +343,13 @@ public class CryptoUtil {
       return baos.toString(charSet);
     } catch (Exception e) {
       // #debug error
-      _Logger.warning(e);
+      _Logger.warn("Decoding error", e);
     } finally {
       try {
         baos.close();
       } catch (IOException e) {
         // #debug error
-        _Logger.warning(e);
+        _Logger.warn("Close error", e);
       }
     }
     return null;
@@ -423,7 +424,7 @@ public class CryptoUtil {
     try {
       Security.addProvider(new BouncyCastleProvider());
     } catch (Exception e) {
-      _Logger.warning(e);
+      _Logger.warn("Security provider registration failed", e);
     }
   }
 
@@ -491,7 +492,7 @@ public class CryptoUtil {
       String privateKeyString = Base64.encodeBase64String(privateKey.getEncoded());
       return new ASymmetricKeyPair("EC", publicKeyString, privateKeyString);
     } catch (Exception e) {
-      _Logger.fetal("生成ecc密钥对出现异常, keySize = " + keySize, e);
+      _Logger.error("生成ecc密钥对出现异常, keySize = " + keySize, e);
     }
     return null;
   }
@@ -514,7 +515,7 @@ public class CryptoUtil {
       byte[] result = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
       return Base64.encodeBase64String(result);
     } catch (Exception e) {
-      _Logger.fetal("ecc encryption encounter exception.", e);
+      _Logger.error("ecc encryption encounter exception.", e);
     }
     return null;
   }
@@ -537,7 +538,7 @@ public class CryptoUtil {
       byte[] result = cipher.doFinal(Base64.decodeBase64(data));
       return new String(result);
     } catch (Exception e) {
-      _Logger.fetal("ecc decryption encounter exception.", e);
+      _Logger.error("ecc decryption encounter exception.", e);
     }
     return null;
   }
@@ -560,7 +561,7 @@ public class CryptoUtil {
       signature.update(data.getBytes());
       return new String(Base64.encodeBase64(signature.sign()));
     } catch (Exception e) {
-      _Logger.fetal("ecc sign encounter exception.", e);
+      _Logger.error("ecc sign encounter exception.", e);
     }
     return null;
   }
@@ -583,7 +584,7 @@ public class CryptoUtil {
       signature.update(srcData.getBytes());
       return signature.verify(Base64.decodeBase64(sign.getBytes()));
     } catch (Exception e) {
-      _Logger.fetal("ecc signature verify encounter exception.", e);
+      _Logger.error("ecc signature verify encounter exception.", e);
     }
     return false;
   }

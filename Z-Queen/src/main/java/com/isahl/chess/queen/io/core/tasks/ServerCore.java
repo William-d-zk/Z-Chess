@@ -26,7 +26,8 @@ package com.isahl.chess.queen.io.core.tasks;
 import com.isahl.chess.king.base.disruptor.components.Z1Processor;
 import com.isahl.chess.king.base.disruptor.components.Z2Processor;
 import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
-import com.isahl.chess.king.base.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.IMixCoreConfig;
 import com.isahl.chess.queen.db.model.IStorage;
@@ -58,7 +59,7 @@ import java.util.function.Supplier;
  */
 public class ServerCore extends ThreadPoolExecutor
     implements IBizCore, IClusterCore, ILocalPublisher {
-  protected Logger _Logger = Logger.getLogger("io.queen.core." + getClass().getSimpleName());
+  protected Logger _Logger = LoggerFactory.getLogger("io.queen.core." + getClass().getSimpleName());
 
   private final int _DecoderCount;
   private final int _EncoderCount;
@@ -180,7 +181,7 @@ public class ServerCore extends ThreadPoolExecutor
           RingBuffer<QEvent> rb = createPipelineYield(_AioQueueSize);
           if (!(slot < _BizIoCount ? _AioCacheConcurrentQueue : _ClusterCacheConcurrentQueue)
               .offer(rb)) {
-            _Logger.warning(
+            _Logger.warn(
                 String.format(
                     "%s cache queue offer failed :%d",
                     slot < _BizIoCount ? "biz io" : "cluster io", slot));

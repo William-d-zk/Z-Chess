@@ -23,11 +23,12 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Learner 节点管理器
@@ -39,7 +40,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * @author william.d.zk
  */
 public class LearnerManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   private final NavigableMap<Long, IRaftMachine> _Learners = new ConcurrentSkipListMap<>();
   private final String _Name;

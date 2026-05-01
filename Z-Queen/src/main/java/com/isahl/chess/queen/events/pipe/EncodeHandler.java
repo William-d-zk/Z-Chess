@@ -31,7 +31,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -39,13 +38,15 @@ import com.isahl.chess.queen.io.core.features.model.session.IPContext;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class EncodeHandler implements IBatchHandler<QEvent> {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.processor." + getClass().getSimpleName());
   private final IEncryptor _EncryptHandler;
   private final IHealth _Health;
 
@@ -101,7 +102,7 @@ public class EncodeHandler implements IBatchHandler<QEvent> {
     try {
       operator.handle(a, session);
     } catch (Exception e) {
-      _Logger.warning(String.format("write encode error: %s", session.toString()), e);
+      _Logger.warn(String.format("write encode error: %s", session.toString()), e);
       context.advanceOutState(IPContext.ENCODE_ERROR);
       event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
     }

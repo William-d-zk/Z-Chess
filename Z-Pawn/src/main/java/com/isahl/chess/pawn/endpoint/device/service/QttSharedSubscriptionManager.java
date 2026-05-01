@@ -23,13 +23,14 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.session.IQoS;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -59,7 +60,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class QttSharedSubscriptionManager {
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + QttSharedSubscriptionManager.class.getSimpleName());
+      LoggerFactory.getLogger(
+          "endpoint.pawn." + QttSharedSubscriptionManager.class.getSimpleName());
 
   /** 共享订阅前缀 */
   public static final String SHARED_SUBSCRIPTION_PREFIX = "$share/";

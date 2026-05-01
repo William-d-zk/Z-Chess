@@ -24,7 +24,6 @@
 package com.isahl.chess.queen.io.core.net.udp;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -33,6 +32,8 @@ import java.nio.channels.DatagramChannel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * UDP 客户端基础实现
@@ -40,7 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author william.d.zk
  */
 public class BaseUdpClient implements UdpChannel {
-  protected final Logger _Logger = Logger.getLogger("io.queen.udp." + getClass().getSimpleName());
+  protected final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.udp." + getClass().getSimpleName());
 
   private final DatagramChannel _Channel;
   private final InetSocketAddress _RemoteAddress;
@@ -72,7 +74,7 @@ public class BaseUdpClient implements UdpChannel {
   @Override
   public int send(byte[] data, InetSocketAddress remote) {
     if (!_IsOpen.get()) {
-      _Logger.warning("Cannot send: channel is closed");
+      _Logger.warn("Cannot send: channel is closed");
       return 0;
     }
 
@@ -139,12 +141,12 @@ public class BaseUdpClient implements UdpChannel {
 
   @Override
   public void joinGroup(InetSocketAddress group, String networkInterface) {
-    _Logger.warning("UDP Client does not support multicast by default");
+    _Logger.warn("UDP Client does not support multicast by default");
   }
 
   @Override
   public void leaveGroup(InetSocketAddress group) {
-    _Logger.warning("UDP Client does not support multicast by default");
+    _Logger.warn("UDP Client does not support multicast by default");
   }
 
   @Override

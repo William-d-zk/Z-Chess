@@ -27,12 +27,13 @@ import com.isahl.chess.king.base.cron.ScheduleHandler;
 import com.isahl.chess.king.base.cron.TimeWheel;
 import com.isahl.chess.king.base.cron.features.ICancelable;
 import com.isahl.chess.king.base.features.IValid;
-import com.isahl.chess.king.base.log.Logger;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +54,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class QttMessageExpiryService implements IValid {
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + QttMessageExpiryService.class.getSimpleName());
+      LoggerFactory.getLogger("endpoint.pawn." + QttMessageExpiryService.class.getSimpleName());
 
   private final TimeWheel _TimeWheel;
 
@@ -126,7 +127,7 @@ public class QttMessageExpiryService implements IValid {
                 try {
                   onExpiry.accept(messageId);
                 } catch (Exception e) {
-                  _Logger.warning("Error in expiry callback for message: %s", e, messageId);
+                  _Logger.warn("Error in expiry callback for message: %s", e, messageId);
                 }
               }
             },
@@ -254,7 +255,7 @@ public class QttMessageExpiryService implements IValid {
                 try {
                   onWillDelayExpired.accept(sessionId);
                 } catch (Exception e) {
-                  _Logger.warning("Error in will delay callback for session: %#x", e, sessionId);
+                  _Logger.warn("Error in will delay callback for session: %#x", e, sessionId);
                 }
               }
             },

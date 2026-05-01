@@ -24,7 +24,6 @@
 package com.isahl.chess.audience.client.stress;
 
 import com.isahl.chess.king.base.content.ZResponse;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -47,8 +49,9 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/mqtt")
+@Profile({"test", "stress", "docker"})
 public class MqttDeviceTestController {
-  private static final Logger _Logger = Logger.getLogger("stress.mqtt");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.mqtt");
 
   private final DeviceCredentialLoader deviceLoader;
   private final ExecutorService executorService;
@@ -56,7 +59,13 @@ public class MqttDeviceTestController {
   @Autowired
   public MqttDeviceTestController(DeviceCredentialLoader deviceLoader) {
     this.deviceLoader = deviceLoader;
-    this.executorService = Executors.newFixedThreadPool(100);
+    ThreadFactory threadFactory =
+        r -> {
+          Thread t = new Thread(r, "mqtt-stress");
+          t.setDaemon(true);
+          return t;
+        };
+    this.executorService = Executors.newFixedThreadPool(100, threadFactory);
   }
 
   /** 单设备 MQTT 连接测试 */
@@ -80,10 +89,11 @@ public class MqttDeviceTestController {
 
     String serverUri = String.format("tcp://%s:%d", host, port);
 
+    MqttClient client = null;
     try {
       long startTime = System.currentTimeMillis();
 
-      MqttClient client = new MqttClient(serverUri, clientId, new MemoryPersistence());
+      client = new MqttClient(serverUri, clientId, new MemoryPersistence());
       MqttConnectOptions options = new MqttConnectOptions();
       options.setUserName(username);
       options.setPassword(password.toCharArray());
@@ -97,9 +107,7 @@ public class MqttDeviceTestController {
 
       boolean connected = client.isConnected();
 
-      // 断开连接
       client.disconnect();
-      client.close();
 
       return ZResponse.success(
           Map.of(
@@ -116,7 +124,7 @@ public class MqttDeviceTestController {
               "status",
               connected ? "SUCCESS" : "FAILED"));
     } catch (MqttException e) {
-      _Logger.warning("MQTT connection failed: %s", e.getMessage());
+      _Logger.warn("MQTT connection failed: %s", e.getMessage());
       return ZResponse.success(
           Map.of(
               "test",
@@ -129,6 +137,14 @@ public class MqttDeviceTestController {
               e.getReasonCode(),
               "status",
               "FAILED"));
+    } finally {
+      if (client != null) {
+        try {
+          client.close();
+        } catch (MqttException e) {
+          _Logger.warn("Failed to close MQTT client: %s", e.getMessage());
+        }
+      }
     }
   }
 
@@ -169,10 +185,11 @@ public class MqttDeviceTestController {
       CompletableFuture<Void> future =
           CompletableFuture.runAsync(
               () -> {
+                MqttClient client = null;
                 try {
                   long startTime = System.currentTimeMillis();
 
-                  MqttClient client = new MqttClient(serverUri, clientId, new MemoryPersistence());
+                  client = new MqttClient(serverUri, clientId, new MemoryPersistence());
                   MqttConnectOptions options = new MqttConnectOptions();
                   options.setUserName(device.mqttUsername);
                   options.setPassword(device.mqttPassword.toCharArray());
@@ -189,15 +206,21 @@ public class MqttDeviceTestController {
                     totalConnectTime.addAndGet(connectTime);
                     connectTimes.add(connectTime);
 
-                    // 断开连接
                     client.disconnect();
                   } else {
                     failCount.incrementAndGet();
                   }
-                  client.close();
                 } catch (MqttException e) {
                   failCount.incrementAndGet();
                   errors.put(index, e.getMessage());
+                } finally {
+                  if (client != null) {
+                    try {
+                      client.close();
+                    } catch (MqttException e) {
+                      _Logger.warn("Failed to close MQTT client: %s", e.getMessage());
+                    }
+                  }
                 }
               },
               executorService);
@@ -266,8 +289,9 @@ public class MqttDeviceTestController {
 
     // 串行测试每个设备（避免过载）
     for (DeviceCredentialLoader.DeviceCredential device : devices) {
+      MqttClient client = null;
       try {
-        MqttClient client = new MqttClient(serverUri, device.mqttClientId, new MemoryPersistence());
+        client = new MqttClient(serverUri, device.mqttClientId, new MemoryPersistence());
         MqttConnectOptions options = new MqttConnectOptions();
         options.setUserName(device.mqttUsername);
         options.setPassword(device.mqttPassword.toCharArray());
@@ -292,7 +316,6 @@ public class MqttDeviceTestController {
         deviceResults.add(deviceResult);
 
         client.disconnect();
-        client.close();
 
         // 短暂延迟避免过载
         Thread.sleep(100);
@@ -306,6 +329,14 @@ public class MqttDeviceTestController {
         deviceResult.put("status", "ERROR");
         deviceResult.put("error", e.getMessage());
         deviceResults.add(deviceResult);
+      } finally {
+        if (client != null) {
+          try {
+            client.close();
+          } catch (MqttException e) {
+            _Logger.warn("Failed to close MQTT client: %s", e.getMessage());
+          }
+        }
       }
     }
 

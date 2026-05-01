@@ -25,18 +25,19 @@ package com.isahl.chess.queen.events.functions;
 
 import static com.isahl.chess.king.base.features.IError.Type.*;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.AioWorker;
 import java.io.EOFException;
 import java.nio.channels.CompletionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class AioWriter implements CompletionHandler<Integer, ISession> {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getSimpleName());
   private final SessionWrote _WroteOperator = new SessionWrote(this);
 
   @Override

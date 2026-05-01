@@ -23,16 +23,18 @@
 
 package com.isahl.chess.rook.storage.cache.ehcache;
 
-import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.CacheEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  * @date 2020/6/6
  */
 public class CacheLogger implements CacheEventListener<Object, Object> {
-  private final Logger _Logger = Logger.getLogger("rook.ehcache." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("rook.ehcache." + getClass().getSimpleName());
 
   @Override
   public void onEvent(CacheEvent<?, ?> cacheEvent) {

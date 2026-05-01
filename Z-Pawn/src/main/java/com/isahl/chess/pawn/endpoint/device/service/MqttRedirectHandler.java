@@ -28,9 +28,10 @@ import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X112_QttConnack;
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X11E_QttDisconnect;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttPropertySet;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +53,7 @@ import org.springframework.stereotype.Component;
 public class MqttRedirectHandler {
 
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + MqttRedirectHandler.class.getSimpleName());
+      LoggerFactory.getLogger("endpoint.pawn." + MqttRedirectHandler.class.getSimpleName());
 
   /** 重定向计数存储（防止循环重定向） */
   private final Map<String, Integer> _redirectCounts = new ConcurrentHashMap<>();
@@ -139,7 +140,7 @@ public class MqttRedirectHandler {
         _redirectService.decideMaintenanceRedirect(clientId, redirectCount);
 
     if (decision == null) {
-      _Logger.warning("No available server for maintenance redirect of client: {}", clientId);
+      _Logger.warn("No available server for maintenance redirect of client: {}", clientId);
       // 返回服务器不可用
       X112_QttConnack connack = new X112_QttConnack();
       connack.rejectServerUnavailable();

@@ -24,19 +24,21 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class AcceptFailed implements IBinaryOperator<Throwable, IAioConnection, Void> {
 
-  private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getName());
 
   @Override
   public Void handle(Throwable throwable, IAioConnection aioServer) {
-    _Logger.warning("accept failed,ignore!", throwable);
+    _Logger.warn("accept failed,ignore!", throwable);
     aioServer.error();
     return null;
   }

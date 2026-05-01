@@ -27,12 +27,13 @@ import static com.isahl.chess.knight.raft.features.IRaftMachine.MIN_START;
 
 import com.isahl.chess.bishop.protocol.mqtt.factory.QttFactory;
 import com.isahl.chess.king.base.content.ZResponse;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.config.CodeKing;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.knight.raft.service.RaftPeer;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +43,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("mock")
 public class MockApi {
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   final RaftPeer _Peer;
 

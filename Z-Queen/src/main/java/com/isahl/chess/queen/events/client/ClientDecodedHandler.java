@@ -30,11 +30,12 @@ import com.isahl.chess.king.base.disruptor.components.Health;
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
 import com.isahl.chess.king.base.disruptor.features.flow.IPipeHandler;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.lmax.disruptor.RingBuffer;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -43,7 +44,7 @@ import java.util.List;
 public class ClientDecodedHandler implements IPipeHandler<QEvent> {
 
   private final Logger _Logger =
-      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
   private final RingBuffer<QEvent> _LogicPublisher;
   private final IHealth _Health = new Health(-1);
 

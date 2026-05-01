@@ -23,8 +23,9 @@
 
 package com.isahl.chess.bishop.protocol.mqtt.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -32,7 +33,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
  */
 public abstract class QttProtocol implements IProtocol {
   protected final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + getClass().getSimpleName());
 
   public static final byte VERSION_V3_1_1 = 4;
   public static final byte VERSION_V5_0 = 5;

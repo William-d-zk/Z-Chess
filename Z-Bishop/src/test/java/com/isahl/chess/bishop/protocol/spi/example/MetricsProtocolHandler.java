@@ -26,11 +26,12 @@ package com.isahl.chess.bishop.protocol.spi.example;
 import com.isahl.chess.bishop.protocol.spi.ProtocolContext;
 import com.isahl.chess.bishop.protocol.spi.ProtocolHandler;
 import com.isahl.chess.bishop.protocol.spi.ProtocolResult;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 指标收集协议处理器示例
@@ -43,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MetricsProtocolHandler implements ProtocolHandler {
 
   private static final Logger _Logger =
-      Logger.getLogger(
+      LoggerFactory.getLogger(
           "protocol.bishop.spi.example." + MetricsProtocolHandler.class.getSimpleName());
 
   /** 消息类型计数器 */

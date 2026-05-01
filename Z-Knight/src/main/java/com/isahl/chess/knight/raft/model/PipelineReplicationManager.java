@@ -23,11 +23,12 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Pipeline 复制管理器
@@ -40,7 +41,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author william.d.zk
  */
 public class PipelineReplicationManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   /** 单个 Follower 的 Inflight 窗口 */
   public static class InflightWindow {

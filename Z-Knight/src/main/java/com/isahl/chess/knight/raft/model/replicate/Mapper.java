@@ -29,7 +29,6 @@ import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.knight.raft.model.GroupCommitManager;
@@ -55,13 +54,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.cache.CacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
 public class Mapper implements IRaftMapper {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   private final String _LogDataDir;
   private final String _LogMetaDir;
@@ -128,9 +130,9 @@ public class Mapper implements IRaftMapper {
         mLogMeta.ofFile(metaFile);
       }
     } catch (FileNotFoundException e) {
-      _Logger.warning("log meta file not exist, name: %s", logMetaName);
+      _Logger.warn("log meta file not exist, name: %s", logMetaName);
     } catch (IOException e) {
-      _Logger.warning("log meta load file error", e);
+      _Logger.warn("log meta load file error", e);
     }
 
     String snapshotMetaName = _SnapshotDir + File.separator + ".metadata";
@@ -142,9 +144,9 @@ public class Mapper implements IRaftMapper {
         mSnapshotMeta.ofFile(metaFile);
       }
     } catch (FileNotFoundException e) {
-      _Logger.warning("meta file not exist, name: %s", snapshotMetaName);
+      _Logger.warn("meta file not exist, name: %s", snapshotMetaName);
     } catch (IOException e) {
-      _Logger.warning("snapshot meta load file error", e);
+      _Logger.warn("snapshot meta load file error", e);
     }
 
     // 加载成员变更配置
@@ -157,9 +159,9 @@ public class Mapper implements IRaftMapper {
         mMembershipConfig.ofFile(configFile);
       }
     } catch (FileNotFoundException e) {
-      _Logger.warning("membership config file not exist, name: %s", membershipConfigName);
+      _Logger.warn("membership config file not exist, name: %s", membershipConfigName);
     } catch (IOException e) {
-      _Logger.warning("membership config load file error", e);
+      _Logger.warn("membership config load file error", e);
     }
 
     if (checkState()) {
@@ -192,7 +194,7 @@ public class Mapper implements IRaftMapper {
                 flushAll(true);
                 return true;
               } catch (Exception e) {
-                _Logger.warning("Group commit failed: %s", e.getMessage());
+                _Logger.warn("Group commit failed: %s", e.getMessage());
                 return false;
               }
             });
@@ -248,7 +250,7 @@ public class Mapper implements IRaftMapper {
               | NoSuchMethodException
               | InstantiationException
               | IllegalAccessException e) {
-            _Logger.warning("create segment file failed %s", e, newFileName);
+            _Logger.warn("create segment file failed %s", e, newFileName);
             return false;
           }
         }
@@ -266,7 +268,7 @@ public class Mapper implements IRaftMapper {
         return true;
       }
     }
-    _Logger.warning("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
+    _Logger.warn("append failed: [new end %d|entry source %d]", newEndIndex, entry.index());
     return false;
   }
 
@@ -363,7 +365,7 @@ public class Mapper implements IRaftMapper {
         lastSegment.flush();
       }
     } catch (IOException e) {
-      _Logger.warning("flush segment failed: %s", e.getMessage());
+      _Logger.warn("flush segment failed: %s", e.getMessage());
     }
   }
 
@@ -482,7 +484,7 @@ public class Mapper implements IRaftMapper {
                     | NoSuchMethodException
                     | InstantiationException
                     | IllegalAccessException e) {
-                  _Logger.warning("Read segment failed: %s", e.getMessage());
+                  _Logger.warn("Read segment failed: %s", e.getMessage());
                 }
                 return null;
               })
@@ -569,7 +571,7 @@ public class Mapper implements IRaftMapper {
           vTotalSize -= segment.drop();
           _Index2SegmentMap.remove(segment.getStartIndex());
         } catch (Exception ex2) {
-          _Logger.warning("delete file exception:", ex2);
+          _Logger.warn("delete file exception:", ex2);
         }
       } else {
         break;
@@ -611,7 +613,7 @@ public class Mapper implements IRaftMapper {
           vTotalSize -= segment.truncate(newEndIndex);
         }
       } catch (IOException ex) {
-        _Logger.warning("truncateSuffix error ", ex);
+        _Logger.warn("truncateSuffix error ", ex);
         return null;
       }
     }

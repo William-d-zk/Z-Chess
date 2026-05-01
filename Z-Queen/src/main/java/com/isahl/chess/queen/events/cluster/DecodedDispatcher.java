@@ -32,7 +32,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -41,13 +40,15 @@ import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class DecodedDispatcher implements IPipeHandler<QEvent> {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
   private final RingBuffer<QEvent> _Cluster;
   private final RingBuffer<QEvent> _Error;
   private final RingBuffer<QEvent>[] _LogicWorkers;
@@ -114,8 +115,8 @@ public class DecodedDispatcher implements IPipeHandler<QEvent> {
               new Pair<>(content, null),
               null);
         }
-        case IGNORE -> _Logger.warning("decode ignore, need more data");
-        default -> _Logger.warning(
+        case IGNORE -> _Logger.warn("decode ignore, need more data");
+        default -> _Logger.warn(
             "decoded dispatcher event type no handle: %s", event.getEventType());
       }
     }

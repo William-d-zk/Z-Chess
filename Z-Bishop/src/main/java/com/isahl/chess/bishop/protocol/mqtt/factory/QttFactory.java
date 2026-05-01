@@ -32,8 +32,9 @@ import com.isahl.chess.bishop.protocol.mqtt.model.QttType;
 import com.isahl.chess.board.annotation.ISerialFactory;
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -41,7 +42,8 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocolFactory;
  */
 @ISerialFactory(serial = ('M' << 24) | ('Q' << 16) | ('T' << 8) | 'T')
 public class QttFactory implements IProtocolFactory<QttFrame, QttContext> {
-  private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("protocol.bishop." + getClass().getSimpleName());
 
   public static final QttFactory _Instance = new QttFactory();
 

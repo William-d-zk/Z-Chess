@@ -24,7 +24,6 @@
 package com.isahl.chess.audience.client.config;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.config.ISocketConfig;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,10 +31,12 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import javax.net.ssl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.unit.DataSize;
 
 public class SocketConfig implements ISocketConfig {
-  private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+  private final Logger _Logger = LoggerFactory.getLogger(getClass().getSimpleName());
   private boolean keepAlive;
   private Duration connectTimeoutInSecond;
   private Duration writeTimeoutInSecond;
@@ -170,7 +171,7 @@ public class SocketConfig implements ISocketConfig {
           | NoSuchAlgorithmException
           | CertificateException
           | NoSuchProviderException e) {
-        _Logger.warning("load trust keystore failed: %s", e.getMessage());
+        _Logger.warn("load trust keystore failed: %s", e.getMessage());
         return null;
       }
     }
@@ -191,7 +192,7 @@ public class SocketConfig implements ISocketConfig {
           | CertificateException
           | NoSuchProviderException
           | UnrecoverableKeyException e) {
-        _Logger.warning("load keystore failed: %s", e.getMessage());
+        _Logger.warn("load keystore failed: %s", e.getMessage());
         return null;
       }
     }

@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.events.model.QEvent;
@@ -45,13 +44,15 @@ import com.isahl.chess.queen.io.core.features.model.session.zls.IEContext;
 import com.isahl.chess.queen.io.core.features.model.session.zls.IEncryptor;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public class DecodeHandler implements IBatchHandler<QEvent> {
   protected final Logger _Logger =
-      Logger.getLogger("io.queen.decode." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.decode." + getClass().getSimpleName());
 
   private final IEncryptor _EncryptHandler;
   private final IHealth _Health;
@@ -104,7 +105,7 @@ public class DecodeHandler implements IBatchHandler<QEvent> {
           event.ignore();
         }
       } catch (Exception e) {
-        _Logger.warning("read decode error: %s", session, e);
+        _Logger.warn("read decode error: %s", session, e);
         context.advanceInState(IPContext.DECODE_ERROR);
         // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
         event.error(IError.Type.FILTER_DECODE, new Pair<>(e, session), session.getError());

@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.protocol.zchat.model.command.raft.X76_RaftResp;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoFactory;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.pawn.endpoint.device.spi.IAccessService;
 import com.isahl.chess.queen.events.server.ILinkCustom;
@@ -36,12 +35,15 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.session.IManager;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LinkCustom implements ILinkCustom {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
   private final List<IAccessService> _AccessServices;
 
@@ -84,7 +86,7 @@ public class LinkCustom implements ILinkCustom {
       session.innerClose();
       _Logger.debug("session [ %#x ] closed", session.index());
     } catch (Throwable e) {
-      _Logger.warning("session [ %#x ] close", e, session.index());
+      _Logger.warn("session [ %#x ] close", e, session.index());
     }
     for (IAccessService service : _AccessServices) {
       if (service.isSupported(session)) {
@@ -120,7 +122,7 @@ public class LinkCustom implements ILinkCustom {
         }
         return null;
       }
-      default -> _Logger.warning("link custom %s no handle", input);
+      default -> _Logger.warn("link custom %s no handle", input);
     }
     return null;
   }

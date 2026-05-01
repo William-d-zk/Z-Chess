@@ -22,13 +22,14 @@
  */
 package com.isahl.chess.queen.io.core.net.socket;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilter;
 import com.isahl.chess.queen.io.core.features.model.pipe.IFilterChain;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeFilter;
 import com.isahl.chess.queen.io.core.features.model.session.IPContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
@@ -47,7 +48,7 @@ public abstract class AioFilterChain<C extends IPContext, O extends IProtocol, I
 
   protected AioFilterChain(String name) {
     _Name = name;
-    _Logger = Logger.getLogger("io.queen.chain." + _Name);
+    _Logger = LoggerFactory.getLogger("io.queen.chain." + _Name);
   }
 
   @Override

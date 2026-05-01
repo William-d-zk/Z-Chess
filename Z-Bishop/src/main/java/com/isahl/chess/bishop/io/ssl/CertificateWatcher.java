@@ -23,11 +23,12 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 证书文件监视器
@@ -41,7 +42,7 @@ import java.util.function.Consumer;
  */
 public class CertificateWatcher {
 
-  private static final Logger _Logger = Logger.getLogger("io.bishop.ssl.CertificateWatcher");
+  private static final Logger _Logger = LoggerFactory.getLogger("io.bishop.ssl.CertificateWatcher");
 
   // 默认防抖时间（毫秒）- 证书文件通常较大，需要足够时间完成写入
   private static final long DEFAULT_DEBOUNCE_MS = 5000;
@@ -119,7 +120,7 @@ public class CertificateWatcher {
   /** 启动监视 */
   public synchronized void start() {
     if (_Running) {
-      _Logger.warning("CertificateWatcher already started");
+      _Logger.warn("CertificateWatcher already started");
       return;
     }
 
@@ -184,7 +185,7 @@ public class CertificateWatcher {
     try {
       _WatchService.close();
     } catch (IOException e) {
-      _Logger.warning("Error closing WatchService: %s", e.getMessage());
+      _Logger.warn("Error closing WatchService: %s", e.getMessage());
     }
 
     // 标记为非运行状态
@@ -253,7 +254,7 @@ public class CertificateWatcher {
         // 重置 key
         boolean valid = key.reset();
         if (!valid) {
-          _Logger.warning("WatchKey no longer valid, stopping watcher");
+          _Logger.warn("WatchKey no longer valid, stopping watcher");
           break;
         }
       } catch (InterruptedException e) {

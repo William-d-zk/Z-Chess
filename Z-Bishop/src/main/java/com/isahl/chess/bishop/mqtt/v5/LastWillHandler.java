@@ -23,10 +23,11 @@
 
 package com.isahl.chess.bishop.mqtt.v5;
 
-import com.isahl.chess.king.base.log.Logger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT 5.0 遗嘱消息处理器
@@ -38,7 +39,7 @@ import java.util.function.BiConsumer;
 public class LastWillHandler {
 
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + LastWillHandler.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + LastWillHandler.class.getSimpleName());
 
   /** 客户端 ID -> 遗嘱消息 */
   private final ConcurrentMap<String, LastWillMessage> _lastWills = new ConcurrentHashMap<>();

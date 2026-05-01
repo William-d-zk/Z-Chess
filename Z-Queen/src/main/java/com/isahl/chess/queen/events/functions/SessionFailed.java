@@ -24,10 +24,11 @@
 package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.features.model.IPair;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -36,7 +37,7 @@ import com.isahl.chess.queen.io.core.features.model.session.ISessionFailed;
 public class SessionFailed implements ISessionFailed {
 
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + ISessionFailed.class.getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + ISessionFailed.class.getSimpleName());
 
   @Override
   public String getName() {

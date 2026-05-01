@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.disruptor.features.functions.OperateType;
 import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.functions.SessionWrote;
 import com.isahl.chess.queen.events.model.QEvent;
@@ -42,6 +41,8 @@ import com.isahl.chess.queen.io.core.tasks.features.IAvailable;
 import com.lmax.disruptor.RingBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
@@ -49,7 +50,7 @@ import java.util.Objects;
 public class AioWorker extends Thread {
 
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getSimpleName());
   private final IAvailable<RingBuffer<QEvent>> _Available;
   private final RingBuffer<QEvent> _Producer;
 
@@ -69,7 +70,7 @@ public class AioWorker extends Thread {
     try {
       super.run();
     } catch (Error e) {
-      _Logger.fetal("AioWorker Work UnCatchEx", e);
+      _Logger.error("AioWorker Work UnCatchEx", e);
       if (Objects.nonNull(_Available)) {
         _Available.available(_Producer);
       }
@@ -84,7 +85,7 @@ public class AioWorker extends Thread {
       final OperateType type,
       IPair content) {
     if (producer.remainingCapacity() == 0) {
-      _Logger.warning("aio worker %s block", getName());
+      _Logger.warn("aio worker %s block", getName());
     }
     long sequence = producer.next();
     try {

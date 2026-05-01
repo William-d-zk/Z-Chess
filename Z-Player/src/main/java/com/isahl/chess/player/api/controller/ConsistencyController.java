@@ -24,8 +24,9 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.content.ZResponse;
 import com.isahl.chess.king.base.features.ICode;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.features.IConsistencyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api")
 public class ConsistencyController {
-  private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
   private final IConsistencyService _ConsistencyService;
 
   @Autowired

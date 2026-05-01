@@ -25,9 +25,10 @@ package com.isahl.chess.king.base.disruptor.components;
 
 import com.isahl.chess.king.base.disruptor.features.event.IEvent;
 import com.isahl.chess.king.base.disruptor.features.flow.IBatchHandler;
-import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Z1Processor<T extends IEvent> implements EventProcessor {
 
@@ -61,7 +62,7 @@ public class Z1Processor<T extends IEvent> implements EventProcessor {
     _SequenceBarrier = sequenceBarrier;
     _BatchEventHandler = eventHandler;
     _Logger =
-        Logger.getLogger(
+        LoggerFactory.getLogger(
             String.format(
                 "base.king.%s.%s",
                 getClass().getSimpleName(), eventHandler.getClass().getSimpleName()));
@@ -176,7 +177,7 @@ public class Z1Processor<T extends IEvent> implements EventProcessor {
    * delegate or the default {@link ExceptionHandler} if one has not been configured.
    */
   private void handleEventException(final Throwable ex, final long sequence, final T event) {
-    _Logger.warning(ex);
+    _Logger.warn("Event processing exception", ex);
     getExceptionHandler().handleEventException(ex, sequence, event);
   }
 

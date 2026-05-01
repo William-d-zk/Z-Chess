@@ -25,13 +25,14 @@ package com.isahl.chess.audience.client.stress;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.king.base.log.Logger;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DeviceCredentialLoader {
-  private static final Logger _Logger = Logger.getLogger("stress.device");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.device");
 
   @Value("${device.credentials.file:classpath:test-devices.json}")
   private Resource deviceFile;
@@ -68,21 +69,21 @@ public class DeviceCredentialLoader {
       } else if (deviceFile != null && deviceFile.exists()) {
         root = objectMapper.readTree(deviceFile.getInputStream());
       } else {
-        _Logger.warning(
+        _Logger.warn(
             "No device credentials file found, using default path: /app/data/devices-100.json");
         // Try default path in Docker container
         java.io.File defaultFile = new java.io.File("/app/data/devices-100.json");
         if (defaultFile.exists()) {
           root = objectMapper.readTree(defaultFile);
         } else {
-          _Logger.warning("Default device file not found, devices list is empty");
+          _Logger.warn("Default device file not found, devices list is empty");
           return;
         }
       }
 
       JsonNode devicesNode = root.get("devices");
       if (devicesNode == null || !devicesNode.isArray()) {
-        _Logger.warning("Invalid device file format, expected 'devices' array");
+        _Logger.warn("Invalid device file format, expected 'devices' array");
         return;
       }
 
@@ -105,7 +106,7 @@ public class DeviceCredentialLoader {
 
       _Logger.info("Loaded %d device credentials", devices.size());
     } catch (IOException e) {
-      _Logger.warning("Failed to load device credentials: %s", e.getMessage());
+      _Logger.warn("Failed to load device credentials: %s", e.getMessage());
     }
   }
 

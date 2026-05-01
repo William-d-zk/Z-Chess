@@ -28,12 +28,13 @@ import static java.lang.String.format;
 
 import com.isahl.chess.board.annotation.ISerialGenerator;
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import com.isahl.chess.knight.raft.features.IRaftMapper;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 import com.isahl.chess.queen.message.InnerProtocol;
 import java.io.Serial;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -43,7 +44,8 @@ import java.io.Serial;
 public class RaftMachine extends InnerProtocol implements IRaftMachine {
   @Serial private static final long serialVersionUID = -3632621828854975482L;
 
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   private long mTerm; // 触发选举时 term > index-term
   private long

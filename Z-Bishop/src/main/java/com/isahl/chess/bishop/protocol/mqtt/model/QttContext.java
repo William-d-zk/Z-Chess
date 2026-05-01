@@ -28,12 +28,13 @@ import static com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol.VERSION_V5_
 
 import com.isahl.chess.bishop.protocol.ProtocolContext;
 import com.isahl.chess.king.base.features.model.IPair;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.channels.INetworkOption;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT 协议上下文
@@ -53,7 +54,7 @@ import java.util.stream.IntStream;
  */
 public class QttContext extends ProtocolContext<QttFrame> {
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + QttContext.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + QttContext.class.getSimpleName());
 
   private static final IPair SUPPORT_VERSION =
       new Pair<>(new String[] {"5.0", "3.1.1"}, new int[] {VERSION_V5_0, VERSION_V3_1_1});
@@ -317,7 +318,7 @@ public class QttContext extends ProtocolContext<QttFrame> {
     if (remaining < 0) {
       // 超出配额，恢复并返回失败
       _OutboundQuota.incrementAndGet();
-      _Logger.warning("Send quota exceeded, receiveMaximum=%d", _ReceiveMaximum);
+      _Logger.warn("Send quota exceeded, receiveMaximum=%d", _ReceiveMaximum);
       return false;
     }
     return true;

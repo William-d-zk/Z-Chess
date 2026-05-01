@@ -25,7 +25,6 @@
 package com.isahl.chess.pawn.endpoint.device.service.plugin;
 
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.env.ZUID;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.db.central.model.ZChatEntity;
@@ -33,12 +32,15 @@ import com.isahl.chess.pawn.endpoint.device.resource.features.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.resource.features.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.PersistentHook;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageSubscribe implements PersistentHook.ISubscribe {
-  private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("endpoint.pawn." + getClass().getSimpleName());
   private final IMessageService _MessageService;
   private final IDeviceService _DeviceService;
 

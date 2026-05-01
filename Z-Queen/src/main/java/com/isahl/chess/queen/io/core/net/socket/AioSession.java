@@ -29,7 +29,6 @@ import static com.isahl.chess.queen.io.core.features.model.session.IManager.NULL
 
 import com.isahl.chess.king.base.content.ByteBuf;
 import com.isahl.chess.king.base.features.model.IoFactory;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.io.core.features.model.channels.IConnectActivity;
 import com.isahl.chess.queen.io.core.features.model.content.IPacket;
@@ -50,12 +49,15 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public class AioSession<C extends IPContext> extends LinkedList<IPacket> implements ISession {
-  private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.session." + getClass().getSimpleName());
 
   /*--------------------------------------------------------------------------------------------------------------*/
   private final int _ReadTimeOutInSecond;
@@ -221,7 +223,7 @@ public class AioSession<C extends IPContext> extends LinkedList<IPacket> impleme
     if (pos >= 0) {
       return mSessionPrefix[pos] & SUFFIX_MASK;
     } else {
-      _Logger.fetal(
+      _Logger.error(
           "session not with prefix:%#x,check IManager.mapSession(index,session,prefix...)", prefix);
       return Long.MAX_VALUE;
     }
@@ -302,7 +304,7 @@ public class AioSession<C extends IPContext> extends LinkedList<IPacket> impleme
           return (T) context;
         }
       }
-      _Logger.warning(
+      _Logger.warn(
           "not found context instanceof %s | %s",
           clazz.getSimpleName(), _Context.getClass().getSimpleName());
       return null;

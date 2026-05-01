@@ -23,11 +23,12 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.raft.features.IRaftMachine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Leader 转让管理器
@@ -37,7 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author william.d.zk
  */
 public class LeadershipTransferManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   /** 转让状态 */
   public enum State {
@@ -171,7 +173,7 @@ public class LeadershipTransferManager {
       _Logger.info("Started leadership transfer: %s", newTx);
       return true;
     }
-    _Logger.warning(
+    _Logger.warn(
         "Failed to start transfer %d, another transfer in progress: %s",
         id, mCurrentTransaction.get());
     return false;
@@ -207,7 +209,7 @@ public class LeadershipTransferManager {
     }
     tx.setState(State.FAILED);
     tx.setErrorMessage(reason);
-    _Logger.warning("Leadership transfer %d failed: %s", tx.getId(), reason);
+    _Logger.warn("Leadership transfer %d failed: %s", tx.getId(), reason);
     return true;
   }
 
@@ -218,7 +220,7 @@ public class LeadershipTransferManager {
       return false;
     }
     tx.setState(State.TIMEOUT);
-    _Logger.warning("Leadership transfer %d timeout after %s", tx.getId(), tx.getElapsedTime());
+    _Logger.warn("Leadership transfer %d timeout after %s", tx.getId(), tx.getElapsedTime());
     return true;
   }
 

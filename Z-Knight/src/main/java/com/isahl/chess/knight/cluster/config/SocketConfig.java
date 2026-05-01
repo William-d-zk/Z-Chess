@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.ISocketConfig;
 import java.io.IOException;
@@ -33,10 +32,13 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import javax.net.ssl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.unit.DataSize;
 
 public class SocketConfig implements ISocketConfig {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
   private boolean keepAlive;
   private Duration connectTimeoutInSecond;
   private Duration writeTimeoutInSecond;
@@ -149,7 +151,7 @@ public class SocketConfig implements ISocketConfig {
     InputStream is = getClass().getClassLoader().getResourceAsStream(path);
 
     if (is == null) {
-      _Logger.fetal("Keystore not found in classpath: %s", path);
+      _Logger.error("Keystore not found in classpath: %s", path);
       throw new IOException("Keystore not found: " + path);
     }
 
@@ -187,7 +189,7 @@ public class SocketConfig implements ISocketConfig {
           | NoSuchAlgorithmException
           | CertificateException
           | NoSuchProviderException e) {
-        _Logger.warning("Failed to load trust managers: %s", e.getMessage());
+        _Logger.warn("Failed to load trust managers: %s", e.getMessage());
         return null;
       }
     }
@@ -208,7 +210,7 @@ public class SocketConfig implements ISocketConfig {
           | CertificateException
           | NoSuchProviderException
           | UnrecoverableKeyException e) {
-        _Logger.warning("Failed to load key managers: %s", e.getMessage());
+        _Logger.warn("Failed to load key managers: %s", e.getMessage());
         return null;
       }
     }
@@ -240,7 +242,7 @@ public class SocketConfig implements ISocketConfig {
       sslAppBufferSize = sslSession.getApplicationBufferSize();
       _Logger.info("SSL buffer sizes - packet: %d, app: %d", sslPacketBufferSize, sslAppBufferSize);
     } catch (Exception e) {
-      _Logger.fetal("SSL initialization failed: %s", e.getMessage());
+      _Logger.error("SSL initialization failed: %s", e.getMessage());
       throw new ZException(e, "ssl static init failed");
     }
   }

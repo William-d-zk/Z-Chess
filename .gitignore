@@ -21,3 +21,10 @@ GTAGS
 GRTAGS
 GPATH
 docs_output/analysis_data.json
+# Security: never commit private keys or certificates
+cert/*.pem
+cert/*.key
+cert/*.p12
+cert/*.csr
+**/resources/cert/
+scripts/docker/test/cert/

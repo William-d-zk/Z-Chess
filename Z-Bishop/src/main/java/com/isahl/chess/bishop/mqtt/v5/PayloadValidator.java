@@ -24,10 +24,11 @@
 package com.isahl.chess.bishop.mqtt.v5;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
-import com.isahl.chess.king.base.log.Logger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 Payload 格式验证器
@@ -47,7 +48,7 @@ import java.util.regex.Pattern;
 public class PayloadValidator {
 
   private static final Logger _Logger =
-      Logger.getLogger("mqtt.broker." + PayloadValidator.class.getSimpleName());
+      LoggerFactory.getLogger("mqtt.broker." + PayloadValidator.class.getSimpleName());
 
   /** MIME 类型格式正则表达式 */
   private static final Pattern MIME_TYPE_PATTERN =
@@ -142,7 +143,7 @@ public class PayloadValidator {
 
       if (!isValidUtf8(payload)) {
         String errorMsg = "Payload is not valid UTF-8";
-        _Logger.warning("Validation failed: {}", errorMsg);
+        _Logger.warn("Validation failed: {}", errorMsg);
         if (_strictMode) {
           throw new PayloadValidationException(errorMsg);
         }
@@ -163,7 +164,7 @@ public class PayloadValidator {
 
     if (!isValidMimeType(contentType)) {
       String errorMsg = "Invalid MIME type: " + contentType;
-      _Logger.warning("Validation failed: {}", errorMsg);
+      _Logger.warn("Validation failed: {}", errorMsg);
       if (_strictMode) {
         throw new PayloadValidationException(errorMsg);
       }

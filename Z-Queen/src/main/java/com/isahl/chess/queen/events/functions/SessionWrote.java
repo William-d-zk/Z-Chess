@@ -25,13 +25,14 @@ package com.isahl.chess.queen.events.functions;
 
 import com.isahl.chess.king.base.disruptor.features.functions.IBinaryOperator;
 import com.isahl.chess.king.base.features.model.ITriple;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.features.model.channels.IWritable;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SessionWrote implements IBinaryOperator<Integer, ISession, ITriple> {
-  private final Logger _Logger = Logger.getLogger(getName() + getClass().getSimpleName());
+  private final Logger _Logger = LoggerFactory.getLogger(getName() + getClass().getSimpleName());
   private final AioWriter _AioWrite;
 
   SessionWrote(AioWriter aioWriter) {
@@ -46,7 +47,7 @@ public class SessionWrote implements IBinaryOperator<Integer, ISession, ITriple>
           "session %s->%s wrote :%s ",
           session.getLocalAddress(), session.getRemoteAddress(), write_status);
     } catch (Exception e) {
-      _Logger.warning("session write error", e);
+      _Logger.warn("session write error", e);
       return new Triple<>(e, session, session.getError());
     }
     return null;

@@ -24,7 +24,6 @@
 package com.isahl.chess.bishop.protocol.mqtt.service;
 
 import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
-import com.isahl.chess.king.base.log.Logger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -33,6 +32,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 SCRAM-SHA-256 认证提供者
@@ -48,7 +49,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class ScramSha256AuthProvider implements IQttAuthProvider {
   private static final Logger _Logger =
-      Logger.getLogger("mqtt.auth." + ScramSha256AuthProvider.class.getSimpleName());
+      LoggerFactory.getLogger("mqtt.auth." + ScramSha256AuthProvider.class.getSimpleName());
 
   public static final String AUTH_METHOD = "SCRAM-SHA-256";
 
@@ -94,13 +95,13 @@ public class ScramSha256AuthProvider implements IQttAuthProvider {
     byte[] authData = connect.getAuthenticationData();
 
     if (username == null) {
-      _Logger.warning("Authentication failed: missing username");
+      _Logger.warn("Authentication failed: missing username");
       return AuthResult.failure("Missing username");
     }
 
     StoredCredentials credentials = _UserCredentials.get(username);
     if (credentials == null) {
-      _Logger.warning("Authentication failed: user not found: %s", username);
+      _Logger.warn("Authentication failed: user not found: %s", username);
       return AuthResult.failure("User not found");
     }
 
@@ -112,7 +113,7 @@ public class ScramSha256AuthProvider implements IQttAuthProvider {
       String clientFinalMessage = new String(authData, StandardCharsets.UTF_8);
       return verifyClientFinalMessage(username, credentials, clientFinalMessage);
     } catch (Exception e) {
-      _Logger.warning("Authentication error for user: %s", username, e);
+      _Logger.warn("Authentication error for user: %s", username, e);
       return AuthResult.failure("Authentication error: " + e.getMessage());
     }
   }
@@ -134,7 +135,7 @@ public class ScramSha256AuthProvider implements IQttAuthProvider {
       String clientFinalMessage = new String(authData, StandardCharsets.UTF_8);
       return verifyClientFinalMessage(username, credentials, clientFinalMessage);
     } catch (Exception e) {
-      _Logger.warning("Continue auth error for user: %s", username, e);
+      _Logger.warn("Continue auth error for user: %s", username, e);
       return AuthResult.failure("Authentication error: " + e.getMessage());
     }
   }
@@ -160,7 +161,7 @@ public class ScramSha256AuthProvider implements IQttAuthProvider {
 
       return new StoredCredentials(saltBase64, _Iterations, storedKeyBase64, serverKeyBase64);
     } catch (Exception e) {
-      _Logger.warning("Error creating stored credentials", e);
+      _Logger.warn("Error creating stored credentials", e);
       throw new RuntimeException("Failed to create credentials", e);
     }
   }
@@ -206,14 +207,14 @@ public class ScramSha256AuthProvider implements IQttAuthProvider {
       String computedProof = Base64.getEncoder().encodeToString(clientKey);
 
       if (!computedProof.equals(clientProof)) {
-        _Logger.warning("Authentication failed: invalid proof for user: %s", username);
+        _Logger.warn("Authentication failed: invalid proof for user: %s", username);
         return AuthResult.failure("Invalid credentials");
       }
 
       _Logger.info("Authentication success for user: %s", username);
       return AuthResult.success(null);
     } catch (Exception e) {
-      _Logger.warning("Verification error for user: %s", username, e);
+      _Logger.warn("Verification error for user: %s", username, e);
       return AuthResult.failure("Verification error");
     }
   }

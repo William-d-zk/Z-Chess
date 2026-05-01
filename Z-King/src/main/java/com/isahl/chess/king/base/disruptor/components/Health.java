@@ -24,8 +24,9 @@
 package com.isahl.chess.king.base.disruptor.components;
 
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
-import com.isahl.chess.king.base.log.Logger;
 import java.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Health implements IHealth {
   private final Logger _Logger;
@@ -33,7 +34,8 @@ public class Health implements IHealth {
 
   public Health(int slot) {
     _Logger =
-        Logger.getLogger("base.king." + (_ThreadSlot = slot) + "@" + getClass().getSimpleName());
+        LoggerFactory.getLogger(
+            "base.king." + (_ThreadSlot = slot) + "@" + getClass().getSimpleName());
   }
 
   private boolean mEnable;

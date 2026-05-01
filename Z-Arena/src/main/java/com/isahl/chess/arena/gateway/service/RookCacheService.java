@@ -25,18 +25,19 @@ package com.isahl.chess.arena.gateway.service;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import javax.cache.CacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RookCacheService {
-  private final Logger _Logger = Logger.getLogger("arena." + getClass().getSimpleName());
+  private final Logger _Logger = LoggerFactory.getLogger("arena." + getClass().getSimpleName());
 
   @Cacheable(value = "areaOfCircleCache", key = "#p0", condition = "#p0 > 5")
   public double areaOfCircle(int radius) {

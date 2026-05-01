@@ -23,15 +23,17 @@
 
 package com.isahl.chess.bishop.mqtt.v5;
 
+import com.isahl.chess.bishop.protocol.mqtt.ctrl.X111_QttConnect;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider.AuthContext;
 import com.isahl.chess.bishop.protocol.mqtt.service.IQttAuthProvider.AuthResult;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 增强认证流程管理器
@@ -51,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 public class AuthenticationFlow {
 
   private static final Logger _Logger =
-      Logger.getLogger("mqtt.auth." + AuthenticationFlow.class.getSimpleName());
+      LoggerFactory.getLogger("mqtt.auth." + AuthenticationFlow.class.getSimpleName());
 
   /** 默认认证超时时间（秒） */
   public static final int DEFAULT_AUTH_TIMEOUT_SECONDS = 60;
@@ -126,7 +128,7 @@ public class AuthenticationFlow {
   public AuthResult startAuth(String clientId, String authMethod, byte[] authData) {
     IQttAuthProvider provider = _providers.get(authMethod);
     if (provider == null) {
-      _Logger.warning("No auth provider found for method: {}", authMethod);
+      _Logger.warn("No auth provider found for method: {}", authMethod);
       return AuthResult.failure("Unsupported authentication method: " + authMethod);
     }
 
@@ -139,7 +141,13 @@ public class AuthenticationFlow {
     session.setContext(context);
 
     // 执行初始认证
-    AuthResult result = provider.startAuth(null); // TODO: 需要 X111_QttConnect
+    // 构造基础连接对象，避免向 provider 传入 null 导致 NPE
+    X111_QttConnect connect = new X111_QttConnect();
+    connect.setClientId(clientId);
+    if (authData != null && authData.length > 0) {
+      connect.setAuthenticationData(authData);
+    }
+    AuthResult result = provider.startAuth(connect);
 
     if (result.isSuccess()) {
       session.setState(AuthState.SUCCESS);
@@ -151,7 +159,7 @@ public class AuthenticationFlow {
     } else {
       session.setState(AuthState.FAILED);
       _sessions.remove(clientId);
-      _Logger.warning("Authentication failed for client: {} - {}", clientId, result.getReason());
+      _Logger.warn("Authentication failed for client: {} - {}", clientId, result.getReason());
     }
 
     return result;
@@ -167,12 +175,12 @@ public class AuthenticationFlow {
   public AuthResult continueAuth(String clientId, byte[] authData) {
     AuthSession session = _sessions.get(clientId);
     if (session == null) {
-      _Logger.warning("No active auth session for client: {}", clientId);
+      _Logger.warn("No active auth session for client: {}", clientId);
       return AuthResult.failure("No active authentication session");
     }
 
     if (session.getState() != AuthState.IN_PROGRESS) {
-      _Logger.warning("Invalid auth state for client: {} - {}", clientId, session.getState());
+      _Logger.warn("Invalid auth state for client: {} - {}", clientId, session.getState());
       return AuthResult.failure("Invalid authentication state");
     }
 
@@ -193,7 +201,7 @@ public class AuthenticationFlow {
     } else {
       session.setState(AuthState.FAILED);
       _sessions.remove(clientId);
-      _Logger.warning("Authentication failed for client: {} - {}", clientId, result.getReason());
+      _Logger.warn("Authentication failed for client: {} - {}", clientId, result.getReason());
     }
 
     return result;
@@ -252,7 +260,7 @@ public class AuthenticationFlow {
               AuthSession session = entry.getValue();
               if (now - session.getLastActivity() > timeoutMillis) {
                 session.setState(AuthState.TIMEOUT);
-                _Logger.warning("Authentication timeout for client: {}", entry.getKey());
+                _Logger.warn("Authentication timeout for client: {}", entry.getKey());
                 return true;
               }
               return false;

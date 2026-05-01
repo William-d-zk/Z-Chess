@@ -24,15 +24,16 @@
 package com.isahl.chess.audience.client.stress;
 
 import com.isahl.chess.king.base.disruptor.features.debug.IHealth;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.events.server.ILogicHandler;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeService;
 import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 压力测试客户端处理器 - 简化版 */
 public class StressClientHandler implements ILogicHandler {
-  private static final Logger _Logger = Logger.getLogger("stress.handler");
+  private static final Logger _Logger = LoggerFactory.getLogger("stress.handler");
 
   @Override
   public Logger getLogger() {

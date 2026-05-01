@@ -23,7 +23,8 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import com.isahl.chess.king.base.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Leader 租约管理器 - 实现 Lease Read 机制
@@ -38,7 +39,8 @@ import com.isahl.chess.king.base.log.Logger;
  * @author william.d.zk
  */
 public class LeaseManager {
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   /** 租约状态 */
   public enum LeaseState {

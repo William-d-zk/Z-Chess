@@ -25,10 +25,11 @@ package com.isahl.chess.bishop.mqtt.v5;
 
 import com.isahl.chess.bishop.protocol.mqtt.model.QttProperty;
 import com.isahl.chess.bishop.protocol.mqtt.model.QttPropertySet;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT 5.0 消息过期处理器 使用 DelayQueue 管理过期消息
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MessageExpiryHandler {
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + MessageExpiryHandler.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + MessageExpiryHandler.class.getSimpleName());
 
   private final DelayQueue<ExpirableMessage> _expiryQueue = new DelayQueue<>();
 

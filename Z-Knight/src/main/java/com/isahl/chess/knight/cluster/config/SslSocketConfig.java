@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.cluster.config;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.config.ISocketConfig;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -37,6 +36,8 @@ import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.List;
 import javax.net.ssl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -56,7 +57,8 @@ import org.springframework.util.unit.DataSize;
 @PropertySource("classpath:pawn.io.ssl.properties")
 public class SslSocketConfig implements ISocketConfig {
 
-  private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("cluster.knight." + getClass().getSimpleName());
 
   // ==================== 服务端配置 ====================
   private SslConfig provider = new SslConfig();
@@ -237,7 +239,7 @@ public class SslSocketConfig implements ISocketConfig {
     if (provider.isEnabled()) {
       initSslContext(provider, "provider");
     } else {
-      _Logger.warning("Provider SSL is not enabled");
+      _Logger.warn("Provider SSL is not enabled");
     }
     if (consumer.isEnabled()) {
       initSslContext(consumer, "consumer");
@@ -287,7 +289,7 @@ public class SslSocketConfig implements ISocketConfig {
           name, protocol, config.isTls13Enabled(), config.isHotReloadEnabled());
 
     } catch (Exception e) {
-      _Logger.warning("Failed to initialize SSL context for %s: %s", name, e.getMessage());
+      _Logger.warn("Failed to initialize SSL context for %s: %s", name, e.getMessage());
       throw new ZException(e, "SSL initialization failed for " + name);
     }
   }

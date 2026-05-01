@@ -24,7 +24,6 @@
 package com.isahl.chess.bishop.mqtt.v5;
 
 import com.isahl.chess.bishop.protocol.mqtt.command.X113_QttPublish;
-import com.isahl.chess.king.base.log.Logger;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +31,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 请求/响应路由器
@@ -53,7 +54,7 @@ import java.util.function.Consumer;
 public class RequestResponseRouter {
 
   private static final Logger _Logger =
-      Logger.getLogger("mqtt.broker." + RequestResponseRouter.class.getSimpleName());
+      LoggerFactory.getLogger("mqtt.broker." + RequestResponseRouter.class.getSimpleName());
 
   /** 默认请求超时时间（毫秒） */
   public static final long DEFAULT_TIMEOUT_MS = 30000;
@@ -183,7 +184,7 @@ public class RequestResponseRouter {
       try {
         pendingRequest.getCallback().onResponse(response);
       } catch (Exception e) {
-        _Logger.warning("Error invoking response callback: {}", e.getMessage());
+        _Logger.warn("Error invoking response callback: {}", e.getMessage());
       }
     }
 
@@ -228,7 +229,7 @@ public class RequestResponseRouter {
                   try {
                     request.getCallback().onTimeout();
                   } catch (Exception e) {
-                    _Logger.warning("Error invoking timeout callback: {}", e.getMessage());
+                    _Logger.warn("Error invoking timeout callback: {}", e.getMessage());
                   }
                 }
                 _Logger.debug("Request timed out: correlationId={}", entry.getKey());

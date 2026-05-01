@@ -26,10 +26,11 @@ package com.isahl.chess.bishop.protocol.mqtt.model;
 import static com.isahl.chess.bishop.protocol.mqtt.model.QttProtocol.VERSION_V5_0;
 
 import com.isahl.chess.king.base.content.ByteBuf;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MQTT v5.0 属性集合容器
@@ -41,7 +42,7 @@ import java.util.*;
  */
 public class QttPropertySet {
   private static final Logger _Logger =
-      Logger.getLogger("protocol.bishop." + QttPropertySet.class.getSimpleName());
+      LoggerFactory.getLogger("protocol.bishop." + QttPropertySet.class.getSimpleName());
 
   /** 单值属性存储 (PropertyId -> Value) */
   private final Map<Integer, Object> _Properties = new HashMap<>();
@@ -169,7 +170,7 @@ public class QttPropertySet {
       QttProperty property = QttProperty.valueOf(propertyId);
 
       if (property == null) {
-        _Logger.warning("Unknown property id: 0x%02X, skipping", propertyId);
+        _Logger.warn("Unknown property id: 0x%02X, skipping", propertyId);
         // 跳过未知属性：需要根据类型猜测长度，这里简化处理
         break;
       }
@@ -205,7 +206,7 @@ public class QttPropertySet {
         _Properties.put(property.getId(), value);
       }
     } catch (Exception e) {
-      _Logger.warning("Failed to decode property: %s", e, property);
+      _Logger.warn("Failed to decode property: %s", e, property);
     }
   }
 

@@ -45,7 +45,6 @@ import com.isahl.chess.bishop.protocol.zchat.model.ctrl.X0D_Error;
 import com.isahl.chess.king.base.features.IValid;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptoUtil;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.env.ZUID;
@@ -72,6 +71,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -81,7 +82,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
   private static final Logger _Logger =
-      Logger.getLogger("endpoint.pawn." + MQttPlugin.class.getName());
+      LoggerFactory.getLogger("endpoint.pawn." + MQttPlugin.class.getName());
 
   private final IDeviceService _DeviceService;
   private final IMessageService _MessageService;
@@ -216,7 +217,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
             _Logger.info("Enhanced authentication continue for method: %s", authMethod);
             return ZUID.INVALID_PEER_ID;
           } else {
-            _Logger.warning(
+            _Logger.warn(
                 "Enhanced authentication failed for method: %s, reason: %s",
                 authMethod, result.getReason());
             x112.rejectNotAuthorized();
@@ -227,7 +228,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
           _Logger.info("Enhanced authentication accepted for method: %s", authMethod);
         }
       } else if (authMethod != null) {
-        _Logger.warning("Unsupported authentication method: %s", authMethod);
+        _Logger.warn("Unsupported authentication method: %s", authMethod);
         x112.rejectNotAuthorized();
         return ZUID.INVALID_PEER_ID;
       }
@@ -262,7 +263,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
       String authMethod, byte[] authData, AuthContext context) {
     IQttAuthProvider provider = _AuthProviders.get(authMethod);
     if (provider == null) {
-      _Logger.warning("No auth provider found for method: %s", authMethod);
+      _Logger.warn("No auth provider found for method: %s", authMethod);
       return IQttAuthProvider.AuthResult.failure("Unsupported authentication method");
     }
 
@@ -273,7 +274,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
       String authMethod, byte[] authData, long sessionId) {
     AuthContext context = _AuthContexts.get(sessionId);
     if (context == null) {
-      _Logger.warning("No auth context found for session: %d", sessionId);
+      _Logger.warn("No auth context found for session: %d", sessionId);
       return IQttAuthProvider.AuthResult.failure("No authentication in progress");
     }
 
@@ -319,7 +320,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
       }
       load.add(Triple.of(x113, x113.session(), x113.session().encoder()));
     } else {
-      _Logger.warning("unsupported message type: " + body);
+      _Logger.warn("unsupported message type: " + body);
     }
   }
 
@@ -497,7 +498,7 @@ public class MQttPlugin implements IAccessService, IRouter, IThread, IValid {
           _Logger.info("Authentication continue for session: %d", session.index());
         } else {
           authResponse.setReasonCode(CodeMqtt.REJECT_NOT_AUTHORIZED.getCode());
-          _Logger.warning(
+          _Logger.warn(
               "Authentication failed for session: %d, reason: %s",
               session.index(), result.getReason());
         }

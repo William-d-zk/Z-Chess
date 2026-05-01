@@ -26,8 +26,9 @@ package com.isahl.chess.bishop.protocol.spi.example;
 import com.isahl.chess.bishop.protocol.spi.ProtocolContext;
 import com.isahl.chess.bishop.protocol.spi.ProtocolHandler;
 import com.isahl.chess.bishop.protocol.spi.ProtocolResult;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 日志记录协议处理器示例
@@ -40,7 +41,7 @@ import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
 public class LoggingProtocolHandler implements ProtocolHandler {
 
   private static final Logger _Logger =
-      Logger.getLogger(
+      LoggerFactory.getLogger(
           "protocol.bishop.spi.example." + LoggingProtocolHandler.class.getSimpleName());
 
   @Override

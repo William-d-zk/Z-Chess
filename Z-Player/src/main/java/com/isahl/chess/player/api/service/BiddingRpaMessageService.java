@@ -1,8 +1,9 @@
 package com.isahl.chess.player.api.service;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.player.api.model.RpaTaskMessageDO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -14,7 +15,7 @@ import org.springframework.util.ObjectUtils;
 @Service
 public class BiddingRpaMessageService {
 
-  private final Logger log = Logger.getLogger("biz.player." + getClass().getSimpleName());
+  private final Logger log = LoggerFactory.getLogger("biz.player." + getClass().getSimpleName());
 
   private final AliothApiService aliothApiService;
 
@@ -46,7 +47,7 @@ public class BiddingRpaMessageService {
         }
       }
     } catch (Throwable t) {
-      log.fetal("处理rpa发送的结果状态消息出现错误，msg = " + msg, t);
+      log.error("处理rpa发送的结果状态消息出现错误，msg = " + msg, t);
     }
   }
 }

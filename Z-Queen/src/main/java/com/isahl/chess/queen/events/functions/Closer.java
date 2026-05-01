@@ -23,10 +23,11 @@
 
 package com.isahl.chess.queen.events.functions;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.features.model.session.ICloser;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
@@ -39,7 +40,7 @@ public class Closer implements ICloser {
   }
 
   private final Logger _Logger =
-      Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.operator." + getClass().getSimpleName());
 
   @Override
   public Void handle(String msg, ISession session) {
@@ -47,7 +48,7 @@ public class Closer implements ICloser {
       _Logger.debug("msg %s → closed %s", msg, session);
       session.close();
     } catch (IOException e) {
-      _Logger.warning("close exception: %s", e, session);
+      _Logger.warn("close exception: %s", e, session);
     }
     return null;
   }

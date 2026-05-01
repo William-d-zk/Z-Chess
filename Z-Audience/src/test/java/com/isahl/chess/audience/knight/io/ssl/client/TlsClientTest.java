@@ -237,7 +237,7 @@ public class TlsClientTest {
               try {
                 startTlsServer(serverReady, false);
               } catch (Exception e) {
-                e.printStackTrace();
+                fail("TLS server startup failed: " + e.getMessage());
               }
             });
     serverThread.start();
@@ -300,7 +300,7 @@ public class TlsClientTest {
               try {
                 startTlsServer(serverReady, true);
               } catch (Exception e) {
-                e.printStackTrace();
+                fail("TLS server startup failed: " + e.getMessage());
               }
             });
     serverThread.start();

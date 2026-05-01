@@ -27,20 +27,21 @@ import static com.isahl.chess.king.base.disruptor.features.functions.OperateType
 
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.session.IMessage;
 import com.isahl.chess.queen.io.core.features.model.session.ISort;
 import com.lmax.disruptor.RingBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author william.d.zk
  */
 public class MixDecodedDispatcher extends DecodedDispatcher {
   private final Logger _Logger =
-      Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+      LoggerFactory.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
   private final RingBuffer<QEvent> _Link;
 
   public MixDecodedDispatcher(

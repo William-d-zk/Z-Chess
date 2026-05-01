@@ -24,7 +24,6 @@
 package com.isahl.chess.queen.io.core.net.datagram;
 
 import com.isahl.chess.king.base.cron.TimeWheel;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import com.isahl.chess.queen.io.core.net.socket.features.IAioConnector;
@@ -37,13 +36,16 @@ import java.nio.channels.Selector;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author William.d.zk
  */
 public class BaseDatagramPeer implements IAioClient {
 
-  private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
+  private final Logger _Logger =
+      LoggerFactory.getLogger("io.queen.client." + getClass().getSimpleName());
 
   private final TimeWheel _TimeWheel;
   private final Selector _Selector;

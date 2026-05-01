@@ -32,7 +32,6 @@ import com.isahl.chess.king.base.features.IError;
 import com.isahl.chess.king.base.features.model.IPair;
 import com.isahl.chess.king.base.features.model.ITriple;
 import com.isahl.chess.king.base.features.model.IoSerial;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.events.model.QEvent;
 import com.isahl.chess.queen.io.core.features.model.content.IProtocol;
@@ -42,6 +41,7 @@ import com.isahl.chess.queen.io.core.features.model.pipe.IPipeTransfer;
 import com.isahl.chess.queen.io.core.features.model.session.IExchanger;
 import com.isahl.chess.queen.io.core.features.model.session.ISession;
 import java.util.List;
+import org.slf4j.Logger;
 
 public interface ILogicHandler extends IBatchHandler<QEvent> {
   Logger getLogger();
@@ -55,8 +55,7 @@ public interface ILogicHandler extends IBatchHandler<QEvent> {
       case LOGIC -> _LogicHandle(event);
       case WRITE, IGNORE, NULL -> getLogger().info("ignore handler[%s]", event.getEventType());
       default -> getLogger()
-          .warning(
-              "Unsupported type[%s] no handle, %s", event.getEventType(), event.getComponent());
+          .warn("Unsupported type[%s] no handle, %s", event.getEventType(), event.getComponent());
     }
   }
 
@@ -77,7 +76,7 @@ public interface ILogicHandler extends IBatchHandler<QEvent> {
             return;
           }
         } catch (Exception e) {
-          getLogger().warning("logic handler interface", e);
+          getLogger().warn("logic handler interface", e);
           event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
           return;
         }
@@ -102,7 +101,7 @@ public interface ILogicHandler extends IBatchHandler<QEvent> {
             return;
           }
         } catch (Exception e) {
-          getLogger().warning("service handler %s", e, request);
+          getLogger().warn("service handler %s", e, request);
           event.error(IError.Type.HANDLE_DATA, e, serviceFailed());
           return;
         }
@@ -124,7 +123,7 @@ public interface ILogicHandler extends IBatchHandler<QEvent> {
   }
 
   private Void onServiceFailed(Throwable t) {
-    getLogger().warning(t);
+    getLogger().warn("Exception occurred", t);
     return null;
   }
 }

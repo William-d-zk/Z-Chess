@@ -25,13 +25,16 @@ package com.isahl.chess.square.service;
 
 import com.isahl.chess.square.config.EdgeConfig;
 import com.isahl.chess.square.model.TaskResult;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -42,14 +45,24 @@ public class EdgeClient {
 
   private final EdgeConfig _Config;
   private final RestTemplate _RestTemplate;
-  private final ExecutorService _PollExecutor;
+  private final ScheduledExecutorService _PollExecutor;
   private volatile boolean _Running;
 
   @Autowired
-  public EdgeClient(EdgeConfig config) {
+  public EdgeClient(EdgeConfig config, RestTemplateBuilder restTemplateBuilder) {
     _Config = config;
-    _RestTemplate = new RestTemplate();
-    _PollExecutor = Executors.newSingleThreadExecutor();
+    _RestTemplate =
+        restTemplateBuilder
+            .connectTimeout(Duration.ofSeconds(5))
+            .readTimeout(Duration.ofSeconds(10))
+            .build();
+    ThreadFactory threadFactory =
+        r -> {
+          Thread t = new Thread(r, "edge-client-poll");
+          t.setDaemon(true);
+          return t;
+        };
+    _PollExecutor = Executors.newSingleThreadScheduledExecutor(threadFactory);
   }
 
   public void startListening(TaskExecutor executor) {
@@ -59,14 +72,14 @@ public class EdgeClient {
           while (_Running) {
             try {
               claimAndExecute(executor);
-              Thread.sleep(1000);
+              TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               break;
             } catch (Exception e) {
               _Logger.error("Error in task polling loop", e);
               try {
-                Thread.sleep(5000);
+                TimeUnit.SECONDS.sleep(5);
               } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
                 break;
